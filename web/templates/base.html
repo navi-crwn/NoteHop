@@ -33,6 +33,7 @@
       <a href="/" {{if eq .Path "/"}}aria-current="page"{{end}}>{{.L.T "nav.new"}}</a>
       <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}>{{.L.T "nav.mine"}}</a>
       <a href="/about" {{if eq .Path "/about"}}aria-current="page"{{end}}>{{.L.T "nav.about"}}</a>
+      <a href="/faq" {{if eq .Path "/faq"}}aria-current="page"{{end}}>{{.L.T "nav.faq"}}</a>
     </nav>
     <div class="nav-r">
       <div class="menu lang-menu" id="lang-menu">
@@ -68,7 +69,8 @@
       <a href="/about">{{.L.T "footer.about"}}</a>
       <a href="/diff">{{.L.T "diffpage.title"}}</a>
       <a href="/nearby">{{.L.T "nearby.title"}}</a>
-      <a href="/about#raw">{{.L.T "footer.raw"}}</a>
+      <a href="/faq">{{.L.T "footer.faq"}}</a>
+      <a href="/faq#dev">{{.L.T "footer.raw"}}</a>
       <a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a>
     </nav>
   </div>

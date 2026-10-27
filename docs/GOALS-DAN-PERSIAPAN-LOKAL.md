@@ -10,7 +10,7 @@ Dokumen terkait: `README.md` (fitur, API, konfigurasi), `ROADMAP.md` (semua ide 
 
 ### 1.1 Tujuan produk
 
-NoteHop adalah catatan online yang bisa dibagikan dengan link, untuk pasar internasional (UI 8 bahasa, default English), sekeluarga dengan ImageApp, SSO, dan OtherApp.
+NoteHop adalah catatan online yang bisa dibagikan dengan link, untuk pasar internasional (UI 9 bahasa, default English, autodetect), sekeluarga dengan ImageApp, SSO, dan OtherApp.
 
 | Prinsip | Artinya dalam praktik |
 | --- | --- |
@@ -187,7 +187,7 @@ Binary ini yang disalin ke VPS dan dipasang dengan `sudo ./deploy/install.sh ./b
 | Edit bersama tidak tersambung | Pastikan membuka lewat alamat yang sama (`127.0.0.1` vs `localhost` dianggap beda). Di VPS: cek blok WebSocket di nginx. |
 | `/nearby` tidak menemukan perangkat lain | Hanya bekerja untuk perangkat dengan IP publik yang sama (satu Wi-Fi). Di lokal, dua tab di komputer yang sama cukup untuk mencoba. |
 | `go: go.mod requires go >= 1.27` | Perbarui Go dari <https://go.dev/dl/>. |
-| `go test ./internal/i18n` gagal | Ada kunci teks yang belum ada di salah satu dari 8 file `web/i18n/*.json`, atau placeholder/tag berbeda. Tambahkan di semua bahasa. |
+| `go test ./internal/i18n` gagal | Ada kunci teks yang belum ada di salah satu dari 9 file `web/i18n/*.json`, atau placeholder/tag berbeda. Tambahkan di semua bahasa. |
 
 ### 2.10 Checklist sebelum ke VPS
 

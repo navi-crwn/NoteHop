@@ -6,9 +6,10 @@ const { chromium } = require('playwright');
 const BASE = (process.env.NOTEHOP_URL || 'http://127.0.0.1:8090').replace(/\/$/, '');
 const USER = 'f_' + Date.now().toString(36);
 const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n + ' | ' + (i || ''));
+async function pickMode(p, m) { await p.evaluate(() => { const d = document.getElementById('more-modes'); if (d) d.open = true; }); await p.check(`input[name=mode][value=${m}]`, { force: true }); }
 (async () => {
   const b = await chromium.launch(); const errs = [];
-  const ctx = await b.newContext({ permissions: ['clipboard-read', 'clipboard-write'], acceptDownloads: true });
+  const ctx = (await b.newContext({ permissions: ['clipboard-read', 'clipboard-write'], acceptDownloads: true }).then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }));
   const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message)); p.on('dialog', d => d.accept());
   p.on('console', m => { if (m.type() === 'error' && !/40[134]/.test(m.text())) errs.push('console: ' + m.text()); });
   // account so wiki + dashboard work
@@ -16,7 +17,7 @@ const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n +
   await p.click('#auth-form button[type=submit]'); await p.waitForURL(/dashboard/, { timeout: 30000 });
   async function mk(title, body) {
     await p.goto(BASE + '/'); await p.fill('#title', title); await p.fill('.ed-src', body);
-    await p.click('label:has([name=mode][value=read])');
+    await pickMode(p, 'read');
     await p.click('#create'); await p.waitForURL(/\/n\//); await p.waitForSelector('#note:not(.hide)'); await p.keyboard.press('Escape');
     return p.url();
   }

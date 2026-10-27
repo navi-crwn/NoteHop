@@ -357,6 +357,9 @@
   function pill(icon, text, cls) { return h('span.pill' + (cls ? '.' + cls : ''), NH.icon(icon), text); }
   function drawMeta() {
     var m = S.meta, box = $('#n-meta'), kids = [];
+    // One plain sentence first: who can open it, and what you can do here.
+    $('#n-status').replaceChildren(NH.icon(m.encrypted ? 'lock' : 'globe'), ' ' + NH.t(m.encrypted ? 'status.private' : 'status.public') + ' ' +
+      NH.t(m.admin ? 'status.owner' : 'status.' + S.mode));
     if (m.admin) kids.push(pill('key', NH.t('pill.admin'), 'acc'));
     else kids.push(pill(NH.modeInfo[S.mode].icon, NH.modeInfo[S.mode].label));
     kids.push(m.encrypted ? pill('shield', NH.t('pill.encrypted'), 'ok') : pill('eye', NH.t('pill.public'), 'warn'));

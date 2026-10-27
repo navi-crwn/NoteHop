@@ -1,6 +1,6 @@
 # CLAUDE.md: konteks untuk sesi berikutnya
 
-Baca ini dulu sebelum menyentuh kode. Pemilik: **navi-crwn** (juga pemilik ImageApp, SSO, OtherApp). Bahasa percakapan dengan pemilik: **Bahasa Indonesia**. UI: **8 bahasa, default English** (produk dijual internasional; jangan jadikan Indonesia default).
+Baca ini dulu sebelum menyentuh kode. Pemilik: **navi-crwn** (juga pemilik ImageApp, SSO, OtherApp). Bahasa percakapan dengan pemilik: **Bahasa Indonesia**. UI: **9 bahasa, default English, autodetect dari browser** (produk dijual internasional; jangan jadikan Indonesia default). Tampilan memakai **bahasa awam**; istilah teknis hanya di halaman FAQ (`/faq`) dan di mode "Tampilkan nama teknis".
 
 ## Apa ini
 
@@ -18,6 +18,8 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 | `docs/PROMPT-LANJUTAN.md` | Prompt dan urutan kerja untuk sesi lanjutan |
 | `docs/GOALS-DAN-PERSIAPAN-LOKAL.md` | Goals produk dan cara menyiapkan, menjalankan, menguji di komputer sendiri |
 | `docs/DEPLOY.md` | Arahan untuk sesi Claude di VPS (produksi: note.example.com): update, uji, audit, aturan kerja |
+| `docs/REKAP-STATUS.md` | Apa yang sudah/belum dibuat dan alasannya (seluruh percakapan) |
+| `docs/ARAHAN-PATCH.md` | Arahan memasang patch Batch F (tampilan ramah, 9 bahasa) di VPS |
 | `docs/AUDIT-PRD.md` | Master Blueprint 54 fitur vs. yang sudah dibangun, cara cek tiap fitur di website, kandidat berikutnya |
 
 ## Status saat ini (semua fase roadmap yang direncanakan selesai)
@@ -38,8 +40,9 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 6. Skema DB hanya berubah lewat migrasi baru di **akhir** daftar `migrations` (`internal/db/db.go`). Jangan ubah migrasi yang sudah ada.
 7. Fitur opsional per catatan: tambah field di `NoteConfig` dan satu nilai `feature` di file sendiri (lihat `internal/app/features.go`, contoh `lock.go`), bukan kolom baru atau `if` di `notes.go`.
 8. UI fitur: setiap fitur diaktifkan lewat **pill toggle** (`.pill-opt`), inputnya baru muncul setelah aktif. Fitur advance masuk **Pengaturan lanjutan** (`details.adv`). Fitur yang bentrok tidak boleh aktif bersamaan: aturannya di `RULES` (`new.js`) dan `TIMED` (`note.js`) untuk UI, dan **juga** dicek di server (`createReq.invalid`, `checkTimes`, `apiAddLink`).
-9. **Teks UI selalu lewat katalog** `web/i18n/<lang>.json` (en, zh, es, ar, pt, ja, ru, id; English = sumber dan fallback). Template: `{{.L.T "kunci"}}` / `{{.L.H "kunci"}}` (bermarkup). JS: `NH.t('kunci', {var})`. Go: `apiErr(w, status, "err.kunci", "var", nilai)`. Kunci baru wajib ditambahkan ke **semua 8 file**; `go test ./internal/i18n` memeriksa kunci, placeholder, dan tag. Arab = RTL: pakai properti CSS logis (`margin-inline-start`, bukan `margin-left`).
+9. **Teks UI selalu lewat katalog** `web/i18n/<lang>.json` (en, zh, es, ar, pt, fr, ja, ru, id; English = sumber dan fallback). Template: `{{.L.T "kunci"}}` / `{{.L.H "kunci"}}` (bermarkup). JS: `NH.t('kunci', {var})`. Go: `apiErr(w, status, "err.kunci", "var", nilai)`. Kunci baru wajib ditambahkan ke **semua 9 file**; `go test ./internal/i18n` memeriksa kunci, placeholder, dan tag. Arab = RTL: pakai properti CSS logis (`margin-inline-start`, bukan `margin-left`).
 10. Gaya kode: komentar singkat yang menjelaskan *kenapa*, tanpa framework frontend.
+11. **Bahasa UI awam.** Label menjelaskan hasil ("Hapus setelah dibaca"), bukan istilah ("burn after reading"). Detail teknis masuk `faq.*` di `/faq`; nama teknis boleh di atribut `data-tech` (tampil hanya di mode teknis). Halaman Buat: kartu "Mau bikin apa?", tiga pertanyaan (siapa boleh apa, seberapa rahasia, simpan selama) yang menjadi preset untuk toggle di Pengaturan lanjutan; toggle tetap sumber kebenaran yang dikirim ke server.
 
 ## Perintah
 

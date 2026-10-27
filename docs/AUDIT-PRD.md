@@ -97,11 +97,13 @@ Kolom **Cara cek** dipakai untuk audit langsung di <https://note.example.com>. N
 | --- | --- | --- |
 | 1. Command palette (`/`, `Ctrl+K`) | ✅ | Semua blok + utilitas teks. Belum regex dan AI |
 | 2. Floating bubble toolbar | 🟡 | Muncul saat menyorot teks (mouse): tebal, miring, kode, link, `{{var}}`, palette. Belum warna, salin link baris, sensor, usul, AI |
-| 3. Drawer "Share & Shield" | 🟡 | Berupa **dialog** Bagikan dengan daftar link + bagian **Pengaturan lanjutan** (pill). Bukan panel geser 3 tab |
+| 3. Drawer "Share & Shield" | 🟡 | **Dialog** Bagikan: "Link untuk dikirim", link pemilik dengan peringatan, Pengaturan lanjutan dikelompokkan (Waktu, Privasi ekstra, Kerja bareng, Untuk ahli & developer) dengan contoh. Belum panel geser 3 tab |
 | 4. View switcher pill | 🟡 | Teks/Papan saja (lihat #28) |
 | 5. Smart status bar | ❌ | Status simpan ada di kepala catatan; tidak ada bar bawah berisi jumlah kata, tamu, Zen, RAW/API/SSH |
 | Contextual UI ("Format JSON?", "Cek link?") | ❌ | |
 | Mobile sticky keyboard bar | 🟡 | `/`, Checklist, Tempel, Blok PIN, Lampirkan, Selesai. Tombol Share belum |
+| Template "Mau bikin apa?" + tur 3 langkah | ✅ | Batch F: 6 template (catatan, daftar centang, tulis bareng, pesan rahasia, formulir, persetujuan) dan tur sekali untuk pengunjung baru |
+| Bahasa awam + FAQ | ✅ | Batch F: istilah teknis pindah ke `/faq`; mode "Tampilkan nama teknis" untuk yang paham |
 | Silent onboarding (claimable) | 🟡 | Catatan tamu diingat **di browser** (bukan cookie sesi server); setelah login, dashboard menawarkan "Klaim" |
 
 ---

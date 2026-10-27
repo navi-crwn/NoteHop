@@ -18,47 +18,134 @@
     btn.disabled = true;
   }
 
-  // ---------- options: mode pills, feature toggles, conflicts ----------
-  var MODE_DESC = { read: NH.t('mode.read_desc'), edit: NH.t('mode.edit_desc'), append: NH.t('mode.append_desc'), check: NH.t('mode.check_desc'), suggest: NH.t('mode.suggest_desc') };
-  // A feature that would clash with the current choices is switched off and
-  // dimmed; clicking it explains why instead of turning it on.
+  // ---------- options ----------
+  // The friendly controls (who, how private, how long) are presets over the
+  // feature switches in Advanced settings; both stay in sync, and the switches
+  // are what gets sent.
   var RULES = [
     { feature: 'password', when: function () { return !on('encrypt'); }, why: NH.t('rule.password_e2e') },
     { feature: 'burn', when: function () { return mode() !== 'read'; }, why: NH.t('rule.burn_read') },
     { feature: 'lock', when: function () { return mode() === 'read'; }, why: NH.t('rule.lock_write') },
     { feature: 'decoy', when: function () { return !on('password'); }, why: NH.t('rule.decoy_password') }
   ];
+  var PRIV_DESC = { normal: NH.t('priv.normal_d'), password: NH.t('priv.password_d'), once: NH.t('priv.once_d') };
   function toggle(name) { return form.querySelector('[data-feature="' + name + '"]'); }
   function on(name) { return toggle(name).checked; }
+  function set(name, v) { toggle(name).checked = v; }
   function mode() { return form.querySelector('[name=mode]:checked').value; }
+  function radio(name) { return form.querySelector('[name=' + name + ']:checked').value; }
+  function pick(name, value) { var r = form.querySelector('[name=' + name + '][value="' + value + '"]'); if (r) r.checked = true; }
   function blockedBy(name) {
     for (var i = 0; i < RULES.length; i++) if (RULES[i].feature === name && RULES[i].when()) return RULES[i];
     return null;
   }
 
+  // Presets → switches.
+  function applyPrivacy() {
+    var p = radio('privacy');
+    if (p === 'once' && blockedBy('burn')) { NH.toast(blockedBy('burn').why); pick('privacy', 'normal'); p = 'normal'; }
+    if (p === 'password' && blockedBy('password')) { NH.toast(blockedBy('password').why); pick('privacy', 'normal'); p = 'normal'; }
+    set('password', p === 'password');
+    set('burn', p === 'once');
+    if (p === 'once') $('#burn').value = '1';
+  }
+  function applyUntil() {
+    var u = radio('until');
+    set('expires', u !== 'forever');
+    if (u !== 'forever' && u !== 'other') $('#expires').value = u;
+  }
+  // Switches → presets (after someone changed a switch directly).
+  function syncPresets() {
+    pick('privacy', on('burn') ? 'once' : on('password') ? 'password' : 'normal');
+    var u = !on('expires') ? 'forever' : ($('#expires').value === '86400' || $('#expires').value === '604800') && radio('until') !== 'other' ? $('#expires').value : 'other';
+    pick('until', u);
+  }
+
+  function summary() {
+    var parts = [NH.t('sum.' + mode()), NH.t(on('encrypt') ? 'sum.private' : 'sum.public')];
+    if (on('password')) parts.push(NH.t('sum.password'));
+    if (on('burn')) parts.push(NH.t('sum.burn', { n: $('#burn').value }));
+    if (on('expires')) parts.push(NH.t('sum.expires', { dur: $('#expires').selectedOptions[0].textContent }));
+    if (!on('burn') && !on('expires')) parts.push(NH.t('sum.forever'));
+    if (on('capsule') && unixOf('#open-at')) parts.push(NH.t('sum.opens', { time: unixOf('#open-at') }));
+    if (on('lock') && unixOf('#lock-at')) parts.push(NH.t('sum.locks', { time: unixOf('#lock-at') }));
+    if (on('signoff')) parts.push(NH.t('sum.signoff'));
+    $('#summary').textContent = parts.join(' ');
+  }
+
   function applyOptions() {
     RULES.forEach(function (r) {
-      var input = toggle(r.feature), blocked = r.when();
+      var input = toggle(r.feature), blocked = r.when(), label = input.closest('label');
       if (blocked && input.checked) {
         input.checked = false;
         NH.toast(r.why);
       }
-      input.closest('.pill-opt').classList.toggle('blocked', blocked);
-      input.closest('.pill-opt').title = blocked ? r.why : '';
+      label.classList.toggle('blocked', blocked);
+      label.title = blocked ? r.why : '';
     });
+    syncPresets();
     NH.$$('[data-panel]', form).forEach(function (p) { p.classList.toggle('hide', !on(p.dataset.panel)); });
+    $('#until-other').classList.toggle('hide', radio('until') !== 'other');
+    $('#priv-desc').textContent = PRIV_DESC[radio('privacy')];
     $('[data-for="encrypt-off"]').classList.toggle('hide', on('encrypt'));
-    $('#mode-desc').textContent = MODE_DESC[mode()];
+    // Extra settings that are on keep the section open, so nothing is hidden.
+    if (['capsule', 'lock', 'decoy', 'slug', 'signoff'].some(on) || !on('encrypt')) $('#adv').open = true;
+    if (['check', 'suggest'].indexOf(mode()) !== -1) $('#more-modes').open = true;
     btn.querySelector('span').textContent = NH.t(on('encrypt') ? 'new.create' : 'new.create_public');
+    summary();
     slugAdvice();
   }
   NH.$$('[data-feature]', form).forEach(function (input) {
     input.addEventListener('click', function (e) {
       var r = blockedBy(input.dataset.feature);
-      if (r) { e.preventDefault(); NH.toast(r.why); }
+      if (r && !input.checked) { e.preventDefault(); NH.toast(r.why); }
     });
   });
-  form.addEventListener('change', applyOptions);
+  form.addEventListener('change', function (e) {
+    if (e.target.name === 'privacy') applyPrivacy();
+    if (e.target.name === 'until' || e.target.id === 'expires') applyUntil();
+    applyOptions();
+  });
+  form.addEventListener('input', function (e) { if (e.target.type === 'datetime-local') summary(); });
+
+  // ---------- "What do you want to make?" ----------
+  function starterBody(kind) {
+    if (kind === 'checklist') return [1, 2, 3].map(function (i) { return '- [ ] ' + NH.t('start.item') + ' ' + i; }).join('\n') + '\n';
+    if (kind === 'form') return ':::form ' + NH.t('start.form') + '\n- ' + NH.t('form.tpl_name') + ' *\n- ' + NH.t('form.tpl_email') + ' (email)\n- ' +
+      NH.t('form.tpl_choice') + ' [' + NH.t('form.tpl_yes') + '|' + NH.t('form.tpl_no') + ']\n- ' + NH.t('form.tpl_note') + ' (long)\n:::\n';
+    return '';
+  }
+  var STARTERS = {
+    note: { mode: 'read', privacy: 'normal' },
+    checklist: { mode: 'check', privacy: 'normal' },
+    together: { mode: 'edit', privacy: 'normal' },
+    secret: { mode: 'read', privacy: 'once' },
+    form: { mode: 'append', privacy: 'normal' },
+    signoff: { mode: 'read', privacy: 'normal', signoff: true }
+  };
+  NH.$$('[data-starter]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var kind = b.dataset.starter, st = STARTERS[kind];
+      NH.$$('[data-starter]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      pick('mode', st.mode);
+      pick('privacy', st.privacy);
+      applyPrivacy();
+      set('signoff', !!st.signoff);
+      // Only fill an empty editor: never throw away what someone wrote.
+      if (!ed.value.trim() && starterBody(kind)) ed.value = starterBody(kind);
+      applyOptions();
+      ed.focus();
+    });
+  });
+
+  // Technical names next to the friendly ones, for people who know them.
+  var expert = $('#expert');
+  expert.checked = NH.store.get('nh_expert', '') === '1';
+  document.body.classList.toggle('expert', expert.checked);
+  expert.addEventListener('change', function () {
+    NH.store.set('nh_expert', expert.checked ? '1' : '');
+    document.body.classList.toggle('expert', expert.checked);
+  });
 
   function slugAdvice() {
     slug.value = slug.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/^-+/, '');
@@ -183,5 +270,34 @@
     if (confirm(NH.t('new.forget_confirm'))) { NH.recent.clear(); drawRecent(); }
   });
   drawRecent();
-  $('#title').focus();
+
+  // ---------- first visit: a three-step tour (skippable, shown once) ----------
+  function tour() {
+    var steps = [['.editor-card', 'tour.1'], ['#opt-who', 'tour.2'], ['#create', 'tour.3']], i = 0;
+    var tip = NH.h('div.tour', { role: 'dialog', 'aria-live': 'polite' });
+    document.body.appendChild(tip);
+    function end() { tip.remove(); NH.store.set('nh_tour', '1'); window.removeEventListener('resize', show); }
+    function show() {
+      var target = $(steps[i][0]);
+      NH.$$('.tour-target').forEach(function (x) { x.classList.remove('tour-target'); });
+      target.classList.add('tour-target');
+      var next = NH.h('button.btn.sm.primary', { type: 'button' }, NH.t(i < steps.length - 1 ? 'tour.next' : 'tour.done'));
+      var skip = NH.h('button.btn.sm.ghost', { type: 'button' }, NH.t('tour.skip'));
+      next.addEventListener('click', function () {
+        if (++i >= steps.length) { target.classList.remove('tour-target'); return end(); }
+        show();
+      });
+      skip.addEventListener('click', function () { target.classList.remove('tour-target'); end(); });
+      tip.replaceChildren(NH.h('span.tour-step', (i + 1) + ' / ' + steps.length), NH.h('p', NH.t(steps[i][1])), NH.h('div.btn-row', skip, next));
+      var r = target.getBoundingClientRect(), top = r.bottom + 10;
+      if (top + 160 > innerHeight) top = Math.max(10, r.top - 170);
+      tip.style.top = (top + scrollY) + 'px';
+      tip.style.left = Math.max(10, Math.min(r.left + scrollX, scrollX + document.documentElement.clientWidth - 330)) + 'px';
+      next.focus();
+    }
+    show();
+    window.addEventListener('resize', show);
+  }
+  if (!NH.store.get('nh_tour', '') && !NH.recent.all().length) tour();
+  else $('#title').focus();
 })();

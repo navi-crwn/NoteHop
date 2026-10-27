@@ -2,44 +2,66 @@
 {{define "content"}}
 <section class="wrap compose">
   <div class="compose-head">
-    <span class="eyebrow"><b>E2E</b> {{.L.T "new.eyebrow"}}</span>
+    <span class="eyebrow"><svg class="ico"><use href="#i-lock"/></svg> {{.L.T "new.eyebrow"}}</span>
     <h1>{{.L.H "new.headline"}}</h1>
   </div>
+  <section class="starters" aria-labelledby="start-h">
+    <h2 class="h-sub" id="start-h">{{.L.T "new.start_h"}}</h2>
+    <div class="starter-grid">
+      <button type="button" class="starter" data-starter="note" aria-pressed="true"><svg><use href="#i-edit"/></svg><b>{{.L.T "start.note"}}</b><span>{{.L.T "start.note_d"}}</span></button>
+      <button type="button" class="starter" data-starter="checklist" aria-pressed="false"><svg><use href="#i-check"/></svg><b>{{.L.T "start.checklist"}}</b><span>{{.L.T "start.checklist_d"}}</span></button>
+      <button type="button" class="starter" data-starter="together" aria-pressed="false"><svg><use href="#i-users"/></svg><b>{{.L.T "start.together"}}</b><span>{{.L.T "start.together_d"}}</span></button>
+      <button type="button" class="starter" data-starter="secret" aria-pressed="false"><svg><use href="#i-flame"/></svg><b>{{.L.T "start.secret"}}</b><span>{{.L.T "start.secret_d"}}</span></button>
+      <button type="button" class="starter" data-starter="form" aria-pressed="false"><svg><use href="#i-append"/></svg><b>{{.L.T "start.form"}}</b><span>{{.L.T "start.form_d"}}</span></button>
+      <button type="button" class="starter" data-starter="signoff" aria-pressed="false"><svg><use href="#i-suggest"/></svg><b>{{.L.T "start.signoff"}}</b><span>{{.L.T "start.signoff_d"}}</span></button>
+    </div>
+  </section>
   <form class="compose-grid" id="compose" autocomplete="off">
     <div class="card editor-card">
       <input type="text" id="title" class="title-input" dir="auto" placeholder="{{.L.T "new.title_ph"}}" maxlength="200" aria-label="{{.L.T "new.title_label"}}">
       {{template "editor" .}}
     </div>
     <aside class="card options" aria-label="{{.L.T "new.options"}}">
-      <fieldset class="opt">
+      <fieldset class="opt" id="opt-who">
         <legend>{{.L.T "new.visitors_can"}}</legend>
-        <div class="pills" role="radiogroup" aria-label="{{.L.T "new.access_mode"}}">
-          <label class="pill-opt"><input type="radio" name="mode" value="read" checked><span><svg><use href="#i-eye"/></svg>{{.L.T "mode.read_short"}}</span></label>
-          <label class="pill-opt"><input type="radio" name="mode" value="edit"><span><svg><use href="#i-edit"/></svg>{{.L.T "mode.edit_short"}}</span></label>
-          <label class="pill-opt"><input type="radio" name="mode" value="append"><span><svg><use href="#i-append"/></svg>{{.L.T "mode.append_short"}}</span></label>
-          <label class="pill-opt"><input type="radio" name="mode" value="check"><span><svg><use href="#i-check"/></svg>{{.L.T "mode.check_short"}}</span></label>
-          <label class="pill-opt"><input type="radio" name="mode" value="suggest"><span><svg><use href="#i-suggest"/></svg>{{.L.T "mode.suggest_short"}}</span></label>
+        <div class="choice-grid" role="radiogroup" aria-label="{{.L.T "new.access_mode"}}">
+          <label class="choice" data-tech="read"><input type="radio" name="mode" value="read" checked><svg><use href="#i-eye"/></svg><span><b>{{.L.T "mode.read"}}</b><small>{{.L.T "mode.read_desc"}}</small></span></label>
+          <label class="choice" data-tech="edit · live"><input type="radio" name="mode" value="edit"><svg><use href="#i-edit"/></svg><span><b>{{.L.T "mode.edit"}}</b><small>{{.L.T "mode.edit_desc"}}</small></span></label>
+          <label class="choice" data-tech="append"><input type="radio" name="mode" value="append"><svg><use href="#i-append"/></svg><span><b>{{.L.T "mode.append"}}</b><small>{{.L.T "mode.append_desc"}}</small></span></label>
         </div>
-        <p class="hint opt-desc" id="mode-desc"></p>
+        <details class="more-modes" id="more-modes">
+          <summary>{{.L.T "new.more_modes"}}</summary>
+          <div class="choice-grid">
+            <label class="choice" data-tech="check"><input type="radio" name="mode" value="check"><svg><use href="#i-check"/></svg><span><b>{{.L.T "mode.check"}}</b><small>{{.L.T "mode.check_desc"}}</small></span></label>
+            <label class="choice" data-tech="suggest"><input type="radio" name="mode" value="suggest"><svg><use href="#i-suggest"/></svg><span><b>{{.L.T "mode.suggest"}}</b><small>{{.L.T "mode.suggest_desc"}}</small></span></label>
+          </div>
+        </details>
       </fieldset>
 
-      <fieldset class="opt">
-        <legend>{{.L.T "new.features"}}</legend>
-        <div class="pills">
-          <label class="pill-opt"><input type="checkbox" id="encrypt" data-feature="encrypt" checked><span><svg><use href="#i-shield"/></svg>{{.L.T "feat.e2e"}}</span></label>
-          <label class="pill-opt"><input type="checkbox" data-feature="password"><span><svg><use href="#i-lock"/></svg>{{.L.T "feat.password"}}</span></label>
-          <label class="pill-opt"><input type="checkbox" data-feature="expires"><span><svg><use href="#i-clock"/></svg>{{.L.T "feat.expires"}}</span></label>
-          <label class="pill-opt"><input type="checkbox" data-feature="burn"><span><svg><use href="#i-flame"/></svg>{{.L.T "feat.burn"}}</span></label>
-          <label class="pill-opt"><input type="checkbox" data-feature="slug"><span><svg><use href="#i-link"/></svg>{{.L.T "feat.slug"}}</span></label>
+      <fieldset class="opt" id="opt-private">
+        <legend>{{.L.T "new.q_private"}}</legend>
+        <div class="seg-choice" role="radiogroup" aria-label="{{.L.T "new.q_private"}}">
+          <label data-tech="E2E"><input type="radio" name="privacy" value="normal" checked><span>{{.L.T "priv.normal"}}</span></label>
+          <label data-tech="PBKDF2"><input type="radio" name="privacy" value="password"><span>{{.L.T "priv.password"}}</span></label>
+          <label data-tech="burn"><input type="radio" name="privacy" value="once"><span>{{.L.T "priv.once"}}</span></label>
         </div>
-        <p class="hint opt-desc" data-for="encrypt-off">{{.L.H "new.public_note"}}</p>
-
+        <p class="hint" id="priv-desc"></p>
         <div class="feat hide" data-panel="password">
           <label for="password">{{.L.T "feat.password"}}</label>
           <input type="password" id="password" placeholder="{{.L.T "new.password_ph"}}" autocomplete="new-password">
           <span class="hint">{{.L.H "new.password_hint"}}</span>
         </div>
-        <div class="feat hide" data-panel="expires">
+      </fieldset>
+
+      <fieldset class="opt" id="opt-until">
+        <legend>{{.L.T "new.q_until"}}</legend>
+        <div class="seg-choice" role="radiogroup" aria-label="{{.L.T "new.q_until"}}">
+          <label><input type="radio" name="until" value="forever" checked><span>{{.L.T "until.forever"}}</span></label>
+          <label><input type="radio" name="until" value="86400"><span>{{.L.T "until.day"}}</span></label>
+          <label><input type="radio" name="until" value="604800"><span>{{.L.T "until.week"}}</span></label>
+          <label><input type="radio" name="until" value="other"><span>{{.L.T "until.other"}}</span></label>
+        </div>
+        <div class="feat hide" id="until-other">
           <label for="expires">{{.L.T "new.expires_after"}}</label>
           <select id="expires">
             <option value="600">{{.L.T "dur.10m"}}</option>
@@ -49,54 +71,74 @@
             <option value="2592000">{{.L.T "dur.30d"}}</option>
           </select>
         </div>
-        <div class="feat hide" data-panel="burn">
-          <label for="burn">{{.L.T "new.burn_after"}}</label>
-          <select id="burn">
-            <option value="1" selected>{{.L.T "new.views" "n" 1}}</option>
-            <option value="3">{{.L.T "new.views" "n" 3}}</option>
-            <option value="10">{{.L.T "new.views" "n" 10}}</option>
-          </select>
-        </div>
-        <div class="feat hide" data-panel="slug">
-          <label for="slug">{{.L.T "feat.slug"}}</label>
-          <div class="prefix"><span>/n/</span><input type="text" id="slug" placeholder="{{.L.T "new.slug_ph"}}" maxlength="48" pattern="[a-z0-9][a-z0-9\-]{2,47}" autocapitalize="off" spellcheck="false"></div>
-          <span class="hint" id="slug-hint"></span>
-        </div>
       </fieldset>
 
       <details class="opt adv" id="adv">
         <summary>{{.L.T "common.advanced"}}</summary>
-        <div class="pills">
-          <label class="pill-opt"><input type="checkbox" data-feature="capsule"><span><svg><use href="#i-clock"/></svg>{{.L.T "feat.capsule"}}</span></label>
-          <label class="pill-opt"><input type="checkbox" data-feature="lock"><span><svg><use href="#i-lock"/></svg>{{.L.T "feat.lock"}}</span></label>
-          <label class="pill-opt"><input type="checkbox" data-feature="signoff"><span><svg><use href="#i-check"/></svg>{{.L.T "feat.signoff"}}</span></label>
-          <label class="pill-opt"><input type="checkbox" data-feature="decoy"><span><svg><use href="#i-key"/></svg>{{.L.T "feat.decoy"}}</span></label>
-          <label class="pill-opt"><input type="checkbox" id="remember" checked><span><svg><use href="#i-key"/></svg>{{.L.T "feat.remember"}}</span></label>
+        <div class="adv-group">
+          <h3><svg class="ico"><use href="#i-clock"/></svg> {{.L.T "grp.time"}}</h3>
+          <label class="toggle" data-tech="time capsule"><input type="checkbox" data-feature="capsule"><span><b>{{.L.T "feat.capsule"}}</b><small>{{.L.T "ex.capsule"}}</small></span></label>
+          <div class="feat hide" data-panel="capsule">
+            <label for="open-at">{{.L.T "timed.open_label"}}</label>
+            <input type="datetime-local" id="open-at">
+            <span class="hint">{{.L.T "new.capsule_hint"}}</span>
+          </div>
+          <label class="toggle" data-tech="scheduled lock"><input type="checkbox" data-feature="lock"><span><b>{{.L.T "feat.lock"}}</b><small>{{.L.T "ex.lock"}}</small></span></label>
+          <div class="feat hide" data-panel="lock">
+            <label for="lock-at">{{.L.T "timed.lock_label"}}</label>
+            <input type="datetime-local" id="lock-at">
+            <span class="hint">{{.L.T "new.lock_hint"}}</span>
+          </div>
+          <label class="toggle hide" data-tech="expiry"><input type="checkbox" data-feature="expires"><span><b>{{.L.T "feat.expires"}}</b></span></label>
         </div>
-        <div class="feat hide" data-panel="signoff">
-          <span class="hint">{{.L.T "new.signoff_hint"}}</span>
+        <div class="adv-group">
+          <h3><svg class="ico"><use href="#i-shield"/></svg> {{.L.T "grp.privacy"}}</h3>
+          <label class="toggle" data-tech="PBKDF2"><input type="checkbox" data-feature="password"><span><b>{{.L.T "feat.password"}}</b><small>{{.L.T "priv.password_d"}}</small></span></label>
+          <label class="toggle" data-tech="burn after reading"><input type="checkbox" data-feature="burn"><span><b>{{.L.T "feat.burn"}}</b><small>{{.L.T "ex.burn"}}</small></span></label>
+          <div class="feat hide" data-panel="burn">
+            <label for="burn">{{.L.T "new.burn_after"}}</label>
+            <select id="burn">
+              <option value="1" selected>{{.L.T "new.views" "n" 1}}</option>
+              <option value="3">{{.L.T "new.views" "n" 3}}</option>
+              <option value="10">{{.L.T "new.views" "n" 10}}</option>
+            </select>
+          </div>
+          <label class="toggle" data-tech="decoy password"><input type="checkbox" data-feature="decoy"><span><b>{{.L.T "feat.decoy"}}</b><small>{{.L.T "ex.decoy"}}</small></span></label>
+          <div class="feat hide" data-panel="decoy">
+            <label for="decoy-password">{{.L.T "new.decoy_password"}}</label>
+            <input type="password" id="decoy-password" autocomplete="new-password">
+            <label for="decoy-text">{{.L.T "new.decoy_text"}}</label>
+            <textarea id="decoy-text" rows="3" dir="auto"></textarea>
+            <span class="hint">{{.L.T "new.decoy_hint"}}</span>
+          </div>
+          <label class="toggle" data-tech="slug"><input type="checkbox" data-feature="slug"><span><b>{{.L.T "feat.slug"}}</b><small>{{.L.T "ex.slug"}}</small></span></label>
+          <div class="feat hide" data-panel="slug">
+            <label for="slug">{{.L.T "feat.slug"}}</label>
+            <div class="prefix"><span>/n/</span><input type="text" id="slug" placeholder="{{.L.T "new.slug_ph"}}" maxlength="48" pattern="[a-z0-9][a-z0-9\-]{2,47}" autocapitalize="off" spellcheck="false"></div>
+            <span class="hint" id="slug-hint"></span>
+          </div>
         </div>
-        <div class="feat hide" data-panel="decoy">
-          <label for="decoy-password">{{.L.T "new.decoy_password"}}</label>
-          <input type="password" id="decoy-password" autocomplete="new-password">
-          <label for="decoy-text">{{.L.T "new.decoy_text"}}</label>
-          <textarea id="decoy-text" rows="3" dir="auto"></textarea>
-          <span class="hint">{{.L.T "new.decoy_hint"}}</span>
+        <div class="adv-group">
+          <h3><svg class="ico"><use href="#i-users"/></svg> {{.L.T "grp.together"}}</h3>
+          <label class="toggle" data-tech="sign-off"><input type="checkbox" data-feature="signoff"><span><b>{{.L.T "feat.signoff"}}</b><small>{{.L.T "ex.signoff"}}</small></span></label>
+          <div class="feat hide" data-panel="signoff"><span class="hint">{{.L.T "new.signoff_hint"}}</span></div>
         </div>
-        <div class="feat hide" data-panel="capsule">
-          <label for="open-at">{{.L.T "timed.open_label"}}</label>
-          <input type="datetime-local" id="open-at">
-          <span class="hint">{{.L.T "new.capsule_hint"}}</span>
+        <div class="adv-group">
+          <h3><svg class="ico"><use href="#i-key"/></svg> {{.L.T "grp.device"}}</h3>
+          <label class="toggle"><input type="checkbox" id="remember" checked><span><b>{{.L.T "feat.remember"}}</b><small>{{.L.T "ex.remember"}}</small></span></label>
         </div>
-        <div class="feat hide" data-panel="lock">
-          <label for="lock-at">{{.L.T "timed.lock_label"}}</label>
-          <input type="datetime-local" id="lock-at">
-          <span class="hint">{{.L.T "new.lock_hint"}}</span>
-        </div>
+        <details class="adv-group adv-sub" id="expert-box">
+          <summary><svg class="ico"><use href="#i-code"/></svg> {{.L.T "grp.expert"}}</summary>
+          <label class="toggle" data-tech="E2E · AES-256-GCM"><input type="checkbox" id="encrypt" data-feature="encrypt" checked><span><b>{{.L.T "feat.e2e"}}</b><small>{{.L.T "ex.e2e"}}</small></span></label>
+          <label class="toggle"><input type="checkbox" id="expert"><span><b>{{.L.T "new.expert"}}</b></span></label>
+          <a class="small" href="/faq">{{.L.T "new.faq_more"}}</a>
+        </details>
       </details>
+      <p class="hint warn-text" data-for="encrypt-off">{{.L.H "new.public_note"}}</p>
 
+      <p class="summary" id="summary" aria-live="polite"></p>
       <div class="alert err hide" id="compose-err" role="alert"></div>
-      <button class="btn primary lg block" type="submit" id="create"><svg><use href="#i-lock"/></svg><span>{{.L.T "new.create"}}</span></button>
+      <button class="btn primary lg block" type="submit" id="create"><svg><use href="#i-share"/></svg><span>{{.L.T "new.create"}}</span></button>
       <p class="small faint center tight">{{if .User}}{{.L.H "new.saved_to" "user" .User.Username}}{{else}}{{.L.H "new.no_account"}}{{end}}</p>
     </aside>
   </form>

@@ -9,7 +9,7 @@
 
   menu.querySelector('.menu-list').addEventListener('click', function (e) {
     var b = e.target.closest('[data-act]');
-    if (!b) return;
+    if (!b) { if (e.target.closest('button, a')) menu.classList.remove('open'); return; }
     menu.classList.remove('open');
     if (ACTIONS[b.dataset.act]) ACTIONS[b.dataset.act]();
   });

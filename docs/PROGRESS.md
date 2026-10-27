@@ -22,6 +22,9 @@ Status: ✅ selesai · 🔨 dikerjakan · ⏳ antre · ⛔ sengaja tidak dibuat 
 ## Batch E: integrasi
 ✅ CLI `notehop` (enkripsi lokal) · ✅ Watch Note (webhook) · ✅ Webhook-to-Note · ✅ Profil publik `/@user` · ✅ Mock API JSON · ✅ SSH (catatan publik) · ✅ Bot Telegram ⚠️ · ✅ PWA offline · ✅ Backup/BYO storage · uji: `scripts/e2e-integrations.js`, `internal/client/client_test.go`, `internal/app/{watch,public,sshd,telegram}_test.go`
 
+## Batch F: tampilan ramah (permintaan pemilik setelah audit)
+✅ Bahasa awam di semua UI (istilah teknis pindah ke `/faq`) · ✅ Halaman Buat: kartu "Mau bikin apa?" (6 template), "Siapa pun yang punya link bisa…", "Seberapa rahasia?", "Simpan selama", kalimat ringkasan · ✅ Pengaturan lanjutan dikelompokkan (Waktu, Privasi ekstra, Kerja bareng, Perangkat ini, Untuk ahli & developer) dengan contoh pemakaian · ✅ Tur 3 langkah untuk pengunjung baru · ✅ Mode "Tampilkan nama teknis" · ✅ Halaman catatan: kalimat status, menu ⋯ berisi Riwayat/Salinan tetap/Hapus · ✅ Dialog Bagikan: link pemilik dengan peringatan, pengaturan berkelompok · ✅ Halaman FAQ (32 tanya jawab, bisa dicari) · ✅ Bahasa ke-9: Français · ✅ Deteksi bahasa otomatis dari browser
+
 ## Tahap akhir
 ✅ Zip + arahan sesi Claude VPS (`docs/DEPLOY.md`; zip berisi sumber dari commit, binary linux amd64/arm64 + SHA256SUMS, HANDOFF.txt)
 

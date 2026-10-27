@@ -652,3 +652,78 @@ button.live-av { cursor: pointer; }
 .profile-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .profile-list li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 12px; padding: 12px 16px; }
 .profile-list a { font-weight: 650; }
+
+/* ---------- friendly compose: starters, choice cards, presets ---------- */
+.starters { margin: 0 0 18px; }
+.starters .h-sub { margin-top: 0; }
+.starter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.starter { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 10px; row-gap: 2px; align-items: start; text-align: start;
+  padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--line-2); background: var(--panel); color: var(--text); font: inherit; cursor: pointer; }
+.starter svg { grid-row: span 2; width: 20px; height: 20px; color: var(--accent); margin-top: 2px; }
+.starter b { font-size: .92rem; }
+.starter span { font-size: .78rem; color: var(--muted); line-height: 1.35; }
+.starter:hover { border-color: var(--accent); }
+.starter[aria-pressed=true] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--panel)); }
+.choice-grid { display: grid; gap: 8px; }
+.choice { position: relative; display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--line-2); cursor: pointer; }
+.choice input, .toggle input, .seg-choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.choice > svg { width: 18px; height: 18px; flex: none; margin-top: 2px; color: var(--muted); }
+.choice span { display: grid; gap: 2px; }
+.choice b { font-size: .92rem; }
+.choice small, .toggle small { color: var(--muted); font-size: .78rem; line-height: 1.35; }
+.choice:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--bg-2)); }
+.choice:has(input:checked) > svg { color: var(--accent); }
+.choice:has(input:focus-visible), .toggle:has(input:focus-visible), .seg-choice label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.more-modes { margin-top: 8px; }
+.more-modes > summary { cursor: pointer; font-size: .85rem; color: var(--muted); margin-bottom: 8px; }
+.seg-choice { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); }
+.seg-choice label { position: relative; flex: 1 1 auto; text-align: center; cursor: pointer; }
+.seg-choice span { display: block; padding: 6px 10px; border-radius: 999px; font-size: .85rem; color: var(--muted); white-space: nowrap; }
+.seg-choice label:has(input:checked) span { background: var(--panel); color: var(--text); font-weight: 650; box-shadow: 0 1px 3px rgba(0, 0, 0, .15); }
+#priv-desc { margin: 8px 0 0; }
+.adv-group { padding: 12px 0; border-top: 1px solid var(--line); }
+.adv-group h3, .adv-sub > summary { display: flex; align-items: center; gap: 6px; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); margin: 0 0 8px; }
+.adv-sub > summary { cursor: pointer; }
+.toggle { position: relative; display: flex; gap: 10px; align-items: flex-start; padding: 8px 2px; cursor: pointer; }
+.toggle > span { display: grid; gap: 2px; }
+.toggle b { font-size: .9rem; font-weight: 600; }
+.toggle::before { content: ""; flex: none; width: 34px; height: 20px; border-radius: 999px; background: var(--line-2); margin-top: 1px; transition: background .15s; }
+.toggle::after { content: ""; position: absolute; inset-inline-start: 5px; top: 12px; width: 14px; height: 14px; border-radius: 50%; background: var(--panel); transition: transform .15s; }
+.toggle:has(input:checked)::before { background: var(--accent); }
+.toggle:has(input:checked)::after { transform: translateX(14px); }
+[dir=rtl] .toggle:has(input:checked)::after { transform: translateX(-14px); }
+.toggle.blocked, .choice.blocked { opacity: .45; }
+.summary { margin: 4px 0 12px; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--bg-2); border: 1px solid var(--line); font-size: .86rem; line-height: 1.5; }
+.warn-text { color: var(--amber, #f59e0b); }
+/* Technical names, only in "Show technical names" mode. */
+body.expert [data-tech]::after { content: attr(data-tech); align-self: center; margin-inline-start: auto; padding: 1px 6px; border-radius: 6px; font: 600 .68rem/1.4 ui-monospace, monospace; color: var(--faint); border: 1px solid var(--line-2); white-space: nowrap; }
+body.expert .seg-choice [data-tech]::after { display: none; }
+.tour { position: absolute; z-index: 80; width: min(320px, calc(100vw - 20px)); padding: 14px; border-radius: var(--radius-sm); background: var(--panel); border: 1px solid var(--accent); box-shadow: 0 12px 40px rgba(0, 0, 0, .35); }
+.tour p { margin: 6px 0 10px; font-size: .92rem; }
+.tour-step { font-size: .75rem; color: var(--faint); }
+.tour-target { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: var(--radius-sm); }
+.status-line { margin: 4px 0 10px; font-size: .9rem; color: var(--muted); }
+.status-line svg { width: 14px; height: 14px; vertical-align: -2px; }
+.seg-choice { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); border-radius: 12px; }
+.seg-choice span { white-space: normal; line-height: 1.25; padding: 7px 6px; border-radius: 9px; font-size: .82rem; }
+@media (max-width: 640px) {
+  /* Starters scroll sideways on phones, so the editor stays near the top. */
+  .starter-grid { grid-auto-flow: column; grid-auto-columns: 62%; grid-template-columns: none; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px; }
+  .starter { scroll-snap-align: start; }
+}
+
+/* ---------- note page and share dialog ---------- */
+.menu-list .danger { color: var(--red); }
+.admin-box.owner { border-color: color-mix(in srgb, var(--amber) 55%, var(--line)); background: color-mix(in srgb, var(--amber) 8%, var(--panel)); }
+#adv-pills .adv-group:first-child { border-top: 0; }
+#share-adv > a { display: inline-block; margin-top: 8px; }
+/* ---------- FAQ ---------- */
+.faq .filter { width: 100%; margin: 8px 0 6px; }
+.faq h2 { margin-top: 28px; }
+.faq details { border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--panel); margin: 0 0 8px; }
+.faq summary { cursor: pointer; padding: 12px 14px; font-weight: 650; }
+.faq details[open] summary { border-bottom: 1px solid var(--line); }
+.faq details p { margin: 0; padding: 12px 14px; color: var(--muted); }
+.faq details:target { border-color: var(--accent); }
+.adv-group h3 svg, .adv-sub > summary svg { width: 14px; height: 14px; flex: none; }
+.faq details { scroll-margin-top: 80px; }
