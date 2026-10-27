@@ -80,7 +80,7 @@ func (q *authReq) parse() ([]byte, error) {
 }
 
 func (a *App) apiRegister(w http.ResponseWriter, r *http.Request) {
-	if !a.cfg.Registration {
+	if !a.registration() {
 		apiErr(w, http.StatusForbidden, "err.registration_closed")
 		return
 	}
@@ -131,6 +131,10 @@ func (a *App) apiLogin(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusUnauthorized, "err.bad_login")
 		return
 	}
+	if u.Status == db.StatusSuspended {
+		apiErr(w, http.StatusForbidden, "err.account_suspended")
+		return
+	}
 	a.startSession(w, u)
 	// vault_wrap: the vault key sealed with the key from the password, once
 	// the password has been changed or reset (empty before; see recovery.go).
@@ -164,7 +168,7 @@ func (a *App) currentUser(r *http.Request) *db.User {
 		return nil
 	}
 	u, err := a.db.UserBySession(hashHex(c.Value))
-	if err != nil {
+	if err != nil || u.Status == db.StatusSuspended {
 		return nil
 	}
 	return u

@@ -52,6 +52,12 @@ func (a *App) secure(next http.Handler) http.Handler {
 			apiErr(w, http.StatusTooManyRequests, "err.rate_limited")
 			return
 		}
+		// The control center's calls are signed, not cookie-authenticated,
+		// so the cross-site check and the per-address limits don't apply.
+		if strings.HasPrefix(r.URL.Path, "/hop/") {
+			next.ServeHTTP(w, r)
+			return
+		}
 		if r.Method != http.MethodGet && r.Method != http.MethodHead {
 			if !sameOrigin(r) {
 				apiErr(w, http.StatusForbidden, "err.cross_site")
@@ -69,6 +75,8 @@ func (a *App) secure(next http.Handler) http.Handler {
 				bucket, rate = "a", 15
 			case strings.HasPrefix(r.URL.Path, "/api/recover") || r.URL.Path == "/api/me/secret" || r.URL.Path == "/api/me/recovery":
 				bucket, rate = "k", 20 // recovery.go adds a limit per account
+			case strings.HasSuffix(r.URL.Path, "/report"):
+				bucket, rate = "r", 10 // report.go adds 5 per hour per address
 			}
 			if !a.limit.allow(bucket+a.clientIP(r), rate) {
 				w.Header().Set("Retry-After", "60")

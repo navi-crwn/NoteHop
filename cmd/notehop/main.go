@@ -157,6 +157,9 @@ func main() {
 		Admins:        envList("NOTEHOP_ADMINS"),
 		Reserved:      envList("NOTEHOP_RESERVED"),
 		Contact:       env("NOTEHOP_CONTACT", ""),
+		HopClients:    envList("NOTEHOP_HOP_CLIENTS"),
+		SSHAddr:       env("NOTEHOP_SSH_ADDR", ""),
+		Version:       version,
 	}
 	if cfg.ShareURL != "" && base == "" {
 		log.Printf("NOTEHOP_SHARE_URL is ignored: it needs NOTEHOP_BASE_URL for the main site")
@@ -181,7 +184,7 @@ func main() {
 	if err := a.SetupTelegram(ctx); err != nil {
 		log.Printf("telegram bot is off: %v", err)
 	}
-	if sshAddr := env("NOTEHOP_SSH_ADDR", ""); sshAddr != "" {
+	if sshAddr := cfg.SSHAddr; sshAddr != "" {
 		key := env("NOTEHOP_SSH_KEY", filepath.Join(filepath.Dir(*dbPath), "ssh_host_ed25519_key"))
 		go func() {
 			if err := a.ServeSSH(ctx, sshAddr, key); err != nil {

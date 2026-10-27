@@ -282,7 +282,33 @@
     dlg.showModal();
   }
 
+  // Report this note: the reason and the reader's words go to the site
+  // team, never the note's text (the server can't read a locked note).
+  function report() {
+    var dlg = h('dialog.dlg', { 'aria-label': NH.t('report.title'), id: 'report-dlg' });
+    var sel = h('select', { id: 'report-reason', 'aria-label': NH.t('report.reason') },
+      ['illegal', 'abuse', 'spam', 'copyright', 'other'].map(function (r) { return h('option', { value: r }, NH.t('report.' + r)); }));
+    var note = h('textarea', { id: 'report-note', rows: 3, maxlength: 500, dir: 'auto', placeholder: NH.t('report.note'), 'aria-label': NH.t('report.note') });
+    var send = h('button.btn.primary', { type: 'submit', id: 'report-send' }, NH.icon('shield'), NH.t('report.send'));
+    var form = h('form', { id: 'report-form' }, h('label.field', h('span', NH.t('report.reason')), sel), h('div.field', note), h('div.btn-row.end', send));
+    dlg.append(
+      h('div.dlg-head', h('h2', NH.t('report.title')), h('button.icon-btn', { type: 'button', 'data-close': '', 'aria-label': NH.t('common.close') }, NH.icon('x'))),
+      h('p.muted.small', NH.t('report.lead')), form);
+    document.body.appendChild(dlg);
+    dlg.addEventListener('close', function () { dlg.remove(); });
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      send.disabled = true;
+      NH.api('POST', '/api/n/' + encodeURIComponent(N.token) + '/report', { reason: sel.value, note: note.value }).then(function () {
+        dlg.close();
+        NH.toast(NH.t('report.thanks'), 'ok');
+      }, function (x) { send.disabled = false; NH.toast(x.message, 'err'); });
+    });
+    dlg.showModal();
+  }
+
   var ACTIONS = {
+    report: report,
     duplicate: function () {
       createNote({ title: N.title(), body: N.body(), mode: 'edit', encrypted: N.encrypted(), type: N.type() }).then(function (n) {
         location.href = NH.noteURL(n.token, { k: n.k, a: n.a, new: '1' });

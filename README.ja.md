@@ -142,6 +142,9 @@ docker run -d -p 127.0.0.1:8090:8080 -v notehop:/data -e NOTEHOP_BASE_URL=https:
 **自分のログインサーバーを使えますか？**
 使えます。NoteHop には独自のアカウントがあり、あなたが運営するアカウントサーバー経由のログイン（シングルサインオン）もできます。[docs/REFERENCE.md](docs/REFERENCE.md) の `NOTEHOP_SSO_*` を見てください。
 
+**誰かが有害なものを共有したらどうなりますか？**
+どのノートにもメニューに **このノートを報告** があります。報告（理由と短いメッセージ。ノートの内容は含みません）はサイトの運営者に届きます。運営者は暗号化されたノートを読めませんが、削除することはでき、そのリンク名は1年間確保されます。運営者は `notehop takedown` コマンド、または [HOP App Protocol](docs/REFERENCE.md#control-center-hop-app-protocol) 経由のコントロールセンターから報告を処理します。
+
 **バックアップは？**
 `notehop backup -db notehop.db copy.db` はサーバーの稼働中でも使えます。VPS 用インストーラーは毎日のバックアップも設定します。バックアップの中でもノートは暗号化されたままです。
 
