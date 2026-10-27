@@ -41,6 +41,8 @@ const visiblePanel = p => p.evaluate(() => [...document.querySelectorAll('.h-pan
   ok('motion is on', await p.evaluate(() => document.documentElement.classList.contains('mo')));
   ok('headings split into words', (await p.$$('#tour-h .mw')).length >= 3);
   ok('far sections wait to come in', !(await p.evaluate(() => document.querySelector('#faq h2, .h-faq h2').classList.contains('in'))));
+  ok('closing buttons have small icons', await p.evaluate(() => [...document.querySelectorAll('.h-final .h-pill svg')].every(s => s.getBoundingClientRect().width <= 24)));
+  ok('sample names come from the language', await p.evaluate(() => NH.t('home.names').split('|').length === 3 && !NH.t('home.u3_chat').includes('Rani')));
   ok('3D logo drawn (or picture kept)', await p.evaluate(() => document.getElementById('h3d').classList.contains('on') || !!document.querySelector('.h-art img')));
 
   // the demo: the preview is real ciphertext, and it is what Create sends
