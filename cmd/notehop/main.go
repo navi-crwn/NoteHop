@@ -61,6 +61,10 @@ func main() {
 		Registration:  envBool("NOTEHOP_REGISTRATION", true),
 		SSOURL:     strings.TrimRight(env("NOTEHOP_SSO_URL", ""), "/"),
 		SSOSecret:  env("NOTEHOP_SSO_SECRET", ""),
+		ShareURL:      strings.TrimRight(env("NOTEHOP_SHARE_URL", ""), "/"),
+	}
+	if cfg.ShareURL != "" && base == "" {
+		log.Printf("NOTEHOP_SHARE_URL is ignored: it needs NOTEHOP_BASE_URL for the main site")
 	}
 	if cfg.SSOURL != "" && !cfg.SSOEnabled() {
 		log.Printf("SSO sign-in is off: it needs NOTEHOP_SSO_SECRET (32+ chars) and NOTEHOP_BASE_URL")

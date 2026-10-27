@@ -70,6 +70,15 @@ sudo nginx -t && sudo systemctl reload nginx
 
 Kedua contoh ini dibuat supaya rate limit memakai IP asli pengunjung (`NOTEHOP_TRUST_PROXY=1`). Di nginx, `X-Forwarded-For` di-set ke `$remote_addr` (bukan ditambahkan), supaya pengunjung tidak bisa memalsukannya.
 
+### Domain share terpisah (opsional)
+
+Supaya link yang dibagikan ke orang lain memakai domain pendek terpisah (misalnya `nhop.link`), sementara login/dashboard tetap di `note.domainanda.com`:
+
+1. Arahkan DNS domain kedua ke VPS yang sama, lalu tambahkan bloknya di Caddy/nginx (contoh ada di `deploy/Caddyfile.example`).
+2. Isi `NOTEHOP_SHARE_URL=https://nhop.link` di `/etc/notehop/notehop.env`, lalu restart.
+
+Di domain share, NoteHop hanya melayani `/n/…`, `/raw/…`, API catatan, dan file statis. Halaman lain diarahkan ke domain utama, dan cookie sesi tidak pernah dikirim ke sana. Kalau domain share diblokir karena isi kiriman orang lain, situs utama tetap aman.
+
 ## 4. Cek
 
 ```bash
