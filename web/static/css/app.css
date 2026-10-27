@@ -96,8 +96,8 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 2rem 0; }
 .hide { display: none !important; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
-.skip { position: absolute; left: -999px; top: 8px; z-index: 99; background: var(--panel); padding: 8px 14px; border-radius: 8px; }
-.skip:focus { inset-inline-start: 8px; }
+.skip { position: absolute; inset-inline-start: 8px; top: -100px; z-index: 99; background: var(--panel); padding: 8px 14px; border-radius: 8px; }
+.skip:focus { top: 8px; }
 .ico { width: 16px; height: 16px; vertical-align: -3px; }
 
 .wrap { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 20px; }
