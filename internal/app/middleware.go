@@ -29,6 +29,14 @@ func (a *App) secure(next http.Handler) http.Handler {
 		if a.cfg.SecureCookies {
 			h.Set("Strict-Transport-Security", "max-age=63072000")
 		}
+		// Public text and mock APIs are free to read, but not a free CDN: one
+		// address gets 120 requests a minute across /raw and /mock.
+		if (r.Method == http.MethodGet || r.Method == http.MethodHead) && (strings.HasPrefix(r.URL.Path, "/raw/") || strings.HasPrefix(r.URL.Path, "/mock/")) &&
+			!a.limit.allow("g"+a.clientIP(r), 120) {
+			w.Header().Set("Retry-After", "60")
+			apiErr(w, http.StatusTooManyRequests, "err.rate_limited")
+			return
+		}
 		if r.Method != http.MethodGet && r.Method != http.MethodHead {
 			if !sameOrigin(r) {
 				apiErr(w, http.StatusForbidden, "err.cross_site")

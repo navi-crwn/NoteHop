@@ -1,0 +1,115 @@
+{{define "page"}}home{{end}}
+{{define "head"}}<link rel="stylesheet" href="/static/css/home.css?v={{.Asset}}">{{end}}
+{{define "content"}}
+<div class="home">
+  <section class="h-hero">
+    <div class="h-hero-copy">
+      <a class="h-chip" href="https://github.com/navi-crwn/NoteHop" rel="noopener"><b>{{len .Langs}}</b><svg><use href="#i-code"/></svg>{{.L.T "home.badge"}}</a>
+      <h1>{{.L.H "home.h1"}}</h1>
+      <p class="h-lead">{{.L.T "home.lead"}}</p>
+      <div class="h-cta">
+        <a class="h-pill dark" href="#quick"><svg><use href="#i-edit"/></svg>{{.L.T "home.cta_write"}}</a>
+        <a class="h-pill" href="/new"><svg><use href="#i-plus"/></svg>{{.L.T "home.cta_full"}}</a>
+      </div>
+      <p class="h-meta">{{.L.T "home.meta"}}</p>
+    </div>
+    <figure class="h-hero-art"><img src="/static/img/home/hero.webp?v={{.Asset}}" alt="" width="560" height="560" fetchpriority="high"></figure>
+  </section>
+
+  <!-- The fast lane: write and share without leaving the home page. The full
+       create page (/new) has every option. -->
+  <section class="h-quick" id="quick" aria-labelledby="quick-h">
+    <form class="h-quick-card" id="quick-form">
+      <div class="h-quick-head"><h2 id="quick-h">{{.L.T "home.quick_h"}}</h2><span class="hint">{{.L.T "home.quick_hint"}}</span></div>
+      <input class="h-q-title" id="quick-title" maxlength="200" dir="auto" placeholder="{{.L.T "new.title_label"}}" aria-label="{{.L.T "new.title_label"}}">
+      <textarea class="h-q-body" id="quick-body" rows="5" dir="auto" placeholder="{{.L.T "home.quick_ph"}}" aria-label="{{.L.T "home.quick_h"}}"></textarea>
+      <div class="h-q-opts">
+        <div class="h-seg" role="radiogroup" aria-label="{{.L.T "new.access_mode"}}">
+          <label><input type="radio" name="quick-mode" value="read" checked><span>{{.L.T "mode.read"}}</span></label>
+          <label><input type="radio" name="quick-mode" value="edit"><span>{{.L.T "mode.edit"}}</span></label>
+          <label><input type="radio" name="quick-mode" value="append"><span>{{.L.T "mode.append"}}</span></label>
+        </div>
+        <label class="h-tog"><input type="checkbox" id="quick-once"><span class="h-sw"></span>{{.L.T "priv.once"}}</label>
+      </div>
+      <div class="h-q-foot">
+        <span class="h-sum"><svg><use href="#i-lock"/></svg>{{.L.T "status.private"}}</span>
+        <a class="h-link" href="/new" id="quick-full"><svg><use href="#i-plus"/></svg>{{.L.T "home.quick_full"}}</a>
+        <button class="btn primary" type="submit" id="quick-create"><svg><use href="#i-share"/></svg>{{.L.T "new.create"}}</button>
+      </div>
+      <p class="h-err hide" id="quick-err" role="alert"></p>
+    </form>
+  </section>
+
+  <section class="h-sec" aria-labelledby="f-h">
+    <h2 class="h-sec-h" id="f-h">{{.L.H "home.f_h"}}</h2>
+    <p class="h-sec-lead">{{.L.T "home.f_lead"}}</p>
+    <!-- bento: uneven tiles on a 6-column grid; the biggest carries the main promise -->
+    <div class="bento">
+      <article class="b-lock">
+        <div><h3>{{.L.T "home.f_lock_h"}}</h3><p>{{.L.T "home.f_lock_p"}}</p>
+          <code class="b-cipher" aria-hidden="true">x1.Qm9yPq8uZ1hT0dGlhc2EtYmFyYS1rZXlraW5nLWJp…</code></div>
+        <img src="/static/img/home/lock.webp?v={{.Asset}}" alt="" width="280" height="280" loading="lazy">
+      </article>
+      <article class="b-burn">
+        <img src="/static/img/home/flame.webp?v={{.Asset}}" alt="" width="160" height="160" loading="lazy">
+        <h3>{{.L.T "home.f_burn_h"}}</h3><p>{{.L.T "home.f_burn_p"}}</p>
+        <span class="b-badge">{{.L.T "home.f_burn_badge"}}</span>
+      </article>
+      <article class="b-live">
+        <div><h3>{{.L.T "home.f_live_h"}}</h3><p>{{.L.T "home.f_live_p"}}</p></div>
+        <div class="b-cursors" aria-hidden="true"><p>{{.L.T "home.f_live_l1"}} <span class="cur c-a">Rani</span>{{.L.T "home.f_live_l2"}}<span class="cur c-b">Dimas</span></p><p class="faint">{{.L.T "home.f_live_l3"}}</p></div>
+      </article>
+      <article class="b-links">
+        <div><h3>{{.L.T "home.f_links_h"}}</h3><p>{{.L.T "home.f_links_p"}}</p></div>
+        <ul class="b-rows" aria-hidden="true"><li><b>{{.L.T "mode.read"}}</b><span>/n/RFbN3uTvAH</span></li><li><b>{{.L.T "mode.edit"}}</b><span>/n/k82LmQ0zPa</span></li><li class="off"><b>{{.L.T "mode.append"}}</b><span>{{.L.T "home.f_links_off"}}</span></li></ul>
+      </article>
+      <article class="b-clock"><img src="/static/img/home/clock.webp?v={{.Asset}}" alt="" width="96" height="96" loading="lazy"><h3>{{.L.T "home.f_clock_h"}}</h3><p>{{.L.T "home.f_clock_p"}}</p></article>
+      <article class="b-poll"><h3>{{.L.T "home.f_poll_h"}}</h3>
+        <div class="b-bars" aria-hidden="true"><span><i class="w70"></i>{{.L.T "home.f_poll_a"}}</span><span><i class="w45"></i>{{.L.T "home.f_poll_b"}}</span><span><i class="w20"></i>{{.L.T "home.f_poll_c"}}</span></div></article>
+      <article class="b-lang"><h3>{{.L.T "home.f_lang_h"}}</h3><p class="b-langs">{{range $i, $l := .Langs}}{{if $i}} · {{end}}<span lang="{{$l.Code}}">{{$l.Name}}</span>{{end}}</p></article>
+    </div>
+  </section>
+
+  <section class="h-tools" aria-labelledby="t-h">
+    <div>
+      <h2 id="t-h">{{.L.T "home.t_h"}}</h2>
+      <p>{{.L.H "home.t_p"}}</p>
+      <a class="btn primary" href="/new"><svg><use href="#i-plus"/></svg>{{.L.T "home.t_cta"}}</a>
+    </div>
+    <ul class="h-chips">
+      <li>{{.L.T "home.c1"}}</li><li>{{.L.T "home.c2"}}</li><li>{{.L.T "home.c3"}}</li><li>{{.L.T "home.c4"}}</li><li>{{.L.T "home.c5"}}</li><li>{{.L.T "home.c6"}}</li>
+      <li>{{.L.T "home.c7"}}</li><li>{{.L.T "home.c8"}}</li><li>{{.L.T "home.c9"}}</li><li>{{.L.T "home.c10"}}</li><li>{{.L.T "home.c11"}}</li><li>{{.L.T "home.c12"}}</li>
+    </ul>
+  </section>
+
+  <section class="h-sec" aria-labelledby="s-h">
+    <h2 class="h-sec-h" id="s-h">{{.L.H "home.s_h"}}</h2>
+    <div class="h-see">
+      <div class="h-see-card"><span class="h-tag">{{.L.T "home.s_you"}}</span><h3>{{.L.T "home.s_demo_t"}}</h3><p>{{.L.T "home.s_demo_1"}}<br>{{.L.T "home.s_demo_2"}}</p></div>
+      <div class="h-see-card dark"><span class="h-tag">{{.L.T "home.s_srv"}}</span><code dir="ltr">x1.Qm9yPq8uZ1hT0dGlhc2EtYmFyYS1rZXlr aW5nLWJpbmRhci1wYXBhbi1yb2RhLW1lc2Fu bGFoYWktdGFtdS1hZGEtMjAyNi1hbmltZQ…</code><p>{{.L.T "home.s_srv_p"}}</p></div>
+    </div>
+  </section>
+
+  <section class="h-sec" aria-labelledby="st-h">
+    <h2 class="h-sec-h" id="st-h">{{.L.H "home.st_h"}}</h2>
+    <ol class="h-steps">
+      <li><b>1</b><h3>{{.L.T "home.st1_h"}}</h3><p>{{.L.T "home.st1_p"}}</p></li>
+      <li><b>2</b><h3>{{.L.T "home.st2_h"}}</h3><p>{{.L.T "home.st2_p"}}</p></li>
+      <li><b>3</b><h3>{{.L.T "home.st3_h"}}</h3><p>{{.L.T "home.st3_p"}}</p></li>
+    </ol>
+  </section>
+
+  <section class="h-final">
+    <img src="/static/img/home/hero.webp?v={{.Asset}}" alt="" width="170" height="170" loading="lazy">
+    <h2>{{.L.T "home.fin_h"}}</h2>
+    <div class="h-cta center">
+      <a class="h-pill dark" href="#quick"><svg><use href="#i-edit"/></svg>{{.L.T "home.cta_write"}}</a>
+      <a class="h-pill" href="/new"><svg><use href="#i-plus"/></svg>{{.L.T "home.cta_full"}}</a>
+    </div>
+  </section>
+</div>
+{{end}}
+{{define "scripts"}}
+<script src="/static/js/crypto.js?v={{.Asset}}"></script>
+<script src="/static/js/home.js?v={{.Asset}}"></script>
+{{end}}

@@ -74,7 +74,7 @@ func TestSSOUser(t *testing.T) {
 	}
 	got, err := d.UserBySSO("42")
 	if err != nil || got.VaultCheck != "x" || got.Email != "budi@example.com" {
-		t.Fatalf("by sso: %+v %v", got, err)
+		t.Fatalf("by sso id: %+v %v", got, err)
 	}
 }
 

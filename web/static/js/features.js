@@ -81,16 +81,17 @@
 
   var built = false;
   // Settings are grouped by what people want (timing, privacy, working
-  // together); the developer ones sit in their own folded group.
+  // together, developer); each group is a tab of the share dialog.
   var GROUPS = [['time', 'clock'], ['privacy', 'shield'], ['together', 'users'], ['expert', 'code']];
   function build() {
     var box = $('#adv-pills'), where = {};
     GROUPS.forEach(function (g) {
-      var head = [NH.icon(g[1]), ' ' + NH.t('grp.' + g[0])];
-      var el = g[0] === 'expert' ? h('details.adv-group.adv-sub', h('summary', head)) : h('div.adv-group', h('h3', head));
+      var el = h('div.adv-group', { 'data-panel': g[0], role: 'tabpanel', hidden: true }, h('h3', NH.icon(g[1]), ' ' + NH.t('grp.' + g[0])));
       box.appendChild(el);
       where[g[0]] = el;
     });
+    where.privacy.appendChild($('#trace-box')); // tracing belongs with the watermark
+    NH.$$('#share-tabs [role=tab]').forEach(function (t) { t.addEventListener('click', function () { tab(t.dataset.tab); }); });
     ADV.forEach(function (f) {
       f.input = h('input', { type: 'checkbox' });
       f.pill = h('label.toggle', { 'data-adv': f.id, 'data-tech': f.tech }, f.input, h('span', h('b', NH.t(f.label)), h('small', NH.t(f.ex))));
@@ -143,6 +144,7 @@
         save(f, b);
       });
     });
+    tab('links');
     built = true;
   }
   function draw(m) {
@@ -165,9 +167,22 @@
       if (f.kind === 'url' && on && document.activeElement !== f.field_el) f.field_el.value = m[f.field];
       if (f.kind === 'list' && on && document.activeElement !== f.field_el) f.field_el.value = (m.ip_allow || []).join('\n');
     });
-    if (ADV.some(function (f) { return f.active(m); })) $('#share-adv').open = true;
-    if (ADV.some(function (f) { return f.group === 'expert' && f.active(m); })) $('#adv-pills details').open = true;
+    // Snapshots can't be configured: only the Links tab is left.
+    NH.$$('#share-tabs [data-adv-tab]').forEach(function (t) {
+      var n = ADV.filter(function (f) { return f.group === t.dataset.tab && f.active(m); }).length, em = t.querySelector('em');
+      t.classList.toggle('hide', !!m.frozen);
+      em.textContent = n;
+      em.classList.toggle('hide', !n);
+    });
+    if (m.frozen) tab('links');
     $('#trace-box').classList.toggle('hide', !m.watermark);
+  }
+  // tab shows one part of the share dialog: the links, or one settings group.
+  function tab(name) {
+    NH.$$('#share-tabs [role=tab]').forEach(function (t) { t.setAttribute('aria-selected', String(t.dataset.tab === name)); });
+    $('#share-dlg .tab-panel[data-panel=links]').hidden = name !== 'links';
+    $('#share-adv').hidden = name === 'links';
+    NH.$$('#adv-pills .adv-group').forEach(function (g) { g.hidden = g.dataset.panel !== name; });
   }
   function applied(f, m, set) {
     N.applyMeta(m);

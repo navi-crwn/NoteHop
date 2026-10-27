@@ -20,8 +20,9 @@
     NH.$$('[data-needs-key]', menu).forEach(function (b) { b.classList.toggle('hide', !N.hasKey()); });
   }, 300);
 
-  function fileName(ext) {
+  function fileName(ext, noDots) {
     var t = (N.title() || 'note').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, ' ').trim().slice(0, 80) || 'note';
+    if (noDots) t = t.replace(/\./g, '-').replace(/^-+|-+$/g, '') || 'note';
     return t + ext;
   }
   function markdown() {
@@ -48,7 +49,7 @@
     var k = NHC.newKey(), admin = NHC.newKey();
     return NHC.noteKeys(k, '', '').then(function (keys) {
       var codec = NHC.codec(o.encrypted, keys.aes), vault = NHC.vault();
-      return Promise.all([codec.encode({ t: o.title, b: o.body }), vault ? vault.seal({ t: o.title, k: k, a: admin, p: '' }) : '']).then(function (r) {
+      return Promise.all([codec.encode(Object.assign({ t: o.title, b: o.body }, o.type || {})), vault ? vault.seal({ t: o.title, k: k, a: admin, p: '' }) : '']).then(function (r) {
         return NH.api('POST', '/api/notes', {
           encrypted: o.encrypted, password: false, salt: '', content: r[0], mode: o.mode, slug: '',
           expires_in: 0, max_views: 0, admin: admin, write: keys.write, owner_blob: r[1]
@@ -283,11 +284,14 @@
 
   var ACTIONS = {
     duplicate: function () {
-      createNote({ title: N.title(), body: N.body(), mode: 'edit', encrypted: N.encrypted() }).then(function (n) {
+      createNote({ title: N.title(), body: N.body(), mode: 'edit', encrypted: N.encrypted(), type: N.type() }).then(function (n) {
         location.href = NH.noteURL(n.token, { k: n.k, a: n.a, new: '1' });
       }, function (x) { NH.toast(x.message, 'err'); });
     },
     'export-md': function () { download(fileName('.md'), markdown(), 'text/markdown;charset=utf-8'); },
+    // Always a .txt: "script.js" becomes "script-js.txt", so a download is never a
+    // file the computer would run.
+    'export-txt': function () { download(fileName('.txt', true), N.type().y ? N.body() : markdown(), 'text/plain;charset=utf-8'); },
     print: function () { window.print(); },
     present: present,
     prompter: prompter,

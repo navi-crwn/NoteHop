@@ -32,7 +32,7 @@
           return NHC.codec(meta.encrypted, keys.aes).decode(d.content);
         });
       });
-    }).then(function (v) { r.text = v.b || ''; return r.text; }, function () { r.text = null; return null; });
+    }).then(function (v) { r.text = v.b || ''; r.type = v.y ? { y: v.y, l: v.l } : null; return r.text; }, function () { r.text = null; return null; });
   }
   // A few at a time, so a big account doesn't flood the server.
   function loadTexts(list) {
@@ -172,7 +172,7 @@
     NH.toast(NH.t('dash.analyzing'));
     loadTexts(list).then(function () {
       var notes = list.filter(function (r) { return r.text != null; }).map(function (r) {
-        return { title: r.title || '', body: r.text, created: r.n.created, updated: r.n.updated,
+        return { title: r.title || '', body: r.text, type: r.type || undefined, created: r.n.created, updated: r.n.updated,
           link: NH.noteURL(r.n.token, { k: r.k }), admin: r.a ? NH.noteURL(r.n.token, { k: r.k, a: r.a }) : '' };
       });
       var blob = new Blob([JSON.stringify({ format: 'notehop-export', version: 1, exported: Math.floor(Date.now() / 1000), notes: notes }, null, 1)], { type: 'application/json' });
@@ -196,7 +196,10 @@
         return p.then(function (count) {
           var k = NHC.newKey(), admin = NHC.newKey(), title = String(n.title || '').slice(0, 200);
           return NHC.noteKeys(k, '', '').then(function (keys) {
-            return Promise.all([NHC.codec(true, keys.aes).encode({ t: title, b: String(n.body || '') }), vault ? vault.seal({ t: title, k: k, a: admin, p: '' }) : '']).then(function (r) {
+            // A note type from the backup is kept only if it is one we know.
+            var y = n.type && (n.type.y === 'plain' || n.type.y === 'code') ? { y: n.type.y, l: String(n.type.l || '').slice(0, 32) } : {};
+            if (y.y === 'plain') delete y.l;
+            return Promise.all([NHC.codec(true, keys.aes).encode(Object.assign({ t: title, b: String(n.body || '') }, y)), vault ? vault.seal({ t: title, k: k, a: admin, p: '' }) : '']).then(function (r) {
               return NH.api('POST', '/api/notes', { encrypted: true, password: false, salt: '', content: r[0], mode: 'read', admin: admin, write: keys.write, owner_blob: r[1] });
             });
           }).then(function () { return count + 1; }, function () { return count; });

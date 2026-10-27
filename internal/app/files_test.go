@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/navi-crwn/NoteHop/internal/db"
 )
@@ -76,5 +77,19 @@ func TestFiles(t *testing.T) {
 	defer srv2.Close()
 	if code, _ := upload(t, srv2, blob); code != 403 {
 		t.Fatalf("off: %d", code)
+	}
+}
+
+func TestDayQuota(t *testing.T) {
+	q := &dayQuota{m: map[string]*dayUse{}}
+	now := time.Now()
+	if !q.take("a", 6, 10, now) || q.take("a", 6, 10, now) || !q.take("b", 6, 10, now) {
+		t.Fatal("budget per address")
+	}
+	if !q.take("a", 6, 10, now.Add(25*time.Hour)) {
+		t.Fatal("window resets after a day")
+	}
+	if !q.take("c", 1<<40, 0, now) {
+		t.Fatal("0 means no limit")
 	}
 }

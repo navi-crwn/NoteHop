@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/navi-crwn/NoteHop/internal/db"
@@ -40,6 +41,12 @@ func (a *App) apiUpload(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusBadRequest, "err.bad_request")
 		return
 	}
+	// One address can't fill the disk for everyone: a daily budget per address.
+	if !a.quota.take(a.clientIP(r), int64(len(data)), int64(a.cfg.FilesPerIPMB)<<20, time.Now()) {
+		w.Header().Set("Retry-After", "3600")
+		apiErr(w, http.StatusTooManyRequests, "err.files_quota", "n", a.cfg.FilesPerIPMB)
+		return
+	}
 	now := time.Now()
 	f := db.File{ID: randToken(20), Size: int64(len(data)), Data: data, Created: now.Unix(), Expires: now.Add(fileTTL).Unix()}
 	ok, err := a.db.AddFile(f, int64(a.cfg.FilesTotalMB)<<20)
@@ -71,4 +78,40 @@ func (a *App) apiFile(w http.ResponseWriter, r *http.Request) {
 	h.Set("Cache-Control", "private, max-age="+strconv.FormatInt(max(f.Expires-time.Now().Unix(), 0), 10)+", immutable")
 	h.Set("X-Expires", strconv.FormatInt(f.Expires, 10))
 	w.Write(f.Data)
+}
+
+// dayQuota counts the bytes each address uploaded in the last 24 hours (a
+// fixed window from its first upload). In memory: a restart forgives.
+type dayQuota struct {
+	mu sync.Mutex
+	m  map[string]*dayUse
+}
+
+type dayUse struct {
+	start time.Time
+	bytes int64
+}
+
+// take adds n bytes for key and reports whether it stays within max (0 = no limit).
+func (q *dayQuota) take(key string, n, max int64, now time.Time) bool {
+	if max <= 0 {
+		return true
+	}
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	for k, u := range q.m {
+		if now.Sub(u.start) > 24*time.Hour {
+			delete(q.m, k)
+		}
+	}
+	u := q.m[key]
+	if u == nil {
+		u = &dayUse{start: now}
+		q.m[key] = u
+	}
+	if u.bytes+n > max {
+		return false
+	}
+	u.bytes += n
+	return true
 }

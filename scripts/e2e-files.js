@@ -24,7 +24,7 @@ function wav(seconds) {
     p.on('pageerror', e => errs.push(e.message));
     const bodies = [];
     p.on('request', r => { if (r.url().endsWith('/api/files') && r.method() === 'POST') bodies.push(r.postDataBuffer()); });
-    await p.goto(BASE + '/');
+    await p.goto(BASE + '/new');
     await p.fill('#title', 'Rapat');
     await p.fill('.ed-src', '[1:05] intro\n');
     await p.setInputFiles('[data-editor] input[type=file]', { name: 'rekaman.wav', mimeType: 'audio/wav', buffer: wav(100) });
@@ -60,7 +60,7 @@ function wav(seconds) {
     ok('reader: download link named', (await v.textContent('#n-view .attach-audio .attach-meta a')) === 'rekaman.wav');
 
     // A missing file renders as expired, not as a broken image.
-    await p.goto(BASE + '/'); await p.fill('.ed-src', '![x](nh-file:AAAAAAAAAAAAAAAAAAAA#' + 'A'.repeat(43) + ')');
+    await p.goto(BASE + '/new'); await p.fill('.ed-src', '![x](nh-file:AAAAAAAAAAAAAAAAAAAA#' + 'A'.repeat(43) + ')');
     await p.waitForSelector('.ed-preview .nhfile.gone', { timeout: 10000 }).catch(() => {});
     const seg = await p.$('.seg [data-view=preview]'); if (seg) await seg.click();
     await p.waitForSelector('.ed-preview .nhfile.gone', { timeout: 10000 });

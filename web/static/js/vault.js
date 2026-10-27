@@ -1,4 +1,4 @@
-// Vault phrase for SSO accounts. The phrase stays here; the server only
+// Vault phrase for single sign-on accounts. The phrase stays here; the server only
 // gets a check value so it can say "wrong phrase" or remember a new one.
 (function () {
   'use strict';

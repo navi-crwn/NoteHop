@@ -148,7 +148,32 @@ func publicIP(ip net.IP) bool {
 	if v4 := ip.To4(); v4 != nil && (v4[0] == 100 && v4[1]&0xc0 == 64 || v4[0] == 0) { // CGNAT, "this network"
 		return false
 	}
+	// IPv6 addresses that carry an IPv4 one inside: a NAT64 gateway (64:ff9b::/96,
+	// 64:ff9b:1::/48) or 6to4 relay (2002::/16) would forward 64:ff9b::7f00:1 to
+	// 127.0.0.1. Judge them by the IPv4 address inside.
+	if ip16 := ip.To16(); ip16 != nil && ip.To4() == nil {
+		switch {
+		case nat64.Contains(ip16), nat64Local.Contains(ip16):
+			return publicIP(net.IP(ip16[12:16]))
+		case sixToFour.Contains(ip16):
+			return publicIP(net.IP(ip16[2:6]))
+		}
+	}
 	return true
+}
+
+var (
+	nat64      = mustCIDR("64:ff9b::/96")
+	nat64Local = mustCIDR("64:ff9b:1::/48")
+	sixToFour  = mustCIDR("2002::/16")
+)
+
+func mustCIDR(s string) *net.IPNet {
+	_, n, err := net.ParseCIDR(s)
+	if err != nil {
+		panic(err)
+	}
+	return n
 }
 
 func (a *App) hookClient() *http.Client {

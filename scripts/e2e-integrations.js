@@ -7,6 +7,8 @@ const { chromium } = require('playwright');
 const { execFileSync } = require('child_process');
 const fs = require('fs');
 const BASE = (process.env.NOTEHOP_URL || 'http://127.0.0.1:8090').replace(/\/$/, '');
+// Share dialog: settings live in tabs (time, privacy, together, expert).
+const tab = (p, name) => p.click(`#share-tabs [data-tab=${name}]`);
 const BIN = process.env.NOTEHOP_BIN || 'bin/notehop';
 const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n + ' | ' + (i || ''));
 const errs = [];
@@ -18,7 +20,7 @@ async function page(ctx) {
   return p;
 }
 async function create(p, title, body, opts = {}) {
-  await p.goto(BASE + '/');
+  await p.goto(BASE + '/new');
   await p.fill('#title', title); await p.fill('.ed-src', body);
   if (opts.public) { await p.click('#adv summary'); await p.click('#expert-box summary'); await p.click('label:has([data-feature=encrypt])'); }
   await p.click('#create'); await p.waitForURL(/\/n\//); await p.waitForSelector('#note:not(.hide)');
@@ -45,9 +47,8 @@ async function create(p, title, body, opts = {}) {
 
     // --- inbox + watch (advanced settings) ---
     await p.goto(made); await p.waitForSelector('#note:not(.hide)'); await p.keyboard.press('Escape');
-    await p.click('#act-share'); await p.waitForSelector('#share-dlg[open]'); await p.click('#share-adv summary');
+    await p.click('#act-share'); await p.waitForSelector('#share-dlg[open]'); await tab(p, 'expert');
     const pill = id => p.locator(`[data-adv=${id}]`), form = id => `[data-adv-form=${id}]`;
-    await p.click('#adv-pills details summary');
     await pill('inbox').click(); await p.click(form('inbox') + ' button[type=submit]');
     await p.waitForFunction(() => /\/in\//.test(document.querySelector('[data-adv-form=inbox] .hint').textContent));
     const hint = await p.textContent(form('inbox') + ' .hint');
@@ -72,8 +73,7 @@ async function create(p, title, body, opts = {}) {
     await p.click('#auth-form button[type=submit]'); await p.waitForURL(/dashboard/, { timeout: 30000 });
     await create(p, 'Rahasia akun', 'isi untuk ekspor');
     const pub = await create(p, 'Menu', '```json\n{"menu":["kopi","teh"]}\n```', { public: true });
-    await p.click('#act-share'); await p.waitForSelector('#share-dlg[open]'); await p.click('#share-adv summary');
-    if (!(await p.$eval('#adv-pills details', d => d.open))) await p.click('#adv-pills details summary'); await pill('profile').click(); await p.waitForTimeout(500); await p.keyboard.press('Escape');
+    await p.click('#act-share'); await p.waitForSelector('#share-dlg[open]'); await tab(p, 'expert'); await pill('profile').click(); await p.waitForTimeout(500); await p.keyboard.press('Escape');
     const prof = await (await ctx.newPage()).goto(BASE + '/@' + user);
     ok('profile: lists the public note', prof.status() === 200 && (await prof.text()).includes('Menu'));
     const token = new URL(pub).pathname.split('/')[2];

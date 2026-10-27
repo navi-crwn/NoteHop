@@ -26,7 +26,7 @@ function visitorURL(adminURL) {
 }
 async function openAdv(p) { if (!(await p.$eval('#adv', d => d.open))) await p.click('#adv summary'); }
 async function create(p, { title = '', body = '', mode = 'read', pw = '', burn = '0', encrypt = true } = {}) {
-  await p.goto(BASE + '/');
+  await p.goto(BASE + '/new');
   if (title) await p.fill('#title', title);
   if (body) await p.fill('.ed-src', body);
   await pickMode(p, mode);
@@ -45,7 +45,7 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
   // 1. PIN block
   try {
     const p = await newPage(b);
-    await p.goto(BASE + '/');
+    await p.goto(BASE + '/new');
     await p.fill('#title', 'Uji PIN');
     await p.click('.ed-src'); await p.keyboard.type('Pembuka\n/pin');
     await p.waitForSelector('.slash li', { timeout: 3000 });
@@ -173,8 +173,13 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     await p.waitForSelector('#qr-dlg[open] #qr-box img');
     const w = await p.$eval('#qr-box img', i => i.naturalWidth);
     ok('QR: image rendered', w > 100, 'width ' + w);
+    // One popup for links and settings: one tab at a time keeps it one screen tall.
+    const dh = await p.$eval('#share-dlg', d => d.getBoundingClientRect().height);
+    ok('Share: links and settings fit one screen', dh <= 640, Math.round(dh) + 'px');
     await p.screenshot({ path: OUT + '/qr.png' });
     await p.keyboard.press('Escape'); await p.keyboard.press('Escape');
+    const barH = await p.$eval('.note-bar', e => e.getBoundingClientRect().height);
+    ok('Desktop: note controls on one line', barH < 60, Math.round(barH) + 'px');
     await p.click('#more-menu > button'); await p.click('#act-freeze');
     await p.waitForSelector('#snap-list li', { timeout: 10000 });
     const snapHref = await p.$eval('#snap-list a.link-url', a => a.href);
@@ -189,6 +194,23 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     ok('Freeze: original has new text', (await o.$eval('.ed-src', t => t.value)) === 'versi dua');
   } catch (e) { ok('QR/freeze flow', false, e.message.split('\n')[0]); }
 
+  // 7b. home page: quick note and the hand-over to /new
+  try {
+    const h = await newPage(b);
+    const sent = [];
+    h.on('request', r => { if (r.url().endsWith('/api/notes') && r.method() === 'POST') sent.push(r.postData()); });
+    await h.goto(BASE + '/');
+    ok('Home: quick note and full-notepad link', await h.isVisible('#quick-form') && (await h.getAttribute('a.h-pill:not(.dark)', 'href')) === '/new');
+    await h.fill('#quick-title', 'Cepat'); await h.fill('#quick-body', 'rahasia kilat 123');
+    await h.click('label:has(input[name=quick-mode][value=edit])');
+    await h.click('#quick-create'); await h.waitForURL(/\/n\//, { timeout: 20000 }); await h.waitForSelector('#note:not(.hide)');
+    ok('Home: quick note opens as owner', await h.isVisible('#act-share'));
+    ok('Home: only ciphertext sent', sent.length === 1 && !sent[0].includes('rahasia kilat'));
+    await h.goto(BASE + '/'); await h.fill('#quick-body', 'lanjut di mode lengkap'); await h.click('#quick-full');
+    await h.waitForURL(BASE + '/new'); await h.waitForTimeout(300);
+    ok('Home: Full mode carries the draft to /new', (await h.inputValue('.ed-src')) === 'lanjut di mode lengkap');
+  } catch (e) { ok('Home flow', false, e.message.split('\n')[0]); }
+
   // 8. mobile
   try {
     const m = await newPage(b, { viewport: { width: 375, height: 740 }, isMobile: true, hasTouch: true });
@@ -202,11 +224,23 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     await m.keyboard.press('Escape');
     let over = await m.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     ok('Mobile: no horizontal scroll on note (admin)', over <= 0, 'overflow ' + over + 'px');
+    // Phones: actions sit in the dock; More opens the menu as a bottom sheet.
+    const dock = await m.$$eval('#note-dock button:not([hidden])', x => x.map(y => y.dataset.for));
+    ok('Mobile: dock with Share and More', dock.includes('act-share') && dock.includes('more-menu') && !(await m.isVisible('#act-share')), JSON.stringify(dock));
+    await m.click('#note-dock [data-for=more-menu]');
+    const sheet = await m.$eval('#more-menu .menu-list', l => { const r = l.getBoundingClientRect(); return getComputedStyle(l).position === 'fixed' && Math.abs(r.bottom - innerHeight) < 2 && r.height > 100; });
+    ok('Mobile: More opens as a bottom sheet', sheet);
+    await m.mouse.click(10, 10);
     await m.screenshot({ path: OUT + '/m-note-admin.png', fullPage: true });
     await m.goto(visitorURL(admin)); await m.waitForSelector('#note:not(.hide)');
     over = await m.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     ok('Mobile: no horizontal scroll on note (visitor)', over <= 0, 'overflow ' + over + 'px');
     await m.screenshot({ path: OUT + '/m-note-visitor.png', fullPage: true });
+    // Smallest common phone: option words ("With a password", "Always") must
+    // not spill into the next option.
+    await m.setViewportSize({ width: 320, height: 700 }); await m.goto(BASE + '/new'); await m.waitForTimeout(300);
+    const spill = await m.$$eval('.seg-choice span', xs => xs.filter(s => s.scrollWidth > s.clientWidth + 1).map(s => s.textContent));
+    ok('Mobile: 320px options fit their text', spill.length === 0, JSON.stringify(spill));
   } catch (e) { ok('Mobile flow', false, e.message.split('\n')[0]); }
 
   await b.close();

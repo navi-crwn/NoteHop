@@ -18,5 +18,6 @@ billing invoice payment pay checkout cart shop store order orders refund
 abuse report spam dmca copyright verify verification confirm reset password
 
 # brand
-notehop note-hop sso sso-app hel imageapp pixel-hop otherapp navi navi-crwn
-notehop-* sso-* imageapp-* otherapp-* official-* admin-* support-* staff-* team-* security-* verify-*
+notehop note-hop
+notehop-* official-* admin-* support-* staff-* team-* security-* verify-*
+# Your own brands go in NOTEHOP_RESERVED, e.g. NOTEHOP_RESERVED=acme,acme-*

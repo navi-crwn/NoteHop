@@ -1,5 +1,4 @@
 bin/
 data/
 *.db*
-design-reference/
 .git/

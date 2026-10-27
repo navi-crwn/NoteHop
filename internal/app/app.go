@@ -30,11 +30,16 @@ type Config struct {
 	SecureCookies bool
 	TrustProxy    bool
 	Registration  bool
-	SSOURL     string   // "Masuk dengan SSO"; empty turns it off
-	SSOSecret  string   // shared with SSO's NOTEHOP_SSO_SECRET
+	SSOURL        string   // account server for single sign-on; empty turns it off
+	SSOSecret     string   // shared with the account server, 32+ characters
+	SSOName       string   // shown on the button: "Continue with <name>"
+	SSOClient     string   // this app's name at the account server (/sso/<client>)
+	SSOProviders  []Link   // extra buttons straight to a provider: Name shown, URL is its id (/sso/<client>/<id>)
+	Links         []Link   // related sites in the footer
 	ShareURL      string   // optional second domain for share links; needs BaseURL
 	FileMB        int      // largest attachment in MB; 0 turns attachments off
 	FilesTotalMB  int      // disk budget for all live attachments; 0 = no limit
+	FilesPerIPMB  int      // attachments one address may upload per 24 hours; 0 = no limit
 	PrivateHooks  bool     // let Watch webhooks reach private/loopback addresses (and plain http)
 	TelegramToken string   // bot token from @BotFather; empty turns the bot off
 	Admins        []string // usernames that may use short and reserved link names
@@ -42,9 +47,12 @@ type Config struct {
 	Contact       string   // shown on /contact: an email address or URL
 }
 
-// SSOEnabled reports whether sign-in with SSO is configured. It needs the
-// public base URL too, because SSO only sends tickets back to an exact
-// callback address.
+// Link is a related site shown in the footer (NOTEHOP_LINKS="Name=https://…").
+type Link struct{ Name, URL string }
+
+// SSOEnabled reports whether single sign-on is configured. It needs the
+// public base URL too, because the account server only sends tickets back to
+// an exact callback address.
 func (c Config) SSOEnabled() bool {
 	return c.SSOURL != "" && len(c.SSOSecret) >= 32 && c.BaseURL != ""
 }
@@ -55,6 +63,7 @@ type App struct {
 	pages map[string]*template.Template
 	asset string
 	limit *limiter
+	quota *dayQuota // attachment bytes per address
 	mux   *http.ServeMux
 	used  usedTickets
 	live  liveHub
@@ -66,7 +75,7 @@ func New(cfg Config, d *db.DB) (*App, error) {
 	if cfg.Site == "" {
 		cfg.Site = "NoteHop"
 	}
-	a := &App{cfg: cfg, db: d, limit: newLimiter(), used: usedTickets{m: map[string]int64{}}}
+	a := &App{cfg: cfg, db: d, limit: newLimiter(), quota: &dayQuota{m: map[string]*dayUse{}}, used: usedTickets{m: map[string]int64{}}}
 	if err := a.loadTemplates(); err != nil {
 		return nil, err
 	}
@@ -106,7 +115,8 @@ func (a *App) routes() {
 	m.Handle("GET /static/", http.StripPrefix("/static/", cacheForever(files)))
 	m.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("ok")) })
 
-	m.HandleFunc("GET /{$}", a.page("new", "", "meta.desc_new"))
+	m.HandleFunc("GET /{$}", a.page("home", "home.title", "meta.desc_new"))
+	m.HandleFunc("GET /new", a.page("new", "nav.new", "meta.desc_new"))
 	m.HandleFunc("GET /about", a.page("about", "title.about", "meta.desc_about"))
 	m.HandleFunc("GET /login", a.page("login", "title.login", ""))
 	m.HandleFunc("GET /register", a.page("register", "title.register", ""))
@@ -192,7 +202,10 @@ type pageData struct {
 	NoIndex     bool
 	Token       string
 	Mode        string
-	SSO         bool   // show "Masuk dengan SSO"
+	SSO         bool // show "Continue with <SSOName>"
+	SSOName     string
+	SSOVia      []Link // provider buttons, from NOTEHOP_SSO_PROVIDERS
+	Links       []Link // related sites, from NOTEHOP_LINKS
 	Next        string // where to go after signing in
 	Msg         string // error page text; empty means "note not found"
 	Origin      string // scheme://host for absolute OpenGraph URLs
@@ -208,7 +221,7 @@ type pageData struct {
 
 func (a *App) loadTemplates() error {
 	a.pages = map[string]*template.Template{}
-	for _, name := range []string{"new", "note", "about", "login", "register", "dashboard", "vault", "diff", "nearby", "profile", "offline", "faq", "contact", "terms", "privacy", "error"} {
+	for _, name := range []string{"home", "new", "note", "about", "login", "register", "dashboard", "vault", "diff", "nearby", "profile", "offline", "faq", "contact", "terms", "privacy", "error"} {
 		t, err := template.New(name).ParseFS(web.Templates, "templates/base.html", "templates/icons.html", "templates/"+name+".html")
 		if err != nil {
 			return err
@@ -221,7 +234,10 @@ func (a *App) loadTemplates() error {
 func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name string, d pageData) {
 	d.Site, d.Path, d.Asset, d.Reg = a.cfg.Site, r.URL.Path, a.asset, a.cfg.Registration
 	d.L, d.Langs = a.locale(w, r), i18n.Langs
-	d.SSO = a.cfg.SSOEnabled()
+	d.SSO, d.SSOName, d.Links = a.cfg.SSOEnabled(), a.cfg.SSOName, a.cfg.Links
+	if d.SSO {
+		d.SSOVia = a.cfg.SSOProviders
+	}
 	d.Origin = a.origin(r)
 	d.Main, d.Share = a.cfg.BaseURL, a.shareURL()
 	d.Contact = a.cfg.Contact
@@ -345,8 +361,7 @@ func assetVersion() string {
 const langCookie = "nh_lang"
 
 // locale is the reader's language: ?lang= (remembered in a cookie), then the
-// cookie, then English. Browsers' Accept-Language is deliberately ignored so
-// the site is the same for everyone until they choose.
+// cookie, then the browser's Accept-Language, then English.
 func (a *App) locale(w http.ResponseWriter, r *http.Request) i18n.Locale {
 	if q := r.URL.Query().Get("lang"); i18n.Supported(q) {
 		http.SetCookie(w, &http.Cookie{Name: langCookie, Value: q, Path: "/", MaxAge: 365 * 24 * 3600,
@@ -386,7 +401,7 @@ func (a *App) catalogJS(w http.ResponseWriter, r *http.Request) {
 // send to the server.
 func clipper(origin string) template.URL {
 	js := `javascript:(function(){var d={t:document.title,u:location.href,s:String(getSelection())};` +
-		`window.open(` + strconv.Quote(origin+"/#clip=") + `+encodeURIComponent(JSON.stringify(d)))})()`
+		`window.open(` + strconv.Quote(origin+"/new#clip=") + `+encodeURIComponent(JSON.stringify(d)))})()`
 	return template.URL(js)
 }
 

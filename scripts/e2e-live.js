@@ -1,10 +1,17 @@
 // Browser checks for live collaboration: two editors typing into the same
 // note, a reader watching, presence, chat, saving by one tab, encryption on
-// the wire and following a presenter.
+// the wire, following a presenter and opened blocks surviving live redraws.
 // Start a server on an empty database, then:
 //   NOTEHOP_URL=http://127.0.0.1:8090 node scripts/e2e-live.js
 const { chromium } = require('playwright');
 const BASE = (process.env.NOTEHOP_URL || 'http://127.0.0.1:8090').replace(/\/$/, '');
+// Menu ⋯: some items sit in a submenu (View, Save to device).
+async function act(p, a) {
+  await p.click('#more-menu > button');
+  const sub = `.menu-sub:has([data-act=${a}])`;
+  if (await p.$(sub) && !(await p.$eval(sub, d => d.open))) await p.click(sub + ' > summary');
+  return p.click(`[data-act=${a}]`);
+}
 const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n + ' | ' + (i || ''));
 const errs = [];
 async function pickMode(p, m) { await p.evaluate(() => { const d = document.getElementById('more-modes'); if (d) d.open = true; }); await p.check(`input[name=mode][value=${m}]`, { force: true }); }
@@ -22,7 +29,7 @@ const wait = (p, fn, arg, t) => p.waitForFunction(fn, arg, { timeout: t || 10000
     const a = await page(b);
     const frames = [];
     a.on('websocket', ws => ws.on('framesent', f => frames.push(String(f.payload))));
-    await a.goto(BASE + '/');
+    await a.goto(BASE + '/new');
     await a.fill('#title', 'Rapat');
     await a.fill('.ed-src', 'agenda rahasia');
     await pickMode(a, 'edit');
@@ -80,11 +87,43 @@ const wait = (p, fn, arg, t) => p.waitForFunction(fn, arg, { timeout: t || 10000
     await a.click('#live-present');
     await wait(v, () => !document.querySelector('#live-follow').classList.contains('hide'));
     await v.click('#live-follow button');
-    await a.click('#more-menu > button'); await a.click('[data-act=present]');
+    await act(a, 'present');
     await wait(v, () => !!document.querySelector('.overlay.present'));
     ok('follow: slides open for follower', true);
     await a.keyboard.press('Escape');
     await a.screenshot({ path: process.env.SHOT || '/dev/null' }).catch(() => {});
+
+    // Opened blocks stay open for a reader while the author's tab is live:
+    // the sync on joining and the author's edits redraw the reader's view.
+    const w = await page(b);
+    await w.goto(BASE + '/new');
+    await w.fill('#title', 'Blok');
+    await w.click('.ed-src'); await w.keyboard.type('Awal\n/pin');
+    await w.waitForSelector('.slash li'); await w.keyboard.press('Enter');
+    await w.waitForSelector('#lock-text'); await w.fill('#lock-text', 'kode 4321'); await w.fill('#lock-pin', '2468');
+    await w.click('#lock-form button[type=submit]');
+    await wait(w, () => document.querySelector('.ed-src').value.includes(':::locked'));
+    await w.keyboard.press('Control+End'); await w.keyboard.type('\n/burn');
+    await w.waitForSelector('.slash.open'); await w.keyboard.press('Enter');
+    await w.waitForSelector('#burn-text'); await w.fill('#burn-text', 'sandi 5150'); await w.selectOption('#burn-views', '1');
+    await w.click('dialog[open] button[type=submit]');
+    await wait(w, () => document.querySelector('.ed-src').value.includes(':::burn '));
+    await pickMode(w, 'read');
+    await w.click('#create'); await w.waitForURL(/\/n\//); await w.waitForSelector('#note:not(.hide)');
+    await w.keyboard.press('Escape');
+    const wu = new URL(w.url());
+    const rd = await page(b); rd.on('dialog', d => d.accept());
+    await rd.goto(BASE + wu.pathname + '#k=' + new URLSearchParams(wu.hash.slice(1)).get('k'));
+    await rd.waitForSelector('.locked-form');
+    await rd.fill('.locked-form input', '2468'); await rd.click('.locked-form button');
+    await rd.click('.burnblk button');
+    await wait(rd, () => /kode 4321/.test(document.querySelector('#n-view').textContent) && /sandi 5150/.test(document.querySelector('#n-view').textContent));
+    await wait(rd, () => document.querySelectorAll('#live-people .live-av').length === 2);
+    await w.focus('.ed-src'); await w.keyboard.press('Control+Home'); await w.keyboard.type('Baru ');
+    await wait(rd, () => document.querySelector('#n-view').textContent.includes('Baru Awal'));
+    const view = await rd.textContent('#n-view');
+    ok('reader: opened PIN block stays open after live redraw', view.includes('kode 4321'));
+    ok('reader: revealed burn block stays visible after live redraw', view.includes('sandi 5150'));
   } catch (e) {
     ok('FATAL', false, e.message.split('\n').slice(0, 3).join(' | '));
   } finally {

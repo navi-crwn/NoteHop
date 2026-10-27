@@ -5,11 +5,7 @@
   <form class="card auth" id="auth-form" data-kind="register">
     <h1>{{.L.T "auth.register_title"}}</h1>
     <p class="muted">{{.L.H "auth.register_lead"}}</p>
-    {{if .SSO}}
-    <a class="btn lg block sso" href="/auth/sso?next={{.Next}}"><svg><use href="#i-link"/></svg><span>{{.L.T "auth.sso"}}</span></a>
-    <p class="small muted center">{{.L.T "auth.sso_note"}}</p>
-    <div class="or"><span>{{.L.T "auth.or_local"}}</span></div>
-    {{end}}
+    {{template "sso" .}}
     <div class="field"><label for="username">{{.L.T "auth.username"}}</label><input type="text" id="username" autocomplete="username" autocapitalize="off" spellcheck="false" pattern="[a-z0-9_]{3,32}" required><span class="hint">{{.L.T "auth.username_hint"}}</span></div>
     <div class="field"><label for="password">{{.L.T "auth.password"}}</label><input type="password" id="password" autocomplete="new-password" minlength="10" required><span class="hint">{{.L.T "auth.password_hint"}}</span></div>
     <div class="field"><label for="password2">{{.L.T "auth.password_again"}}</label><input type="password" id="password2" autocomplete="new-password" minlength="10" required></div>
