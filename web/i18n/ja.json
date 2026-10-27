@@ -46,6 +46,7 @@
  "auth.sign_up": "新規登録",
  "auth.sso": "{name} で続行",
  "auth.sso_note": "{name} でお持ちのアカウントを使います。",
+ "auth.sso_via": "ログインは {name} で行い、終わるとすぐここに戻ります。",
  "auth.username": "ユーザー名",
  "auth.username_hint": "小文字の英字、数字、アンダースコアで 3～32 文字。",
  "board.board": "ボード",

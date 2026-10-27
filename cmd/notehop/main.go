@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"syscall"
@@ -56,6 +57,22 @@ func envLinks(key string) []app.Link {
 		name, u = strings.TrimSpace(name), strings.TrimSpace(u)
 		if ok && name != "" && (strings.HasPrefix(u, "https://") || strings.HasPrefix(u, "http://")) {
 			out = append(out, app.Link{Name: name, URL: u})
+		}
+	}
+	return out
+}
+
+var providerID = regexp.MustCompile(`^[a-z0-9-]{1,32}$`)
+
+// envProviders reads "google=Google,github=GitHub": the id the account server
+// knows and the name on the button.
+func envProviders(key string) []app.Link {
+	var out []app.Link
+	for _, v := range strings.Split(os.Getenv(key), ",") {
+		id, name, ok := strings.Cut(strings.TrimSpace(v), "=")
+		id, name = strings.TrimSpace(id), strings.TrimSpace(name)
+		if ok && name != "" && providerID.MatchString(id) {
+			out = append(out, app.Link{Name: name, URL: id})
 		}
 	}
 	return out
@@ -111,6 +128,7 @@ func main() {
 		SSOSecret:     env("NOTEHOP_SSO_SECRET", ""),
 		SSOName:       env("NOTEHOP_SSO_NAME", "SSO"),
 		SSOClient:     env("NOTEHOP_SSO_CLIENT", "notehop"),
+		SSOProviders:  envProviders("NOTEHOP_SSO_PROVIDERS"),
 		Links:         envLinks("NOTEHOP_LINKS"),
 		ShareURL:      strings.TrimRight(env("NOTEHOP_SHARE_URL", ""), "/"),
 		FileMB:        envInt("NOTEHOP_FILE_MB", 10),

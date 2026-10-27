@@ -87,3 +87,11 @@
 {{block "scripts" .}}{{end}}
 </body>
 </html>{{end}}
+
+{{/* Sign-in buttons for the account server, on the login and sign-up pages. */}}
+{{define "sso"}}{{if .SSO}}
+    {{range .SSOVia}}<a class="btn lg block sso" href="/auth/sso?provider={{.URL}}&amp;next={{$.Next}}"><svg>{{if eq .URL "google"}}<use href="#i-google"/>{{else}}<use href="#i-link"/>{{end}}</svg><span>{{$.L.T "auth.sso" "name" .Name}}</span></a>
+    {{end}}<a class="btn lg block sso" href="/auth/sso?next={{.Next}}"><svg><use href="#i-link"/></svg><span>{{.L.T "auth.sso" "name" .SSOName}}</span></a>
+    <p class="small muted center">{{if .SSOVia}}{{.L.T "auth.sso_via" "name" .SSOName}}{{else}}{{.L.T "auth.sso_note" "name" .SSOName}}{{end}}</p>
+    <div class="or"><span>{{.L.T "auth.or_local"}}</span></div>
+{{end}}{{end}}

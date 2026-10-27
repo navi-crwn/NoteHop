@@ -46,6 +46,7 @@
  "auth.sign_up": "Registrarse",
  "auth.sso": "Continuar con {name}",
  "auth.sso_note": "Usa la cuenta que ya tienes en {name}.",
+ "auth.sso_via": "El inicio de sesión lo gestiona {name} y luego vuelves aquí directamente.",
  "auth.username": "Nombre de usuario",
  "auth.username_hint": "3–32 letras minúsculas, dígitos o guiones bajos.",
  "board.board": "Tablero",
