@@ -17,16 +17,18 @@ import (
 	"github.com/navi-crwn/NoteHop/internal/db"
 )
 
-// Sign in with SSO. SSO owns the account (sign-up, password, Google,
-// 2FA, email verification and resets); NoteHop only receives a short-lived
-// ticket signed with the shared secret and keeps a local account linked by
-// the SSO user id. Since NoteHop never sees that password, the vault key
+// Single sign-on with an account server you run (NOTEHOP_SSO_URL). That
+// server owns the account (sign-up, password, social logins, 2FA, email
+// verification and resets); NoteHop only receives a short-lived ticket
+// signed with the shared secret and keeps a local account linked by the
+// server's user id. Since NoteHop never sees that password, the vault key
 // for the dashboard comes from a separate phrase (see apiVault).
 
 const ssoCookie = "nh_sso"
 
 type ssoTicket struct {
 	Sub    string `json:"sub"`
+	Aud    string `json:"aud"` // the client the ticket is for; checked when set
 	Email  string `json:"email"`
 	Name   string `json:"name"`
 	Avatar string `json:"avatar"`
@@ -39,7 +41,7 @@ type ssoTicket struct {
 
 var errBadTicket = errors.New("bad ticket")
 
-// parseTicket checks the signature and lifetime of a SSO ticket:
+// parseTicket checks the signature and lifetime of a sign-on ticket:
 // b64u(json) "." b64u(HMAC-SHA256(secret, b64u(json))).
 func parseTicket(raw, secret string, now time.Time) (*ssoTicket, error) {
 	body, sig, ok := strings.Cut(raw, ".")
@@ -97,7 +99,7 @@ func safeNext(next string) string {
 	return next
 }
 
-// ssoStart sends the visitor to SSO to sign in.
+// ssoStart sends the visitor to the account server to sign in.
 func (a *App) ssoStart(w http.ResponseWriter, r *http.Request) {
 	if !a.cfg.SSOEnabled() {
 		a.notFound(w, r)
@@ -107,7 +109,7 @@ func (a *App) ssoStart(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{Name: ssoCookie, Value: state + "|" + url.QueryEscape(safeNext(r.FormValue("next"))),
 		Path: "/auth/", HttpOnly: true, Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode, MaxAge: 900})
 	q := url.Values{"state": {state}, "return_to": {a.cfg.BaseURL + "/auth/sso/callback"}}
-	http.Redirect(w, r, a.cfg.SSOURL+"/sso/notehop?"+q.Encode(), http.StatusFound)
+	http.Redirect(w, r, a.cfg.SSOURL+"/sso/"+url.PathEscape(a.cfg.SSOClient)+"?"+q.Encode(), http.StatusFound)
 }
 
 func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
@@ -123,7 +125,8 @@ func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
 	state, next, _ := strings.Cut(c.Value, "|")
 	next, _ = url.QueryUnescape(next)
 	t, err := parseTicket(r.FormValue("ticket"), a.cfg.SSOSecret, time.Now())
-	if err != nil || !hmac.Equal([]byte(t.State), []byte(state)) || !a.used.first(t.Jti, t.Exp) {
+	// A ticket the server made for another of its apps must not work here.
+	if err != nil || !hmac.Equal([]byte(t.State), []byte(state)) || (t.Aud != "" && t.Aud != a.cfg.SSOClient) || !a.used.first(t.Jti, t.Exp) {
 		a.authFail(w, r, http.StatusBadRequest, "err.sso_ticket")
 		return
 	}
@@ -146,7 +149,7 @@ func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
 
 var errRegClosed = errors.New("registration closed")
 
-// linkSSOUser finds the NoteHop account for a SSO user, or makes one.
+// linkSSOUser finds the NoteHop account for a signed-on user, or makes one.
 // Existing password accounts are not matched (they have no email); linking
 // them is a later feature.
 func (a *App) linkSSOUser(t *ssoTicket) (*db.User, error) {
@@ -172,7 +175,7 @@ func (a *App) linkSSOUser(t *ssoTicket) (*db.User, error) {
 		if !errors.Is(err, db.ErrTaken) {
 			return u, err
 		}
-		// Taken: either the username (try another) or the SSO id was
+		// Taken: either the username (try another) or the sign-on id was
 		// linked by a parallel request (the next lookup finds it).
 	}
 	return nil, errors.New("no free username")
@@ -211,10 +214,10 @@ func (a *App) authFail(w http.ResponseWriter, r *http.Request, status int, key s
 	a.render(w, r, status, "error", pageData{Title: l.T("title.sign_in_failed"), Msg: l.T(key), NoIndex: true})
 }
 
-// ---------- vault phrase for SSO accounts ----------
+// ---------- vault phrase for single sign-on accounts ----------
 
-// vaultPage unlocks (or, the first time, creates) the vault key of a SSO
-// account. Password accounts get theirs from the password at login.
+// vaultPage unlocks (or, the first time, creates) the vault key of a single
+// sign-on account. Password accounts get theirs from the password at login.
 func (a *App) vaultPage(w http.ResponseWriter, r *http.Request) {
 	u := a.currentUser(r)
 	if u == nil {
