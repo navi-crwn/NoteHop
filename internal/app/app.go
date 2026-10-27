@@ -41,6 +41,7 @@ type Config struct {
 	FilesTotalMB  int      // disk budget for all live attachments; 0 = no limit
 	FilesPerIPMB  int      // attachments one address may upload per 24 hours; 0 = no limit
 	AI            string   // writing help: "on" (on-device + own API key), "device" (on-device only), "off"
+	GitHub        string   // "owner/name" of the source repository, for the home page's numbers; "-" hides them
 	AIOrigins     []string // extra API origins for "Other" (OpenAI-compatible) providers, e.g. a company proxy
 	PrivateHooks  bool     // let Watch webhooks reach private/loopback addresses (and plain http)
 	TelegramToken string   // bot token from @BotFather; empty turns the bot off
@@ -68,18 +69,19 @@ func (c Config) SSOEnabled() bool {
 }
 
 type App struct {
-	cfg     Config
-	db      *db.DB
-	pages   map[string]*template.Template
-	asset   string
-	limit   *limiter
-	quota   *dayQuota // attachment bytes per address
-	mux     *http.ServeMux
-	used    usedTickets
-	tickets recoveryTickets
-	live    liveHub
-	near    nearbyHub
-	watch   watcher
+	cfg       Config
+	db        *db.DB
+	pages     map[string]*template.Template
+	asset     string
+	limit     *limiter
+	quota     *dayQuota // attachment bytes per address
+	mux       *http.ServeMux
+	used      usedTickets
+	tickets   recoveryTickets
+	repoCache repoCache
+	live      liveHub
+	near      nearbyHub
+	watch     watcher
 }
 
 func New(cfg Config, d *db.DB) (*App, error) {
@@ -145,6 +147,7 @@ func (a *App) routes() {
 	m.HandleFunc("GET /i18n/{lang}", a.catalogJS)
 	m.HandleFunc("GET /render/mermaid", mermaidFrame)
 	m.HandleFunc("GET /run", runFrame)
+	m.HandleFunc("GET /api/repo", a.apiRepo)
 	m.HandleFunc("GET /dashboard", a.dashboardPage)
 	m.HandleFunc("GET /vault", a.vaultPage)
 	m.HandleFunc("GET /security", a.securityPage)
@@ -222,9 +225,12 @@ type pageData struct {
 	Mode        string
 	SSO         bool // show "Continue with <SSOName>"
 	SSOName     string
-	SSOVia      []Link // provider buttons, from NOTEHOP_SSO_PROVIDERS
-	AI          string // writing help mode (Config.AI), for the editor
-	AICustom    bool   // operator allowed extra AI origins
+	SSOVia      []Link   // provider buttons, from NOTEHOP_SSO_PROVIDERS
+	AI          string   // writing help mode (Config.AI), for the editor
+	AICustom    bool     // operator allowed extra AI origins
+	Repo        string   // source repository (Config.GitHub), empty when hidden
+	TourGroups  []string // home page feature tour: groups, and the items in each
+	TourItems   []int
 	Links       []Link // related sites, from NOTEHOP_LINKS
 	Next        string // where to go after signing in
 	Msg         string // error page text; empty means "note not found"
@@ -255,7 +261,10 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.Site, d.Path, d.Asset, d.Reg = a.cfg.Site, r.URL.Path, a.asset, a.cfg.Registration
 	d.L, d.Langs = a.locale(w, r), i18n.Langs
 	d.SSO, d.SSOName, d.Links = a.cfg.SSOEnabled(), a.cfg.SSOName, a.cfg.Links
-	d.AI, d.AICustom = a.cfg.aiMode(), len(a.cfg.AIOrigins) > 0
+	d.AI, d.AICustom, d.Repo = a.cfg.aiMode(), len(a.cfg.AIOrigins) > 0, a.cfg.repo()
+	if name == "home" {
+		d.TourGroups, d.TourItems = []string{"share", "private", "together", "blocks", "dev", "web"}, []int{1, 2, 3, 4, 5, 6}
+	}
 	if d.SSO {
 		d.SSOVia = a.cfg.SSOProviders
 	}
