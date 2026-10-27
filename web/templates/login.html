@@ -2,18 +2,18 @@
 {{define "content"}}
 <section class="wrap auth-wrap">
   <form class="card auth" id="auth-form" data-kind="login">
-    <h1>Masuk</h1>
-    <p class="muted">Password-mu tidak pernah dikirim ke server. Browser menurunkan kunci dari password itu untuk membuka catatanmu.</p>
+    <h1>{{.L.T "auth.sign_in"}}</h1>
+    <p class="muted">{{.L.T "auth.login_lead"}}</p>
     {{if .SSO}}
-    <a class="btn lg block sso" href="/auth/sso?next={{.Next}}"><svg><use href="#i-link"/></svg><span>Masuk dengan SSO</span></a>
-    <p class="small muted center">Satu akun untuk SSO, ImageApp, dan NoteHop.</p>
-    <div class="or"><span>atau pakai akun NoteHop</span></div>
+    <a class="btn lg block sso" href="/auth/sso?next={{.Next}}"><svg><use href="#i-link"/></svg><span>{{.L.T "auth.sso"}}</span></a>
+    <p class="small muted center">{{.L.T "auth.sso_note"}}</p>
+    <div class="or"><span>{{.L.T "auth.or_local"}}</span></div>
     {{end}}
-    <div class="field"><label for="username">Username</label><input type="text" id="username" autocomplete="username" autocapitalize="off" spellcheck="false" required></div>
-    <div class="field"><label for="password">Password</label><input type="password" id="password" autocomplete="current-password" required></div>
+    <div class="field"><label for="username">{{.L.T "auth.username"}}</label><input type="text" id="username" autocomplete="username" autocapitalize="off" spellcheck="false" required></div>
+    <div class="field"><label for="password">{{.L.T "auth.password"}}</label><input type="password" id="password" autocomplete="current-password" required></div>
     <div class="alert err hide" id="auth-err" role="alert"></div>
-    <button class="btn primary lg block" type="submit"><span>Masuk</span></button>
-    {{if .Reg}}<p class="small muted center">Belum punya akun? <a href="/register">Daftar</a></p>{{end}}
+    <button class="btn primary lg block" type="submit"><span>{{.L.T "auth.sign_in"}}</span></button>
+    {{if .Reg}}<p class="small muted center">{{.L.T "auth.no_account"}} <a href="/register">{{.L.T "auth.sign_up"}}</a></p>{{end}}
   </form>
 </section>
 {{end}}

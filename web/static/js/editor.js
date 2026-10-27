@@ -6,28 +6,32 @@
 (function () {
   'use strict';
 
-  function today() { return new Date().toLocaleDateString('id', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
-  function now() { return new Date().toLocaleTimeString('id', { hour: '2-digit', minute: '2-digit' }); }
+  function today() { return new Date().toLocaleDateString(NH.lang, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+  function now() { return new Date().toLocaleTimeString(NH.lang, { hour: '2-digit', minute: '2-digit' }); }
 
   // CARET in inserted text marks where the caret lands. It is a control
   // character, not "|", so pasted or selected text containing "|" (tables!)
   // comes through intact.
   var CARET = '\u0001';
+
+  // Each command matches its English keywords and the translated ones, so
+  // "/table" works in every language.
+  function col(n) { return NH.t('cmd.column', { n: n }); }
   var COMMANDS = [
-    { label: 'Judul besar', hint: '#', keys: 'h1 judul heading besar', text: '# ' + CARET },
-    { label: 'Judul', hint: '##', keys: 'h2 judul heading', text: '## ' + CARET },
-    { label: 'Subjudul', hint: '###', keys: 'h3 subjudul heading kecil', text: '### ' + CARET },
-    { label: 'To-do', hint: '- [ ]', keys: 'todo tugas checklist centang task', text: '- [ ] ' + CARET },
-    { label: 'Daftar', hint: '-', keys: 'list daftar bullet poin', text: '- ' + CARET },
-    { label: 'Daftar bernomor', hint: '1.', keys: 'nomor angka urut ol numbered', text: '1. ' + CARET },
-    { label: 'Kutipan', hint: '>', keys: 'quote kutipan', text: '> ' + CARET },
-    { label: 'Blok kode', hint: '```', keys: 'code kode program script', text: '```\n' + CARET + '\n```\n' },
-    { label: 'Tabel', hint: '3 kolom', keys: 'table tabel grid', text: '| Kolom 1 | Kolom 2 | Kolom 3 |\n| --- | --- | --- |\n| ' + CARET + ' | | |\n' },
-    { label: 'Pemisah', hint: '---', keys: 'garis divider hr pemisah', text: '---\n' + CARET },
-    { label: 'Spoiler / toggle', hint: 'klik untuk buka', keys: 'spoiler toggle sembunyi lipat details', text: ':::spoiler Klik untuk membuka\n' + CARET + '\n:::\n' },
-    { label: 'Blok terkunci PIN', hint: 'dienkripsi lagi', keys: 'kunci lock pin rahasia secret password', action: 'locked' },
-    { label: 'Tanggal hari ini', hint: '', keys: 'tanggal date hari ini', text: function () { return today() + CARET; } },
-    { label: 'Jam sekarang', hint: '', keys: 'jam waktu time sekarang', text: function () { return now() + CARET; } }
+    { label: NH.t('cmd.h1'), hint: '#', keys: 'h1 heading title big ' + NH.t('cmd.h1_keys'), text: '# ' + CARET },
+    { label: NH.t('cmd.h2'), hint: '##', keys: 'h2 heading title ' + NH.t('cmd.h2_keys'), text: '## ' + CARET },
+    { label: NH.t('cmd.h3'), hint: '###', keys: 'h3 subheading small ' + NH.t('cmd.h3_keys'), text: '### ' + CARET },
+    { label: NH.t('ed.todo'), hint: '- [ ]', keys: 'todo task checklist check ' + NH.t('cmd.todo_keys'), text: '- [ ] ' + CARET },
+    { label: NH.t('cmd.list'), hint: '-', keys: 'list bullet ul ' + NH.t('cmd.list_keys'), text: '- ' + CARET },
+    { label: NH.t('cmd.olist'), hint: '1.', keys: 'numbered ordered ol number ' + NH.t('cmd.olist_keys'), text: '1. ' + CARET },
+    { label: NH.t('cmd.quote'), hint: '>', keys: 'quote blockquote ' + NH.t('cmd.quote_keys'), text: '> ' + CARET },
+    { label: NH.t('ed.code'), hint: '```', keys: 'code program script ' + NH.t('cmd.code_keys'), text: '```\n' + CARET + '\n```\n' },
+    { label: NH.t('ed.table'), hint: NH.t('cmd.table_hint'), keys: 'table grid ' + NH.t('cmd.table_keys'), text: '| ' + col(1) + ' | ' + col(2) + ' | ' + col(3) + ' |\n| --- | --- | --- |\n| ' + CARET + ' | | |\n' },
+    { label: NH.t('cmd.divider'), hint: '---', keys: 'divider hr line rule ' + NH.t('cmd.divider_keys'), text: '---\n' + CARET },
+    { label: NH.t('ed.spoiler'), hint: NH.t('cmd.spoiler_hint'), keys: 'spoiler toggle hide fold details ' + NH.t('cmd.spoiler_keys'), text: ':::spoiler ' + NH.t('md.spoiler_default') + '\n' + CARET + '\n:::\n' },
+    { label: NH.t('ed.locked'), hint: NH.t('cmd.locked_hint'), keys: 'lock pin secret password ' + NH.t('cmd.locked_keys'), action: 'locked' },
+    { label: NH.t('cmd.date'), hint: '', keys: 'date today ' + NH.t('cmd.date_keys'), text: function () { return today() + CARET; } },
+    { label: NH.t('cmd.time'), hint: '', keys: 'time now clock ' + NH.t('cmd.time_keys'), text: function () { return now() + CARET; } }
   ];
 
   // Caret pixel position inside a textarea, via a mirrored div.
@@ -63,20 +67,21 @@
   function lockDialog(onInsert) {
     if (!lockDlg) {
       lockDlg = NH.h('dialog.dlg', { 'aria-labelledby': 'lock-h' });
+      var t = function (k) { return NH.t(k).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
       lockDlg.innerHTML =
-        '<div class="dlg-head"><h2 id="lock-h">Blok terkunci PIN</h2><button type="button" class="icon-btn" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button></div>' +
-        '<p class="small muted">Isi blok dienkripsi lagi dengan PIN, di dalam catatan yang sudah terenkripsi. Pembaca butuh link dan PIN. Setelah disisipkan, isinya tidak bisa diedit, hanya dihapus lalu dibuat ulang.</p>' +
-        '<form id="lock-form"><div class="field"><label for="lock-title">Judul blok</label><input type="text" id="lock-title" value="Rahasia" maxlength="80"></div>' +
-        '<div class="field"><label for="lock-text">Isi rahasia</label><textarea id="lock-text" rows="4" required></textarea></div>' +
-        '<div class="field"><label for="lock-pin">PIN</label><input type="password" id="lock-pin" minlength="4" required autocomplete="new-password"><span class="hint">Minimal 4 karakter. Kirim PIN lewat jalur lain.</span></div>' +
-        '<div class="btn-row end"><button class="btn primary" type="submit"><svg><use href="#i-lock"/></svg>Kunci &amp; sisipkan</button></div></form>';
+        '<div class="dlg-head"><h2 id="lock-h">' + t('ed.locked') + '</h2><button type="button" class="icon-btn" data-close aria-label="' + t('common.close') + '"><svg><use href="#i-x"/></svg></button></div>' +
+        '<p class="small muted">' + t('lock.lead') + '</p>' +
+        '<form id="lock-form"><div class="field"><label for="lock-title">' + t('lock.title') + '</label><input type="text" id="lock-title" value="' + t('lock.secret') + '" maxlength="80"></div>' +
+        '<div class="field"><label for="lock-text">' + t('lock.text') + '</label><textarea id="lock-text" rows="4" required></textarea></div>' +
+        '<div class="field"><label for="lock-pin">PIN</label><input type="password" id="lock-pin" minlength="4" required autocomplete="new-password"><span class="hint">' + t('lock.pin_hint') + '</span></div>' +
+        '<div class="btn-row end"><button class="btn primary" type="submit"><svg><use href="#i-lock"/></svg>' + t('lock.insert') + '</button></div></form>';
       document.body.appendChild(lockDlg);
     }
     var form = lockDlg.querySelector('form');
     form.reset();
     form.onsubmit = function (e) {
       e.preventDefault();
-      var title = NH.$('#lock-title', lockDlg).value.replace(/[\r\n]/g, ' ').trim() || 'Rahasia';
+      var title = NH.$('#lock-title', lockDlg).value.replace(/[\r\n]/g, ' ').trim() || NH.t('lock.secret');
       NHC.pinSeal(NH.$('#lock-pin', lockDlg).value, NH.$('#lock-text', lockDlg).value).then(function (payload) {
         lockDlg.close();
         onInsert(':::locked ' + title + '\n' + payload.match(/.{1,76}/g).join('\n') + '\n:::\n');
@@ -89,7 +94,7 @@
   window.NHEditor = function (root, opts) {
     opts = opts || {};
     var ta = NH.$('.ed-src', root), preview = NH.$('.ed-preview', root), count = NH.$('.ed-count', root), body = NH.$('.ed-body', root);
-    var menu = NH.h('ul.slash', { role: 'listbox', 'aria-label': 'Perintah' });
+    var menu = NH.h('ul.slash', { role: 'listbox', 'aria-label': NH.t('kbar.commands') });
     body.appendChild(menu);
     var slash = null; // {start, items, active}
     var renderTimer;
@@ -114,7 +119,7 @@
     }
 
     function refresh() {
-      count.textContent = ta.value.length.toLocaleString('id') + ' karakter';
+      count.textContent = NH.t('ed.chars', { n: ta.value.length.toLocaleString(NH.lang) });
       clearTimeout(renderTimer);
       renderTimer = setTimeout(renderPreview, 150);
     }
@@ -158,7 +163,7 @@
       table: function () { insertBlock(COMMANDS[8].text); },
       spoiler: function () {
         var s = ta.selectionStart, e = ta.selectionEnd, sel = ta.value.slice(s, e);
-        insertBlock(':::spoiler Klik untuk membuka\n' + (sel || CARET) + '\n:::\n');
+        insertBlock(':::spoiler ' + NH.t('md.spoiler_default') + '\n' + (sel || CARET) + '\n:::\n');
       },
       locked: function () {
         var s = ta.selectionStart, e = ta.selectionEnd;
@@ -244,7 +249,7 @@
       if (table) {
         e.preventDefault();
         insertBlock(table);
-        NH.toast('Tabel dari spreadsheet diubah ke Markdown', 'ok');
+        NH.toast(NH.t('ed.table_pasted'), 'ok');
       }
     });
 
@@ -253,7 +258,7 @@
     // so while typing on a touch screen a bar sits right above the keyboard.
     // The keyboard doesn't shrink the layout viewport, hence visualViewport.
     if (window.matchMedia && matchMedia('(pointer: coarse)').matches) {
-      var kb = NH.h('div.kbar', { role: 'toolbar', 'aria-label': 'Sisipkan' });
+      var kb = NH.h('div.kbar', { role: 'toolbar', 'aria-label': NH.t('ed.insert') });
       var kbBtn = function (label, icon, title, fn) {
         var b = NH.h('button', { type: 'button', title: title, 'aria-label': title }, icon ? NH.icon(icon) : null, label);
         b.addEventListener('pointerdown', function (e) { e.preventDefault(); }); // keep the keyboard open
@@ -261,22 +266,22 @@
         return b;
       };
       kb.append(
-        kbBtn('/', null, 'Menu perintah', function () {
+        kbBtn('/', null, NH.t('kbar.commands'), function () {
           var s = ta.selectionStart, before = ta.value.slice(lineStart(s), s);
           replace(s, ta.selectionEnd, (before && !/\s$/.test(before) ? ' ' : '') + '/' + CARET);
           checkSlash();
         }),
-        kbBtn('', 'check', 'To-do', CMDS.todo),
-        kbBtn('', 'paste', 'Tempel', function () {
-          if (!navigator.clipboard || !navigator.clipboard.readText) return NH.toast('Tekan lama di kolom teks untuk menempel.');
+        kbBtn('', 'check', NH.t('ed.todo'), CMDS.todo),
+        kbBtn('', 'paste', NH.t('kbar.paste'), function () {
+          if (!navigator.clipboard || !navigator.clipboard.readText) return NH.toast(NH.t('kbar.paste_hold'));
           navigator.clipboard.readText().then(function (t) {
             if (!t) return;
             var table = tsvToTable(t);
             if (table) insertBlock(table); else replace(ta.selectionStart, ta.selectionEnd, t + CARET);
-          }, function () { NH.toast('Izin clipboard ditolak. Tekan lama di kolom teks untuk menempel.'); });
+          }, function () { NH.toast(NH.t('kbar.paste_denied')); });
         }),
-        kbBtn('', 'lock', 'Blok terkunci PIN', CMDS.locked),
-        kbBtn('Selesai', null, 'Tutup keyboard', function () { ta.blur(); })
+        kbBtn('', 'lock', NH.t('ed.locked'), CMDS.locked),
+        kbBtn(NH.t('kbar.done'), null, NH.t('kbar.close'), function () { ta.blur(); })
       );
       kb.lastChild.classList.add('kbar-done');
       document.body.appendChild(kb);

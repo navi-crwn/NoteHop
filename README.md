@@ -35,6 +35,10 @@ make test      # go test -race ./...
 make build     # bin/notehop
 ```
 
+### Bahasa
+
+UI tersedia dalam 8 bahasa: English (default), 中文, Español, العربية (kanan-ke-kiri), Português, 日本語, Русский, Bahasa Indonesia. Pengunjung memilih lewat menu bola dunia di navbar (disimpan di cookie `nh_lang`), atau lewat `?lang=xx`. Teks ada di `web/i18n/*.json`; error API dikirim sebagai `{error, code, vars}` dan diterjemahkan di browser.
+
 ### Konfigurasi (env)
 
 | Variabel | Default | Arti |

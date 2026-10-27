@@ -43,10 +43,12 @@ func (c NoteConfig) String() string {
 	return string(b)
 }
 
-// hookErr is a refusal shown to the user: status + Indonesian message.
+// hookErr is a refusal shown to the user: status, catalog key and the
+// placeholder values for it (see apiErr).
 type hookErr struct {
 	status int
-	msg    string
+	key    string
+	kv     []any
 }
 
 type hookCtx struct {
@@ -128,7 +130,7 @@ func (a *App) apiConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if x.note.Frozen {
-		apiErr(w, http.StatusForbidden, "Snapshot ini dibekukan dan tidak bisa diubah.")
+		apiErr(w, http.StatusForbidden, "err.frozen")
 		return
 	}
 	var q struct {
@@ -160,7 +162,7 @@ func (a *App) apiConfig(w http.ResponseWriter, r *http.Request) {
 	}
 	x.note.Config = cfg.String()
 	if err := a.db.SetConfig(x.note.ID, x.note.Config); err != nil {
-		apiErr(w, http.StatusInternalServerError, "Gagal menyimpan pengaturan.")
+		apiErr(w, http.StatusInternalServerError, "err.config_failed")
 		return
 	}
 	writeJSON(w, http.StatusOK, a.meta(r, x))
@@ -172,15 +174,15 @@ func checkTimes(c NoteConfig, expires, now int64) string {
 	inRange := func(t int64) bool { return t > now && time.Duration(t-now)*time.Second <= maxExpiry }
 	switch {
 	case c.OpenAt != 0 && !inRange(c.OpenAt):
-		return "Waktu buka kapsul harus di masa depan, paling lama 1 tahun lagi."
+		return "err.open_at_range"
 	case c.LockAt != 0 && !inRange(c.LockAt):
-		return "Waktu kunci otomatis harus di masa depan, paling lama 1 tahun lagi."
+		return "err.lock_at_range"
 	case c.OpenAt != 0 && c.LockAt != 0 && c.LockAt <= c.OpenAt:
-		return "Kunci otomatis harus setelah kapsul waktu terbuka."
+		return "err.lock_before_open"
 	case c.OpenAt != 0 && expires != 0 && expires <= c.OpenAt:
-		return "Catatan akan kedaluwarsa sebelum kapsul waktu terbuka."
+		return "err.expires_before_open"
 	case c.LockAt != 0 && expires != 0 && expires <= c.LockAt:
-		return "Catatan akan kedaluwarsa sebelum kunci otomatis berlaku."
+		return "err.expires_before_lock"
 	}
 	return ""
 }

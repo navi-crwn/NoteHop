@@ -8,14 +8,22 @@ import (
 	"testing"
 
 	"github.com/navi-crwn/NoteHop/internal/db"
+	"github.com/navi-crwn/NoteHop/internal/i18n"
 )
 
 func TestPreviewText(t *testing.T) {
-	title, desc := previewText(&db.Note{Encrypted: true, Password: true, MaxViews: 1})
-	if title != "Catatan terenkripsi" || !strings.Contains(desc, "butuh password") || !strings.Contains(desc, "hancur setelah dibaca") {
+	en, id := i18n.Locale{Lang: i18n.Get("en")}, i18n.Locale{Lang: i18n.Get("id")}
+	title, desc := previewText(&db.Note{Encrypted: true, Password: true, MaxViews: 1}, en)
+	if title != "Encrypted note" || !strings.Contains(desc, "needs a password") || !strings.Contains(desc, "destroyed after reading") {
 		t.Fatalf("encrypted: %q %q", title, desc)
 	}
-	title, _ = previewText(&db.Note{Content: `{"t":"Menu rapat","b":"rahasia"}`})
+	if title, _ := previewText(&db.Note{Encrypted: true}, id); title != "Catatan terenkripsi" {
+		t.Fatalf("id: %q", title)
+	}
+	if _, desc := previewText(&db.Note{MaxViews: 1}, en); !strings.HasPrefix(desc, "Destroyed after reading.") {
+		t.Fatalf("capitalised: %q", desc)
+	}
+	title, _ = previewText(&db.Note{Content: `{"t":"Menu rapat","b":"rahasia"}`}, en)
 	if title != "Menu rapat" {
 		t.Fatalf("public note title: %q", title)
 	}
@@ -36,12 +44,12 @@ func TestPreviewBot(t *testing.T) {
 		return string(b)
 	}
 	bot := get("WhatsApp/2.23.20.0 A")
-	if !strings.Contains(bot, `og:title" content="Catatan terenkripsi"`) || strings.Contains(bot, "<script") ||
-		!strings.Contains(bot, "hancur setelah dibaca") || !strings.Contains(bot, "/static/img/og.png") {
+	if !strings.Contains(bot, `og:title" content="Encrypted note"`) || strings.Contains(bot, "<script") ||
+		!strings.Contains(bot, "destroyed after reading") || !strings.Contains(bot, "/static/img/og.png") {
 		t.Fatalf("bot page: %s", bot)
 	}
 	human := get("Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36")
-	if !strings.Contains(human, "/static/js/note.js") || !strings.Contains(human, `og:title" content="Catatan terenkripsi"`) {
+	if !strings.Contains(human, "/static/js/note.js") || !strings.Contains(human, `og:title" content="Encrypted note"`) {
 		t.Fatal("human page should be the app, with the same preview tags")
 	}
 	// Neither request spends the single view.

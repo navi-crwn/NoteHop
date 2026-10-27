@@ -1,48 +1,51 @@
 {{define "page"}}about{{end}}
 {{define "content"}}
 <section class="wrap narrow prose">
-  <span class="eyebrow"><b>Zero-knowledge</b> Server menyimpan, tapi tidak bisa membaca</span>
-  <h1>Cara kerja <span class="grad">NoteHop</span></h1>
-  <p class="lead muted">Catatan dienkripsi di browsermu dengan AES-256-GCM sebelum dikirim. Kuncinya ada di bagian setelah tanda <code>#</code> pada link, dan bagian itu tidak pernah dikirim browser ke server mana pun.</p>
+  <span class="eyebrow"><b>Zero-knowledge</b> {{.L.T "about.eyebrow"}}</span>
+  <h1>{{.L.H "about.title"}}</h1>
+  <p class="lead muted">{{.L.H "about.lead"}}</p>
 
-  <div class="flow" aria-label="Alur enkripsi">
-    <div class="flow-step"><b>1. Kamu menulis</b><span>Teks hanya ada di tab ini.</span></div>
-    <div class="flow-step"><b>2. Browser mengunci</b><span>Kunci acak 256-bit, ditambah password kalau kamu isi.</span></div>
-    <div class="flow-step"><b>3. Server menyimpan acakan</b><span>Plus aturan link: mode, kedaluwarsa, sekali baca.</span></div>
-    <div class="flow-step"><b>4. Penerima membuka</b><span>Link <code>/n/abc#k=…</code> membuka kunci di browser mereka.</span></div>
+  <div class="flow" aria-label="{{.L.T "about.flow"}}">
+    <div class="flow-step"><b>{{.L.T "about.s1"}}</b><span>{{.L.T "about.s1t"}}</span></div>
+    <div class="flow-step"><b>{{.L.T "about.s2"}}</b><span>{{.L.T "about.s2t"}}</span></div>
+    <div class="flow-step"><b>{{.L.T "about.s3"}}</b><span>{{.L.T "about.s3t"}}</span></div>
+    <div class="flow-step"><b>{{.L.T "about.s4"}}</b><span>{{.L.H "about.s4t"}}</span></div>
   </div>
 
-  <h2>Empat jenis link</h2>
+  <h2>{{.L.T "about.links_h"}}</h2>
   <div class="mode-grid">
-    <div class="card"><h3><svg class="ico"><use href="#i-eye"/></svg> Baca saja</h3><p class="muted">Untuk berbagi info, password, konfigurasi.</p></div>
-    <div class="card"><h3><svg class="ico"><use href="#i-edit"/></svg> Edit penuh</h3><p class="muted">Siapa pun dengan link bisa mengubah. Bentrok simpan dideteksi, tidak ada yang tertimpa diam-diam.</p></div>
-    <div class="card"><h3><svg class="ico"><use href="#i-append"/></svg> Tambah saja</h3><p class="muted">Pengunjung hanya bisa menambah baris di bawah. Cocok untuk absensi, kumpulan ide, log laporan.</p></div>
-    <div class="card"><h3><svg class="ico"><use href="#i-check"/></svg> Centang checklist</h3><p class="muted">Isi terkunci, tapi checkbox <code>- [ ]</code> bisa dicentang. Untuk daftar belanja atau runbook tim.</p></div>
+    <div class="card"><h3><svg class="ico"><use href="#i-eye"/></svg> {{.L.T "mode.read"}}</h3><p class="muted">{{.L.T "about.read"}}</p></div>
+    <div class="card"><h3><svg class="ico"><use href="#i-edit"/></svg> {{.L.T "mode.edit"}}</h3><p class="muted">{{.L.T "about.edit"}}</p></div>
+    <div class="card"><h3><svg class="ico"><use href="#i-append"/></svg> {{.L.T "mode.append"}}</h3><p class="muted">{{.L.T "about.append"}}</p></div>
+    <div class="card"><h3><svg class="ico"><use href="#i-check"/></svg> {{.L.T "mode.check"}}</h3><p class="muted">{{.L.H "about.check"}}</p></div>
   </div>
-  <p>Satu catatan bisa punya banyak link dengan izin berbeda: misalnya satu link edit untuk tim, satu link baca saja untuk klien. Server menegakkan izin itu, dan setiap perubahan juga harus membuktikan pengirimnya memegang kunci catatan.</p>
+  <p>{{.L.T "about.links_p"}}</p>
 
-  <h2>Bekukan versi</h2>
-  <p><b>Bekukan versi</b> membuat salinan permanen catatan saat itu juga, dengan link baca saja yang tidak bisa diubah siapa pun, termasuk kamu. Catatan aslinya tetap bisa kamu edit sebagai draf berikutnya.</p>
+  <h2>{{.L.T "note.freeze"}}</h2>
+  <p>{{.L.H "about.freeze"}}</p>
 
-  <h2>Hancur setelah dibaca</h2>
-  <p>Catatan bisa terhapus otomatis setelah dibuka 1, 3, atau 10 kali, atau setelah waktu tertentu. Pembaca diminta menekan tombol dulu, jadi pratinjau link di WhatsApp, Telegram, atau Slack tidak ikut menghabiskan jatah baca. Membuka lewat link admin tidak dihitung.</p>
+  <h2>{{.L.T "about.burn_h"}}</h2>
+  <p>{{.L.T "about.burn"}}</p>
 
-  <h2>Blok rahasia di dalam catatan</h2>
-  <p>Ketik <code>/spoiler</code> untuk blok yang terbuka saat diklik, atau <code>/kunci</code> untuk blok yang dienkripsi lagi dengan PIN. Cocok untuk kunci jawaban atau kredensial di tengah dokumen biasa.</p>
+  <h2>{{.L.T "about.timed_h"}}</h2>
+  <p>{{.L.H "about.timed"}}</p>
+
+  <h2>{{.L.T "about.blocks_h"}}</h2>
+  <p>{{.L.H "about.blocks"}}</p>
 
   <h2 id="raw">Raw &amp; curl</h2>
-  <p>Catatan <b>publik</b> (enkripsi dimatikan) bisa diambil sebagai teks murni:</p>
-  <pre><code>curl -fsSL https://domain-kamu/raw/nama-catatan</code></pre>
-  <p>Catatan terenkripsi tidak bisa dibaca lewat <code>/raw</code>, karena server memang tidak punya kuncinya.</p>
+  <p>{{.L.H "about.raw1"}}</p>
+  <pre><code>curl -fsSL https://{{.L.T "about.your_domain"}}/raw/{{.L.T "about.note_name"}}</code></pre>
+  <p>{{.L.H "about.raw2"}}</p>
 
-  <h2>Akun</h2>
-  <p>Akun itu opsional. Saat masuk, browser menurunkan dua kunci dari password-mu dengan PBKDF2 (600.000 putaran): satu untuk login, satu lagi kunci brankas yang tidak pernah meninggalkan browser. Daftar catatanmu (judul, kunci, link admin) dienkripsi dengan kunci brankas itu.</p>
+  <h2>{{.L.T "about.account_h"}}</h2>
+  <p>{{.L.T "about.account"}}</p>
 
-  <h2>Batasan yang perlu kamu tahu</h2>
+  <h2>{{.L.T "about.limits_h"}}</h2>
   <ul>
-    <li>Siapa pun yang memegang link lengkap bisa membaca catatan. Perlakukan link seperti passwordnya.</li>
-    <li>Gambar dari situs lain tidak dimuat, supaya pembaca tidak bocor ke pihak ketiga.</li>
-    <li>Status centang checklist dan jumlah baris tambahan terlihat oleh server, tapi isinya tidak.</li>
+    <li>{{.L.T "about.limit1"}}</li>
+    <li>{{.L.T "about.limit2"}}</li>
+    <li>{{.L.T "about.limit3"}}</li>
   </ul>
 </section>
 {{end}}

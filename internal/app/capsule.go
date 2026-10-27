@@ -1,6 +1,9 @@
 package app
 
-import "net/http"
+import (
+	"net/http"
+	"time"
+)
 
 // Time capsule: the server holds the ciphertext back until a set time, so
 // even a reader with the full link and key can't open the note early. The
@@ -10,7 +13,7 @@ var timeCapsule = feature{
 	beforeRead: func(c hookCtx) *hookErr {
 		if c.cfg.OpenAt > 0 && c.now.Unix() < c.cfg.OpenAt {
 			// 425 Too Early: the browser keeps counting down instead of giving up.
-			return &hookErr{http.StatusTooEarly, "Catatan ini baru bisa dibuka " + indoTime(c.cfg.OpenAt) + "."}
+			return &hookErr{http.StatusTooEarly, "err.capsule_closed", []any{"time", time.Unix(c.cfg.OpenAt, 0)}}
 		}
 		return nil
 	},
@@ -18,7 +21,7 @@ var timeCapsule = feature{
 	// change everything; keep it simple: no changes until it opens.
 	beforeWrite: func(c hookCtx) *hookErr {
 		if c.cfg.OpenAt > 0 && c.now.Unix() < c.cfg.OpenAt {
-			return &hookErr{http.StatusTooEarly, "Catatan ini belum dibuka. Tunggu sampai " + indoTime(c.cfg.OpenAt) + "."}
+			return &hookErr{http.StatusTooEarly, "err.capsule_no_write", []any{"time", time.Unix(c.cfg.OpenAt, 0)}}
 		}
 		return nil
 	},

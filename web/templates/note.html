@@ -3,90 +3,90 @@
 <section class="wrap note-wrap">
   <div class="card state" id="state" aria-live="polite">
     <div class="spinner" aria-hidden="true"></div>
-    <p class="muted">Membuka catatan…</p>
+    <p class="muted">{{.L.T "note.opening"}}</p>
   </div>
 
   <article class="note hide" id="note">
     <div class="banner hide" id="banner"></div>
     <header class="note-head">
       <div class="note-title">
-        <h1 id="n-title"></h1>
-        <input type="text" id="n-title-input" class="title-input hide" placeholder="Judul" maxlength="200" aria-label="Judul">
+        <h1 id="n-title" dir="auto"></h1>
+        <input type="text" id="n-title-input" class="title-input hide" dir="auto" placeholder="{{.L.T "new.title_label"}}" maxlength="200" aria-label="{{.L.T "new.title_label"}}">
       </div>
       <div class="note-meta" id="n-meta"></div>
       <div class="btn-row note-actions" id="n-actions">
         <span class="save-state" id="save-state" aria-live="polite"></span>
-        <button type="button" class="btn sm hide" id="act-share" data-admin><svg><use href="#i-share"/></svg>Bagikan</button>
-        <button type="button" class="btn sm hide" id="act-freeze" data-admin><svg><use href="#i-snow"/></svg>Bekukan versi</button>
-        <button type="button" class="btn sm" id="act-copy"><svg><use href="#i-copy"/></svg>Salin teks</button>
+        <button type="button" class="btn sm hide" id="act-share" data-admin><svg><use href="#i-share"/></svg>{{.L.T "note.share"}}</button>
+        <button type="button" class="btn sm hide" id="act-freeze" data-admin><svg><use href="#i-snow"/></svg>{{.L.T "note.freeze"}}</button>
+        <button type="button" class="btn sm" id="act-copy"><svg><use href="#i-copy"/></svg>{{.L.T "note.copy_text"}}</button>
         <a class="btn sm hide" id="act-raw" target="_blank" rel="noopener"><svg><use href="#i-code"/></svg>Raw</a>
-        <button type="button" class="btn sm danger hide" id="act-delete"><svg><use href="#i-trash"/></svg>Hapus</button>
+        <button type="button" class="btn sm danger hide" id="act-delete"><svg><use href="#i-trash"/></svg>{{.L.T "common.delete"}}</button>
       </div>
     </header>
 
     <div class="card note-body">
-      <div class="md" id="n-view"></div>
-      <div id="n-edit" class="hide">{{template "editor"}}</div>
+      <div class="md" id="n-view" dir="auto"></div>
+      <div id="n-edit" class="hide">{{template "editor" .}}</div>
     </div>
 
     <section class="entries hide" id="entries" aria-labelledby="entries-h">
-      <h2 id="entries-h">Tambahan <span class="pill" id="entries-count">0</span></h2>
+      <h2 id="entries-h">{{.L.T "note.entries"}} <span class="pill" id="entries-count">0</span></h2>
       <ol class="entry-list" id="entry-list"></ol>
       <form class="card entry-form hide" id="entry-form">
         <div class="entry-row">
-          <input type="text" id="entry-name" placeholder="Namamu" maxlength="40" aria-label="Nama">
-          <span class="hint">Tulisanmu ditambahkan di bawah dan tidak bisa diubah lagi.</span>
+          <input type="text" id="entry-name" placeholder="{{.L.T "note.your_name"}}" maxlength="40" aria-label="{{.L.T "note.name"}}">
+          <span class="hint">{{.L.T "note.entry_hint"}}</span>
         </div>
-        <textarea id="entry-text" rows="3" placeholder="Tulis tambahan… (Markdown didukung, Ctrl+Enter untuk kirim)" maxlength="20000" aria-label="Tambahan"></textarea>
-        <div class="btn-row end"><button class="btn primary" type="submit"><svg><use href="#i-plus"/></svg>Tambahkan</button></div>
+        <textarea id="entry-text" dir="auto" rows="3" placeholder="{{.L.T "note.entry_ph"}}" maxlength="20000" aria-label="{{.L.T "note.entries"}}"></textarea>
+        <div class="btn-row end"><button class="btn primary" type="submit"><svg><use href="#i-plus"/></svg>{{.L.T "note.add"}}</button></div>
       </form>
     </section>
   </article>
 </section>
 
 <dialog class="dlg wide" id="share-dlg" aria-labelledby="share-h">
-  <div class="dlg-head"><h2 id="share-h">Bagikan catatan</h2><button type="button" class="icon-btn" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button></div>
-  <p class="muted small">Setiap link punya izinnya sendiri. Kunci dekripsi ada di bagian <code>#</code> link dan tidak pernah dikirim ke server.</p>
+  <div class="dlg-head"><h2 id="share-h">{{.L.T "share.title"}}</h2><button type="button" class="icon-btn" data-close aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
+  <p class="muted small">{{.L.H "share.lead"}}</p>
   <ul class="link-list" id="link-list"></ul>
   <form class="add-link" id="add-link">
-    <select id="new-mode" aria-label="Mode link baru">
-      <option value="read">Baca saja</option>
-      <option value="edit">Edit penuh</option>
-      <option value="append">Tambah saja</option>
-      <option value="check">Centang checklist</option>
+    <select id="new-mode" aria-label="{{.L.T "share.new_mode"}}">
+      <option value="read">{{.L.T "mode.read"}}</option>
+      <option value="edit">{{.L.T "mode.edit"}}</option>
+      <option value="append">{{.L.T "mode.append"}}</option>
+      <option value="check">{{.L.T "mode.check"}}</option>
     </select>
-    <div class="prefix"><span>/n/</span><input type="text" id="new-slug" placeholder="acak" maxlength="48" autocapitalize="off" spellcheck="false" aria-label="Alamat kustom"></div>
-    <button class="btn" type="submit"><svg><use href="#i-plus"/></svg>Link baru</button>
+    <div class="prefix"><span>/n/</span><input type="text" id="new-slug" placeholder="{{.L.T "share.random"}}" maxlength="48" autocapitalize="off" spellcheck="false" aria-label="{{.L.T "feat.slug"}}"></div>
+    <button class="btn" type="submit"><svg><use href="#i-plus"/></svg>{{.L.T "share.new_link"}}</button>
   </form>
   <div class="admin-box">
-    <div><b><svg class="ico"><use href="#i-key"/></svg> Link admin</b><p class="small muted">Bisa mengedit, membekukan, membuat link, dan menghapus. Simpan sendiri, jangan dibagikan.</p></div>
-    <button type="button" class="btn sm" id="copy-admin"><svg><use href="#i-copy"/></svg>Salin link admin</button>
+    <div><b><svg class="ico"><use href="#i-key"/></svg> {{.L.T "share.admin"}}</b><p class="small muted">{{.L.T "share.admin_text"}}</p></div>
+    <button type="button" class="btn sm" id="copy-admin"><svg><use href="#i-copy"/></svg>{{.L.T "share.copy_admin"}}</button>
   </div>
   <details class="adv share-adv" id="share-adv">
-    <summary>Pengaturan lanjutan</summary>
+    <summary>{{.L.T "common.advanced"}}</summary>
     <div class="pills">
-      <label class="pill-opt"><input type="checkbox" data-timed="open"><span><svg><use href="#i-clock"/></svg>Kapsul waktu</span></label>
-      <label class="pill-opt"><input type="checkbox" data-timed="lock"><span><svg><use href="#i-lock"/></svg>Kunci otomatis</span></label>
+      <label class="pill-opt"><input type="checkbox" data-timed="open"><span><svg><use href="#i-clock"/></svg>{{.L.T "feat.capsule"}}</span></label>
+      <label class="pill-opt"><input type="checkbox" data-timed="lock"><span><svg><use href="#i-lock"/></svg>{{.L.T "feat.lock"}}</span></label>
     </div>
     <form class="feat timed-form hide" data-timed-form="open">
-      <label for="open-at">Bisa dibuka mulai</label>
-      <div class="timed-row"><input type="datetime-local" id="open-at" required><button class="btn sm" type="submit">Simpan</button></div>
+      <label for="open-at">{{.L.T "timed.open_label"}}</label>
+      <div class="timed-row"><input type="datetime-local" id="open-at" required><button class="btn sm" type="submit">{{.L.T "common.save"}}</button></div>
       <span class="hint" data-timed-state="open"></span>
     </form>
     <form class="feat timed-form hide" data-timed-form="lock">
-      <label for="lock-at">Jadi baca saja mulai</label>
-      <div class="timed-row"><input type="datetime-local" id="lock-at" required><button class="btn sm" type="submit">Simpan</button></div>
+      <label for="lock-at">{{.L.T "timed.lock_label"}}</label>
+      <div class="timed-row"><input type="datetime-local" id="lock-at" required><button class="btn sm" type="submit">{{.L.T "common.save"}}</button></div>
       <span class="hint" data-timed-state="lock"></span>
     </form>
   </details>
   <div id="snap-box" class="hide">
-    <h3><svg class="ico"><use href="#i-history"/></svg> Snapshot beku</h3>
+    <h3><svg class="ico"><use href="#i-history"/></svg> {{.L.T "share.snapshots"}}</h3>
     <ul class="link-list" id="snap-list"></ul>
   </div>
 </dialog>
 
 <dialog class="dlg" id="qr-dlg" aria-labelledby="qr-h">
-  <div class="dlg-head"><h2 id="qr-h">Pindai dengan HP</h2><button type="button" class="icon-btn" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button></div>
+  <div class="dlg-head"><h2 id="qr-h">{{.L.T "qr.title"}}</h2><button type="button" class="icon-btn" data-close aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
   <div class="qr" id="qr-box"></div>
   <p class="small muted center" id="qr-mode"></p>
 </dialog>

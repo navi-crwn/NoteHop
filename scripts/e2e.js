@@ -2,6 +2,7 @@ const { chromium } = require('playwright');
 // End-to-end check of the Phase 1 flows in a real browser (Playwright).
 // Start a server on a throwaway database first, then:
 //   NOTEHOP_URL=http://127.0.0.1:8090 node scripts/e2e.js [screenshot-dir]
+// The UI is checked in English, the default language.
 // Exits non-zero when a check fails.
 const BASE = (process.env.NOTEHOP_URL || 'http://127.0.0.1:8090').replace(/\/$/, '');
 const OUT = process.argv[2] || require('os').tmpdir();
@@ -56,7 +57,7 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     const v = await newPage(b); await v.goto(visitorURL(p.url()));
     await v.waitForSelector('.locked-form');
     await v.fill('.locked-form input', '0000'); await v.click('.locked-form button');
-    await v.waitForFunction(() => /PIN salah/.test(document.querySelector('.locked-form').textContent), null, { timeout: 15000 });
+    await v.waitForFunction(() => /Wrong PIN/.test(document.querySelector('.locked-form').textContent), null, { timeout: 15000 });
     ok('PIN: wrong PIN rejected', true);
     await v.fill('.locked-form input', '2468'); await v.click('.locked-form button');
     await v.waitForFunction(() => document.querySelector('#n-view').textContent.includes('kode brankas 4321'), null, { timeout: 15000 });
@@ -121,18 +122,18 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     await v.fill('.pw-form input', 'salah'); await v.click('.pw-form button');
     await v.waitForSelector('#state button.btn.primary', { timeout: 20000 });
     await v.click('#state button.btn.primary');
-    await v.waitForFunction(() => document.querySelector('.locked-err') && /Password salah/.test(document.querySelector('.locked-err').textContent), null, { timeout: 20000 });
+    await v.waitForFunction(() => document.querySelector('.locked-err') && /Wrong password/.test(document.querySelector('.locked-err').textContent), null, { timeout: 20000 });
     ok('Burn+pw: wrong password asks again', true);
     await v.fill('.pw-form input', 'rahasia123'); await v.click('.pw-form button');
     await v.waitForSelector('#state button.btn.primary', { timeout: 20000 });
     ok('Burn+pw: wrong password did not burn the note', true);
     await v.click('#state button.btn.primary');
     await v.waitForFunction(() => document.querySelector('#n-view') && document.querySelector('#n-view').textContent.includes('bom waktu'), null, { timeout: 15000 });
-    ok('Burn+pw: content shown + burned banner', (await v.textContent('#banner')).includes('dihancurkan'));
+    ok('Burn+pw: content shown + burned banner', (await v.textContent('#banner')).includes('destroyed'));
     const v2 = await newPage(b); await v2.goto(visitorURL(admin));
     await v2.waitForSelector('main h1');
     const msg = await v2.textContent('main');
-    ok('Burn+pw: second open is gone', /tidak bisa dibuka|tidak ada|Tidak ditemukan/i.test(msg), msg.replace(/\s+/g, ' ').slice(0, 80));
+    ok('Burn+pw: second open is gone', /doesn't exist|can't be opened|not found/i.test(msg), msg.replace(/\s+/g, ' ').slice(0, 80));
   } catch (e) { ok('Burn flow', false, e.message.split('\n').slice(0,6).join(' ¦ ')); }
 
   // 5. account + dashboard
@@ -149,17 +150,17 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     await p.goto(BASE + '/login?next=/dashboard');
     await p.fill('#username', USER); await p.fill('#password', 'salah-salah-salah'); await p.click('#auth-form button[type=submit]');
     await p.waitForSelector('#auth-err:not(.hide)', { timeout: 30000 });
-    ok('Login: wrong password message', (await p.textContent('#auth-err')).includes('salah'));
+    ok('Login: wrong password message', (await p.textContent('#auth-err')).includes('Wrong'));
     await p.fill('#password', 'katasandi-panjang'); await p.click('#auth-form button[type=submit]');
     await p.waitForURL(/dashboard/, { timeout: 30000 }); await p.waitForSelector('#mine .note-row');
     ok('Dashboard: decrypts again after re-login', (await p.textContent('#mine')).includes('Catatan akun'));
     await p.click('#mine .note-row a.note-link'); await p.waitForSelector('#note:not(.hide)');
     ok('Dashboard: row opens note as admin', await p.isVisible('#act-share'));
     await p.goto(BASE + '/dashboard'); await p.waitForSelector('#mine .note-row');
-    await p.click('#mine .note-row button[title=Hapus]'); await p.waitForTimeout(800);
+    await p.click('#mine .note-row button[title=Delete]'); await p.waitForTimeout(800);
     await p.reload(); await p.waitForSelector('#mine li');
     ok('Dashboard: delete removes note', !(await p.textContent('#mine')).includes('Catatan akun'));
-  } catch (e) { ok('Account flow', false, e.message.split('\n')[0]); }
+  } catch (e) { ok('Account flow', false, e.message.split('\n').slice(0,4).join(' ¦ ')); }
 
   // 6. QR + 7. freeze
   try {
@@ -181,7 +182,7 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     await s.waitForSelector('#note:not(.hide)');
     const sv = await s.textContent('#n-view');
     ok('Freeze: snapshot keeps old text', sv.includes('versi satu') && !sv.includes('versi dua'), sv.slice(0, 60));
-    ok('Freeze: snapshot is read-only with banner', (await s.isHidden('#n-edit')) && (await s.textContent('#banner')).includes('beku'));
+    ok('Freeze: snapshot is read-only with banner', (await s.isHidden('#n-edit')) && (await s.textContent('#banner')).includes('Frozen'));
     const o = await newPage(b); await o.goto(visitorURL(admin)); await o.waitForSelector('#note:not(.hide)');
     ok('Freeze: original has new text', (await o.$eval('.ed-src', t => t.value)) === 'versi dua');
   } catch (e) { ok('QR/freeze flow', false, e.message.split('\n')[0]); }

@@ -117,24 +117,24 @@ func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	c, err := r.Cookie(ssoCookie)
 	if err != nil {
-		a.authFail(w, r, http.StatusBadRequest, "Proses masuk terlalu lama atau dibuka di browser lain. Silakan coba lagi.")
+		a.authFail(w, r, http.StatusBadRequest, "err.sso_cookie")
 		return
 	}
 	state, next, _ := strings.Cut(c.Value, "|")
 	next, _ = url.QueryUnescape(next)
 	t, err := parseTicket(r.FormValue("ticket"), a.cfg.SSOSecret, time.Now())
 	if err != nil || !hmac.Equal([]byte(t.State), []byte(state)) || !a.used.first(t.Jti, t.Exp) {
-		a.authFail(w, r, http.StatusBadRequest, "Link masuk ini sudah tidak berlaku. Silakan coba lagi.")
+		a.authFail(w, r, http.StatusBadRequest, "err.sso_ticket")
 		return
 	}
 	u, err := a.linkSSOUser(t)
 	if errors.Is(err, errRegClosed) {
-		a.authFail(w, r, http.StatusForbidden, "Pendaftaran sedang ditutup, jadi akun SSO baru belum bisa dipakai di sini.")
+		a.authFail(w, r, http.StatusForbidden, "err.sso_closed")
 		return
 	}
 	if err != nil {
 		log.Printf("sso: %v", err)
-		a.authFail(w, r, http.StatusInternalServerError, "Gagal masuk. Silakan coba lagi.")
+		a.authFail(w, r, http.StatusInternalServerError, "err.sso_failed")
 		return
 	}
 	a.startSession(w, u)
@@ -202,8 +202,10 @@ func clip(s string, n int) string {
 	return s
 }
 
-func (a *App) authFail(w http.ResponseWriter, r *http.Request, status int, msg string) {
-	a.render(w, r, status, "error", pageData{Title: "Gagal masuk", Msg: msg, NoIndex: true})
+// authFail shows a sign-in error page; key is a catalog key.
+func (a *App) authFail(w http.ResponseWriter, r *http.Request, status int, key string) {
+	l := a.locale(w, r)
+	a.render(w, r, status, "error", pageData{Title: l.T("title.sign_in_failed"), Msg: l.T(key), NoIndex: true})
 }
 
 // ---------- vault phrase for SSO accounts ----------
@@ -220,7 +222,7 @@ func (a *App) vaultPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login?next="+url.QueryEscape(safeNext(r.URL.Query().Get("next"))), http.StatusSeeOther)
 		return
 	}
-	a.render(w, r, http.StatusOK, "vault", pageData{Title: "Kunci brankas", User: u, NoIndex: true})
+	a.render(w, r, http.StatusOK, "vault", pageData{Title: a.locale(w, r).T("title.vault"), User: u, NoIndex: true})
 }
 
 // apiVault receives HMAC(vault, "notehop/vault-check") from the browser, never
@@ -230,11 +232,11 @@ func (a *App) vaultPage(w http.ResponseWriter, r *http.Request) {
 func (a *App) apiVault(w http.ResponseWriter, r *http.Request) {
 	u := a.currentUser(r)
 	if u == nil {
-		apiErr(w, http.StatusUnauthorized, "Belum masuk.")
+		apiErr(w, http.StatusUnauthorized, "err.not_signed_in")
 		return
 	}
 	if u.SSOID == "" {
-		apiErr(w, http.StatusBadRequest, "Akun ini membuka brankas dengan password.")
+		apiErr(w, http.StatusBadRequest, "err.vault_password_account")
 		return
 	}
 	var q struct {
@@ -245,7 +247,7 @@ func (a *App) apiVault(w http.ResponseWriter, r *http.Request) {
 	}
 	check, err := base64.RawURLEncoding.DecodeString(q.Check)
 	if err != nil || len(check) != 32 {
-		apiErr(w, http.StatusBadRequest, "Data tidak valid.")
+		apiErr(w, http.StatusBadRequest, "err.bad_data")
 		return
 	}
 	if u.VaultCheck == "" {
@@ -256,17 +258,17 @@ func (a *App) apiVault(w http.ResponseWriter, r *http.Request) {
 		}
 		if !errors.Is(err, db.ErrConflict) {
 			log.Printf("vault: %v", err)
-			apiErr(w, http.StatusInternalServerError, "Gagal menyimpan kunci brankas.")
+			apiErr(w, http.StatusInternalServerError, "err.vault_save_failed")
 			return
 		}
 		// Set by another tab meanwhile: check against that one.
 		if u, err = a.db.UserBySSO(u.SSOID); err != nil {
-			apiErr(w, http.StatusInternalServerError, "Gagal memeriksa kunci brankas.")
+			apiErr(w, http.StatusInternalServerError, "err.vault_check_failed")
 			return
 		}
 	}
 	if !checkAuth(check, u.VaultCheck) {
-		apiErr(w, http.StatusUnauthorized, "Kunci brankas salah.")
+		apiErr(w, http.StatusUnauthorized, "err.vault_wrong")
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]bool{"created": false})

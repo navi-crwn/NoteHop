@@ -2,94 +2,94 @@
 {{define "content"}}
 <section class="wrap compose">
   <div class="compose-head">
-    <span class="eyebrow"><b>E2E</b> Dienkripsi di browsermu, server cuma lihat acakan</span>
-    <h1>Tulis, kunci, <span class="grad">bagikan</span>.</h1>
+    <span class="eyebrow"><b>E2E</b> {{.L.T "new.eyebrow"}}</span>
+    <h1>{{.L.H "new.headline"}}</h1>
   </div>
   <form class="compose-grid" id="compose" autocomplete="off">
     <div class="card editor-card">
-      <input type="text" id="title" class="title-input" placeholder="Judul (opsional)" maxlength="200" aria-label="Judul">
-      {{template "editor"}}
+      <input type="text" id="title" class="title-input" dir="auto" placeholder="{{.L.T "new.title_ph"}}" maxlength="200" aria-label="{{.L.T "new.title_label"}}">
+      {{template "editor" .}}
     </div>
-    <aside class="card options" aria-label="Pengaturan berbagi">
+    <aside class="card options" aria-label="{{.L.T "new.options"}}">
       <fieldset class="opt">
-        <legend>Pengunjung link bisa…</legend>
-        <div class="pills" role="radiogroup" aria-label="Mode akses">
-          <label class="pill-opt"><input type="radio" name="mode" value="read" checked><span><svg><use href="#i-eye"/></svg>Baca</span></label>
-          <label class="pill-opt"><input type="radio" name="mode" value="edit"><span><svg><use href="#i-edit"/></svg>Edit</span></label>
-          <label class="pill-opt"><input type="radio" name="mode" value="append"><span><svg><use href="#i-append"/></svg>Tambah</span></label>
-          <label class="pill-opt"><input type="radio" name="mode" value="check"><span><svg><use href="#i-check"/></svg>Centang</span></label>
+        <legend>{{.L.T "new.visitors_can"}}</legend>
+        <div class="pills" role="radiogroup" aria-label="{{.L.T "new.access_mode"}}">
+          <label class="pill-opt"><input type="radio" name="mode" value="read" checked><span><svg><use href="#i-eye"/></svg>{{.L.T "mode.read_short"}}</span></label>
+          <label class="pill-opt"><input type="radio" name="mode" value="edit"><span><svg><use href="#i-edit"/></svg>{{.L.T "mode.edit_short"}}</span></label>
+          <label class="pill-opt"><input type="radio" name="mode" value="append"><span><svg><use href="#i-append"/></svg>{{.L.T "mode.append_short"}}</span></label>
+          <label class="pill-opt"><input type="radio" name="mode" value="check"><span><svg><use href="#i-check"/></svg>{{.L.T "mode.check_short"}}</span></label>
         </div>
         <p class="hint opt-desc" id="mode-desc"></p>
       </fieldset>
 
       <fieldset class="opt">
-        <legend>Fitur</legend>
+        <legend>{{.L.T "new.features"}}</legend>
         <div class="pills">
-          <label class="pill-opt"><input type="checkbox" id="encrypt" data-feature="encrypt" checked><span><svg><use href="#i-shield"/></svg>Enkripsi E2E</span></label>
-          <label class="pill-opt"><input type="checkbox" data-feature="password"><span><svg><use href="#i-lock"/></svg>Password</span></label>
-          <label class="pill-opt"><input type="checkbox" data-feature="expires"><span><svg><use href="#i-clock"/></svg>Kedaluwarsa</span></label>
-          <label class="pill-opt"><input type="checkbox" data-feature="burn"><span><svg><use href="#i-flame"/></svg>Sekali baca</span></label>
-          <label class="pill-opt"><input type="checkbox" data-feature="slug"><span><svg><use href="#i-link"/></svg>Alamat kustom</span></label>
+          <label class="pill-opt"><input type="checkbox" id="encrypt" data-feature="encrypt" checked><span><svg><use href="#i-shield"/></svg>{{.L.T "feat.e2e"}}</span></label>
+          <label class="pill-opt"><input type="checkbox" data-feature="password"><span><svg><use href="#i-lock"/></svg>{{.L.T "feat.password"}}</span></label>
+          <label class="pill-opt"><input type="checkbox" data-feature="expires"><span><svg><use href="#i-clock"/></svg>{{.L.T "feat.expires"}}</span></label>
+          <label class="pill-opt"><input type="checkbox" data-feature="burn"><span><svg><use href="#i-flame"/></svg>{{.L.T "feat.burn"}}</span></label>
+          <label class="pill-opt"><input type="checkbox" data-feature="slug"><span><svg><use href="#i-link"/></svg>{{.L.T "feat.slug"}}</span></label>
         </div>
-        <p class="hint opt-desc" data-for="encrypt-off">Tanpa enkripsi: catatan publik, bisa diambil lewat <code>curl</code>, dan server bisa membaca isinya.</p>
+        <p class="hint opt-desc" data-for="encrypt-off">{{.L.H "new.public_note"}}</p>
 
         <div class="feat hide" data-panel="password">
-          <label for="password">Password</label>
-          <input type="password" id="password" placeholder="Password tambahan" autocomplete="new-password">
-          <span class="hint">Penerima butuh link <em>dan</em> password ini. Kirim lewat jalur berbeda.</span>
+          <label for="password">{{.L.T "feat.password"}}</label>
+          <input type="password" id="password" placeholder="{{.L.T "new.password_ph"}}" autocomplete="new-password">
+          <span class="hint">{{.L.H "new.password_hint"}}</span>
         </div>
         <div class="feat hide" data-panel="expires">
-          <label for="expires">Hilang setelah</label>
+          <label for="expires">{{.L.T "new.expires_after"}}</label>
           <select id="expires">
-            <option value="600">10 menit</option>
-            <option value="3600">1 jam</option>
-            <option value="86400" selected>1 hari</option>
-            <option value="604800">7 hari</option>
-            <option value="2592000">30 hari</option>
+            <option value="600">{{.L.T "dur.10m"}}</option>
+            <option value="3600">{{.L.T "dur.1h"}}</option>
+            <option value="86400" selected>{{.L.T "dur.1d"}}</option>
+            <option value="604800">{{.L.T "dur.7d"}}</option>
+            <option value="2592000">{{.L.T "dur.30d"}}</option>
           </select>
         </div>
         <div class="feat hide" data-panel="burn">
-          <label for="burn">Hancur setelah dibuka</label>
+          <label for="burn">{{.L.T "new.burn_after"}}</label>
           <select id="burn">
-            <option value="1" selected>1×</option>
-            <option value="3">3×</option>
-            <option value="10">10×</option>
+            <option value="1" selected>{{.L.T "new.views" "n" 1}}</option>
+            <option value="3">{{.L.T "new.views" "n" 3}}</option>
+            <option value="10">{{.L.T "new.views" "n" 10}}</option>
           </select>
         </div>
         <div class="feat hide" data-panel="slug">
-          <label for="slug">Alamat kustom</label>
-          <div class="prefix"><span>/n/</span><input type="text" id="slug" placeholder="rapat-senin" maxlength="48" pattern="[a-z0-9][a-z0-9\-]{2,47}" autocapitalize="off" spellcheck="false"></div>
-          <span class="hint" id="slug-hint">Link mudah ditebak cocoknya untuk mode baca.</span>
+          <label for="slug">{{.L.T "feat.slug"}}</label>
+          <div class="prefix"><span>/n/</span><input type="text" id="slug" placeholder="{{.L.T "new.slug_ph"}}" maxlength="48" pattern="[a-z0-9][a-z0-9\-]{2,47}" autocapitalize="off" spellcheck="false"></div>
+          <span class="hint" id="slug-hint"></span>
         </div>
       </fieldset>
 
       <details class="opt adv" id="adv">
-        <summary>Pengaturan lanjutan</summary>
+        <summary>{{.L.T "common.advanced"}}</summary>
         <div class="pills">
-          <label class="pill-opt"><input type="checkbox" data-feature="capsule"><span><svg><use href="#i-clock"/></svg>Kapsul waktu</span></label>
-          <label class="pill-opt"><input type="checkbox" data-feature="lock"><span><svg><use href="#i-lock"/></svg>Kunci otomatis</span></label>
-          <label class="pill-opt"><input type="checkbox" id="remember" checked><span><svg><use href="#i-key"/></svg>Simpan link admin di perangkat ini</span></label>
+          <label class="pill-opt"><input type="checkbox" data-feature="capsule"><span><svg><use href="#i-clock"/></svg>{{.L.T "feat.capsule"}}</span></label>
+          <label class="pill-opt"><input type="checkbox" data-feature="lock"><span><svg><use href="#i-lock"/></svg>{{.L.T "feat.lock"}}</span></label>
+          <label class="pill-opt"><input type="checkbox" id="remember" checked><span><svg><use href="#i-key"/></svg>{{.L.T "feat.remember"}}</span></label>
         </div>
         <div class="feat hide" data-panel="capsule">
-          <label for="open-at">Bisa dibuka mulai</label>
+          <label for="open-at">{{.L.T "timed.open_label"}}</label>
           <input type="datetime-local" id="open-at">
-          <span class="hint">Server menahan isinya sampai waktu ini; pembaca melihat hitung mundur.</span>
+          <span class="hint">{{.L.T "new.capsule_hint"}}</span>
         </div>
         <div class="feat hide" data-panel="lock">
-          <label for="lock-at">Jadi baca saja mulai</label>
+          <label for="lock-at">{{.L.T "timed.lock_label"}}</label>
           <input type="datetime-local" id="lock-at">
-          <span class="hint">Setelah waktu ini link edit, tambah, dan centang hanya bisa membaca. Link admin tetap bisa mengubah.</span>
+          <span class="hint">{{.L.T "new.lock_hint"}}</span>
         </div>
       </details>
 
       <div class="alert err hide" id="compose-err" role="alert"></div>
-      <button class="btn primary lg block" type="submit" id="create"><svg><use href="#i-lock"/></svg><span>Kunci &amp; buat link</span></button>
-      <p class="small faint center tight">{{if .User}}Disimpan ke akun <b>@{{.User.Username}}</b>, terenkripsi dengan kunci akunmu.{{else}}Tanpa akun. <a href="/login">Masuk</a> agar catatan tersimpan di semua perangkatmu.{{end}}</p>
+      <button class="btn primary lg block" type="submit" id="create"><svg><use href="#i-lock"/></svg><span>{{.L.T "new.create"}}</span></button>
+      <p class="small faint center tight">{{if .User}}{{.L.H "new.saved_to" "user" .User.Username}}{{else}}{{.L.H "new.no_account"}}{{end}}</p>
     </aside>
   </form>
 
   <section class="recent hide" id="recent" aria-labelledby="recent-h">
-    <div class="recent-head"><h2 id="recent-h">Di perangkat ini</h2><button type="button" class="btn sm ghost" id="recent-clear">Lupakan semua</button></div>
+    <div class="recent-head"><h2 id="recent-h">{{.L.T "new.on_device"}}</h2><button type="button" class="btn sm ghost" id="recent-clear">{{.L.T "new.forget_all"}}</button></div>
     <ul class="note-list" id="recent-list"></ul>
   </section>
 </section>

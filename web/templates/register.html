@@ -3,22 +3,22 @@
 <section class="wrap auth-wrap">
   {{if .Reg}}
   <form class="card auth" id="auth-form" data-kind="register">
-    <h1>Buat akun</h1>
-    <p class="muted">Akun menyimpan daftar catatanmu, terenkripsi dengan kunci dari password-mu. <b>Lupa password berarti catatan di akun tidak bisa dibuka</b>, karena kami pun tidak bisa.</p>
+    <h1>{{.L.T "auth.register_title"}}</h1>
+    <p class="muted">{{.L.H "auth.register_lead"}}</p>
     {{if .SSO}}
-    <a class="btn lg block sso" href="/auth/sso?next={{.Next}}"><svg><use href="#i-link"/></svg><span>Masuk dengan SSO</span></a>
-    <p class="small muted center">Satu akun untuk SSO, ImageApp, dan NoteHop.</p>
-    <div class="or"><span>atau pakai akun NoteHop</span></div>
+    <a class="btn lg block sso" href="/auth/sso?next={{.Next}}"><svg><use href="#i-link"/></svg><span>{{.L.T "auth.sso"}}</span></a>
+    <p class="small muted center">{{.L.T "auth.sso_note"}}</p>
+    <div class="or"><span>{{.L.T "auth.or_local"}}</span></div>
     {{end}}
-    <div class="field"><label for="username">Username</label><input type="text" id="username" autocomplete="username" autocapitalize="off" spellcheck="false" pattern="[a-z0-9_]{3,32}" required><span class="hint">3–32 huruf kecil, angka, atau garis bawah.</span></div>
-    <div class="field"><label for="password">Password</label><input type="password" id="password" autocomplete="new-password" minlength="10" required><span class="hint">Minimal 10 karakter. Lebih panjang lebih baik.</span></div>
-    <div class="field"><label for="password2">Ulangi password</label><input type="password" id="password2" autocomplete="new-password" minlength="10" required></div>
+    <div class="field"><label for="username">{{.L.T "auth.username"}}</label><input type="text" id="username" autocomplete="username" autocapitalize="off" spellcheck="false" pattern="[a-z0-9_]{3,32}" required><span class="hint">{{.L.T "auth.username_hint"}}</span></div>
+    <div class="field"><label for="password">{{.L.T "auth.password"}}</label><input type="password" id="password" autocomplete="new-password" minlength="10" required><span class="hint">{{.L.T "auth.password_hint"}}</span></div>
+    <div class="field"><label for="password2">{{.L.T "auth.password_again"}}</label><input type="password" id="password2" autocomplete="new-password" minlength="10" required></div>
     <div class="alert err hide" id="auth-err" role="alert"></div>
-    <button class="btn primary lg block" type="submit"><span>Daftar</span></button>
-    <p class="small muted center">Sudah punya akun? <a href="/login">Masuk</a></p>
+    <button class="btn primary lg block" type="submit"><span>{{.L.T "auth.sign_up"}}</span></button>
+    <p class="small muted center">{{.L.T "auth.have_account"}} <a href="/login">{{.L.T "auth.sign_in"}}</a></p>
   </form>
   {{else}}
-  <div class="card auth"><h1>Pendaftaran ditutup</h1><p class="muted">Kamu tetap bisa membuat dan membagikan catatan tanpa akun.</p><a class="btn primary" href="/">Buat catatan</a></div>
+  <div class="card auth"><h1>{{.L.T "auth.closed_title"}}</h1><p class="muted">{{.L.T "auth.closed_text"}}</p><a class="btn primary" href="/">{{.L.T "auth.closed_cta"}}</a></div>
   {{end}}
 </section>
 {{end}}
