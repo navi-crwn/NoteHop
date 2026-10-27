@@ -337,6 +337,13 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 - **Kasus.** Bagikan potongan konfigurasi ke rekan tanpa takut terjalankan; catatan rapat polos dari HP; dokumen dengan bagian penting distabilo.
 - **Uji.** `scripts/e2e-types.js` (49 cek).
 
+### 27c. Catatan Web yang bisa dijalankan ✅
+- **Fungsi.** Tipe **Web** di pemilih tipe: file `index.html`, `style.css`, `app.js` (atau templat Kosong / Game canvas), tambah/ganti nama/hapus file di penjelajah, **Jalankan** (Ctrl+Enter) atau **Otomatis**, hasil di kanan dengan konsol (log, peringatan, error + `file:baris`), lebar HP/tablet/penuh, **Layar penuh** (penjelajah kiri, kode tengah, hasil kanan; Esc untuk keluar). Di HP: tab Kode / Hasil / Konsol. CSS dan JS milik catatan otomatis tersambung ke halaman, walau tidak di-`<link>`.
+- **Pembaca.** File tampil hanya-baca; kode **tidak pernah jalan sendiri**: muncul kartu "Jalankan kode ini?" lebih dulu.
+- **Batasan.** Tanpa internet (tidak bisa memuat library dari CDN, `fetch`, gambar luar). Hanya HTML/CSS/JS (bahasa lain cukup tipe Kode). Maksimal 20 file. `import` antar-file modul belum didukung. Tulis bersama tetap jalan, tapi kursor tamu tidak ditampilkan di catatan Web. Kode dengan loop tak berujung bisa membuat tab berat (di Chrome biasanya hanya bingkainya).
+- **Keamanan.** Bingkai `/run` ber-sandbox tanpa `allow-same-origin` (origin kosong): tidak bisa membaca halaman induk, cookie, localStorage, kunci catatan; tidak bisa pindah halaman atau membuka jendela. CSP bingkai: `connect-src 'none'`, `form-action 'none'`, `frame-src 'none'`, `worker-src 'none'`, gambar hanya `data:`/`blob:`. Bingkai baru setiap kali dijalankan. Server tidak pernah menjalankan kode; unduhan tetap `.txt`.
+- **Uji.** `internal/app/ai_test.go` (`TestRunFrame`), `scripts/e2e-web.js` (33 cek, termasuk upaya menembus sandbox).
+
 ### 28. Tampilan Teks ⇄ Papan
 - **Fungsi.** Catatan dengan `## Kolom` + daftar tampil sebagai papan Kanban; kartu bisa digeser.
 - **Batasan.** Form, Slide, dan Diff ada di tempat lain (belum satu pill).

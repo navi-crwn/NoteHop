@@ -23,7 +23,7 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 - Aturan nama (`internal/app/names.go` + `names/*.txt`): nama link sendiri minimal 7 karakter, nama cadangan + awalan, kata kasar, masa tunggu 90 hari (`slug_holds`; takedown 365 hari). Env `NOTEHOP_ADMINS`, `NOTEHOP_RESERVED`, `NOTEHOP_CONTACT`. Panduan fitur + risiko + mitigasi: `docs/PANDUAN-FITUR.md`.
 - Frontend tanpa build step: `web/templates/*.html` + `web/static/js/*.js` + `web/static/css/app.css`. Vendor di `web/static/vendor/`: marked 15.0.12, DOMPurify 3.2.6, highlight.js 11.11.1, qrcode-generator 1.4.4, Mermaid 11.12.0 (di iframe sandbox), Yjs 13.6.27 (bundle IIFE `window.Y`).
 - Progres per batch ada di `docs/PROGRESS.md` (A browser, B server, C lampiran, D real-time, E integrasi). Fitur yang sengaja tidak dibuat juga dicatat di sana beserta alasannya.
-- Tes: `go test -race ./...` (Go) dan 11 skrip Playwright di `scripts/` (lihat Perintah). Jalankan semua setelah mengubah UI.
+- Tes: `go test -race ./...` (Go) dan 12 skrip Playwright di `scripts/` (lihat Perintah). Jalankan semua setelah mengubah UI.
 - Real-time: server hanya relay ciphertext (`live.go`); dokumen Yjs ada di browser; penulis tertua di room yang menyimpan (PUT biasa).
 
 ## Aturan yang harus dijaga
@@ -39,9 +39,10 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 9. **Teks UI selalu lewat katalog** `web/i18n/<lang>.json` (en, zh, es, ar, pt, fr, ja, ru, id; English = sumber dan fallback). Template: `{{.L.T "kunci"}}` / `{{.L.H "kunci"}}` (bermarkup). JS: `NH.t('kunci', {var})`. Go: `apiErr(w, status, "err.kunci", "var", nilai)`. Kunci baru wajib ditambahkan ke **semua 9 file**; `go test ./internal/i18n` memeriksa kunci, placeholder, dan tag. Arab = RTL: pakai properti CSS logis (`margin-inline-start`, bukan `margin-left`).
 10. Gaya kode: komentar singkat yang menjelaskan *kenapa*, tanpa framework frontend.
 11. **Bahasa UI awam.** Label menjelaskan hasil ("Hapus setelah dibaca"), bukan istilah ("burn after reading"). Detail teknis masuk `faq.*` di `/faq`; nama teknis boleh di atribut `data-tech` (tampil hanya di mode teknis). Beranda `/` (`home.html`, `home.css`, `home.js`): pengenalan, catatan cepat, bento fitur; aset 3D di `static/img/home/` dan font self-host di `static/fonts/` (OFL). Halaman Buat ada di `/new`: kartu "Mau bikin apa?", tiga pertanyaan (siapa boleh apa, seberapa rahasia, simpan selama) yang menjadi preset untuk toggle di Pengaturan lanjutan; toggle tetap sumber kebenaran yang dikirim ke server.
-12. **Tipe catatan** (Biasa/Dokumen/Kode) disimpan di dalam isi terenkripsi: `{t, b, y, l}` (`y` kosong = Dokumen). Setiap tempat yang meng-encode isi catatan wajib membawa tipenya (`ed.fields()`, `N.type()`). Kode **tidak pernah dijalankan**: tampil lewat `textContent`/highlight.js, unduhan selalu `.txt`, `/raw` tetap `text/plain`. Gaya dari menu klik kanan (`format.js`) adalah `[teks]{.nama}` dengan daftar nama tetap di `SPAN` (`md.js`) yang menjadi class, bukan atribut `style`.
+12. **Tipe catatan** (Biasa/Dokumen/Kode/Web) disimpan di dalam isi terenkripsi: `{t, b, y, l}` (`y` kosong = Dokumen). Setiap tempat yang meng-encode isi catatan wajib membawa tipenya (`ed.fields()`, `N.type()`). Kode **tidak pernah dijalankan**: tampil lewat `textContent`/highlight.js, unduhan selalu `.txt`, `/raw` tetap `text/plain`. Gaya dari menu klik kanan (`format.js`) adalah `[teks]{.nama}` dengan daftar nama tetap di `SPAN` (`md.js`) yang menjadi class, bukan atribut `style`.
 13. **Kunci brankas tidak pernah berubah.** Ganti/reset password hanya membungkus ulang kunci itu (`vault_wrap`, `recovery.go`, `NHC.vaultKey`). Jangan pernah menurunkan kunci brankas ulang dari password baru, atau daftar catatan lama hilang.
 14. **AI**: browser memanggil penyedia langsung (`ai.js`); server tidak pernah meneruskan teks atau kunci. Origin penyedia hanya masuk `connect-src` di halaman editor (`cspFor`). Penyedia baru = tambah di `PROVIDERS` (ai.js) dan `aiOrigins` (middleware.go).
+15. **Catatan Web** (`web.js`): kode hanya berjalan di bingkai `/run` (`runFrame`, `runCSP`) dengan `sandbox="allow-scripts allow-forms allow-modals"`. Jangan pernah menambah `allow-same-origin`, `allow-popups`, `allow-top-navigation`, atau membuka `connect-src` bingkai itu. Kode orang lain tidak boleh jalan tanpa klik pembaca.
 
 ## Perintah
 
@@ -49,7 +50,7 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 go run ./cmd/notehop -addr 127.0.0.1:8090 -db data/dev.db   # dev
 go test -race ./...                                          # tes
 go build -o bin/notehop ./cmd/notehop                        # build
-./scripts/e2e-all.sh                                         # semua 11 skrip browser, server + DB baru per skrip
+./scripts/e2e-all.sh                                         # semua 12 skrip browser, server + DB baru per skrip
 make linux                                                   # binary statis amd64/arm64 untuk VPS
 notehop backup -db notehop.db salinan.db                     # backup saat berjalan
 ```
