@@ -18,6 +18,8 @@ Mau coba catatan online tanpa memasang apa pun? Coba di **[note.hel.ink](https:/
 - **Menu klik kanan** di kotak teks Dokumen: tebal/miring/garis bawah/coret/superskrip/subskrip, potong-salin-tempel, warna teks dan stabilo `[teks]{.red .hl-yellow}`, ukuran `{.small|.large|.huge}`, rata `:::center` / `:::right` / `:::justify`, huruf besar/kecil, tautan, hapus format. Shift + klik kanan membuka menu browser; di HP lewat tombol **Aa** di bilah keyboard. Gaya memakai class tetap (bukan atribut `style`), jadi CSP tidak perlu dilonggarkan.
 - **Spoiler** `:::spoiler` dan **blok terkunci PIN** `:::locked` (dienkripsi lagi dengan PIN).
 - **Akun opsional**: password tidak dikirim ke server; daftar catatan dienkripsi dengan kunci brankas lokal.
+- **Kode pemulihan** (halaman `/security`): 8 kode sekali pakai yang membuka lagi akun (atau kunci brankas akun SSO) kalau lupa password, plus ganti password. Server tidak pernah melihat kode, password, maupun kunci brankas.
+- **Bantuan menulis (AI), opsional**: ringkas, tulis ulang, perbaiki ejaan, terjemahkan, lanjutkan, jadikan poin. Pilih AI bawaan browser (Chrome, tidak keluar dari perangkat) atau **kunci API sendiri** (Anthropic, OpenAI, Google Gemini, OpenRouter, Ollama di komputer sendiri). Browser memanggil penyedia langsung; NoteHop tidak melihat teks maupun kunci. Hasil baru masuk ke catatan setelah pengguna menekan Ganti/Sisipkan.
 - **Keamanan**: CSP ketat, tanpa inline script, `noindex`, `Referrer-Policy: no-referrer`, gambar pihak ketiga diblokir, tolak permintaan lintas situs, rate limit.
 
 ## Fitur lanjutan
@@ -62,6 +64,8 @@ UI tersedia dalam 9 bahasa (7 bahasa pengguna internet terbanyak + Русски�
 | `NOTEHOP_SITE` | `NoteHop` | Nama situs |
 | `NOTEHOP_SHARE_URL` | kosong | Domain kedua untuk link yang dibagikan (misalnya `https://nhop.link`). Login, dashboard, editor, dan link admin tetap di `NOTEHOP_BASE_URL` |
 | `NOTEHOP_FILE_MB` | `10` | Ukuran maksimal satu lampiran (MB). `0` = lampiran mati. Di nginx naikkan `client_max_body_size` juga |
+| `NOTEHOP_AI` | `on` | Bantuan menulis: `on` (AI di perangkat + kunci API sendiri; `connect-src` CSP di halaman editor dibuka untuk penyedia di `middleware.go`), `device` (hanya AI bawaan browser), `off` (tanpa tombol AI) |
+| `NOTEHOP_AI_ORIGINS` | kosong | Origin tambahan untuk penyedia "Lainnya" (kompatibel OpenAI), mis. `https://ai.perusahaan.example`. Hanya origin, dipisah koma |
 | `NOTEHOP_FILES_IP_MB` | `100` | Lampiran yang boleh diunggah satu alamat IP per 24 jam (MB). `0` = tanpa batas |
 | `NOTEHOP_FILES_TOTAL_MB` | `2048` | Batas total semua lampiran yang masih hidup (disimpan di SQLite, dihapus setelah 24 jam). `0` = tanpa batas |
 | `NOTEHOP_SSH_ADDR` | kosong | Aktifkan SSH untuk catatan publik, misalnya `:2222` |
@@ -121,6 +125,8 @@ admin  = 32 byte acak                      → link admin: #k=<K>&a=<admin>; ser
 
 Yang terlihat oleh server: ukuran ciphertext, waktu, jumlah view, mode link, status centang (indeks + benar/salah), jumlah baris tambahan.
 
+- **Pemulihan akun**: sejak password diganti atau direset, kunci brankas tidak lagi sama dengan 32 byte pertama PBKDF2 password; 32 byte itu menjadi kunci pembungkus, dan `users.vault_wrap = AES-GCM(kunci itu, kunci brankas)`. Kunci brankas sendiri tidak pernah berubah, jadi daftar catatan lama tetap terbuka. Kode pemulihan: 16 karakter (80 bit); `HKDF-SHA256(kode, salt "notehop/recovery/"+username)` → 32 byte kunci yang menyegel kunci brankas (`recovery_codes.wrap`) + 32 byte bukti; server hanya menyimpan SHA-256 bukti itu.
+
 ## API
 
 Semua JSON. Header: `X-Admin` (token admin), `X-Write` (bukti kunci).
@@ -162,7 +168,11 @@ Semua JSON. Header: `X-Admin` (token admin), `X-Write` (bukti kunci).
 | `GET /raw/{token}` | siapa saja | Teks murni (hanya catatan publik) |
 | `POST /api/register` · `/api/login` · `/api/logout`, `GET /api/me`, `GET /api/me/notes` | | Akun |
 | `GET /auth/sso` · `GET /auth/sso/callback` | | Single sign-on (tiket HMAC, `aud`, `state` + cookie `nh_sso`, `jti` sekali pakai) |
-| `POST /api/vault` | akun SSO | `{check}`: simpan cek frasa brankas pertama kali (201), atau periksa (200 / 401) |
+| `POST /api/vault` | akun SSO | `{check}`: simpan cek frasa brankas pertama kali (201), atau periksa (200 / 401). Jawaban berisi `vault_wrap` |
+| `POST /api/me/recovery` | akun | `{current, codes:[{proof, wrap}]×8}`: ganti semua kode pemulihan (butuh secret sekarang) |
+| `POST /api/me/secret` | akun | `{current, next, vault_wrap}`: ganti password (atau kunci brankas SSO); perangkat lain keluar |
+| `POST /api/recover` | publik | `{username, proof}` (akun SSO: tanpa username, harus masuk): cek kode → `{wrap, ticket}` |
+| `POST /api/recover/finish` | publik | `{ticket, next, vault_wrap}`: password baru, kode hangus, semua sesi keluar, sesi baru dimulai |
 
 ## Struktur
 

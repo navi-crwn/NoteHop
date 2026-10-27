@@ -16,11 +16,26 @@ import (
 const csp = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; " +
 	"connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 
+// aiOrigins are the AI providers a reader can bring their own key for (ai.js).
+// The browser calls them directly; NoteHop never sees the text or the key.
+var aiOrigins = []string{"https://api.anthropic.com", "https://api.openai.com", "https://generativelanguage.googleapis.com",
+	"https://openrouter.ai", "http://localhost:11434", "http://127.0.0.1:11434"}
+
+// cspFor opens connect-src to the AI providers on the pages with an editor
+// only, and only when the operator allows API keys (NOTEHOP_AI=on).
+func (a *App) cspFor(path string) string {
+	if a.cfg.aiMode() != "on" || !(path == "/new" || strings.HasPrefix(path, "/n/")) {
+		return csp
+	}
+	extra := strings.Join(append(append([]string{}, aiOrigins...), a.cfg.AIOrigins...), " ")
+	return strings.Replace(csp, "connect-src 'self'", "connect-src 'self' "+extra, 1)
+}
+
 // secure adds security headers, rejects cross-site writes and rate-limits the API.
 func (a *App) secure(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()
-		h.Set("Content-Security-Policy", csp)
+		h.Set("Content-Security-Policy", a.cspFor(r.URL.Path))
 		h.Set("Referrer-Policy", "no-referrer")
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("X-Frame-Options", "DENY")
@@ -52,6 +67,8 @@ func (a *App) secure(next http.Handler) http.Handler {
 				bucket, rate = "i", 60
 			case r.URL.Path == "/api/login" || r.URL.Path == "/api/register" || r.URL.Path == "/api/vault":
 				bucket, rate = "a", 15
+			case strings.HasPrefix(r.URL.Path, "/api/recover") || r.URL.Path == "/api/me/secret" || r.URL.Path == "/api/me/recovery":
+				bucket, rate = "k", 20 // recovery.go adds a limit per account
 			}
 			if !a.limit.allow(bucket+a.clientIP(r), rate) {
 				w.Header().Set("Retry-After", "60")

@@ -1,0 +1,33 @@
+{{define "page"}}recover{{end}}
+{{define "content"}}
+{{$sso := and .User .User.SSOID}}
+<section class="wrap auth-wrap">
+  <form class="card auth" id="rec-form"{{if $sso}} data-sso="{{.User.SSOID}}" data-user="{{.User.Username}}"{{end}}>
+    <h1>{{if $sso}}{{.L.T "rec.title_sso"}}{{else}}{{.L.T "rec.title"}}{{end}}</h1>
+    <p class="muted">{{.L.T "rec.lead"}}</p>
+    <ol class="steps2" aria-label="{{.L.T "rec.steps"}}"><li class="on" id="st1">{{.L.T "rec.step1"}}</li><li id="st2">{{if $sso}}{{.L.T "rec.step2_sso"}}{{else}}{{.L.T "rec.step2"}}{{end}}</li></ol>
+    <div id="rec-step1">
+      {{if not $sso}}<div class="field"><label for="username">{{.L.T "auth.username"}}</label><input type="text" id="username" autocomplete="username" autocapitalize="off" spellcheck="false" required{{with .User}} value="{{.Username}}"{{end}}></div>{{end}}
+      <div class="field"><label for="code">{{.L.T "rec.code"}}</label><input type="text" id="code" class="mono" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX" required></div>
+    </div>
+    <div id="rec-step2" class="hide">
+      <p class="done-box"><svg><use href="#i-tick"/></svg><span id="rec-ok"></span></p>
+      <div class="field"><label for="new1">{{if $sso}}{{.L.T "sec.new_phrase"}}{{else}}{{.L.T "sec.new_password"}}{{end}}</label><input type="password" id="new1" autocomplete="new-password" minlength="{{if $sso}}8{{else}}10{{end}}"><span class="hint">{{if $sso}}{{.L.T "vault.hint"}}{{else}}{{.L.T "auth.password_hint"}}{{end}}</span></div>
+      <div class="field"><label for="new2">{{.L.T "sec.again"}}</label><input type="password" id="new2" autocomplete="new-password"></div>
+    </div>
+    <div class="alert err hide" id="rec-err" role="alert"></div>
+    <button class="btn primary lg block" type="submit"><span>{{.L.T "rec.next"}}</span></button>
+    <p class="small muted">{{if $sso}}{{.L.T "rec.fine_sso" "name" .SSOName}}{{else}}{{.L.T "rec.fine"}}{{end}}</p>
+  </form>
+  <div class="card auth hide" id="rec-done" role="status">
+    <h1>{{.L.T "rec.done_h"}}</h1>
+    <p class="muted" id="rec-done-p"></p>
+    <a class="btn primary lg block" href="/dashboard">{{.L.T "nav.mine"}}</a>
+    <a class="btn block" href="/security">{{.L.T "rec.new_codes"}}</a>
+  </div>
+</section>
+{{end}}
+{{define "scripts"}}
+<script src="/static/js/crypto.js?v={{.Asset}}"></script>
+<script src="/static/js/recover.js?v={{.Asset}}"></script>
+{{end}}
