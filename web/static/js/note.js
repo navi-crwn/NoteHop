@@ -212,7 +212,7 @@
       return;
     }
     var canCheck = S.mode === 'check' && !S.meta.frozen && !!S.keys;
-    NHMD.render($('#n-view'), S.body, { checks: S.checks, interactive: canCheck, onCheck: toggleCheck });
+    NHMD.render($('#n-view'), S.body, { checks: S.checks, interactive: canCheck, onCheck: toggleCheck, copy: true });
   }
 
   function toggleCheck(i, checked, input) {

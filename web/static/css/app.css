@@ -250,6 +250,14 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); width: 16
 @media (max-width: 899px) { .wide-only { display: none; } }
 .ed-foot { display: flex; justify-content: space-between; gap: 8px; padding: 6px 12px; border-top: 1px solid var(--line); font-size: .78rem; color: var(--faint); }
 
+.kbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; display: none; gap: 6px; align-items: center;
+  padding: 6px 10px calc(6px + env(safe-area-inset-bottom)); background: var(--panel); border-top: 1px solid var(--line-2); box-shadow: 0 -6px 20px rgba(0, 0, 0, .12); }
+.kbar.show { display: flex; }
+.kbar button { min-width: 44px; height: 38px; display: inline-grid; place-items: center; padding: 0 10px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--panel-2); color: var(--text); font: 700 1.05rem var(--mono); cursor: pointer; }
+.kbar button svg { width: 18px; height: 18px; }
+.kbar .kbar-done { margin-left: auto; font-family: inherit; font-size: .9rem; font-weight: 600; }
+body.kbar-on { padding-bottom: 56px; }
 .slash { position: absolute; z-index: 30; display: none; width: 250px; max-height: 280px; overflow-y: auto; margin: 0; padding: 5px; list-style: none;
   background: var(--panel); border: 1px solid var(--line-2); border-radius: 12px; box-shadow: var(--shadow); }
 .slash.open { display: block; }
@@ -281,6 +289,12 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); width: 16
 .code-copy svg { width: 14px; height: 14px; }
 .md pre:hover .code-copy, .code-copy:focus-visible { opacity: 1; }
 @media (hover: none) { .code-copy { opacity: 1; } }
+.md .cp { position: relative; }
+.blk-copy { position: absolute; top: 0; right: -4px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 7px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--muted); cursor: pointer; opacity: 0; transition: opacity .15s; }
+.blk-copy svg { width: 13px; height: 13px; }
+.md .cp:hover > .blk-copy, .md .cp.cp-on > .blk-copy, .blk-copy:focus-visible { opacity: 1; }
+.md li.cp:has(li.cp:hover) > .blk-copy { opacity: 0; }
 .img-blocked { display: inline-flex; gap: 6px; align-items: center; padding: 4px 10px; border: 1px dashed var(--line-2); border-radius: 8px; font-size: .85rem; color: var(--muted); }
 .img-blocked svg { width: 14px; height: 14px; }
 details.spoiler { margin: 0 0 1em; border: 1px solid var(--line-2); border-radius: 11px; background: var(--panel-2); }

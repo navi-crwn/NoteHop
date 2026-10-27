@@ -44,10 +44,10 @@ Prinsip yang dipegang semua fitur:
 - 🔜 Smart paste gambar → WebP terkompresi (lampiran terenkripsi)
 - 🔜 Mermaid diagram & kanvas coretan
 - 🔜 Command palette `Ctrl+K` + floating bubble toolbar saat teks diseleksi
-- 🔜 Sticky keyboard bar di HP (`⚡ /`, `☑️`, `📋`, `🔒`)
+- ✅ Sticky keyboard bar di HP (`/`, to-do, tempel, blok PIN, selesai), menempel di atas keyboard lewat `visualViewport`
 - 🔜 Offline-first (PWA + IndexedDB, sinkron saat online lagi)
 - 🔜 Mode "Usul Edit" (suggesting/pull request): pengunjung read-only mengusulkan, pemilik Terima/Tolak
-- 🔜 Copy button per baris/blok di mode baca
+- ✅ Copy button per baris/blok di mode baca (paragraf, item daftar, kutipan, tabel sebagai TSV)
 
 ## Fase 3: Kontrol waktu & akses lanjutan
 

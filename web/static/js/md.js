@@ -145,7 +145,44 @@
     });
   }
 
-  // render(el, src, {checks, interactive, onCheck})
+  // Text of one block for its copy button: a list item without its sublists,
+  // a table as tab-separated rows (pastes into spreadsheets).
+  function blockText(el) {
+    if (el.tagName === 'TABLE') {
+      return Array.prototype.map.call(el.rows, function (r) {
+        return Array.prototype.map.call(r.cells, function (c) { return c.textContent.trim(); }).join('\t');
+      }).join('\n');
+    }
+    var c = el.cloneNode(true);
+    c.querySelectorAll('ul, ol, .blk-copy').forEach(function (x) { x.remove(); });
+    return c.textContent.replace(/[ \t]+\n/g, '\n').trim();
+  }
+
+  // Read mode: a copy button on each paragraph, list item, quote and table.
+  // Shown on hover, or on tap where there is no hover.
+  function copyButtons(el) {
+    var blocks = el.querySelectorAll(':scope > p, :scope > blockquote, :scope > table, li, details.spoiler > p');
+    Array.prototype.forEach.call(blocks, function (b) {
+      if (b.closest('.locked') || !b.textContent.trim()) return;
+      var btn = NH.h('button.blk-copy', { type: 'button', title: 'Salin bagian ini', 'aria-label': 'Salin bagian ini' }, NH.icon('copy'));
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        NH.copy(blockText(b), 'Disalin');
+      });
+      b.classList.add('cp');
+      b.appendChild(btn);
+    });
+    if (el.dataset.cpTap) return;
+    el.dataset.cpTap = '1';
+    el.addEventListener('click', function (e) {
+      if (e.target.closest('a, input, button, summary')) return;
+      var b = e.target.closest('.cp');
+      el.querySelectorAll('.cp-on').forEach(function (x) { if (x !== b) x.classList.remove('cp-on'); });
+      if (b) b.classList.toggle('cp-on');
+    });
+  }
+
+  // render(el, src, {checks, interactive, onCheck, copy})
   function render(el, src, opts) {
     opts = opts || {};
     el.innerHTML = html(src);
@@ -164,6 +201,7 @@
     highlight(el);
     images(el);
     lockedBlocks(el);
+    if (opts.copy) copyButtons(el);
     if (!el.textContent.trim() && !el.querySelector('.locked, input, hr')) el.appendChild(NH.h('p.faint', 'Belum ada isi.'));
   }
 
