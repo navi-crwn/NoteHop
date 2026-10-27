@@ -9,6 +9,7 @@
     <div class="field"><label for="password">{{.L.T "auth.password"}}</label><input type="password" id="password" autocomplete="current-password" required></div>
     <div class="alert err hide" id="auth-err" role="alert"></div>
     <button class="btn primary lg block" type="submit"><span>{{.L.T "auth.sign_in"}}</span></button>
+    <p class="small center"><a href="/recover">{{.L.T "rec.forgot"}}</a></p>
     {{if .Reg}}<p class="small muted center">{{.L.T "auth.no_account"}} <a href="/register">{{.L.T "auth.sign_up"}}</a></p>{{end}}
   </form>
 </section>
