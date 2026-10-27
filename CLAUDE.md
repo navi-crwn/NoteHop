@@ -16,6 +16,8 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 | `design-reference/README.md` | Aset desain dari repo ImageApp, SSO, OtherApp, dan cara memakainya |
 | `docs/DEPLOY.md` | Deploy ke VPS: `deploy/install.sh`, systemd, Caddy/nginx, backup, update, restore |
 | `docs/PROMPT-LANJUTAN.md` | Prompt dan urutan kerja untuk sesi lanjutan |
+| `docs/GOALS-DAN-PERSIAPAN-LOKAL.md` | Goals produk dan cara menyiapkan, menjalankan, menguji di komputer sendiri |
+| `docs/DEPLOY.md` | Arahan untuk sesi Claude di VPS: pasang, uji, audit, update repo |
 
 ## Status saat ini (semua fase roadmap yang direncanakan selesai)
 
@@ -44,8 +46,7 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 go run ./cmd/notehop -addr 127.0.0.1:8090 -db data/dev.db   # dev
 go test -race ./...                                          # tes
 go build -o bin/notehop ./cmd/notehop                        # build
-NOTEHOP_URL=http://127.0.0.1:8090 node scripts/e2e.js       # uji browser (server di DB kosong); juga e2e-features,
-#   e2e-server-features, e2e-files, e2e-live, e2e-blocks, e2e-nearby, e2e-integrations (butuh NOTEHOP_BIN=binary)
+./scripts/e2e-all.sh                                         # semua 8 skrip browser, server + DB baru per skrip
 make linux                                                   # binary statis amd64/arm64 untuk VPS
 notehop backup -db notehop.db salinan.db                     # backup saat berjalan
 ```

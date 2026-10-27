@@ -26,7 +26,7 @@ Satu keluarga dengan [ImageApp](https://github.com/navi-crwn/imageapp), [SSO](ht
 - **Pengaturan lanjutan per catatan**: kapsul waktu, kunci terjadwal, dead man's switch, checklist berulang, IP allowlist, tanda tangan (sign-off), watermark zero-width, password umpan, mode usul edit, riwayat versi + diff.
 - **Lainnya**: `/diff` (pembanding teks), `/nearby` (pad dan kirim file antar perangkat satu Wi-Fi lewat WebRTC), klaim catatan tamu ke akun, coretan pribadi (margin), web clipper.
 
-Rencana fitur lengkap ada di [ROADMAP.md](ROADMAP.md). Integrasi login SSO dan ImageApp ada di [docs/INTEGRASI-SSO-IMAGEAPP.md](docs/INTEGRASI-SSO-IMAGEAPP.md).
+Rencana fitur lengkap ada di [ROADMAP.md](ROADMAP.md). Goals dan cara menyiapkan di komputer sendiri: [docs/GOALS-DAN-PERSIAPAN-LOKAL.md](docs/GOALS-DAN-PERSIAPAN-LOKAL.md). Integrasi login SSO dan ImageApp ada di [docs/INTEGRASI-SSO-IMAGEAPP.md](docs/INTEGRASI-SSO-IMAGEAPP.md).
 
 ## Menjalankan
 
