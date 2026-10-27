@@ -1,0 +1,90 @@
+{{define "page"}}new{{end}}
+{{define "content"}}
+<section class="wrap compose">
+  <div class="compose-head">
+    <span class="eyebrow"><b>E2E</b> Dienkripsi di browsermu, server cuma lihat acakan</span>
+    <h1>Tulis, kunci, <span class="grad">bagikan</span>.</h1>
+  </div>
+  <form class="compose-grid" id="compose" autocomplete="off">
+    <div class="card editor-card">
+      <input type="text" id="title" class="title-input" placeholder="Judul (opsional)" maxlength="200" aria-label="Judul">
+      {{template "editor"}}
+    </div>
+    <aside class="card options" aria-label="Pengaturan berbagi">
+      <fieldset class="opt">
+        <legend>Pengunjung link bisa…</legend>
+        <div class="modes">
+          <label class="mode-card"><input type="radio" name="mode" value="read" checked><span><svg><use href="#i-eye"/></svg><b>Baca saja</b><small>Tidak bisa mengubah apa pun</small></span></label>
+          <label class="mode-card"><input type="radio" name="mode" value="edit"><span><svg><use href="#i-edit"/></svg><b>Edit penuh</b><small>Siapa pun yang punya link bisa mengubah</small></span></label>
+          <label class="mode-card"><input type="radio" name="mode" value="append"><span><svg><use href="#i-append"/></svg><b>Tambah saja</b><small>Menambah baris di bawah, tak bisa hapus</small></span></label>
+          <label class="mode-card"><input type="radio" name="mode" value="check"><span><svg><use href="#i-check"/></svg><b>Centang checklist</b><small>Terkunci, tapi checkbox bisa dicentang</small></span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="opt">
+        <legend>Keamanan</legend>
+        <label class="switch"><input type="checkbox" id="encrypt" checked><span class="track"></span><span><b>Enkripsi end-to-end</b><small>Matikan hanya untuk catatan publik yang mau diambil lewat <code>curl</code>.</small></span></label>
+        <div class="field" id="pw-field">
+          <label for="password">Password tambahan <span class="hint">opsional</span></label>
+          <input type="password" id="password" placeholder="Kosongkan jika tidak perlu" autocomplete="new-password">
+          <span class="hint">Penerima butuh link <em>dan</em> password ini. Kirim lewat jalur berbeda.</span>
+        </div>
+      </fieldset>
+
+      <fieldset class="opt">
+        <legend>Umur catatan</legend>
+        <div class="row2">
+          <div class="field">
+            <label for="expires">Kedaluwarsa</label>
+            <select id="expires">
+              <option value="0">Tidak pernah</option>
+              <option value="600">10 menit</option>
+              <option value="3600">1 jam</option>
+              <option value="86400">1 hari</option>
+              <option value="604800">7 hari</option>
+              <option value="2592000">30 hari</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="burn">Hancur setelah dibaca</label>
+            <select id="burn">
+              <option value="0">Tidak</option>
+              <option value="1">1× dibuka</option>
+              <option value="3">3× dibuka</option>
+              <option value="10">10× dibuka</option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="opt">
+        <legend>Link</legend>
+        <div class="field">
+          <label for="slug">Alamat kustom <span class="hint">opsional</span></label>
+          <div class="prefix"><span>/n/</span><input type="text" id="slug" placeholder="rapat-senin" maxlength="48" pattern="[a-z0-9][a-z0-9\-]{2,47}" autocapitalize="off" spellcheck="false"></div>
+          <span class="hint" id="slug-hint">Kosongkan untuk link acak. Link mudah ditebak cocoknya untuk mode baca.</span>
+        </div>
+        <label class="check"><input type="checkbox" id="remember" checked> Simpan link admin di perangkat ini</label>
+      </fieldset>
+
+      <div class="alert err hide" id="compose-err" role="alert"></div>
+      <button class="btn primary lg block" type="submit" id="create"><svg><use href="#i-lock"/></svg><span>Kunci &amp; buat link</span></button>
+      <p class="small faint center tight">{{if .User}}Disimpan ke akun <b>@{{.User.Username}}</b>, terenkripsi dengan kunci akunmu.{{else}}Tanpa akun. <a href="/login">Masuk</a> agar catatan tersimpan di semua perangkatmu.{{end}}</p>
+    </aside>
+  </form>
+
+  <section class="recent hide" id="recent" aria-labelledby="recent-h">
+    <div class="recent-head"><h2 id="recent-h">Di perangkat ini</h2><button type="button" class="btn sm ghost" id="recent-clear">Lupakan semua</button></div>
+    <ul class="note-list" id="recent-list"></ul>
+  </section>
+</section>
+{{end}}
+{{define "scripts"}}
+<script src="/static/vendor/marked.min.js?v={{.Asset}}"></script>
+<script src="/static/vendor/purify.min.js?v={{.Asset}}"></script>
+<script src="/static/vendor/highlight.min.js?v={{.Asset}}"></script>
+<script src="/static/js/crypto.js?v={{.Asset}}"></script>
+<script src="/static/js/md.js?v={{.Asset}}"></script>
+<script src="/static/js/editor.js?v={{.Asset}}"></script>
+<script src="/static/js/new.js?v={{.Asset}}"></script>
+{{end}}

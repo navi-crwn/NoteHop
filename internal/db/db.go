@@ -1,0 +1,516 @@
+// Package db is NoteHop's SQLite store. The server only ever holds what the
+// browser hands it: ciphertext for encrypted notes, plus the metadata needed to
+// enforce links, expiry and burn-after-reading.
+package db
+
+import (
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"strconv"
+	"strings"
+	"time"
+
+	_ "modernc.org/sqlite"
+)
+
+var (
+	ErrNotFound = errors.New("not found")
+	ErrConflict = errors.New("version conflict")
+	ErrTaken    = errors.New("already taken")
+	ErrLastLink = errors.New("a note needs at least one link")
+)
+
+type DB struct{ *sql.DB }
+
+const schema = `
+CREATE TABLE IF NOT EXISTS users (
+	id INTEGER PRIMARY KEY,
+	username TEXT NOT NULL UNIQUE,
+	auth_hash TEXT NOT NULL,
+	created INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS sessions (
+	token_hash TEXT PRIMARY KEY,
+	user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	expires INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS notes (
+	id INTEGER PRIMARY KEY,
+	owner_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+	owner_blob TEXT NOT NULL DEFAULT '',
+	encrypted INTEGER NOT NULL,
+	password INTEGER NOT NULL DEFAULT 0,
+	salt TEXT NOT NULL DEFAULT '',
+	content TEXT NOT NULL,
+	version INTEGER NOT NULL DEFAULT 1,
+	checks TEXT NOT NULL DEFAULT '{}',
+	admin_hash TEXT NOT NULL,
+	write_hash TEXT NOT NULL,
+	parent_id INTEGER REFERENCES notes(id) ON DELETE SET NULL,
+	frozen INTEGER NOT NULL DEFAULT 0,
+	max_views INTEGER NOT NULL DEFAULT 0,
+	views INTEGER NOT NULL DEFAULT 0,
+	expires INTEGER NOT NULL DEFAULT 0,
+	created INTEGER NOT NULL,
+	updated INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS notes_owner ON notes(owner_id);
+CREATE INDEX IF NOT EXISTS notes_expires ON notes(expires) WHERE expires > 0;
+CREATE INDEX IF NOT EXISTS notes_parent ON notes(parent_id);
+CREATE TABLE IF NOT EXISTS links (
+	token TEXT PRIMARY KEY,
+	note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+	mode TEXT NOT NULL,
+	created INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS links_note ON links(note_id);
+CREATE TABLE IF NOT EXISTS entries (
+	id INTEGER PRIMARY KEY,
+	note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+	content TEXT NOT NULL,
+	created INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS entries_note ON entries(note_id);
+`
+
+// Open opens (and migrates) the database. ":memory:" works for tests.
+func Open(path string) (*DB, error) {
+	dsn := "file:" + path + "?_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)"
+	if path != ":memory:" {
+		dsn += "&_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)"
+	}
+	sdb, err := sql.Open("sqlite", dsn)
+	if err != nil {
+		return nil, err
+	}
+	// One connection serialises writes, which keeps burn-after-reading and
+	// optimistic version checks race-free without extra locking.
+	sdb.SetMaxOpenConns(1)
+	if _, err := sdb.Exec(schema); err != nil {
+		sdb.Close()
+		return nil, err
+	}
+	return &DB{sdb}, nil
+}
+
+func now() int64 { return time.Now().Unix() }
+
+func isUnique(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed")
+}
+
+// ---------- notes ----------
+
+type Note struct {
+	ID        int64
+	OwnerID   sql.NullInt64
+	OwnerBlob string
+	Encrypted bool
+	Password  bool
+	Salt      string
+	Content   string
+	Version   int64
+	Checks    string
+	AdminHash string
+	WriteHash string
+	ParentID  sql.NullInt64
+	Frozen    bool
+	MaxViews  int64
+	Views     int64
+	Expires   int64
+	Created   int64
+	Updated   int64
+}
+
+type Link struct {
+	Token   string `json:"token"`
+	NoteID  int64  `json:"-"`
+	Mode    string `json:"mode"`
+	Created int64  `json:"created"`
+}
+
+type Entry struct {
+	ID      int64  `json:"id"`
+	Content string `json:"content"`
+	Created int64  `json:"created"`
+}
+
+const noteCols = `n.id, n.owner_id, n.owner_blob, n.encrypted, n.password, n.salt, n.content, n.version, n.checks,
+	n.admin_hash, n.write_hash, n.parent_id, n.frozen, n.max_views, n.views, n.expires, n.created, n.updated`
+
+func scanNote(row interface{ Scan(...any) error }, extra ...any) (*Note, error) {
+	n := &Note{}
+	dest := append([]any{&n.ID, &n.OwnerID, &n.OwnerBlob, &n.Encrypted, &n.Password, &n.Salt, &n.Content, &n.Version, &n.Checks,
+		&n.AdminHash, &n.WriteHash, &n.ParentID, &n.Frozen, &n.MaxViews, &n.Views, &n.Expires, &n.Created, &n.Updated}, extra...)
+	if err := row.Scan(dest...); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	return n, nil
+}
+
+// CreateNote stores a note and its first link in one transaction.
+func (d *DB) CreateNote(n *Note, link *Link) error {
+	tx, err := d.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	t := now()
+	n.Created, n.Updated, n.Version = t, t, 1
+	if n.Checks == "" {
+		n.Checks = "{}"
+	}
+	res, err := tx.Exec(`INSERT INTO notes (owner_id, owner_blob, encrypted, password, salt, content, version, checks,
+		admin_hash, write_hash, parent_id, frozen, max_views, views, expires, created, updated)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
+		n.OwnerID, n.OwnerBlob, n.Encrypted, n.Password, n.Salt, n.Content, n.Version, n.Checks,
+		n.AdminHash, n.WriteHash, n.ParentID, n.Frozen, n.MaxViews, n.Expires, n.Created, n.Updated)
+	if err != nil {
+		return err
+	}
+	n.ID, _ = res.LastInsertId()
+	link.NoteID, link.Created = n.ID, t
+	if _, err := tx.Exec(`INSERT INTO links (token, note_id, mode, created) VALUES (?, ?, ?, ?)`,
+		link.Token, link.NoteID, link.Mode, link.Created); err != nil {
+		if isUnique(err) {
+			return ErrTaken
+		}
+		return err
+	}
+	return tx.Commit()
+}
+
+// NoteByLink resolves a link token. Expired notes read as missing even before
+// the janitor gets to them.
+func (d *DB) NoteByLink(token string) (*Note, *Link, error) {
+	l := &Link{Token: token}
+	n, err := scanNote(d.QueryRow(`SELECT `+noteCols+`, l.mode, l.created FROM links l JOIN notes n ON n.id = l.note_id
+		WHERE l.token = ? AND (n.expires = 0 OR n.expires > ?)`, token, now()), &l.Mode, &l.Created)
+	if err != nil {
+		return nil, nil, err
+	}
+	l.NoteID = n.ID
+	return n, l, nil
+}
+
+// TakeView counts one read. For burn-after-reading notes it refuses once the
+// limit is reached, so two readers can never both get the "last" view.
+func (d *DB) TakeView(n *Note) (int64, error) {
+	var views int64
+	err := d.QueryRow(`UPDATE notes SET views = views + 1 WHERE id = ? AND (max_views = 0 OR views < max_views) RETURNING views`,
+		n.ID).Scan(&views)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, ErrNotFound
+	}
+	return views, err
+}
+
+// UpdateContent replaces the body if nobody saved since baseVersion. Saving
+// folds checklist ticks into the text, so the override map is cleared.
+func (d *DB) UpdateContent(id, baseVersion int64, content string, ownerBlob *string) (int64, error) {
+	q := `UPDATE notes SET content = ?, version = version + 1, checks = '{}', updated = ?`
+	args := []any{content, now()}
+	if ownerBlob != nil {
+		q += `, owner_blob = ?`
+		args = append(args, *ownerBlob)
+	}
+	q += ` WHERE id = ? AND version = ? AND frozen = 0 RETURNING version`
+	args = append(args, id, baseVersion)
+	var v int64
+	err := d.QueryRow(q, args...).Scan(&v)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, ErrConflict
+	}
+	return v, err
+}
+
+// SetCheck records one checkbox state on top of the note's text.
+func (d *DB) SetCheck(id int64, index int, checked bool) (map[string]bool, error) {
+	tx, err := d.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	var raw string
+	if err := tx.QueryRow(`SELECT checks FROM notes WHERE id = ? AND frozen = 0`, id).Scan(&raw); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	m := map[string]bool{}
+	_ = json.Unmarshal([]byte(raw), &m)
+	m[strconv.Itoa(index)] = checked
+	b, _ := json.Marshal(m)
+	if _, err := tx.Exec(`UPDATE notes SET checks = ?, updated = ? WHERE id = ?`, string(b), now(), id); err != nil {
+		return nil, err
+	}
+	return m, tx.Commit()
+}
+
+func (d *DB) DeleteNote(id int64) error {
+	_, err := d.Exec(`DELETE FROM notes WHERE id = ?`, id)
+	return err
+}
+
+// Freeze copies the note as it is right now (text, ticks and appended entries)
+// into a permanent, read-only snapshot reachable through a new read link.
+func (d *DB) Freeze(n *Note, token string) (*Link, error) {
+	tx, err := d.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	t := now()
+	res, err := tx.Exec(`INSERT INTO notes (owner_id, owner_blob, encrypted, password, salt, content, version, checks,
+		admin_hash, write_hash, parent_id, frozen, created, updated)
+		SELECT owner_id, owner_blob, encrypted, password, salt, content, version, checks, admin_hash, write_hash, id, 1, ?, ?
+		FROM notes WHERE id = ?`, t, t, n.ID)
+	if err != nil {
+		return nil, err
+	}
+	sid, _ := res.LastInsertId()
+	if _, err := tx.Exec(`INSERT INTO entries (note_id, content, created) SELECT ?, content, created FROM entries WHERE note_id = ? ORDER BY id`,
+		sid, n.ID); err != nil {
+		return nil, err
+	}
+	l := &Link{Token: token, NoteID: sid, Mode: "read", Created: t}
+	if _, err := tx.Exec(`INSERT INTO links (token, note_id, mode, created) VALUES (?, ?, ?, ?)`, l.Token, sid, l.Mode, t); err != nil {
+		if isUnique(err) {
+			return nil, ErrTaken
+		}
+		return nil, err
+	}
+	return l, tx.Commit()
+}
+
+type Snapshot struct {
+	Token   string `json:"token"`
+	Created int64  `json:"created"`
+}
+
+func (d *DB) Snapshots(noteID int64) ([]Snapshot, error) {
+	rows, err := d.Query(`SELECT (SELECT token FROM links WHERE note_id = n.id ORDER BY rowid LIMIT 1), n.created
+		FROM notes n WHERE n.parent_id = ? ORDER BY n.id DESC`, noteID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []Snapshot{}
+	for rows.Next() {
+		var s Snapshot
+		var tok sql.NullString
+		if err := rows.Scan(&tok, &s.Created); err != nil {
+			return nil, err
+		}
+		if tok.Valid {
+			s.Token = tok.String
+			out = append(out, s)
+		}
+	}
+	return out, rows.Err()
+}
+
+// ParentToken returns a link to the note a snapshot was frozen from, if it still exists.
+func (d *DB) ParentToken(n *Note) string {
+	if !n.ParentID.Valid {
+		return ""
+	}
+	var tok string
+	_ = d.QueryRow(`SELECT token FROM links WHERE note_id = ? ORDER BY rowid LIMIT 1`, n.ParentID.Int64).Scan(&tok)
+	return tok
+}
+
+// ---------- links ----------
+
+func (d *DB) Links(noteID int64) ([]Link, error) {
+	rows, err := d.Query(`SELECT token, note_id, mode, created FROM links WHERE note_id = ? ORDER BY rowid`, noteID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []Link{}
+	for rows.Next() {
+		var l Link
+		if err := rows.Scan(&l.Token, &l.NoteID, &l.Mode, &l.Created); err != nil {
+			return nil, err
+		}
+		out = append(out, l)
+	}
+	return out, rows.Err()
+}
+
+func (d *DB) AddLink(l *Link) error {
+	l.Created = now()
+	_, err := d.Exec(`INSERT INTO links (token, note_id, mode, created) VALUES (?, ?, ?, ?)`, l.Token, l.NoteID, l.Mode, l.Created)
+	if isUnique(err) {
+		return ErrTaken
+	}
+	return err
+}
+
+func (d *DB) DeleteLink(noteID int64, token string) error {
+	var count int
+	if err := d.QueryRow(`SELECT COUNT(*) FROM links WHERE note_id = ?`, noteID).Scan(&count); err != nil {
+		return err
+	}
+	if count <= 1 {
+		return ErrLastLink
+	}
+	res, err := d.Exec(`DELETE FROM links WHERE note_id = ? AND token = ?`, noteID, token)
+	if err != nil {
+		return err
+	}
+	if k, _ := res.RowsAffected(); k == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// ---------- entries (append-only lines) ----------
+
+func (d *DB) Entries(noteID int64) ([]Entry, error) {
+	rows, err := d.Query(`SELECT id, content, created FROM entries WHERE note_id = ? ORDER BY id`, noteID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []Entry{}
+	for rows.Next() {
+		var e Entry
+		if err := rows.Scan(&e.ID, &e.Content, &e.Created); err != nil {
+			return nil, err
+		}
+		out = append(out, e)
+	}
+	return out, rows.Err()
+}
+
+func (d *DB) CountEntries(noteID int64) (int, error) {
+	var c int
+	err := d.QueryRow(`SELECT COUNT(*) FROM entries WHERE note_id = ?`, noteID).Scan(&c)
+	return c, err
+}
+
+func (d *DB) AddEntry(noteID int64, content string) (Entry, error) {
+	e := Entry{Content: content, Created: now()}
+	res, err := d.Exec(`INSERT INTO entries (note_id, content, created) VALUES (?, ?, ?)`, noteID, content, e.Created)
+	if err != nil {
+		return e, err
+	}
+	e.ID, _ = res.LastInsertId()
+	_, err = d.Exec(`UPDATE notes SET updated = ? WHERE id = ?`, e.Created, noteID)
+	return e, err
+}
+
+func (d *DB) DeleteEntry(noteID, id int64) error {
+	res, err := d.Exec(`DELETE FROM entries WHERE note_id = ? AND id = ?`, noteID, id)
+	if err != nil {
+		return err
+	}
+	if k, _ := res.RowsAffected(); k == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// ---------- users & sessions ----------
+
+type User struct {
+	ID       int64
+	Username string
+	AuthHash string
+	Created  int64
+}
+
+func (d *DB) CreateUser(username, authHash string) (*User, error) {
+	u := &User{Username: username, AuthHash: authHash, Created: now()}
+	res, err := d.Exec(`INSERT INTO users (username, auth_hash, created) VALUES (?, ?, ?)`, u.Username, u.AuthHash, u.Created)
+	if isUnique(err) {
+		return nil, ErrTaken
+	}
+	if err != nil {
+		return nil, err
+	}
+	u.ID, _ = res.LastInsertId()
+	return u, nil
+}
+
+func (d *DB) UserByName(username string) (*User, error) {
+	u := &User{}
+	err := d.QueryRow(`SELECT id, username, auth_hash, created FROM users WHERE username = ?`, username).
+		Scan(&u.ID, &u.Username, &u.AuthHash, &u.Created)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	return u, err
+}
+
+func (d *DB) CreateSession(tokenHash string, userID int64, ttl time.Duration) error {
+	_, err := d.Exec(`INSERT INTO sessions (token_hash, user_id, expires) VALUES (?, ?, ?)`, tokenHash, userID, time.Now().Add(ttl).Unix())
+	return err
+}
+
+func (d *DB) UserBySession(tokenHash string) (*User, error) {
+	u := &User{}
+	err := d.QueryRow(`SELECT u.id, u.username, u.auth_hash, u.created FROM sessions s JOIN users u ON u.id = s.user_id
+		WHERE s.token_hash = ? AND s.expires > ?`, tokenHash, now()).Scan(&u.ID, &u.Username, &u.AuthHash, &u.Created)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	return u, err
+}
+
+func (d *DB) DeleteSession(tokenHash string) error {
+	_, err := d.Exec(`DELETE FROM sessions WHERE token_hash = ?`, tokenHash)
+	return err
+}
+
+// OwnedNote is a dashboard row. Blob is the owner's vault-encrypted
+// {title, key, admin} — the server can't read it.
+type OwnedNote struct {
+	Token    string `json:"token"`
+	Mode     string `json:"mode"`
+	Blob     string `json:"blob"`
+	Frozen   bool   `json:"frozen"`
+	Views    int64  `json:"views"`
+	MaxViews int64  `json:"max_views"`
+	Expires  int64  `json:"expires"`
+	Created  int64  `json:"created"`
+	Updated  int64  `json:"updated"`
+}
+
+func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
+	rows, err := d.Query(`SELECT l.token, l.mode, n.owner_blob, n.frozen, n.views, n.max_views, n.expires, n.created, n.updated
+		FROM notes n JOIN links l ON l.token = (SELECT token FROM links WHERE note_id = n.id ORDER BY rowid LIMIT 1)
+		WHERE n.owner_id = ? AND (n.expires = 0 OR n.expires > ?) ORDER BY n.updated DESC LIMIT 500`, userID, now())
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []OwnedNote{}
+	for rows.Next() {
+		var o OwnedNote
+		if err := rows.Scan(&o.Token, &o.Mode, &o.Blob, &o.Frozen, &o.Views, &o.MaxViews, &o.Expires, &o.Created, &o.Updated); err != nil {
+			return nil, err
+		}
+		out = append(out, o)
+	}
+	return out, rows.Err()
+}
+
+// Sweep removes expired notes and sessions.
+func (d *DB) Sweep() (int64, error) {
+	t := now()
+	res, err := d.Exec(`DELETE FROM notes WHERE expires > 0 AND expires <= ?`, t)
+	if err != nil {
+		return 0, err
+	}
+	k, _ := res.RowsAffected()
+	_, err = d.Exec(`DELETE FROM sessions WHERE expires <= ?`, t)
+	return k, err
+}

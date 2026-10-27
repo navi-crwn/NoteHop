@@ -1,0 +1,23 @@
+{{define "page"}}register{{end}}
+{{define "content"}}
+<section class="wrap auth-wrap">
+  {{if .Reg}}
+  <form class="card auth" id="auth-form" data-kind="register">
+    <h1>Buat akun</h1>
+    <p class="muted">Akun menyimpan daftar catatanmu, terenkripsi dengan kunci dari password-mu. <b>Lupa password berarti catatan di akun tidak bisa dibuka</b>, karena kami pun tidak bisa.</p>
+    <div class="field"><label for="username">Username</label><input type="text" id="username" autocomplete="username" autocapitalize="off" spellcheck="false" pattern="[a-z0-9_]{3,32}" required><span class="hint">3–32 huruf kecil, angka, atau garis bawah.</span></div>
+    <div class="field"><label for="password">Password</label><input type="password" id="password" autocomplete="new-password" minlength="10" required><span class="hint">Minimal 10 karakter. Lebih panjang lebih baik.</span></div>
+    <div class="field"><label for="password2">Ulangi password</label><input type="password" id="password2" autocomplete="new-password" minlength="10" required></div>
+    <div class="alert err hide" id="auth-err" role="alert"></div>
+    <button class="btn primary lg block" type="submit"><span>Daftar</span></button>
+    <p class="small muted center">Sudah punya akun? <a href="/login">Masuk</a></p>
+  </form>
+  {{else}}
+  <div class="card auth"><h1>Pendaftaran ditutup</h1><p class="muted">Kamu tetap bisa membuat dan membagikan catatan tanpa akun.</p><a class="btn primary" href="/">Buat catatan</a></div>
+  {{end}}
+</section>
+{{end}}
+{{define "scripts"}}
+<script src="/static/js/crypto.js?v={{.Asset}}"></script>
+<script src="/static/js/auth.js?v={{.Asset}}"></script>
+{{end}}

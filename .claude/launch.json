@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "notehop",
+      "runtimeExecutable": "go",
+      "runtimeArgs": ["run", "./cmd/notehop", "-addr", "127.0.0.1:8090", "-db", "data/dev.db"],
+      "port": 8090
+    }
+  ]
+}

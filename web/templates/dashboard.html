@@ -1,0 +1,16 @@
+{{define "page"}}dashboard{{end}}
+{{define "content"}}
+<section class="wrap">
+  <div class="page-head">
+    <div><h1>Catatanku</h1><p class="muted">Judul dan kunci dibuka di browser ini dengan kunci akunmu.</p></div>
+    <a class="btn primary" href="/"><svg><use href="#i-plus"/></svg>Catatan baru</a>
+  </div>
+  <div class="alert info hide" id="vault-locked">Kunci akun tidak ada di browser ini. <a href="/login?next=/dashboard">Masuk ulang</a> untuk membuka judul dan link catatanmu.</div>
+  <input type="search" id="filter" class="filter" placeholder="Cari judul…" aria-label="Cari judul">
+  <ul class="note-list" id="mine"><li class="muted">Memuat…</li></ul>
+</section>
+{{end}}
+{{define "scripts"}}
+<script src="/static/js/crypto.js?v={{.Asset}}"></script>
+<script src="/static/js/dashboard.js?v={{.Asset}}"></script>
+{{end}}
