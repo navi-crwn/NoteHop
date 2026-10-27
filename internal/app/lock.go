@@ -30,36 +30,3 @@ func indoTime(unix int64) string {
 	t := time.Unix(unix, 0).UTC()
 	return t.Format("2") + " " + indoMonths[t.Month()-1] + " " + t.Format("2006 15.04") + " UTC"
 }
-
-// apiConfig lets the admin change a note's optional features.
-func (a *App) apiConfig(w http.ResponseWriter, r *http.Request) {
-	x, ok := a.access(w, r)
-	if !ok || !a.requireAdmin(w, x) {
-		return
-	}
-	if x.note.Frozen {
-		apiErr(w, http.StatusForbidden, "Snapshot ini dibekukan dan tidak bisa diubah.")
-		return
-	}
-	var q struct {
-		LockAt *int64 `json:"lock_at"`
-	}
-	if !readJSON(w, r, &q, 1024) {
-		return
-	}
-	cfg := parseConfig(x.note.Config)
-	if q.LockAt != nil {
-		now := time.Now().Unix()
-		if *q.LockAt != 0 && (*q.LockAt <= now || time.Duration(*q.LockAt-now)*time.Second > maxExpiry) {
-			apiErr(w, http.StatusBadRequest, "Waktu kunci harus di masa depan, paling lama 1 tahun lagi.")
-			return
-		}
-		cfg.LockAt = *q.LockAt
-	}
-	x.note.Config = cfg.String()
-	if err := a.db.SetConfig(x.note.ID, x.note.Config); err != nil {
-		apiErr(w, http.StatusInternalServerError, "Gagal menyimpan pengaturan.")
-		return
-	}
-	writeJSON(w, http.StatusOK, a.meta(r, x))
-}

@@ -52,7 +52,7 @@ Prinsip yang dipegang semua fitur:
 ## Fase 3: Kontrol waktu & akses lanjutan
 
 - ✅ **Scheduled Lock**: link edit/tambah/centang otomatis jadi read-only pada jam tertentu (server-side, aman E2E); link admin tetap bisa mengubah
-- 🔜 **Time-Capsule / Embargo**: isi baru bisa dibuka setelah waktu tertentu, dengan countdown (server menahan ciphertext sampai waktunya)
+- ✅ **Time-Capsule / Embargo**: isi baru bisa dibuka setelah waktu tertentu, dengan countdown (server menahan ciphertext sampai waktunya; link admin tetap bisa membuka)
 - 🔜 **Partial Burn**: satu blok di dalam catatan hancur setelah dilihat 1× (blok disimpan terpisah dengan penghitung sendiri)
 - 🔜 **Decoy Password**: password kedua membuka catatan palsu + peringatan diam-diam ke pemilik (dua ciphertext, server tidak tahu mana yang asli)
 - 🔜 **Sign-Off Lock**: tombol setuju/tanda tangan, catat waktu (+IP opsional), lalu kunci catatan permanen (otomatis jadi snapshot)

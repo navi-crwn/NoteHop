@@ -259,6 +259,7 @@ type metaResp struct {
 	Parent    string        `json:"parent,omitempty"`
 	LockAt    int64         `json:"lock_at,omitempty"`
 	Locked    bool          `json:"locked,omitempty"`
+	OpenAt    int64         `json:"open_at,omitempty"` // time capsule, until it opens
 }
 
 func (a *App) meta(r *http.Request, x access) metaResp {
