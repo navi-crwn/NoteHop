@@ -114,7 +114,8 @@ func (a *App) routes() {
 	m.Handle("GET /static/", http.StripPrefix("/static/", cacheForever(files)))
 	m.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("ok")) })
 
-	m.HandleFunc("GET /{$}", a.page("new", "", "meta.desc_new"))
+	m.HandleFunc("GET /{$}", a.page("home", "home.title", "meta.desc_new"))
+	m.HandleFunc("GET /new", a.page("new", "nav.new", "meta.desc_new"))
 	m.HandleFunc("GET /about", a.page("about", "title.about", "meta.desc_about"))
 	m.HandleFunc("GET /login", a.page("login", "title.login", ""))
 	m.HandleFunc("GET /register", a.page("register", "title.register", ""))
@@ -218,7 +219,7 @@ type pageData struct {
 
 func (a *App) loadTemplates() error {
 	a.pages = map[string]*template.Template{}
-	for _, name := range []string{"new", "note", "about", "login", "register", "dashboard", "vault", "diff", "nearby", "profile", "offline", "faq", "contact", "terms", "privacy", "error"} {
+	for _, name := range []string{"home", "new", "note", "about", "login", "register", "dashboard", "vault", "diff", "nearby", "profile", "offline", "faq", "contact", "terms", "privacy", "error"} {
 		t, err := template.New(name).ParseFS(web.Templates, "templates/base.html", "templates/icons.html", "templates/"+name+".html")
 		if err != nil {
 			return err
@@ -395,7 +396,7 @@ func (a *App) catalogJS(w http.ResponseWriter, r *http.Request) {
 // send to the server.
 func clipper(origin string) template.URL {
 	js := `javascript:(function(){var d={t:document.title,u:location.href,s:String(getSelection())};` +
-		`window.open(` + strconv.Quote(origin+"/#clip=") + `+encodeURIComponent(JSON.stringify(d)))})()`
+		`window.open(` + strconv.Quote(origin+"/new#clip=") + `+encodeURIComponent(JSON.stringify(d)))})()`
 	return template.URL(js)
 }
 

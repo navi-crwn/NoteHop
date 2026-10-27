@@ -23,7 +23,7 @@ async function pickMode(p, m) { await p.evaluate(() => { const d = document.getE
   await p.goto(BASE + '/register'); await p.fill('#username', USER); await p.fill('#password', 'katasandi-panjang'); await p.fill('#password2', 'katasandi-panjang');
   await p.click('#auth-form button[type=submit]'); await p.waitForURL(/dashboard/, { timeout: 30000 });
   async function mk(title, body) {
-    await p.goto(BASE + '/'); await p.fill('#title', title); await p.fill('.ed-src', body);
+    await p.goto(BASE + '/new'); await p.fill('#title', title); await p.fill('.ed-src', body);
     await pickMode(p, 'read');
     await p.click('#create'); await p.waitForURL(/\/n\//); await p.waitForSelector('#note:not(.hide)'); await p.keyboard.press('Escape');
     return p.url();
@@ -84,7 +84,7 @@ async function pickMode(p, m) { await p.evaluate(() => { const d = document.getE
   await p.click('#graph-btn'); await p.waitForSelector('#graph-box svg.graph', { timeout: 15000 }); ok('graph drawn', (await p.$$('svg.graph line')).length >= 1);
   await p.screenshot({ path: __dirname + '/A-graph.png' }); await p.keyboard.press('Escape');
   // clipper
-  await p.goto(BASE + '/#clip=' + encodeURIComponent(JSON.stringify({ t: 'Artikel', u: 'https://x.test/a', s: 'kutipan penting' })));
+  await p.goto(BASE + '/new#clip=' + encodeURIComponent(JSON.stringify({ t: 'Artikel', u: 'https://x.test/a', s: 'kutipan penting' })));
   await p.waitForTimeout(300);
   ok('clipper prefill', (await p.inputValue('#title')) === 'Artikel' && (await p.inputValue('.ed-src')).includes('> kutipan penting'));
   const href = await (await b.newPage()).goto(BASE + '/about').then(r => r.text()); ok('about has bookmarklet', /href="javascript:/.test(href));

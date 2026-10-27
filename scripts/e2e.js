@@ -26,7 +26,7 @@ function visitorURL(adminURL) {
 }
 async function openAdv(p) { if (!(await p.$eval('#adv', d => d.open))) await p.click('#adv summary'); }
 async function create(p, { title = '', body = '', mode = 'read', pw = '', burn = '0', encrypt = true } = {}) {
-  await p.goto(BASE + '/');
+  await p.goto(BASE + '/new');
   if (title) await p.fill('#title', title);
   if (body) await p.fill('.ed-src', body);
   await pickMode(p, mode);
@@ -45,7 +45,7 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
   // 1. PIN block
   try {
     const p = await newPage(b);
-    await p.goto(BASE + '/');
+    await p.goto(BASE + '/new');
     await p.fill('#title', 'Uji PIN');
     await p.click('.ed-src'); await p.keyboard.type('Pembuka\n/pin');
     await p.waitForSelector('.slash li', { timeout: 3000 });
@@ -194,6 +194,23 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     ok('Freeze: original has new text', (await o.$eval('.ed-src', t => t.value)) === 'versi dua');
   } catch (e) { ok('QR/freeze flow', false, e.message.split('\n')[0]); }
 
+  // 7b. home page: quick note and the hand-over to /new
+  try {
+    const h = await newPage(b);
+    const sent = [];
+    h.on('request', r => { if (r.url().endsWith('/api/notes') && r.method() === 'POST') sent.push(r.postData()); });
+    await h.goto(BASE + '/');
+    ok('Home: quick note and full-notepad link', await h.isVisible('#quick-form') && (await h.getAttribute('a.h-pill:not(.dark)', 'href')) === '/new');
+    await h.fill('#quick-title', 'Cepat'); await h.fill('#quick-body', 'rahasia kilat 123');
+    await h.click('label:has(input[name=quick-mode][value=edit])');
+    await h.click('#quick-create'); await h.waitForURL(/\/n\//, { timeout: 20000 }); await h.waitForSelector('#note:not(.hide)');
+    ok('Home: quick note opens as owner', await h.isVisible('#act-share'));
+    ok('Home: only ciphertext sent', sent.length === 1 && !sent[0].includes('rahasia kilat'));
+    await h.goto(BASE + '/'); await h.fill('#quick-body', 'lanjut di mode lengkap'); await h.click('#quick-full');
+    await h.waitForURL(BASE + '/new'); await h.waitForTimeout(300);
+    ok('Home: Full mode carries the draft to /new', (await h.inputValue('.ed-src')) === 'lanjut di mode lengkap');
+  } catch (e) { ok('Home flow', false, e.message.split('\n')[0]); }
+
   // 8. mobile
   try {
     const m = await newPage(b, { viewport: { width: 375, height: 740 }, isMobile: true, hasTouch: true });
@@ -221,7 +238,7 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     await m.screenshot({ path: OUT + '/m-note-visitor.png', fullPage: true });
     // Smallest common phone: option words ("With a password", "Always") must
     // not spill into the next option.
-    await m.setViewportSize({ width: 320, height: 700 }); await m.goto(BASE + '/'); await m.waitForTimeout(300);
+    await m.setViewportSize({ width: 320, height: 700 }); await m.goto(BASE + '/new'); await m.waitForTimeout(300);
     const spill = await m.$$eval('.seg-choice span', xs => xs.filter(s => s.scrollWidth > s.clientWidth + 1).map(s => s.textContent));
     ok('Mobile: 320px options fit their text', spill.length === 0, JSON.stringify(spill));
   } catch (e) { ok('Mobile flow', false, e.message.split('\n')[0]); }

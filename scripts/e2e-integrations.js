@@ -20,7 +20,7 @@ async function page(ctx) {
   return p;
 }
 async function create(p, title, body, opts = {}) {
-  await p.goto(BASE + '/');
+  await p.goto(BASE + '/new');
   await p.fill('#title', title); await p.fill('.ed-src', body);
   if (opts.public) { await p.click('#adv summary'); await p.click('#expert-box summary'); await p.click('label:has([data-feature=encrypt])'); }
   await p.click('#create'); await p.waitForURL(/\/n\//); await p.waitForSelector('#note:not(.hide)');
