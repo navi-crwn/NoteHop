@@ -603,6 +603,13 @@ func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
 	return out, rows.Err()
 }
 
+// Backup writes a consistent copy of the database to path while the server
+// keeps running (VACUUM INTO also compacts it). path must not exist yet.
+func (d *DB) Backup(path string) error {
+	_, err := d.Exec(`VACUUM INTO ?`, path)
+	return err
+}
+
 // Sweep removes expired notes and sessions.
 func (d *DB) Sweep() (int64, error) {
 	t := now()
