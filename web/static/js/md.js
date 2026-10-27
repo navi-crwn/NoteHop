@@ -185,9 +185,25 @@
     });
   }
 
+  // Blocks this page has opened, by their encrypted payload, so a redraw
+  // (an edit arriving live, a poll) doesn't lock them again. A revealed
+  // self-destructing block can't be fetched twice, so losing it loses the
+  // text. Kept in memory only; a changed block has a new payload.
+  var opened = {};
+
+  function showLocked(box, title, text) {
+    var body = NH.h('div.locked-body');
+    body.innerHTML = html(text);
+    body.querySelectorAll('input[type=checkbox]').forEach(function (c) { c.disabled = true; });
+    highlight(body);
+    images(body);
+    box.replaceChildren(NH.h('div.locked-head.open', NH.icon('unlock'), NH.h('b', title)), body);
+  }
+
   function lockedBlocks(root) {
     root.querySelectorAll('.locked').forEach(function (box) {
       var title = box.dataset.title, payload = box.dataset.payload;
+      if (opened['p' + payload] != null) return showLocked(box, title, opened['p' + payload]);
       var pin = NH.h('input', { type: 'password', inputmode: 'numeric', placeholder: 'PIN', 'aria-label': NH.t('md.pin_for', { title: title }), autocomplete: 'off' });
       var err = NH.h('span.locked-err');
       var form = NH.h('form.locked-form', pin, NH.h('button.btn.sm', { type: 'submit' }, NH.icon('unlock'), NH.t('vault.open_btn')), err);
@@ -197,12 +213,8 @@
         if (!pin.value) return;
         err.textContent = NH.t('md.opening');
         NHC.pinOpen(pin.value, payload).then(function (text) {
-          var body = NH.h('div.locked-body');
-          body.innerHTML = html(text);
-          body.querySelectorAll('input[type=checkbox]').forEach(function (c) { c.disabled = true; });
-          highlight(body);
-          images(body);
-          box.replaceChildren(NH.h('div.locked-head.open', NH.icon('unlock'), NH.h('b', title)), body);
+          opened['p' + payload] = text;
+          showLocked(box, title, text);
         }, function () { err.textContent = NH.t('md.bad_pin'); pin.select(); });
       });
     });
@@ -380,10 +392,19 @@
   }
 
   // ---------- self-destructing blocks ----------
+  function showBurned(box, text, left) {
+    var body = NH.h('div.locked-body');
+    body.innerHTML = html(text);
+    box.replaceChildren(NH.h('div.locked-head.open', NH.icon('flame'), NH.h('b', NH.t('md.burn_title'))), body,
+      NH.h('p.hint.warn', left > 0 ? NH.t('md.burn_left_after', { n: left }) : NH.t('md.burn_now_gone')));
+  }
+
   function burnBlocks(root, opts) {
     root.querySelectorAll('.burnblk').forEach(function (box) {
       var id = box.dataset.id, info = opts.burnBlocks && opts.burnBlocks[id];
       var head = NH.h('div.locked-head', NH.icon('flame'), NH.h('b', NH.t('md.burn_title')));
+      var seen = opened['b' + box.dataset.payload];
+      if (seen) return showBurned(box, seen.text, seen.left);
       if (!info) { box.replaceChildren(head, NH.h('p.faint', NH.t('md.burn_gone'))); return; }
       var left = info.max_views - info.views;
       var btn = NH.h('button.btn.sm', { type: 'button', disabled: !opts.onReveal }, NH.icon('eye'), NH.t('md.burn_reveal'));
@@ -393,10 +414,8 @@
         btn.disabled = true;
         opts.onReveal(id).then(function (r) {
           return NHC.blockOpen(r.key, box.dataset.payload).then(function (text) {
-            var body = NH.h('div.locked-body');
-            body.innerHTML = html(text);
-            box.replaceChildren(NH.h('div.locked-head.open', NH.icon('flame'), NH.h('b', NH.t('md.burn_title'))), body,
-              NH.h('p.hint.warn', r.left > 0 ? NH.t('md.burn_left_after', { n: r.left }) : NH.t('md.burn_now_gone')));
+            opened['b' + box.dataset.payload] = { text: text, left: r.left };
+            showBurned(box, text, r.left);
           });
         }).catch(function (x) { box.replaceChildren(head, NH.h('p.faint', x.message || NH.t('md.burn_gone'))); });
       });

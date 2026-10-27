@@ -638,7 +638,11 @@
     setText: function (title, body) { $('#n-title-input').value = title; ed.value = body; edited(); },
     // for live.js
     edited: edited, mode: function () { return S.mode; }, keys: function () { return S.keys; },
-    showBody: function (title, body) { S.title = title; S.body = body; drawBody(false); },
+    // The live sync on joining often brings the same text: don't redraw then.
+    showBody: function (title, body) {
+      if (title === S.title && body === S.body) return;
+      S.title = title; S.body = body; drawBody(false);
+    },
     // for blocks.js (forms): add an entry as this reader
     canAppend: function () { return canAppend(); },
     addEntry: function (n, b) {
