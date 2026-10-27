@@ -52,6 +52,50 @@
     return eachTask(src, function (line, i, m) { return i === index ? setTask(line, m, checked) : null; });
   }
 
+  // mapText applies fn to the prose of src: not fenced code, not `inline code`.
+  function mapText(src, fn) {
+    var fence = null;
+    return src.split('\n').map(function (line) {
+      var f = line.match(FENCE);
+      if (f) { if (!fence) fence = f[1]; else if (f[1] === fence) fence = null; return line; }
+      if (fence) return line;
+      return line.split(/(`[^`]*`)/).map(function (part, i) { return i % 2 ? part : fn(part); }).join('');
+    }).join('\n');
+  }
+
+  // Template variables: {{name}} in the text becomes a field readers fill in.
+  var VAR = /\{\{\s*([\p{L}\p{N}_][\p{L}\p{N}_ .-]{0,39}?)\s*\}\}/gu;
+  function templateVars(src) {
+    var seen = [];
+    mapText(src || '', function (t) {
+      t.replace(VAR, function (m, n) { if (seen.indexOf(n) === -1) seen.push(n); return m; });
+      return t;
+    });
+    return seen;
+  }
+  // Filled values replace their {{name}}; empty ones stay visible as a chip
+  // (mark) or as {{name}} (for copying).
+  function fillVars(src, vals, mark) {
+    return mapText(src, function (t) {
+      return t.replace(VAR, function (m, n) {
+        if (vals && vals[n]) return vals[n];
+        return mark ? '<span class="tpl-var">' + esc(n) + '</span>' : m;
+      });
+    });
+  }
+
+  // Wiki links: [[Title]] points at another of the reader's notes, found in
+  // their own (vault-decrypted) list; unknown titles are shown as such.
+  var WIKI = /\[\[([^\[\]\n]{1,120})\]\]/g;
+  function wikiLinks(src, resolve) {
+    return mapText(src, function (t) {
+      return t.replace(WIKI, function (m, title) {
+        var url = resolve(title.trim());
+        return url ? '[' + title.replace(/[\[\]]/g, '') + '](' + url + ')' : '<span class="wiki-missing" title="' + esc(NH.t('md.wiki_missing')) + '">' + esc(title) + '</span>';
+      });
+    });
+  }
+
   // Turns ::: blocks into HTML before marked sees them.
   function preprocess(src) {
     var lines = src.split('\n'), out = [], fence = null;
@@ -96,6 +140,8 @@
   function highlight(root) {
     root.querySelectorAll('pre code').forEach(function (code) {
       var m = (code.className || '').match(/language-([\w+-]+)/);
+      if (m && m[1] === 'calc') return calcBlock(code);
+      if (m && m[1] === 'mermaid') return mermaidBlock(code);
       try {
         if (m && hljs.getLanguage(m[1])) hljs.highlightElement(code);
         else if (code.textContent.length < 20000) {
@@ -182,9 +228,123 @@
     });
   }
 
-  // render(el, src, {checks, interactive, onCheck, copy})
+  // ---------- ```calc: a small calculator ----------
+  // Each line is "label = expression", "label: expression" or just an
+  // expression; labels become variables for later lines, "total"/"sum" adds
+  // up the results above. Numbers may use the reader's grouping (5.000.000
+  // or 5,000,000). A hand-written parser: the CSP forbids eval anyway.
+  var NUMFMT = (function () {
+    var parts = new Intl.NumberFormat(NH.lang).formatToParts(12345.6);
+    var g = parts.filter(function (p) { return p.type === 'group'; })[0], d = parts.filter(function (p) { return p.type === 'decimal'; })[0];
+    return { group: g ? g.value : ',', decimal: d ? d.value : '.' };
+  })();
+  function parseNum(s) {
+    var hasDot = s.indexOf('.') !== -1, hasComma = s.indexOf(',') !== -1;
+    if (hasDot && hasComma) {
+      var dec = s.lastIndexOf('.') > s.lastIndexOf(',') ? '.' : ',';
+      s = s.split(dec === '.' ? ',' : '.').join('').replace(dec, '.');
+    } else if (hasDot || hasComma) {
+      var sep = hasDot ? '.' : ',';
+      var grouped = new RegExp('^\\d{1,3}(\\' + sep + '\\d{3})+$').test(s);
+      // "1.500" is ambiguous: follow the reader's locale.
+      if (grouped && (sep !== '.' || NUMFMT.group === '.' || s.split('.').length > 2)) s = s.split(sep).join('');
+      else s = s.replace(',', '.');
+    }
+    return parseFloat(s);
+  }
+  function calcLine(text, vars) {
+    var toks = [], re = /\s*(\d[\d.,]*\d|\d|[\p{L}_][\p{L}\p{N}_]*|[-+*/×÷x^%()])/uy, m, pos = 0;
+    text = text.trim();
+    while (pos < text.length) {
+      re.lastIndex = pos;
+      m = re.exec(text);
+      if (!m) throw new Error('?');
+      toks.push(m[1]); pos = re.lastIndex;
+      while (pos < text.length && /\s/.test(text[pos])) pos++;
+    }
+    var i = 0;
+    function peek() { return toks[i]; }
+    function expr() { var v = term(); while (peek() === '+' || peek() === '-') { var op = toks[i++], r = term(); v = op === '+' ? v + r : v - r; } return v; }
+    function term() { var v = factor(); while (/^[*/×÷x]$/.test(peek() || '')) { var op = toks[i++], r = factor(); v = (op === '/' || op === '÷') ? v / r : v * r; } return v; }
+    function factor() { var v = unary(); if (peek() === '^') { i++; v = Math.pow(v, factor()); } return v; }
+    function unary() { if (peek() === '-') { i++; return -unary(); } if (peek() === '+') { i++; return unary(); } return primary(); }
+    function primary() {
+      var t = toks[i++];
+      if (t === undefined) throw new Error('?');
+      if (t === '(') { var v = expr(); if (toks[i++] !== ')') throw new Error(')'); return v; }
+      if (/^\d/.test(t)) { var n = parseNum(t); if (peek() === '%') { i++; n /= 100; } return n; }
+      var k = t.toLowerCase();
+      if (Object.prototype.hasOwnProperty.call(vars, k)) return vars[k];
+      throw new Error(t);
+    }
+    var v = expr();
+    if (i !== toks.length) throw new Error(toks[i]);
+    return v;
+  }
+  function calcBlock(code) {
+    var vars = {}, results = [], fmt = new Intl.NumberFormat(NH.lang, { maximumFractionDigits: 10 });
+    var rows = code.textContent.replace(/\n$/, '').split('\n').map(function (line) {
+      if (!line.trim() || /^\s*(#|\/\/)/.test(line)) return NH.h('tr.calc-note', NH.h('td', { colspan: 2 }, line.replace(/^\s*(#|\/\/)\s?/, '')));
+      var m = line.match(/^\s*([^=:]{1,40}?)\s*[=:]\s*(.+)$/), label = m ? m[1].trim() : '', ex = m ? m[2] : line;
+      var key = label.toLowerCase().replace(/\s+/g, '_');
+      var scope = Object.assign({}, vars, { total: results.reduce(function (a, b) { return a + b; }, 0) });
+      scope.sum = scope.total;
+      var out;
+      try {
+        var v = /^\s*(total|sum)\s*$/i.test(ex) && !label ? scope.total : calcLine(ex, scope);
+        if (!isFinite(v)) throw new Error('∞');
+        if (key) vars[key] = v;
+        results.push(v);
+        out = NH.h('td.calc-res', fmt.format(v));
+      } catch (e) {
+        out = NH.h('td.calc-res.calc-err', { title: NH.t('md.calc_error', { token: e.message }) }, '?');
+      }
+      return NH.h('tr', NH.h('td.calc-ex', line.trim()), out);
+    });
+    var table = NH.h('table.calc', NH.h('tbody'));
+    table.firstChild.append.apply(table.firstChild, rows);
+    code.parentNode.replaceWith(table);
+  }
+
+  // ---------- ```mermaid diagrams ----------
+  // Rendered in a sandboxed frame (see mermaid-frame.js), loaded only when a
+  // note has a diagram. The source goes there by postMessage, never to the
+  // server; the SVG comes back and is shown as an image, so it stays inert.
+  var frame = null, frameReady = null, jobs = {}, jobN = 0;
+  function mermaidFrame() {
+    if (!frameReady) frameReady = new Promise(function (ok) {
+      frame = NH.h('iframe.mermaid-frame', { src: '/render/mermaid', sandbox: 'allow-scripts', title: 'Mermaid', 'aria-hidden': 'true', tabindex: '-1' });
+      window.addEventListener('message', function (e) {
+        if (!frame || e.source !== frame.contentWindow) return;
+        var d = e.data || {};
+        if (d.type === 'nh-mermaid-ready') return ok();
+        if (d.type === 'nh-mermaid' && jobs[d.id]) { jobs[d.id](d); delete jobs[d.id]; }
+      });
+      document.body.appendChild(frame);
+    });
+    return frameReady;
+  }
+  function mermaidBlock(code) {
+    var src = code.textContent, box = NH.h('div.mermaid-box', NH.h('p.faint', NH.t('common.loading')));
+    code.parentNode.replaceWith(box);
+    var dark = (document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')) === 'dark';
+    mermaidFrame().then(function () {
+      var id = ++jobN;
+      jobs[id] = function (d) {
+        if (d.svg) box.replaceChildren(NH.h('img', { src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(d.svg), alt: NH.t('md.diagram') }));
+        else box.replaceChildren(NH.h('p.calc-err', NH.t('md.diagram_error')), NH.h('pre', NH.h('code', src)));
+      };
+      frame.contentWindow.postMessage({ type: 'nh-mermaid', id: id, src: src, dark: dark }, '*');
+    });
+  }
+
+  // render(el, src, {checks, interactive, onCheck, copy, vars, wiki})
+  //   vars: values for {{name}} template fields; wiki: title → note URL
   function render(el, src, opts) {
     opts = opts || {};
+    src = src || '';
+    if (opts.vars) src = fillVars(src, opts.vars, true);
+    if (opts.wiki) src = wikiLinks(src, opts.wiki);
     el.innerHTML = html(src);
     var boxes = Array.prototype.filter.call(el.querySelectorAll('input[type=checkbox]'), function (c) { return !c.closest('.locked'); });
     boxes.forEach(function (c, i) {
@@ -205,5 +365,6 @@
     if (!el.textContent.trim() && !el.querySelector('.locked, input, hr')) el.appendChild(NH.h('p.faint', NH.t('md.empty')));
   }
 
-  window.NHMD = { render: render, html: html, applyChecks: applyChecks, toggleTask: toggleTask };
+  window.NHMD = { render: render, html: html, applyChecks: applyChecks, toggleTask: toggleTask,
+    templateVars: templateVars, fillVars: fillVars, calcLine: calcLine, parseNum: parseNum };
 })();

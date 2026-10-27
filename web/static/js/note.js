@@ -242,7 +242,55 @@
       return;
     }
     var canCheck = S.mode === 'check' && !S.meta.frozen && !!S.keys;
-    NHMD.render($('#n-view'), S.body, { checks: S.checks, interactive: canCheck, onCheck: toggleCheck, copy: true });
+    drawTemplate();
+    NHMD.render($('#n-view'), S.body, { checks: S.checks, interactive: canCheck, onCheck: toggleCheck, copy: true,
+      vars: S.vars, wiki: S.wiki ? function (t) { return S.wiki[t.toLowerCase()]; } : null });
+  }
+
+  // ---------- template fields ({{name}}) ----------
+  // Readers fill the fields here; the values never leave this browser.
+  S.vars = {};
+  var tplTimer = null;
+  function drawTemplate() {
+    var names = NHMD.templateVars(S.body), box = $('#tpl-fields');
+    $('#tpl').classList.toggle('hide', !names.length);
+    if (!names.length || box.dataset.names === names.join('\u0000')) return;
+    box.dataset.names = names.join('\u0000');
+    box.replaceChildren.apply(box, names.map(function (n) {
+      var input = h('input', { type: 'text', dir: 'auto', value: S.vars[n] || '', 'aria-label': n, placeholder: n });
+      input.addEventListener('input', function () {
+        S.vars[n] = input.value;
+        clearTimeout(tplTimer);
+        tplTimer = setTimeout(function () { drawBody(false); }, 120);
+      });
+      return h('label.tpl-field', h('span', n), input);
+    }));
+  }
+  $('#tpl-copy').addEventListener('click', function () {
+    NH.copy(NHMD.fillVars(NHMD.applyChecks(S.body, S.checks), S.vars, false), NH.t('tpl.copied'));
+  });
+  $('#tpl-clear').addEventListener('click', function () {
+    S.vars = {};
+    NH.$$('#tpl-fields input').forEach(function (i) { i.value = ''; });
+    drawBody(false);
+  });
+
+  // ---------- wiki links ([[Title]]) ----------
+  // Titles come from the reader's own vault, decrypted here, so [[links]]
+  // only resolve for the account that owns the notes.
+  function loadWiki() {
+    var vault = NHC.vault();
+    if (!vault) return;
+    NH.api('GET', '/api/me/notes').then(function (res) {
+      return Promise.all(res.notes.map(function (n) {
+        return n.blob ? vault.open(n.blob).then(function (v) { return { n: n, v: v }; }, function () { return null; }) : null;
+      }));
+    }).then(function (rows) {
+      var map = {};
+      rows.forEach(function (r) { if (r && r.v.t && r.v.k) map[r.v.t.toLowerCase()] = NH.noteURL(r.n.token, { k: r.v.k, a: r.v.a }); });
+      S.wiki = map;
+      if (S.ready && S.mode !== 'edit' && /\[\[/.test(S.body)) drawBody(false);
+    }, function () {});
   }
 
   function toggleCheck(i, checked, input) {
@@ -566,5 +614,18 @@
   }
 
   window.addEventListener('hashchange', function () { location.reload(); });
+
+  // For extras.js (duplicate, export, present, …): read-only access to the
+  // decrypted note and the link's keys.
+  window.NHNote = {
+    title: function () { return currentTitle(); },
+    body: function () { return NHMD.applyChecks(currentBody(), S.mode === 'edit' ? {} : S.checks); },
+    entries: function () { return S.entries.slice(); },
+    meta: function () { return S.meta; },
+    hasKey: function () { return !!S.keys; },
+    encrypted: function () { return !!(S.meta && S.meta.encrypted); },
+    view: function () { return $('#n-view'); }
+  };
+  if (document.body.dataset.user) loadWiki();
   start();
 })();

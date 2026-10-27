@@ -79,6 +79,18 @@
   $('#lock-at').value = localInput(soon + 7 * 86400);
   applyOptions();
 
+  // Web clipper: the bookmarklet passes the page in the #fragment.
+  if (location.hash.indexOf('#clip=') === 0) {
+    try {
+      var clip = JSON.parse(decodeURIComponent(location.hash.slice(6)));
+      $('#title').value = String(clip.t || '').slice(0, 200);
+      var quote = String(clip.s || '').trim();
+      ed.value = (quote ? quote.split('\n').map(function (l) { return '> ' + l; }).join('\n') + '\n\n' : '') +
+        NH.t('clip.source') + ': ' + String(clip.u || '');
+    } catch (x) {}
+    history.replaceState(null, '', location.pathname);
+  }
+
   // Times are checked together so they can't contradict each other.
   function timeProblem(openAt, lockAt, expiresIn) {
     var now = Math.floor(Date.now() / 1000);

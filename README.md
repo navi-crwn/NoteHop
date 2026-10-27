@@ -115,7 +115,7 @@ internal/app/         handler HTTP, auth, middleware, tes
 web/templates/        HTML (base, icons+editor partial, halaman)
 web/static/js/        app.js (util), crypto.js, md.js, editor.js, new.js, note.js, auth.js, dashboard.js
 web/static/css/       app.css
-web/static/vendor/    marked, DOMPurify, highlight.js, qrcode-generator (di-vendor)
+web/static/vendor/    marked, DOMPurify, highlight.js, qrcode-generator, Mermaid (di-vendor)
 design-reference/     aset desain ImageApp / SSO / OtherApp (referensi, tidak di-build)
 docs/                 dokumen integrasi
 ROADMAP.md            semua rencana fitur
@@ -123,4 +123,4 @@ ROADMAP.md            semua rencana fitur
 
 ## Lisensi pihak ketiga
 
-marked (MIT), DOMPurify (Apache-2.0/MPL-2.0), highlight.js (BSD-3-Clause), qrcode-generator (MIT), modernc.org/sqlite (BSD-3-Clause), golang.org/x/crypto (BSD-3-Clause).
+marked (MIT), DOMPurify (Apache-2.0/MPL-2.0), highlight.js (BSD-3-Clause), qrcode-generator (MIT), Mermaid 11.12.0 (MIT), modernc.org/sqlite (BSD-3-Clause), golang.org/x/crypto (BSD-3-Clause).
