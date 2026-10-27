@@ -105,7 +105,7 @@ func Open(path string) (*DB, error) {
 // never edit or reorder an entry that has shipped. Parallel branches that both
 // add one must renumber when they merge.
 var migrations = []string{
-	// 1: accounts that sign in with SSO, plus their vault phrase check.
+	// 1: accounts that sign in through single sign-on, plus their vault phrase check.
 	`ALTER TABLE users ADD COLUMN sso_id TEXT;
 	ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT '';
 	ALTER TABLE users ADD COLUMN display_name TEXT NOT NULL DEFAULT '';
@@ -552,14 +552,14 @@ func (d *DB) DeleteEntry(noteID, id int64) error {
 // ---------- users & sessions ----------
 
 // User is a NoteHop account. Password accounts have an AuthHash; accounts
-// that sign in with SSO have a SSOID instead and unlock their vault
+// that sign in through single sign-on have an SSOID instead and unlock their vault
 // with a separate phrase, checked against VaultCheck.
 type User struct {
 	ID          int64
 	Username    string
 	AuthHash    string
 	Created     int64
-	SSOID    string
+	SSOID       string
 	Email       string
 	DisplayName string
 	Avatar      string
@@ -593,9 +593,9 @@ func (d *DB) CreateUser(username, authHash string) (*User, error) {
 	return u, nil
 }
 
-// CreateSSOUser makes an account for a SSO user. It has no password
-// (empty auth_hash never matches). ErrTaken means the username or the SSO
-// id is already in use.
+// CreateSSOUser makes an account for a single sign-on user. It has no
+// password (empty auth_hash never matches). ErrTaken means the username or the
+// sign-on id is already in use.
 func (d *DB) CreateSSOUser(u *User) error {
 	u.Created = now()
 	res, err := d.Exec(`INSERT INTO users (username, auth_hash, created, sso_id, email, display_name, avatar)
@@ -610,7 +610,7 @@ func (d *DB) CreateSSOUser(u *User) error {
 	return nil
 }
 
-// UpdateSSOProfile copies what SSO owns (email, name, photo).
+// UpdateSSOProfile copies what the account server owns (email, name, photo).
 func (d *DB) UpdateSSOProfile(u *User) error {
 	_, err := d.Exec(`UPDATE users SET email = ?, display_name = ?, avatar = ? WHERE id = ?`, u.Email, u.DisplayName, u.Avatar, u.ID)
 	return err

@@ -47,6 +47,20 @@ func envList(key string) []string {
 	return out
 }
 
+// envLinks reads "Name=https://…" pairs, comma separated, for the footer.
+// Only http(s) addresses are kept.
+func envLinks(key string) []app.Link {
+	var out []app.Link
+	for _, v := range strings.Split(os.Getenv(key), ",") {
+		name, u, ok := strings.Cut(strings.TrimSpace(v), "=")
+		name, u = strings.TrimSpace(name), strings.TrimSpace(u)
+		if ok && name != "" && (strings.HasPrefix(u, "https://") || strings.HasPrefix(u, "http://")) {
+			out = append(out, app.Link{Name: name, URL: u})
+		}
+	}
+	return out
+}
+
 func envBool(key string, def bool) bool {
 	switch strings.ToLower(os.Getenv(key)) {
 	case "1", "true", "yes", "on":
@@ -93,8 +107,11 @@ func main() {
 		SecureCookies: envBool("NOTEHOP_SECURE_COOKIES", strings.HasPrefix(base, "https://")),
 		TrustProxy:    envBool("NOTEHOP_TRUST_PROXY", false),
 		Registration:  envBool("NOTEHOP_REGISTRATION", true),
-		SSOURL:     strings.TrimRight(env("NOTEHOP_SSO_URL", ""), "/"),
-		SSOSecret:  env("NOTEHOP_SSO_SECRET", ""),
+		SSOURL:        strings.TrimRight(env("NOTEHOP_SSO_URL", ""), "/"),
+		SSOSecret:     env("NOTEHOP_SSO_SECRET", ""),
+		SSOName:       env("NOTEHOP_SSO_NAME", "SSO"),
+		SSOClient:     env("NOTEHOP_SSO_CLIENT", "notehop"),
+		Links:         envLinks("NOTEHOP_LINKS"),
 		ShareURL:      strings.TrimRight(env("NOTEHOP_SHARE_URL", ""), "/"),
 		FileMB:        envInt("NOTEHOP_FILE_MB", 10),
 		FilesTotalMB:  envInt("NOTEHOP_FILES_TOTAL_MB", 2048),
@@ -108,7 +125,7 @@ func main() {
 		log.Printf("NOTEHOP_SHARE_URL is ignored: it needs NOTEHOP_BASE_URL for the main site")
 	}
 	if cfg.SSOURL != "" && !cfg.SSOEnabled() {
-		log.Printf("SSO sign-in is off: it needs NOTEHOP_SSO_SECRET (32+ chars) and NOTEHOP_BASE_URL")
+		log.Printf("single sign-on is off: it needs NOTEHOP_SSO_SECRET (32+ chars) and NOTEHOP_BASE_URL")
 	}
 
 	d, err := db.Open(*dbPath)

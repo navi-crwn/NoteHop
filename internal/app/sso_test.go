@@ -73,7 +73,7 @@ func newSSOApp(t *testing.T, reg bool) *httptest.Server {
 	if err != nil {
 		t.Fatal(err)
 	}
-	a, err := New(Config{Registration: reg, BaseURL: "https://note.test", SSOURL: "https://hel.test", SSOSecret: testSecret}, d)
+	a, err := New(Config{Registration: reg, BaseURL: "https://note.test", SSOURL: "https://accounts.test", SSOSecret: testSecret, SSOName: "Accounts", SSOClient: "notehop"}, d)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func newSSOApp(t *testing.T, reg bool) *httptest.Server {
 	return srv
 }
 
-// ssoLogin runs /auth/sso and returns the state SSO would receive.
+// ssoLogin runs /auth/sso and returns the state the account server would receive.
 func ssoStart(t *testing.T, c *client, next string) string {
 	t.Helper()
 	res, err := c.hc.Get(c.srv.URL + "/auth/sso?next=" + url.QueryEscape(next))
@@ -91,7 +91,7 @@ func ssoStart(t *testing.T, c *client, next string) string {
 	}
 	res.Body.Close()
 	loc, _ := url.Parse(res.Header.Get("Location"))
-	if res.StatusCode != http.StatusFound || loc.Host != "hel.test" || loc.Path != "/sso/notehop" ||
+	if res.StatusCode != http.StatusFound || loc.Host != "accounts.test" || loc.Path != "/sso/notehop" ||
 		loc.Query().Get("return_to") != "https://note.test/auth/sso/callback" {
 		t.Fatalf("start: %d %s", res.StatusCode, loc)
 	}
@@ -119,6 +119,24 @@ func ticketFor(sub, state string) string {
 	n := time.Now().Unix()
 	return signTicket(ssoTicket{Sub: sub, Email: "Budi.Santoso@example.com", Name: "Budi", State: state,
 		Jti: randToken(16), Iat: n, Exp: n + 120}, testSecret)
+}
+
+// A ticket the account server made for another of its apps is refused; one
+// for this app (or without aud, from older servers) is accepted.
+func TestSSOAudience(t *testing.T) {
+	srv := newSSOApp(t, true)
+	c := noRedirect(t, srv)
+	n := time.Now().Unix()
+	state := ssoStart(t, c, "/dashboard")
+	other := signTicket(ssoTicket{Sub: "9", Aud: "imageapp", Email: "a@example.com", State: state, Jti: randToken(16), Iat: n, Exp: n + 120}, testSecret)
+	if code, _ := ssoCallback(t, c, other); code != http.StatusBadRequest {
+		t.Fatalf("ticket for another app: %d", code)
+	}
+	state = ssoStart(t, c, "/dashboard")
+	mine := signTicket(ssoTicket{Sub: "9", Aud: "notehop", Email: "a@example.com", State: state, Jti: randToken(16), Iat: n, Exp: n + 120}, testSecret)
+	if code, loc := ssoCallback(t, c, mine); code != http.StatusSeeOther || loc != "/vault?next=%2Fdashboard" {
+		t.Fatalf("ticket for this app: %d %s", code, loc)
+	}
 }
 
 func TestSSOLoginAndVault(t *testing.T) {
@@ -172,7 +190,7 @@ func TestSSOLoginAndVault(t *testing.T) {
 	}
 
 	// Signing in again (new device) reaches the same account, and a second
-	// SSO user with the same email local part gets another username.
+	// A sign-on user with the same email local part gets another username.
 	d := noRedirect(t, srv)
 	if code, _ := ssoCallback(t, d, ticketFor("42", ssoStart(t, d, "/"))); code != http.StatusSeeOther {
 		t.Fatalf("second device: %d", code)

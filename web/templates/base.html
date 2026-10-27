@@ -75,6 +75,8 @@
       <a href="/terms">{{.L.T "terms.title"}}</a>
       <a href="/privacy">{{.L.T "privacy.title"}}</a>
       <a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a>
+      {{range .Links}}<a href="{{.URL}}" rel="noopener">{{.Name}}</a>
+      {{end}}
     </nav>
   </div>
 </footer>

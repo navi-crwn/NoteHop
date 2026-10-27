@@ -30,8 +30,11 @@ type Config struct {
 	SecureCookies bool
 	TrustProxy    bool
 	Registration  bool
-	SSOURL     string   // "Masuk dengan SSO"; empty turns it off
-	SSOSecret  string   // shared with SSO's NOTEHOP_SSO_SECRET
+	SSOURL        string   // account server for single sign-on; empty turns it off
+	SSOSecret     string   // shared with the account server, 32+ characters
+	SSOName       string   // shown on the button: "Continue with <name>"
+	SSOClient     string   // this app's name at the account server (/sso/<client>)
+	Links         []Link   // related sites in the footer
 	ShareURL      string   // optional second domain for share links; needs BaseURL
 	FileMB        int      // largest attachment in MB; 0 turns attachments off
 	FilesTotalMB  int      // disk budget for all live attachments; 0 = no limit
@@ -42,9 +45,12 @@ type Config struct {
 	Contact       string   // shown on /contact: an email address or URL
 }
 
-// SSOEnabled reports whether sign-in with SSO is configured. It needs the
-// public base URL too, because SSO only sends tickets back to an exact
-// callback address.
+// Link is a related site shown in the footer (NOTEHOP_LINKS="Name=https://…").
+type Link struct{ Name, URL string }
+
+// SSOEnabled reports whether single sign-on is configured. It needs the
+// public base URL too, because the account server only sends tickets back to
+// an exact callback address.
 func (c Config) SSOEnabled() bool {
 	return c.SSOURL != "" && len(c.SSOSecret) >= 32 && c.BaseURL != ""
 }
@@ -192,7 +198,9 @@ type pageData struct {
 	NoIndex     bool
 	Token       string
 	Mode        string
-	SSO         bool   // show "Masuk dengan SSO"
+	SSO         bool // show "Continue with <SSOName>"
+	SSOName     string
+	Links       []Link // related sites, from NOTEHOP_LINKS
 	Next        string // where to go after signing in
 	Msg         string // error page text; empty means "note not found"
 	Origin      string // scheme://host for absolute OpenGraph URLs
@@ -221,7 +229,7 @@ func (a *App) loadTemplates() error {
 func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name string, d pageData) {
 	d.Site, d.Path, d.Asset, d.Reg = a.cfg.Site, r.URL.Path, a.asset, a.cfg.Registration
 	d.L, d.Langs = a.locale(w, r), i18n.Langs
-	d.SSO = a.cfg.SSOEnabled()
+	d.SSO, d.SSOName, d.Links = a.cfg.SSOEnabled(), a.cfg.SSOName, a.cfg.Links
 	d.Origin = a.origin(r)
 	d.Main, d.Share = a.cfg.BaseURL, a.shareURL()
 	d.Contact = a.cfg.Contact

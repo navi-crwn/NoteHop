@@ -5,8 +5,8 @@
     <h1>{{.L.T "auth.sign_in"}}</h1>
     <p class="muted">{{.L.T "auth.login_lead"}}</p>
     {{if .SSO}}
-    <a class="btn lg block sso" href="/auth/sso?next={{.Next}}"><svg><use href="#i-link"/></svg><span>{{.L.T "auth.sso"}}</span></a>
-    <p class="small muted center">{{.L.T "auth.sso_note"}}</p>
+    <a class="btn lg block sso" href="/auth/sso?next={{.Next}}"><svg><use href="#i-link"/></svg><span>{{.L.T "auth.sso" "name" .SSOName}}</span></a>
+    <p class="small muted center">{{.L.T "auth.sso_note" "name" .SSOName}}</p>
     <div class="or"><span>{{.L.T "auth.or_local"}}</span></div>
     {{end}}
     <div class="field"><label for="username">{{.L.T "auth.username"}}</label><input type="text" id="username" autocomplete="username" autocapitalize="off" spellcheck="false" required></div>
