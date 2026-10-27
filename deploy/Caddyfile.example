@@ -1,0 +1,14 @@
+# /etc/caddy/Caddyfile: Caddy gets and renews the HTTPS certificate itself.
+# Point the domain's DNS A/AAAA record at the VPS first.
+note.example.com {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8090
+	# NoteHop sets its own security headers (CSP, HSTS, ...); nothing to add here.
+}
+
+# Optional share domain (NOTEHOP_SHARE_URL=https://nhop.link): same backend.
+# NoteHop serves only notes there and redirects everything else.
+# nhop.link {
+# 	encode zstd gzip
+# 	reverse_proxy 127.0.0.1:8090
+# }

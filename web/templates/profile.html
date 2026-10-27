@@ -1,0 +1,12 @@
+{{define "page"}}profile{{end}}
+{{define "content"}}
+<section class="wrap">
+  <div class="page-head">
+    <div><h1>{{.Title}}</h1><p class="muted">{{.Desc}}</p></div>
+  </div>
+  <ul class="profile-list">
+    {{range .Profile}}<li class="card"><a href="{{.URL}}" dir="auto">{{if .Title}}{{.Title}}{{else}}{{$.L.T "common.untitled"}}{{end}}</a><time class="faint small" data-unix="{{.Updated}}"></time></li>{{end}}
+  </ul>
+</section>
+{{end}}
+{{define "scripts"}}{{end}}

@@ -1,0 +1,45 @@
+# systemd unit for NoteHop. Installed by deploy/install.sh to
+# /etc/systemd/system/notehop.service. Settings live in /etc/notehop/notehop.env.
+[Unit]
+Description=NoteHop encrypted notes
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=notehop
+Group=notehop
+EnvironmentFile=/etc/notehop/notehop.env
+ExecStart=/usr/local/bin/notehop
+Restart=on-failure
+RestartSec=3
+# /var/lib/notehop holds the SQLite database and backups.
+StateDirectory=notehop
+StateDirectoryMode=0750
+WorkingDirectory=/var/lib/notehop
+UMask=0027
+
+# Hardening: NoteHop only needs its state directory and the network.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+[Install]
+WantedBy=multi-user.target

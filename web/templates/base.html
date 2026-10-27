@@ -1,44 +1,61 @@
 {{define "base"}}<!doctype html>
-<html lang="id">
+<html lang="{{.L.Code}}" dir="{{.L.Dir}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{if .Title}}{{.Title}} · {{end}}{{.Site}}</title>
 {{with .Desc}}<meta name="description" content="{{.}}">{{end}}
 {{if .NoIndex}}<meta name="robots" content="noindex, nofollow">{{end}}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{.Site}}">
+<meta property="og:title" content="{{if .Title}}{{.Title}}{{else}}{{.Site}}{{end}}">
+<meta property="og:description" content="{{if .Desc}}{{.Desc}}{{else}}{{.L.T "meta.desc_new"}}{{end}}">
+<meta property="og:image" content="{{.Origin}}/static/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#08090c" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
 <link rel="icon" href="/static/img/logo.svg?v={{.Asset}}" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/static/img/icon-192.png">
 <link rel="stylesheet" href="/static/css/app.css?v={{.Asset}}">
 <script src="/static/js/theme.js?v={{.Asset}}"></script>
 </head>
-<body data-page="{{block "page" .}}{{end}}"{{with .Token}} data-token="{{.}}"{{end}}{{with .Mode}} data-mode="{{.}}"{{end}}{{if .User}} data-user="{{.User.Username}}"{{end}}>
-<a class="skip" href="#main">Langsung ke isi</a>
+<body data-page="{{block "page" .}}{{end}}"{{with .Token}} data-token="{{.}}"{{end}}{{with .Mode}} data-mode="{{.}}"{{end}}{{if .User}} data-user="{{.User.Username}}"{{end}}{{with .Main}} data-main="{{.}}"{{end}}{{with .Share}} data-share="{{.}}"{{end}}>
+<a class="skip" href="#main">{{.L.T "nav.skip"}}</a>
 {{template "icons"}}
 <header class="nav" id="nav">
   <div class="wrap">
     <a class="brand" href="/"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="28" height="28">{{.Site}}</a>
-    <nav class="nav-links" aria-label="Utama">
-      <a href="/" {{if eq .Path "/"}}aria-current="page"{{end}}>Catatan baru</a>
-      <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}>Catatanku</a>
-      <a href="/about" {{if eq .Path "/about"}}aria-current="page"{{end}}>Cara kerja</a>
+    <nav class="nav-links" aria-label="{{.L.T "nav.main"}}">
+      <a href="/" {{if eq .Path "/"}}aria-current="page"{{end}}>{{.L.T "nav.new"}}</a>
+      <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}>{{.L.T "nav.mine"}}</a>
+      <a href="/about" {{if eq .Path "/about"}}aria-current="page"{{end}}>{{.L.T "nav.about"}}</a>
+      <a href="/faq" {{if eq .Path "/faq"}}aria-current="page"{{end}}>{{.L.T "nav.faq"}}</a>
     </nav>
     <div class="nav-r">
-      <button class="icon-btn" id="theme" type="button" aria-label="Ganti terang atau gelap"><svg class="t-moon"><use href="#i-moon"/></svg><svg class="t-sun"><use href="#i-sun"/></svg></button>
+      <div class="menu lang-menu" id="lang-menu">
+        <button type="button" class="icon-btn" aria-haspopup="true" aria-label="{{.L.T "nav.language"}}" title="{{.L.T "nav.language"}}"><svg><use href="#i-globe"/></svg></button>
+        <div class="menu-list">{{$cur := .L.Code}}{{range .Langs}}
+          <a href="?lang={{.Code}}" data-lang="{{.Code}}" lang="{{.Code}}"{{if eq .Code $cur}} aria-current="true"{{end}}>{{.Name}}</a>{{end}}
+        </div>
+      </div>
+      <button class="icon-btn" id="theme" type="button" aria-label="{{.L.T "nav.theme"}}"><svg class="t-moon"><use href="#i-moon"/></svg><svg class="t-sun"><use href="#i-sun"/></svg></button>
       {{if .User}}
       <div class="menu" id="menu">
-        <button type="button" aria-haspopup="true" aria-label="Menu akun"><span class="avatar">{{slice .User.Username 0 1}}</span></button>
+        <button type="button" aria-haspopup="true" aria-label="{{.L.T "nav.account_menu"}}"><span class="avatar">{{slice .User.Username 0 1}}</span></button>
         <div class="menu-list">
-          <div class="who">Masuk sebagai<br><b>@{{.User.Username}}</b></div>
-          <a href="/dashboard"><svg width="16" height="16"><use href="#i-grid"/></svg>Catatanku</a>
-          <button type="button" id="logout"><svg width="16" height="16"><use href="#i-out"/></svg>Keluar</button>
+          <div class="who">{{.L.T "nav.signed_in_as"}}<br><b>@{{.User.Username}}</b></div>
+          <a href="/dashboard"><svg width="16" height="16"><use href="#i-grid"/></svg>{{.L.T "nav.mine"}}</a>
+          <button type="button" id="logout"><svg width="16" height="16"><use href="#i-out"/></svg>{{.L.T "nav.sign_out"}}</button>
         </div>
       </div>
       {{else}}
-      <a class="btn sm ghost" href="/login">Masuk</a>
+      <a class="btn sm ghost" href="/login">{{.L.T "nav.sign_in"}}</a>
       {{end}}
-      <button class="icon-btn burger" id="burger" type="button" aria-label="Menu"><svg><use href="#i-menu"/></svg></button>
+      <button class="icon-btn burger" id="burger" type="button" aria-label="{{.L.T "nav.menu"}}"><svg><use href="#i-menu"/></svg></button>
     </div>
   </div>
 </header>
@@ -47,15 +64,22 @@
 </main>
 <footer>
   <div class="wrap">
-    <span><b>{{.Site}}</b> · catatan terenkripsi yang bisa dibagikan</span>
-    <nav aria-label="Footer">
-      <a href="/about">Cara kerja &amp; privasi</a>
-      <a href="/about#raw">Raw &amp; curl</a>
+    <span><b>{{.Site}}</b> · {{.L.T "footer.tagline"}}</span>
+    <nav aria-label="{{.L.T "footer.label"}}">
+      <a href="/about">{{.L.T "footer.about"}}</a>
+      <a href="/diff">{{.L.T "diffpage.title"}}</a>
+      <a href="/nearby">{{.L.T "nearby.title"}}</a>
+      <a href="/faq">{{.L.T "footer.faq"}}</a>
+      <a href="/faq#dev">{{.L.T "footer.raw"}}</a>
+      <a href="/contact">{{.L.T "contact.title"}}</a>
+      <a href="/terms">{{.L.T "terms.title"}}</a>
+      <a href="/privacy">{{.L.T "privacy.title"}}</a>
       <a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a>
     </nav>
   </div>
 </footer>
 <div class="toasts" id="toasts" aria-live="polite"></div>
+<script src="/i18n/{{.L.Code}}.js?v={{.Asset}}"></script>
 <script src="/static/js/app.js?v={{.Asset}}"></script>
 {{block "scripts" .}}{{end}}
 </body>

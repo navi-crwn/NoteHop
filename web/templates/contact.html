@@ -1,0 +1,14 @@
+{{define "page"}}contact{{end}}
+{{define "content"}}
+<section class="wrap narrow prose">
+  <h1>{{.L.T "contact.title"}}</h1>
+  <p class="lead muted">{{.L.T "contact.lead"}}</p>
+  {{if .Contact}}<p class="card contact-card"><svg class="ico"><use href="#i-append"/></svg> {{.L.T "contact.write"}}
+    <a href="{{.ContactHref}}" rel="noopener">{{.Contact}}</a></p>
+  {{else}}<p class="card contact-card">{{.L.T "contact.none"}}</p>{{end}}
+  <h2>{{.L.T "contact.report_h"}}</h2>
+  <p>{{.L.H "contact.report"}}</p>
+  <p>{{.L.H "contact.faq"}}</p>
+</section>
+{{end}}
+{{define "scripts"}}{{end}}

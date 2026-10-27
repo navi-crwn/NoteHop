@@ -1,0 +1,30 @@
+{{define "page"}}nearby{{end}}
+{{define "content"}}
+<section class="wrap">
+  <div class="page-head">
+    <div><h1>{{.L.T "nearby.title"}}</h1><p class="muted">{{.L.T "nearby.lead"}}</p></div>
+  </div>
+  <form class="card nearby-pair" id="nb-pair">
+    <div><b>{{.L.T "nearby.code_h"}}</b><p class="small muted">{{.L.T "nearby.code_hint"}}</p></div>
+    <input type="text" id="nb-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" aria-label="{{.L.T "nearby.code_h"}}">
+    <button type="submit" class="btn sm primary">{{.L.T "nearby.code_join"}}</button>
+    <button type="button" class="btn sm ghost" id="nb-new-code">{{.L.T "nearby.code_new"}}</button>
+  </form>
+  <div class="card nearby-me">
+    <span class="small muted" id="nb-status" aria-live="polite">{{.L.T "nearby.connecting"}}</span>
+    <button type="button" class="btn sm ghost" id="nb-rename"><svg><use href="#i-edit"/></svg><span id="nb-name"></span></button>
+  </div>
+  <h2 class="h-sub">{{.L.T "nearby.devices"}}</h2>
+  <ul class="nearby-list" id="nb-list"></ul>
+  <p class="hint hide" id="nb-empty">{{.L.T "nearby.empty"}}</p>
+  <h2 class="h-sub">{{.L.T "nearby.pad"}}</h2>
+  <p class="hint">{{.L.T "nearby.pad_hint"}}</p>
+  <textarea class="nearby-pad" id="nb-pad" rows="8" dir="auto" placeholder="{{.L.T "nearby.pad_placeholder"}}"></textarea>
+  <h2 class="h-sub">{{.L.T "nearby.received"}}</h2>
+  <ul class="nearby-files" id="nb-files"></ul>
+  <input type="file" class="hide" id="nb-file" multiple>
+</section>
+{{end}}
+{{define "scripts"}}
+<script src="/static/js/nearby.js?v={{.Asset}}"></script>
+{{end}}

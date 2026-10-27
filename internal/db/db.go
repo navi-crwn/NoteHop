@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -91,7 +92,98 @@ func Open(path string) (*DB, error) {
 		sdb.Close()
 		return nil, err
 	}
-	return &DB{sdb}, nil
+	d := &DB{sdb}
+	if err := d.migrate(); err != nil {
+		sdb.Close()
+		return nil, err
+	}
+	return d, nil
+}
+
+// migrations run in order after the base schema; the database remembers how
+// many it has applied in PRAGMA user_version. Only ever append to this list:
+// never edit or reorder an entry that has shipped. Parallel branches that both
+// add one must renumber when they merge.
+var migrations = []string{
+	// 1: accounts that sign in with SSO, plus their vault phrase check.
+	`ALTER TABLE users ADD COLUMN sso_id TEXT;
+	ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT '';
+	ALTER TABLE users ADD COLUMN display_name TEXT NOT NULL DEFAULT '';
+	ALTER TABLE users ADD COLUMN avatar TEXT NOT NULL DEFAULT '';
+	ALTER TABLE users ADD COLUMN vault_check TEXT NOT NULL DEFAULT '';
+	CREATE UNIQUE INDEX users_sso ON users(sso_id) WHERE sso_id IS NOT NULL;`,
+	// 2: optional per-note features as JSON (scheduled lock, ...), so each
+	// feature doesn't need its own column. See NoteConfig in internal/app.
+	`ALTER TABLE notes ADD COLUMN config TEXT NOT NULL DEFAULT '{}';`,
+	// 3: read receipts, version history, suggestions, sign-off, polls,
+	// decoys, private margins and partial-burn block keys (see extra.go).
+	`ALTER TABLE notes ADD COLUMN last_open INTEGER NOT NULL DEFAULT 0;
+	CREATE TABLE versions (id INTEGER PRIMARY KEY, note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+		version INTEGER NOT NULL, content TEXT NOT NULL, created INTEGER NOT NULL);
+	CREATE INDEX versions_note ON versions(note_id, version);
+	CREATE TABLE suggestions (id INTEGER PRIMARY KEY, note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+		content TEXT NOT NULL, base_version INTEGER NOT NULL, created INTEGER NOT NULL);
+	CREATE INDEX suggestions_note ON suggestions(note_id);
+	CREATE TABLE signatures (id INTEGER PRIMARY KEY, note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+		name TEXT NOT NULL, version INTEGER NOT NULL, snapshot TEXT NOT NULL DEFAULT '', created INTEGER NOT NULL);
+	CREATE INDEX signatures_note ON signatures(note_id);
+	CREATE TABLE votes (note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE, poll INTEGER NOT NULL,
+		option INTEGER NOT NULL, count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (note_id, poll, option));
+	CREATE TABLE decoys (note_id INTEGER PRIMARY KEY REFERENCES notes(id) ON DELETE CASCADE, content TEXT NOT NULL,
+		write_hash TEXT NOT NULL, opened INTEGER NOT NULL DEFAULT 0, last_opened INTEGER NOT NULL DEFAULT 0);
+	CREATE TABLE margins (user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, ref TEXT NOT NULL,
+		content TEXT NOT NULL, updated INTEGER NOT NULL, PRIMARY KEY (user_id, ref));
+	CREATE TABLE burn_keys (note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE, id TEXT NOT NULL,
+		key TEXT NOT NULL, max_views INTEGER NOT NULL, views INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (note_id, id));`,
+	// 4: temporary encrypted attachments (24 hours). Each file has its own
+	// key, kept only inside the note text.
+	`CREATE TABLE files (id TEXT PRIMARY KEY, size INTEGER NOT NULL, data BLOB NOT NULL,
+		created INTEGER NOT NULL, expires INTEGER NOT NULL);
+	CREATE INDEX files_expires ON files(expires);`,
+	// 5: inboxes (webhook-to-note) and Telegram chats linked to them.
+	`CREATE TABLE inboxes (token TEXT PRIMARY KEY, note_id INTEGER NOT NULL UNIQUE REFERENCES notes(id) ON DELETE CASCADE,
+		pub TEXT NOT NULL, priv TEXT NOT NULL, created INTEGER NOT NULL);
+	CREATE TABLE telegram_chats (chat_id INTEGER PRIMARY KEY, inbox TEXT NOT NULL REFERENCES inboxes(token) ON DELETE CASCADE,
+		created INTEGER NOT NULL);`,
+	// 6: link names of deleted notes are held for a while before anyone else
+	// can take them (so an old link never opens a stranger's note).
+	`CREATE TABLE slug_holds (slug TEXT PRIMARY KEY, owner_id INTEGER, until INTEGER NOT NULL);
+	CREATE INDEX slug_holds_until ON slug_holds(until);`,
+	// 7: one row per poll voter, so the server knows each voter's last choice
+	// (instead of trusting the browser) and can limit votes per network.
+	`CREATE TABLE poll_voters (note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE, poll INTEGER NOT NULL,
+		voter TEXT NOT NULL, option INTEGER NOT NULL, net TEXT NOT NULL, PRIMARY KEY (note_id, poll, voter));
+	CREATE INDEX poll_voters_net ON poll_voters(note_id, poll, net);`,
+}
+
+// migrate applies pending migrations, each in its own transaction together
+// with the version bump, so a crash never leaves one half applied.
+func (d *DB) migrate() error {
+	var v int
+	if err := d.QueryRow(`PRAGMA user_version`).Scan(&v); err != nil {
+		return err
+	}
+	if v > len(migrations) {
+		return fmt.Errorf("database is at schema version %d, newer than this binary (%d)", v, len(migrations))
+	}
+	for i := v; i < len(migrations); i++ {
+		tx, err := d.Begin()
+		if err != nil {
+			return err
+		}
+		if _, err := tx.Exec(migrations[i]); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("migration %d: %w", i+1, err)
+		}
+		if _, err := tx.Exec(fmt.Sprintf(`PRAGMA user_version = %d`, i+1)); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err := tx.Commit(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func now() int64 { return time.Now().Unix() }
@@ -121,6 +213,8 @@ type Note struct {
 	Expires   int64
 	Created   int64
 	Updated   int64
+	Config    string // JSON, decoded by the app layer
+	LastOpen  int64  // last counted (non-admin) open
 }
 
 type Link struct {
@@ -137,12 +231,12 @@ type Entry struct {
 }
 
 const noteCols = `n.id, n.owner_id, n.owner_blob, n.encrypted, n.password, n.salt, n.content, n.version, n.checks,
-	n.admin_hash, n.write_hash, n.parent_id, n.frozen, n.max_views, n.views, n.expires, n.created, n.updated`
+	n.admin_hash, n.write_hash, n.parent_id, n.frozen, n.max_views, n.views, n.expires, n.created, n.updated, n.config, n.last_open`
 
 func scanNote(row interface{ Scan(...any) error }, extra ...any) (*Note, error) {
 	n := &Note{}
 	dest := append([]any{&n.ID, &n.OwnerID, &n.OwnerBlob, &n.Encrypted, &n.Password, &n.Salt, &n.Content, &n.Version, &n.Checks,
-		&n.AdminHash, &n.WriteHash, &n.ParentID, &n.Frozen, &n.MaxViews, &n.Views, &n.Expires, &n.Created, &n.Updated}, extra...)
+		&n.AdminHash, &n.WriteHash, &n.ParentID, &n.Frozen, &n.MaxViews, &n.Views, &n.Expires, &n.Created, &n.Updated, &n.Config, &n.LastOpen}, extra...)
 	if err := row.Scan(dest...); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotFound
@@ -164,11 +258,14 @@ func (d *DB) CreateNote(n *Note, link *Link) error {
 	if n.Checks == "" {
 		n.Checks = "{}"
 	}
+	if n.Config == "" {
+		n.Config = "{}"
+	}
 	res, err := tx.Exec(`INSERT INTO notes (owner_id, owner_blob, encrypted, password, salt, content, version, checks,
-		admin_hash, write_hash, parent_id, frozen, max_views, views, expires, created, updated)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
+		admin_hash, write_hash, parent_id, frozen, max_views, views, expires, created, updated, config)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
 		n.OwnerID, n.OwnerBlob, n.Encrypted, n.Password, n.Salt, n.Content, n.Version, n.Checks,
-		n.AdminHash, n.WriteHash, n.ParentID, n.Frozen, n.MaxViews, n.Expires, n.Created, n.Updated)
+		n.AdminHash, n.WriteHash, n.ParentID, n.Frozen, n.MaxViews, n.Expires, n.Created, n.Updated, n.Config)
 	if err != nil {
 		return err
 	}
@@ -201,8 +298,8 @@ func (d *DB) NoteByLink(token string) (*Note, *Link, error) {
 // limit is reached, so two readers can never both get the "last" view.
 func (d *DB) TakeView(n *Note) (int64, error) {
 	var views int64
-	err := d.QueryRow(`UPDATE notes SET views = views + 1 WHERE id = ? AND (max_views = 0 OR views < max_views) RETURNING views`,
-		n.ID).Scan(&views)
+	err := d.QueryRow(`UPDATE notes SET views = views + 1, last_open = ? WHERE id = ? AND (max_views = 0 OR views < max_views) RETURNING views`,
+		now(), n.ID).Scan(&views)
 	if errors.Is(err, sql.ErrNoRows) {
 		return 0, ErrNotFound
 	}
@@ -212,20 +309,41 @@ func (d *DB) TakeView(n *Note) (int64, error) {
 // UpdateContent replaces the body if nobody saved since baseVersion. Saving
 // folds checklist ticks into the text, so the override map is cleared.
 func (d *DB) UpdateContent(id, baseVersion int64, content string, ownerBlob *string) (int64, error) {
+	tx, err := d.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+	var old string
+	var oldVersion, updated int64
+	if err := tx.QueryRow(`SELECT content, version, updated FROM notes WHERE id = ? AND frozen = 0`, id).Scan(&old, &oldVersion, &updated); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, ErrConflict
+		}
+		return 0, err
+	}
+	if oldVersion != baseVersion {
+		return 0, ErrConflict
+	}
 	q := `UPDATE notes SET content = ?, version = version + 1, checks = '{}', updated = ?`
 	args := []any{content, now()}
 	if ownerBlob != nil {
 		q += `, owner_blob = ?`
 		args = append(args, *ownerBlob)
 	}
-	q += ` WHERE id = ? AND version = ? AND frozen = 0 RETURNING version`
+	q += ` WHERE id = ? AND version = ? RETURNING version`
 	args = append(args, id, baseVersion)
 	var v int64
-	err := d.QueryRow(q, args...).Scan(&v)
-	if errors.Is(err, sql.ErrNoRows) {
-		return 0, ErrConflict
+	if err := tx.QueryRow(q, args...).Scan(&v); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, ErrConflict
+		}
+		return 0, err
 	}
-	return v, err
+	if err := keepVersion(tx, id, oldVersion, old, updated); err != nil {
+		return 0, err
+	}
+	return v, tx.Commit()
 }
 
 // SetCheck records one checkbox state on top of the note's text.
@@ -253,8 +371,18 @@ func (d *DB) SetCheck(id int64, index int, checked bool) (map[string]bool, error
 }
 
 func (d *DB) DeleteNote(id int64) error {
-	_, err := d.Exec(`DELETE FROM notes WHERE id = ?`, id)
-	return err
+	tx, err := d.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if err := holdSlugs(tx, `n.id = ?`, id); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(`DELETE FROM notes WHERE id = ?`, id); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 // Freeze copies the note as it is right now (text, ticks and appended entries)
@@ -361,6 +489,9 @@ func (d *DB) DeleteLink(noteID int64, token string) error {
 	if count <= 1 {
 		return ErrLastLink
 	}
+	if err := holdSlugs(d, `l.note_id = ? AND l.token = ?`, noteID, token); err != nil {
+		return err
+	}
 	res, err := d.Exec(`DELETE FROM links WHERE note_id = ? AND token = ?`, noteID, token)
 	if err != nil {
 		return err
@@ -420,11 +551,33 @@ func (d *DB) DeleteEntry(noteID, id int64) error {
 
 // ---------- users & sessions ----------
 
+// User is a NoteHop account. Password accounts have an AuthHash; accounts
+// that sign in with SSO have a SSOID instead and unlock their vault
+// with a separate phrase, checked against VaultCheck.
 type User struct {
-	ID       int64
-	Username string
-	AuthHash string
-	Created  int64
+	ID          int64
+	Username    string
+	AuthHash    string
+	Created     int64
+	SSOID    string
+	Email       string
+	DisplayName string
+	Avatar      string
+	VaultCheck  string
+}
+
+const userCols = `u.id, u.username, u.auth_hash, u.created, COALESCE(u.sso_id, ''), u.email, u.display_name, u.avatar, u.vault_check`
+
+func scanUser(row *sql.Row) (*User, error) {
+	u := &User{}
+	err := row.Scan(&u.ID, &u.Username, &u.AuthHash, &u.Created, &u.SSOID, &u.Email, &u.DisplayName, &u.Avatar, &u.VaultCheck)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
 }
 
 func (d *DB) CreateUser(username, authHash string) (*User, error) {
@@ -440,14 +593,47 @@ func (d *DB) CreateUser(username, authHash string) (*User, error) {
 	return u, nil
 }
 
-func (d *DB) UserByName(username string) (*User, error) {
-	u := &User{}
-	err := d.QueryRow(`SELECT id, username, auth_hash, created FROM users WHERE username = ?`, username).
-		Scan(&u.ID, &u.Username, &u.AuthHash, &u.Created)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, ErrNotFound
+// CreateSSOUser makes an account for a SSO user. It has no password
+// (empty auth_hash never matches). ErrTaken means the username or the SSO
+// id is already in use.
+func (d *DB) CreateSSOUser(u *User) error {
+	u.Created = now()
+	res, err := d.Exec(`INSERT INTO users (username, auth_hash, created, sso_id, email, display_name, avatar)
+		VALUES (?, '', ?, ?, ?, ?, ?)`, u.Username, u.Created, u.SSOID, u.Email, u.DisplayName, u.Avatar)
+	if isUnique(err) {
+		return ErrTaken
 	}
-	return u, err
+	if err != nil {
+		return err
+	}
+	u.ID, _ = res.LastInsertId()
+	return nil
+}
+
+// UpdateSSOProfile copies what SSO owns (email, name, photo).
+func (d *DB) UpdateSSOProfile(u *User) error {
+	_, err := d.Exec(`UPDATE users SET email = ?, display_name = ?, avatar = ? WHERE id = ?`, u.Email, u.DisplayName, u.Avatar, u.ID)
+	return err
+}
+
+// SetVaultCheck stores the vault check once; ErrConflict if one is already set.
+func (d *DB) SetVaultCheck(userID int64, hash string) error {
+	res, err := d.Exec(`UPDATE users SET vault_check = ? WHERE id = ? AND vault_check = ''`, hash, userID)
+	if err != nil {
+		return err
+	}
+	if k, _ := res.RowsAffected(); k == 0 {
+		return ErrConflict
+	}
+	return nil
+}
+
+func (d *DB) UserByName(username string) (*User, error) {
+	return scanUser(d.QueryRow(`SELECT `+userCols+` FROM users u WHERE u.username = ?`, username))
+}
+
+func (d *DB) UserBySSO(ssoID string) (*User, error) {
+	return scanUser(d.QueryRow(`SELECT `+userCols+` FROM users u WHERE u.sso_id = ?`, ssoID))
 }
 
 func (d *DB) CreateSession(tokenHash string, userID int64, ttl time.Duration) error {
@@ -456,13 +642,8 @@ func (d *DB) CreateSession(tokenHash string, userID int64, ttl time.Duration) er
 }
 
 func (d *DB) UserBySession(tokenHash string) (*User, error) {
-	u := &User{}
-	err := d.QueryRow(`SELECT u.id, u.username, u.auth_hash, u.created FROM sessions s JOIN users u ON u.id = s.user_id
-		WHERE s.token_hash = ? AND s.expires > ?`, tokenHash, now()).Scan(&u.ID, &u.Username, &u.AuthHash, &u.Created)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, ErrNotFound
-	}
-	return u, err
+	return scanUser(d.QueryRow(`SELECT `+userCols+` FROM sessions s JOIN users u ON u.id = s.user_id
+		WHERE s.token_hash = ? AND s.expires > ?`, tokenHash, now()))
 }
 
 func (d *DB) DeleteSession(tokenHash string) error {
@@ -482,10 +663,11 @@ type OwnedNote struct {
 	Expires  int64  `json:"expires"`
 	Created  int64  `json:"created"`
 	Updated  int64  `json:"updated"`
+	LastOpen int64  `json:"last_open"`
 }
 
 func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
-	rows, err := d.Query(`SELECT l.token, l.mode, n.owner_blob, n.frozen, n.views, n.max_views, n.expires, n.created, n.updated
+	rows, err := d.Query(`SELECT l.token, l.mode, n.owner_blob, n.frozen, n.views, n.max_views, n.expires, n.created, n.updated, n.last_open
 		FROM notes n JOIN links l ON l.token = (SELECT token FROM links WHERE note_id = n.id ORDER BY rowid LIMIT 1)
 		WHERE n.owner_id = ? AND (n.expires = 0 OR n.expires > ?) ORDER BY n.updated DESC LIMIT 500`, userID, now())
 	if err != nil {
@@ -495,7 +677,7 @@ func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
 	out := []OwnedNote{}
 	for rows.Next() {
 		var o OwnedNote
-		if err := rows.Scan(&o.Token, &o.Mode, &o.Blob, &o.Frozen, &o.Views, &o.MaxViews, &o.Expires, &o.Created, &o.Updated); err != nil {
+		if err := rows.Scan(&o.Token, &o.Mode, &o.Blob, &o.Frozen, &o.Views, &o.MaxViews, &o.Expires, &o.Created, &o.Updated, &o.LastOpen); err != nil {
 			return nil, err
 		}
 		out = append(out, o)
@@ -503,14 +685,42 @@ func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
 	return out, rows.Err()
 }
 
-// Sweep removes expired notes and sessions.
+// Backup writes a consistent copy of the database to path while the server
+// keeps running (VACUUM INTO also compacts it). path must not exist yet.
+func (d *DB) Backup(path string) error {
+	_, err := d.Exec(`VACUUM INTO ?`, path)
+	return err
+}
+
+// SetConfig replaces a note's feature settings (JSON).
+func (d *DB) SetConfig(id int64, config string) error {
+	res, err := d.Exec(`UPDATE notes SET config = ? WHERE id = ?`, config, id)
+	if err != nil {
+		return err
+	}
+	if k, _ := res.RowsAffected(); k == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// Sweep removes expired notes, sessions and attachments.
 func (d *DB) Sweep() (int64, error) {
 	t := now()
+	if err := holdSlugs(d, `n.expires > 0 AND n.expires <= ?`, t); err != nil {
+		return 0, err
+	}
 	res, err := d.Exec(`DELETE FROM notes WHERE expires > 0 AND expires <= ?`, t)
 	if err != nil {
 		return 0, err
 	}
+	if _, err := d.Exec(`DELETE FROM slug_holds WHERE until <= ?`, t); err != nil {
+		return 0, err
+	}
 	k, _ := res.RowsAffected()
-	_, err = d.Exec(`DELETE FROM sessions WHERE expires <= ?`, t)
+	if _, err = d.Exec(`DELETE FROM sessions WHERE expires <= ?`, t); err != nil {
+		return k, err
+	}
+	_, err = d.Exec(`DELETE FROM files WHERE expires <= ?`, t)
 	return k, err
 }
