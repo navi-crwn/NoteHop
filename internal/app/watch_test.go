@@ -74,13 +74,16 @@ func TestWatch(t *testing.T) {
 	if strict.hookURLOK("http://example.com/x") || !strict.hookURLOK("https://example.com/x") {
 		t.Fatal("scheme rule")
 	}
-	for _, ip := range []string{"127.0.0.1", "10.1.2.3", "192.168.1.1", "169.254.169.254", "100.64.0.1", "::1", "fd00::1", "0.0.0.0"} {
+	for _, ip := range []string{"127.0.0.1", "10.1.2.3", "192.168.1.1", "169.254.169.254", "100.64.0.1", "::1", "fd00::1", "0.0.0.0",
+		"64:ff9b::7f00:1", "64:ff9b::a9fe:a9fe", "64:ff9b:1::a00:1", "2002:7f00:1::1", "2002:c0a8:101::1"} {
 		if publicIP(net.ParseIP(ip)) {
 			t.Fatalf("%s counted as public", ip)
 		}
 	}
-	if !publicIP(net.ParseIP("93.184.216.34")) {
-		t.Fatal("public address refused")
+	for _, ip := range []string{"93.184.216.34", "64:ff9b::5db8:d822", "2606:4700::1111"} {
+		if !publicIP(net.ParseIP(ip)) {
+			t.Fatalf("public address %s refused", ip)
+		}
 	}
 	if _, err := strict.hookClient().Get(hook.URL); err == nil || !strings.Contains(err.Error(), "not allowed") {
 		t.Fatalf("loopback reached: %v", err)

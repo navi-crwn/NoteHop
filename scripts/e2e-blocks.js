@@ -13,7 +13,7 @@ async function page(b) {
   return p;
 }
 async function create(p, title, body, mode) {
-  await p.goto(BASE + '/');
+  await p.goto(BASE + '/new');
   await p.fill('#title', title); await p.fill('.ed-src', body);
   await pickMode(p, mode || 'read');
   await p.click('#create'); await p.waitForURL(/\/n\//); await p.waitForSelector('#note:not(.hide)');

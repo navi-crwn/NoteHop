@@ -172,6 +172,8 @@
           S.title = d.note.t || '';
           S.body = d.note.b || '';
         }
+        // The type comes along unless this browser changed it and hasn't saved yet.
+        if (fresh || !S.typeDirty) S.type = { y: d.note.y, l: d.note.l };
         if (fresh) {
           S.ready = true;
           setup(data.burned);
@@ -195,6 +197,53 @@
   }
 
   // ---------- page ----------
+  // ---------- page chrome: status chips, phone dock ----------
+  function chrome() {
+    // The chips are the short form; a click shows the full sentence.
+    var meta = $('#n-meta'), status = $('#n-status');
+    function toggleStatus() {
+      var open = status.classList.toggle('hide') === false;
+      meta.setAttribute('aria-expanded', String(open));
+    }
+    meta.addEventListener('click', toggleStatus);
+    meta.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleStatus(); } });
+
+    // Each dock button presses the real control and is hidden when that one
+    // is (not the owner, no live session, burned note…). Copy only shows up
+    // when there is no Share, so the dock keeps four buttons at most.
+    var dock = $('#note-dock'), more = $('#more-menu');
+    // Submenus (View, Save to device): opening one closes the other; with a
+    // mouse they open on hover too. A click inside must not close the menu.
+    var subs = NH.$$('.menu-sub', more), hover = matchMedia('(hover: hover)');
+    function openSub(d) { subs.forEach(function (x) { x.open = x === d; }); }
+    subs.forEach(function (d) {
+      var s = d.querySelector('summary');
+      // With a mouse the hover has already opened it: a click keeps it open.
+      s.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); openSub(d.open && !hover.matches ? null : d); });
+      d.addEventListener('mouseenter', function () { if (hover.matches) openSub(d); });
+    });
+    new MutationObserver(function () { if (!more.classList.contains('open')) openSub(null); }).observe(more, { attributes: true, attributeFilter: ['class'] });
+    function hidden(el) { return !el || !!el.closest('.hide'); }
+    function sync() {
+      NH.$$('button[data-for]', dock).forEach(function (b) {
+        var id = b.dataset.for;
+        b.hidden = id === 'act-copy' ? !hidden($('#act-share')) : id !== 'more-menu' && hidden($('#' + id));
+      });
+      dock.querySelector('.dot').hidden = hidden($('#live-unread'));
+    }
+    NH.$$('button[data-for]', dock).forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        if (b.dataset.for !== 'more-menu') return $('#' + b.dataset.for).click();
+        e.stopPropagation(); // the document click would close it again
+        more.classList.toggle('open');
+      });
+    });
+    new MutationObserver(sync).observe($('#note'), { subtree: true, attributes: true, attributeFilter: ['class'] });
+    sync();
+    dock.classList.remove('hide');
+    document.body.classList.add('has-dock');
+  }
+
   function setup(burned) {
     var m = S.meta;
     S.mode = m.frozen ? 'read' : m.admin ? 'edit' : m.mode;
@@ -224,6 +273,7 @@
       ti.classList.remove('hide');
       ed = NHEditor($('#n-edit [data-editor]'), {
         onChange: edited, onSave: saveNow,
+        onType: function () { S.typeDirty = true; typeChrome(); edited(); },
         onBurnKey: function (k) {
           if (!S.meta.encrypted) return Promise.reject(new Error(NH.t('rule.burn_block_e2e')));
           return api('POST', '/burns', k).then(function () { S.burnBlocks = S.burnBlocks || {}; S.burnBlocks[k.id] = { id: k.id, max_views: k.max_views, views: 0 }; });
@@ -234,10 +284,12 @@
     drawBody(true);
     drawMeta();
     drawEntries();
+    chrome();
 
     $('#act-copy').addEventListener('click', function () {
       var t = currentTitle(), b = NHMD.applyChecks(currentBody(), S.mode === 'edit' ? {} : S.checks);
-      NH.copy((t ? '# ' + t + '\n\n' : '') + b, NH.t('note.text_copied'));
+      // Plain and Code copy just the text; a Document gets its title as a heading.
+      NH.copy(noteType().y ? b : (t ? '# ' + t + '\n\n' : '') + b, NH.t('note.text_copied'));
     });
     $('#act-share').addEventListener('click', openShare);
     $('#act-freeze').addEventListener('click', freeze);
@@ -254,10 +306,15 @@
     b.replaceChildren(NH.icon(icon), h('span', text), extra || '');
   }
 
+  function noteType() { return ed ? ed.fields() : (S.type || {}); }
   function currentTitle() { return ed ? $('#n-title-input').value.trim() : S.title; }
   function currentBody() { return ed ? ed.value : S.body; }
 
+  // Markdown export only for Documents; the .txt download is always there.
+  function typeChrome() { $('#act-export-md').classList.toggle('hide', !!noteType().y); }
+
   function drawBody(force) {
+    typeChrome();
     var title = S.title || NH.t('common.untitled');
     document.title = title + ' · NoteHop';
     $('#n-title').textContent = title;
@@ -268,6 +325,13 @@
         // the next save makes them part of the note and clears the overrides.
         ed.value = NHMD.applyChecks(S.body, S.checks);
       }
+      if (force || !S.typeDirty) ed.setType(S.type, true);
+      return;
+    }
+    if (S.type && S.type.y) { // Plain and Code: the text as typed
+      $('#tpl-fields').classList.add('hide');
+      NHMD.renderAs($('#n-view'), S.type, S.body);
+      if (S.type.y === 'code') $('#n-view').appendChild(h('p.code-safe', NH.icon('shield'), NH.t('type.code_safe')));
       return;
     }
     var canCheck = S.mode === 'check' && !S.meta.frozen && !!S.keys;
@@ -377,7 +441,7 @@
     if (m.reset) kids.push(pill('history', NH.t('pill.resets', { every: NH.t('reset.' + m.reset) })));
     if (m.ip_limited) kids.push(pill('shield', NH.t('pill.ip')));
     if (m.admin && m.last_open) kids.push(pill('eye', NH.t('pill.last_open', { n: m.views, ago: NH.ago(m.last_open) })));
-    kids.push(h('span.faint.small', NH.t('pill.changed', { ago: NH.ago(m.updated) })));
+    $('#n-changed').textContent = NH.t('pill.changed', { ago: NH.ago(m.updated) });
     box.replaceChildren.apply(box, kids);
   }
 
@@ -410,13 +474,15 @@
     var t = currentTitle(), b = ed.value, vault = NHC.vault();
     if (!S.meta.encrypted && !S.keyWarned && NH.leaksKeys(t + '\n' + b)) { S.keyWarned = true; NH.toast(NH.t('warn.public_keys'), 'err'); }
     var ownerBlob = S.meta.owned && S.meta.admin && vault ? vault.seal({ t: t, k: K, a: A, p: S.password }) : null;
-    Promise.all([S.codec.encode({ t: t, b: b }), ownerBlob]).then(function (r) {
+    var typeNow = ed.fields();
+    Promise.all([S.codec.encode(Object.assign({ t: t, b: b }, typeNow)), ownerBlob]).then(function (r) {
       var body = { content: r[0], version: S.version };
       if (r[1]) body.owner_blob = r[1];
       return api('PUT', '', body);
     }).then(function (res) {
       S.version = res.version;
-      S.title = t; S.body = b; S.checks = {};
+      S.title = t; S.body = b; S.checks = {}; S.type = typeNow;
+      if (JSON.stringify(ed.fields()) === JSON.stringify(typeNow)) S.typeDirty = false;
       S.dirty = currentBody() !== b || currentTitle() !== t;
       S.meta.updated = Math.floor(Date.now() / 1000);
       setSave(NH.t(S.dirty ? 'save.unsaved' : 'save.saved'), S.dirty ? '' : 'ok');
@@ -628,6 +694,7 @@
     meta: function () { return S.meta; },
     hasKey: function () { return !!S.keys; },
     encrypted: function () { return !!(S.meta && S.meta.encrypted); },
+    type: function () { return noteType(); },
     view: function () { return $('#n-view'); },
     // for features.js
     token: token, key: function () { return K; }, admin: function () { return A; },
@@ -638,7 +705,11 @@
     setText: function (title, body) { $('#n-title-input').value = title; ed.value = body; edited(); },
     // for live.js
     edited: edited, mode: function () { return S.mode; }, keys: function () { return S.keys; },
-    showBody: function (title, body) { S.title = title; S.body = body; drawBody(false); },
+    // The live sync on joining often brings the same text: don't redraw then.
+    showBody: function (title, body) {
+      if (title === S.title && body === S.body) return;
+      S.title = title; S.body = body; drawBody(false);
+    },
     // for blocks.js (forms): add an entry as this reader
     canAppend: function () { return canAppend(); },
     addEntry: function (n, b) {
