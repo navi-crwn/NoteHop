@@ -154,6 +154,15 @@ var migrations = []string{
 	`CREATE TABLE poll_voters (note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE, poll INTEGER NOT NULL,
 		voter TEXT NOT NULL, option INTEGER NOT NULL, net TEXT NOT NULL, PRIMARY KEY (note_id, poll, voter));
 	CREATE INDEX poll_voters_net ON poll_voters(note_id, poll, net);`,
+	// 8: account recovery. vault_wrap is the vault key sealed with the key
+	// from the password (or vault phrase), so the password can change without
+	// changing the vault key; empty means the old way (the vault key is that
+	// key). Each recovery code seals the vault key too; the server keeps only
+	// SHA-256 of the code's proof and the sealed copy, never the code.
+	`ALTER TABLE users ADD COLUMN vault_wrap TEXT NOT NULL DEFAULT '';
+	CREATE TABLE recovery_codes (user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, slot INTEGER NOT NULL,
+		proof_hash TEXT NOT NULL, wrap TEXT NOT NULL, used INTEGER NOT NULL DEFAULT 0, created INTEGER NOT NULL,
+		PRIMARY KEY (user_id, slot));`,
 }
 
 // migrate applies pending migrations, each in its own transaction together
@@ -564,13 +573,14 @@ type User struct {
 	DisplayName string
 	Avatar      string
 	VaultCheck  string
+	VaultWrap   string // see migration 8
 }
 
-const userCols = `u.id, u.username, u.auth_hash, u.created, COALESCE(u.sso_id, ''), u.email, u.display_name, u.avatar, u.vault_check`
+const userCols = `u.id, u.username, u.auth_hash, u.created, COALESCE(u.sso_id, ''), u.email, u.display_name, u.avatar, u.vault_check, u.vault_wrap`
 
 func scanUser(row *sql.Row) (*User, error) {
 	u := &User{}
-	err := row.Scan(&u.ID, &u.Username, &u.AuthHash, &u.Created, &u.SSOID, &u.Email, &u.DisplayName, &u.Avatar, &u.VaultCheck)
+	err := row.Scan(&u.ID, &u.Username, &u.AuthHash, &u.Created, &u.SSOID, &u.Email, &u.DisplayName, &u.Avatar, &u.VaultCheck, &u.VaultWrap)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -632,6 +642,10 @@ func (d *DB) UserByName(username string) (*User, error) {
 	return scanUser(d.QueryRow(`SELECT `+userCols+` FROM users u WHERE u.username = ?`, username))
 }
 
+func (d *DB) UserByID(id int64) (*User, error) {
+	return scanUser(d.QueryRow(`SELECT `+userCols+` FROM users u WHERE u.id = ?`, id))
+}
+
 func (d *DB) UserBySSO(ssoID string) (*User, error) {
 	return scanUser(d.QueryRow(`SELECT `+userCols+` FROM users u WHERE u.sso_id = ?`, ssoID))
 }
@@ -649,6 +663,99 @@ func (d *DB) UserBySession(tokenHash string) (*User, error) {
 func (d *DB) DeleteSession(tokenHash string) error {
 	_, err := d.Exec(`DELETE FROM sessions WHERE token_hash = ?`, tokenHash)
 	return err
+}
+
+// DeleteOtherSessions signs a user out everywhere except the session keep
+// (empty: everywhere).
+func (d *DB) DeleteOtherSessions(userID int64, keep string) error {
+	_, err := d.Exec(`DELETE FROM sessions WHERE user_id = ? AND token_hash != ?`, userID, keep)
+	return err
+}
+
+// SetSecret replaces how an account unlocks: the login hash (password
+// accounts) or the vault phrase check (single sign-on), plus the sealed vault key.
+func (d *DB) SetSecret(userID int64, sso bool, hash, vaultWrap string) error {
+	col := "auth_hash"
+	if sso {
+		col = "vault_check"
+	}
+	_, err := d.Exec(`UPDATE users SET `+col+` = ?, vault_wrap = ? WHERE id = ?`, hash, vaultWrap, userID)
+	return err
+}
+
+// RecoveryCode is one stored recovery code: SHA-256 of its proof and the
+// vault key sealed with it. Used is when it was spent (0: still good).
+type RecoveryCode struct {
+	Slot      int
+	ProofHash string
+	Wrap      string
+	Used      int64
+	Created   int64
+}
+
+// SetRecoveryCodes replaces all of a user's recovery codes.
+func (d *DB) SetRecoveryCodes(userID int64, codes []RecoveryCode) error {
+	tx, err := d.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err := tx.Exec(`DELETE FROM recovery_codes WHERE user_id = ?`, userID); err != nil {
+		return err
+	}
+	t := now()
+	for i, c := range codes {
+		if _, err := tx.Exec(`INSERT INTO recovery_codes (user_id, slot, proof_hash, wrap, created) VALUES (?, ?, ?, ?, ?)`,
+			userID, i, c.ProofHash, c.Wrap, t); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+func (d *DB) RecoveryCodes(userID int64) ([]RecoveryCode, error) {
+	rows, err := d.Query(`SELECT slot, proof_hash, wrap, used, created FROM recovery_codes WHERE user_id = ? ORDER BY slot`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []RecoveryCode
+	for rows.Next() {
+		var c RecoveryCode
+		if err := rows.Scan(&c.Slot, &c.ProofHash, &c.Wrap, &c.Used, &c.Created); err != nil {
+			return nil, err
+		}
+		out = append(out, c)
+	}
+	return out, rows.Err()
+}
+
+// Recover spends a recovery code and sets the new secret in one go, and
+// signs the account out everywhere. ErrConflict: the code was already spent.
+func (d *DB) Recover(userID int64, slot int, sso bool, hash, vaultWrap string) error {
+	col := "auth_hash"
+	if sso {
+		col = "vault_check"
+	}
+	tx, err := d.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	res, err := tx.Exec(`UPDATE recovery_codes SET used = ? WHERE user_id = ? AND slot = ? AND used = 0`, now(), userID, slot)
+	if err != nil {
+		return err
+	}
+	if k, _ := res.RowsAffected(); k == 0 {
+		return ErrConflict
+	}
+	if _, err := tx.Exec(`UPDATE users SET `+col+` = ?, vault_wrap = ? WHERE id = ?`, hash, vaultWrap, userID); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(`DELETE FROM sessions WHERE user_id = ?`, userID); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 // OwnedNote is a dashboard row. Blob is the owner's vault-encrypted

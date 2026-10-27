@@ -28,8 +28,10 @@
     btn.disabled = true;
     btn.querySelector('span').textContent = NH.t('js.deriving');
     NHC.vaultPhrase(phrase, form.dataset.sub).then(function (k) {
-      return NH.api('POST', '/api/vault', { check: k.check }).then(function () {
-        NH.store.set('nh_vault', { u: document.body.dataset.user, k: k.vault });
+      return NH.api('POST', '/api/vault', { check: k.check }).then(function (res) {
+        return NHC.vaultKey(k.vault, res.vault_wrap);
+      }).then(function (v) {
+        NHC.remember(document.body.dataset.user, v);
         location.href = next;
       });
     }).catch(function (x) { fail(x.message); });

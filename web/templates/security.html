@@ -1,0 +1,59 @@
+{{define "page"}}security{{end}}
+{{define "content"}}
+<section class="wrap narrow" id="security" data-sub="{{.User.SSOID}}">
+  <div class="page-head">
+    <div><h1>{{.L.T "sec.title"}}</h1><p class="muted">{{if .User.SSOID}}{{.L.T "sec.lead_sso" "name" .SSOName}}{{else}}{{.L.T "sec.lead"}}{{end}}</p></div>
+    <a class="btn" href="/dashboard"><svg><use href="#i-grid"/></svg>{{.L.T "nav.mine"}}</a>
+  </div>
+
+  <!-- recovery codes: made here, shown once, never stored readable anywhere -->
+  <section class="card sec-card" aria-labelledby="rec-h">
+    <div class="sec-head"><h2 id="rec-h">{{.L.T "sec.codes_h"}}</h2><span class="rec-state" id="rec-state"></span></div>
+    <p class="muted">{{if .User.SSOID}}{{.L.T "sec.codes_p_sso"}}{{else}}{{.L.T "sec.codes_p"}}{{end}}</p>
+    <div class="codes-box hide" id="codes-box">
+      <ol class="code-grid" id="code-grid" dir="ltr"></ol>
+      <div class="btn-row">
+        <button type="button" class="btn primary sm" id="codes-dl"><svg><use href="#i-download"/></svg>{{.L.T "sec.download"}}</button>
+        <button type="button" class="btn sm" id="codes-print"><svg><use href="#i-print"/></svg>{{.L.T "more.print"}}</button>
+        <button type="button" class="btn sm" id="codes-copy"><svg><use href="#i-copy"/></svg>{{.L.T "sec.copy"}}</button>
+      </div>
+      <label class="check-row"><input type="checkbox" id="codes-saved">{{.L.T "sec.saved"}}</label>
+      <ul class="sec-facts">
+        <li><b>{{.L.T "sec.f1_h"}}</b>{{.L.T "sec.f1_p"}}</li>
+        <li><b>{{.L.T "sec.f2_h"}}</b>{{.L.T "sec.f2_p"}}</li>
+        <li><b>{{.L.T "sec.f3_h"}}</b>{{.L.T "sec.f3_p"}}</li>
+      </ul>
+      <button type="button" class="btn" id="codes-done" disabled>{{.L.T "sec.done"}}</button>
+    </div>
+    <button type="button" class="btn primary" id="rec-make"><svg><use href="#i-key"/></svg><span>{{.L.T "sec.make"}}</span></button>
+  </section>
+
+  <!-- the password (or the vault phrase of a single sign-on account) -->
+  <section class="card sec-card" aria-labelledby="pw-h">
+    <h2 id="pw-h">{{if .User.SSOID}}{{.L.T "sec.phrase_h"}}{{else}}{{.L.T "sec.password_h"}}{{end}}</h2>
+    <p class="muted">{{if .User.SSOID}}{{.L.T "sec.phrase_p" "name" .SSOName}}{{else}}{{.L.T "sec.password_p"}}{{end}}</p>
+    <form id="secret-form" class="sec-form">
+      <div class="field"><label for="cur">{{if .User.SSOID}}{{.L.T "sec.cur_phrase"}}{{else}}{{.L.T "sec.cur_password"}}{{end}}</label><input type="password" id="cur" autocomplete="current-password" required></div>
+      <div class="field"><label for="new1">{{if .User.SSOID}}{{.L.T "sec.new_phrase"}}{{else}}{{.L.T "sec.new_password"}}{{end}}</label><input type="password" id="new1" autocomplete="new-password" minlength="{{if .User.SSOID}}8{{else}}10{{end}}" required><span class="hint">{{if .User.SSOID}}{{.L.T "vault.hint"}}{{else}}{{.L.T "auth.password_hint"}}{{end}}</span></div>
+      <div class="field"><label for="new2">{{.L.T "sec.again"}}</label><input type="password" id="new2" autocomplete="new-password" required></div>
+      <div class="alert err hide" id="secret-err" role="alert"></div>
+      <button class="btn" type="submit"><span>{{.L.T "sec.change"}}</span></button>
+    </form>
+  </section>
+</section>
+
+<dialog class="dlg" id="confirm-dlg" aria-labelledby="confirm-h">
+  <div class="dlg-head"><h2 id="confirm-h">{{.L.T "sec.make"}}</h2><button type="button" class="icon-btn" data-close aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
+  <form id="confirm-form">
+    <p class="muted small">{{if .User.SSOID}}{{.L.T "sec.confirm_sso"}}{{else}}{{.L.T "sec.confirm"}}{{end}}</p>
+    <div class="field"><label for="confirm-secret">{{if .User.SSOID}}{{.L.T "sec.cur_phrase"}}{{else}}{{.L.T "sec.cur_password"}}{{end}}</label><input type="password" id="confirm-secret" autocomplete="current-password" required></div>
+    <p class="hint" id="confirm-warn">{{.L.T "sec.replace_warn"}}</p>
+    <div class="alert err hide" id="confirm-err" role="alert"></div>
+    <div class="btn-row end"><button class="btn primary" type="submit"><span>{{.L.T "sec.make_btn"}}</span></button></div>
+  </form>
+</dialog>
+{{end}}
+{{define "scripts"}}
+<script src="/static/js/crypto.js?v={{.Asset}}"></script>
+<script src="/static/js/security.js?v={{.Asset}}"></script>
+{{end}}

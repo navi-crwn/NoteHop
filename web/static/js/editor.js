@@ -435,7 +435,14 @@
       }
     }
     ta.addEventListener('scroll', function () { if (type === 'code') gutter.scrollTop = ta.scrollTop; });
-    var fmt = window.NHFormat ? NHFormat(ta, { type: function () { return type; }, changed: changed }) : null;
+    // Writing help (ai.js), when the site allows it: a button, and two items in the format menu.
+    var aiBtn = NH.$('.ed-ai', root), ai = null;
+    function aiOpen(task) {
+      if (!ai) ai = NHAI(ta, { mode: aiBtn.dataset.ai, custom: !!aiBtn.dataset.custom, changed: changed });
+      ai.open(task);
+    }
+    if (aiBtn && window.NHAI) aiBtn.addEventListener('click', function () { aiOpen(); });
+    var fmt = window.NHFormat ? NHFormat(ta, { type: function () { return type; }, changed: changed, ai: aiBtn && window.NHAI ? aiOpen : null }) : null;
 
     ta.addEventListener('input', function () { changed(); checkSlash(); });
     ta.addEventListener('click', checkSlash);

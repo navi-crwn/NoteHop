@@ -40,6 +40,8 @@ type Config struct {
 	FileMB        int      // largest attachment in MB; 0 turns attachments off
 	FilesTotalMB  int      // disk budget for all live attachments; 0 = no limit
 	FilesPerIPMB  int      // attachments one address may upload per 24 hours; 0 = no limit
+	AI            string   // writing help: "on" (on-device + own API key), "device" (on-device only), "off"
+	AIOrigins     []string // extra API origins for "Other" (OpenAI-compatible) providers, e.g. a company proxy
 	PrivateHooks  bool     // let Watch webhooks reach private/loopback addresses (and plain http)
 	TelegramToken string   // bot token from @BotFather; empty turns the bot off
 	Admins        []string // usernames that may use short and reserved link names
@@ -50,6 +52,14 @@ type Config struct {
 // Link is a related site shown in the footer (NOTEHOP_LINKS="Name=https://…").
 type Link struct{ Name, URL string }
 
+// aiMode is "on", "device" or "off" (anything else: on).
+func (c Config) aiMode() string {
+	if c.AI == "device" || c.AI == "off" {
+		return c.AI
+	}
+	return "on"
+}
+
 // SSOEnabled reports whether single sign-on is configured. It needs the
 // public base URL too, because the account server only sends tickets back to
 // an exact callback address.
@@ -58,24 +68,25 @@ func (c Config) SSOEnabled() bool {
 }
 
 type App struct {
-	cfg   Config
-	db    *db.DB
-	pages map[string]*template.Template
-	asset string
-	limit *limiter
-	quota *dayQuota // attachment bytes per address
-	mux   *http.ServeMux
-	used  usedTickets
-	live  liveHub
-	near  nearbyHub
-	watch watcher
+	cfg     Config
+	db      *db.DB
+	pages   map[string]*template.Template
+	asset   string
+	limit   *limiter
+	quota   *dayQuota // attachment bytes per address
+	mux     *http.ServeMux
+	used    usedTickets
+	tickets recoveryTickets
+	live    liveHub
+	near    nearbyHub
+	watch   watcher
 }
 
 func New(cfg Config, d *db.DB) (*App, error) {
 	if cfg.Site == "" {
 		cfg.Site = "NoteHop"
 	}
-	a := &App{cfg: cfg, db: d, limit: newLimiter(), quota: &dayQuota{m: map[string]*dayUse{}}, used: usedTickets{m: map[string]int64{}}}
+	a := &App{cfg: cfg, db: d, limit: newLimiter(), quota: &dayQuota{m: map[string]*dayUse{}}, used: usedTickets{m: map[string]int64{}}, tickets: recoveryTickets{m: map[string]recoveryTicket{}}}
 	if err := a.loadTemplates(); err != nil {
 		return nil, err
 	}
@@ -135,6 +146,8 @@ func (a *App) routes() {
 	m.HandleFunc("GET /render/mermaid", mermaidFrame)
 	m.HandleFunc("GET /dashboard", a.dashboardPage)
 	m.HandleFunc("GET /vault", a.vaultPage)
+	m.HandleFunc("GET /security", a.securityPage)
+	m.HandleFunc("GET /recover", a.page("recover", "rec.title", ""))
 	m.HandleFunc("GET /auth/sso", a.ssoStart)
 	m.HandleFunc("GET /auth/sso/callback", a.ssoCallback)
 	m.HandleFunc("GET /n/{token}", a.notePage)
@@ -184,6 +197,10 @@ func (a *App) routes() {
 	m.HandleFunc("GET /api/me", a.apiMe)
 	m.HandleFunc("GET /api/me/notes", a.apiMyNotes)
 	m.HandleFunc("POST /api/vault", a.apiVault)
+	m.HandleFunc("POST /api/me/recovery", a.apiSetRecovery)
+	m.HandleFunc("POST /api/me/secret", a.apiChangeSecret)
+	m.HandleFunc("POST /api/recover", a.apiRecover)
+	m.HandleFunc("POST /api/recover/finish", a.apiRecoverFinish)
 
 	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { a.notFound(w, r) })
 	a.mux = m
@@ -205,6 +222,8 @@ type pageData struct {
 	SSO         bool // show "Continue with <SSOName>"
 	SSOName     string
 	SSOVia      []Link // provider buttons, from NOTEHOP_SSO_PROVIDERS
+	AI          string // writing help mode (Config.AI), for the editor
+	AICustom    bool   // operator allowed extra AI origins
 	Links       []Link // related sites, from NOTEHOP_LINKS
 	Next        string // where to go after signing in
 	Msg         string // error page text; empty means "note not found"
@@ -221,7 +240,7 @@ type pageData struct {
 
 func (a *App) loadTemplates() error {
 	a.pages = map[string]*template.Template{}
-	for _, name := range []string{"home", "new", "note", "about", "login", "register", "dashboard", "vault", "diff", "nearby", "profile", "offline", "faq", "contact", "terms", "privacy", "error"} {
+	for _, name := range []string{"home", "new", "note", "about", "login", "register", "dashboard", "vault", "security", "recover", "diff", "nearby", "profile", "offline", "faq", "contact", "terms", "privacy", "error"} {
 		t, err := template.New(name).ParseFS(web.Templates, "templates/base.html", "templates/icons.html", "templates/"+name+".html")
 		if err != nil {
 			return err
@@ -235,6 +254,7 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.Site, d.Path, d.Asset, d.Reg = a.cfg.Site, r.URL.Path, a.asset, a.cfg.Registration
 	d.L, d.Langs = a.locale(w, r), i18n.Langs
 	d.SSO, d.SSOName, d.Links = a.cfg.SSOEnabled(), a.cfg.SSOName, a.cfg.Links
+	d.AI, d.AICustom = a.cfg.aiMode(), len(a.cfg.AIOrigins) > 0
 	if d.SSO {
 		d.SSOVia = a.cfg.SSOProviders
 	}
