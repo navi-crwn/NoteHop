@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/navi-crwn/NoteHop/internal/db"
+	"github.com/navi-crwn/NoteHop/internal/i18n"
 )
 
 const (
@@ -117,7 +118,7 @@ func (a *App) access(w http.ResponseWriter, r *http.Request) (access, bool) {
 		if !errors.Is(err, db.ErrNotFound) {
 			log.Printf("note lookup: %v", err)
 		}
-		apiErr(w, http.StatusNotFound, "Catatan tidak ditemukan, sudah kedaluwarsa, atau sudah dihancurkan.")
+		apiErr(w, http.StatusNotFound, "err.note_missing")
 		return access{}, false
 	}
 	return access{
@@ -132,15 +133,15 @@ func (a *App) access(w http.ResponseWriter, r *http.Request) (access, bool) {
 func (a *App) writable(w http.ResponseWriter, x access, modes ...string) bool {
 	switch {
 	case x.note.Frozen:
-		apiErr(w, http.StatusForbidden, "Snapshot ini dibekukan dan tidak bisa diubah.")
+		apiErr(w, http.StatusForbidden, "err.frozen")
 	case !x.can(modes...):
-		apiErr(w, http.StatusForbidden, "Link ini tidak punya izin untuk itu.")
+		apiErr(w, http.StatusForbidden, "err.not_allowed")
 	case !x.write:
-		apiErr(w, http.StatusForbidden, "Kunci catatan tidak cocok.")
+		apiErr(w, http.StatusForbidden, "err.bad_key")
 	default:
 		if !x.admin {
 			if e := runBeforeWrite(x.note, time.Now()); e != nil {
-				apiErr(w, e.status, e.msg)
+				apiErr(w, e.status, e.key, e.kv...)
 				return false
 			}
 		}
@@ -151,7 +152,7 @@ func (a *App) writable(w http.ResponseWriter, x access, modes ...string) bool {
 
 func (a *App) requireAdmin(w http.ResponseWriter, x access) bool {
 	if !x.admin {
-		apiErr(w, http.StatusForbidden, "Hanya pemilik link admin yang bisa melakukan ini.")
+		apiErr(w, http.StatusForbidden, "err.admin_only")
 	}
 	return x.admin
 }
@@ -177,25 +178,25 @@ type createReq struct {
 func (q createReq) invalid() string {
 	switch {
 	case !validMode(q.Mode):
-		return "Mode akses tidak dikenal."
+		return "err.bad_mode"
 	case !validContent(q.Encrypted, q.Content, maxContent, "t", "b"):
-		return "Isi catatan kosong atau rusak."
+		return "err.bad_content"
 	case q.Password && (!q.Encrypted || len(q.Salt) < 16 || len(q.Salt) > 64 || !b64Re.MatchString(q.Salt)):
-		return "Password hanya bisa dipakai pada catatan terenkripsi."
+		return "err.password_needs_e2e"
 	case !keyRe.MatchString(q.Admin) || !keyRe.MatchString(q.Write):
-		return "Kunci tidak valid."
+		return "err.bad_keys"
 	case q.Slug != "" && !slugRe.MatchString(q.Slug):
-		return "Slug: 3–48 karakter, huruf kecil, angka, dan tanda minus."
+		return "err.bad_slug"
 	case q.ExpiresIn < 0 || time.Duration(q.ExpiresIn)*time.Second > maxExpiry:
-		return "Waktu kedaluwarsa tidak valid."
+		return "err.bad_expiry"
 	case q.MaxViews < 0 || q.MaxViews > maxViews:
-		return "Batas kunjungan tidak valid."
+		return "err.bad_views"
 	case q.MaxViews > 0 && q.Mode != modeRead:
-		return "Sekali baca hanya untuk mode baca saja."
+		return "err.burn_needs_read"
 	case q.LockAt > 0 && q.Mode == modeRead:
-		return "Kunci otomatis hanya untuk link edit, tambah, atau centang."
+		return "err.lock_needs_write"
 	case len(q.OwnerBlob) > maxOwnerBlob:
-		return "Data pemilik terlalu besar."
+		return "err.owner_blob"
 	}
 	return ""
 }
@@ -240,11 +241,11 @@ func (a *App) apiCreate(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := a.db.CreateNote(n, link); err != nil {
 		if errors.Is(err, db.ErrTaken) {
-			apiErr(w, http.StatusConflict, "Slug itu sudah dipakai. Coba yang lain.")
+			apiErr(w, http.StatusConflict, "err.slug_taken")
 			return
 		}
 		log.Printf("create: %v", err)
-		apiErr(w, http.StatusInternalServerError, "Gagal menyimpan catatan.")
+		apiErr(w, http.StatusInternalServerError, "err.create_failed")
 		return
 	}
 	writeJSON(w, http.StatusCreated, map[string]any{"token": link.Token, "expires": n.Expires})
@@ -329,24 +330,24 @@ func (a *App) apiOpen(w http.ResponseWriter, r *http.Request) {
 	// With a password the write key doubles as a password check, so a wrong
 	// guess is refused here instead of spending a burn-after-reading view.
 	if n.Password && !x.write {
-		apiErr(w, http.StatusForbidden, "Password salah.")
+		apiErr(w, http.StatusForbidden, "err.bad_password")
 		return
 	}
 	if !x.admin {
 		if e := runBeforeRead(n, time.Now()); e != nil {
-			apiErr(w, e.status, e.msg)
+			apiErr(w, e.status, e.key, e.kv...)
 			return
 		}
 	}
 	burnable := n.MaxViews > 0 && !x.admin
 	if q.Poll && burnable {
-		apiErr(w, http.StatusForbidden, "Catatan sekali baca tidak bisa diperbarui otomatis.")
+		apiErr(w, http.StatusForbidden, "err.burn_no_poll")
 		return
 	}
 	if !x.admin && !q.Poll {
 		views, err := a.db.TakeView(n)
 		if err != nil {
-			apiErr(w, http.StatusNotFound, "Catatan ini sudah dihancurkan.")
+			apiErr(w, http.StatusNotFound, "err.burned")
 			return
 		}
 		n.Views = views
@@ -354,7 +355,7 @@ func (a *App) apiOpen(w http.ResponseWriter, r *http.Request) {
 	entries, err := a.db.Entries(n.ID)
 	if err != nil {
 		log.Printf("entries: %v", err)
-		apiErr(w, http.StatusInternalServerError, "Gagal membaca catatan.")
+		apiErr(w, http.StatusInternalServerError, "err.read_failed")
 		return
 	}
 	resp := openResp{metaResp: a.meta(r, x), Content: n.Content, Checks: json.RawMessage(n.Checks), Entries: entries}
@@ -386,7 +387,7 @@ func (a *App) raw(w http.ResponseWriter, r *http.Request) {
 	}
 	if e := runBeforeRead(n, time.Now()); e != nil {
 		w.WriteHeader(e.status)
-		w.Write([]byte(e.msg + "\n"))
+		w.Write([]byte(i18n.T(i18n.Default, e.key, e.kv...) + "\n"))
 		return
 	}
 	views, err := a.db.TakeView(n)
@@ -472,7 +473,7 @@ func (a *App) apiSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !validContent(x.note.Encrypted, q.Content, maxContent, "t", "b") {
-		apiErr(w, http.StatusBadRequest, "Isi catatan kosong atau rusak.")
+		apiErr(w, http.StatusBadRequest, "err.bad_content")
 		return
 	}
 	if q.OwnerBlob != nil {
@@ -483,12 +484,12 @@ func (a *App) apiSave(w http.ResponseWriter, r *http.Request) {
 	}
 	v, err := a.db.UpdateContent(x.note.ID, q.Version, q.Content, q.OwnerBlob)
 	if errors.Is(err, db.ErrConflict) {
-		apiErr(w, http.StatusConflict, "Catatan sudah diubah orang lain.")
+		apiErr(w, http.StatusConflict, "err.conflict")
 		return
 	}
 	if err != nil {
 		log.Printf("save: %v", err)
-		apiErr(w, http.StatusInternalServerError, "Gagal menyimpan.")
+		apiErr(w, http.StatusInternalServerError, "err.save_failed")
 		return
 	}
 	runAfterUpdate(x.note, time.Now())
@@ -507,17 +508,17 @@ func (a *App) apiAddEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !validContent(x.note.Encrypted, q.Content, maxEntry, "b") {
-		apiErr(w, http.StatusBadRequest, "Tulisan kosong atau terlalu panjang.")
+		apiErr(w, http.StatusBadRequest, "err.bad_entry")
 		return
 	}
 	if c, _ := a.db.CountEntries(x.note.ID); c >= maxEntries {
-		apiErr(w, http.StatusForbidden, "Catatan ini sudah penuh.")
+		apiErr(w, http.StatusForbidden, "err.full")
 		return
 	}
 	e, err := a.db.AddEntry(x.note.ID, q.Content)
 	if err != nil {
 		log.Printf("entry: %v", err)
-		apiErr(w, http.StatusInternalServerError, "Gagal menambahkan.")
+		apiErr(w, http.StatusInternalServerError, "err.append_failed")
 		return
 	}
 	runAfterUpdate(x.note, time.Now())
@@ -531,7 +532,7 @@ func (a *App) apiDeleteEntry(w http.ResponseWriter, r *http.Request) {
 	}
 	id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err := a.db.DeleteEntry(x.note.ID, id); err != nil {
-		apiErr(w, http.StatusNotFound, "Baris tidak ditemukan.")
+		apiErr(w, http.StatusNotFound, "err.entry_missing")
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
@@ -550,13 +551,13 @@ func (a *App) apiCheck(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if q.Index < 0 || q.Index > maxCheckIndex {
-		apiErr(w, http.StatusBadRequest, "Checkbox tidak valid.")
+		apiErr(w, http.StatusBadRequest, "err.bad_checkbox")
 		return
 	}
 	checks, err := a.db.SetCheck(x.note.ID, q.Index, q.Checked)
 	if err != nil {
 		log.Printf("check: %v", err)
-		apiErr(w, http.StatusInternalServerError, "Gagal menyimpan centang.")
+		apiErr(w, http.StatusInternalServerError, "err.check_failed")
 		return
 	}
 	runAfterUpdate(x.note, time.Now())
@@ -571,13 +572,13 @@ func (a *App) apiFreeze(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if x.note.Frozen {
-		apiErr(w, http.StatusBadRequest, "Ini sudah snapshot.")
+		apiErr(w, http.StatusBadRequest, "err.already_snapshot")
 		return
 	}
 	l, err := a.db.Freeze(x.note, randToken(12))
 	if err != nil {
 		log.Printf("freeze: %v", err)
-		apiErr(w, http.StatusInternalServerError, "Gagal membekukan.")
+		apiErr(w, http.StatusInternalServerError, "err.freeze_failed")
 		return
 	}
 	writeJSON(w, http.StatusCreated, l)
@@ -598,16 +599,16 @@ func (a *App) apiAddLink(w http.ResponseWriter, r *http.Request) {
 	q.Slug = strings.ToLower(strings.TrimSpace(q.Slug))
 	switch {
 	case !validMode(q.Mode):
-		apiErr(w, http.StatusBadRequest, "Mode akses tidak dikenal.")
+		apiErr(w, http.StatusBadRequest, "err.bad_mode")
 		return
 	case x.note.Frozen && q.Mode != modeRead:
-		apiErr(w, http.StatusBadRequest, "Snapshot hanya bisa dibagikan sebagai baca saja.")
+		apiErr(w, http.StatusBadRequest, "err.snapshot_read_only")
 		return
 	case x.note.MaxViews > 0 && q.Mode != modeRead:
-		apiErr(w, http.StatusBadRequest, "Catatan sekali baca hanya bisa dibagikan sebagai baca saja.")
+		apiErr(w, http.StatusBadRequest, "err.burn_read_only")
 		return
 	case q.Slug != "" && !slugRe.MatchString(q.Slug):
-		apiErr(w, http.StatusBadRequest, "Slug: 3–48 karakter, huruf kecil, angka, dan tanda minus.")
+		apiErr(w, http.StatusBadRequest, "err.bad_slug")
 		return
 	}
 	l := &db.Link{Token: q.Slug, NoteID: x.note.ID, Mode: q.Mode}
@@ -616,11 +617,11 @@ func (a *App) apiAddLink(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := a.db.AddLink(l); err != nil {
 		if errors.Is(err, db.ErrTaken) {
-			apiErr(w, http.StatusConflict, "Slug itu sudah dipakai. Coba yang lain.")
+			apiErr(w, http.StatusConflict, "err.slug_taken")
 			return
 		}
 		log.Printf("link: %v", err)
-		apiErr(w, http.StatusInternalServerError, "Gagal membuat link.")
+		apiErr(w, http.StatusInternalServerError, "err.link_failed")
 		return
 	}
 	writeJSON(w, http.StatusCreated, l)
@@ -633,12 +634,12 @@ func (a *App) apiDeleteLink(w http.ResponseWriter, r *http.Request) {
 	}
 	switch err := a.db.DeleteLink(x.note.ID, r.PathValue("link")); {
 	case errors.Is(err, db.ErrLastLink):
-		apiErr(w, http.StatusBadRequest, "Catatan butuh minimal satu link. Hapus catatannya saja.")
+		apiErr(w, http.StatusBadRequest, "err.last_link")
 	case errors.Is(err, db.ErrNotFound):
-		apiErr(w, http.StatusNotFound, "Link tidak ditemukan.")
+		apiErr(w, http.StatusNotFound, "err.link_missing")
 	case err != nil:
 		log.Printf("unlink: %v", err)
-		apiErr(w, http.StatusInternalServerError, "Gagal menghapus link.")
+		apiErr(w, http.StatusInternalServerError, "err.link_delete_failed")
 	default:
 		writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
 	}
@@ -654,12 +655,12 @@ func (a *App) apiDelete(w http.ResponseWriter, r *http.Request) {
 		owner = true
 	}
 	if !x.admin && !owner {
-		apiErr(w, http.StatusForbidden, "Hanya pemilik yang bisa menghapus catatan.")
+		apiErr(w, http.StatusForbidden, "err.owner_only_delete")
 		return
 	}
 	if err := a.db.DeleteNote(x.note.ID); err != nil {
 		log.Printf("delete: %v", err)
-		apiErr(w, http.StatusInternalServerError, "Gagal menghapus.")
+		apiErr(w, http.StatusInternalServerError, "err.delete_failed")
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})

@@ -60,7 +60,7 @@ func TestScheduledLock(t *testing.T) {
 	}
 	for _, wr := range writes {
 		code, m, _ := c.do(wr.method, wr.path, wr.body, vis)
-		if code != 403 || !strings.Contains(fmt.Sprint(m["error"]), "dikunci") {
+		if code != 403 || m["code"] != "err.locked" || m["vars"] == nil {
 			t.Errorf("%s %s after lock: %d %v", wr.method, wr.path, code, m)
 		}
 	}
@@ -112,7 +112,7 @@ func TestTimeCapsule(t *testing.T) {
 	}
 	// Too early: refused without spending the single view, writes refused too.
 	for i := 0; i < 2; i++ {
-		if code, m, _ := c.do("POST", "/api/n/"+n.token+"/open", nil, vis); code != 425 || !strings.Contains(fmt.Sprint(m["error"]), "baru bisa dibuka") {
+		if code, m, _ := c.do("POST", "/api/n/"+n.token+"/open", nil, vis); code != 425 || m["code"] != "err.capsule_closed" || !strings.Contains(fmt.Sprint(m["error"]), "can only be opened") {
 			t.Fatalf("early open: %d %v", code, m)
 		}
 	}

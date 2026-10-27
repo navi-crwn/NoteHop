@@ -23,10 +23,10 @@
     e.preventDefault();
     err.classList.add('hide');
     var phrase = $('#phrase').value;
-    if (isNew && phrase !== $('#phrase2').value) return fail('Kunci brankas tidak sama.');
-    if (!NHC.available) return fail('Browser ini tidak mendukung WebCrypto (butuh HTTPS atau localhost).');
+    if (isNew && phrase !== $('#phrase2').value) return fail(NH.t('js.vault_mismatch'));
+    if (!NHC.available) return fail(NH.t('js.no_webcrypto'));
     btn.disabled = true;
-    btn.querySelector('span').textContent = 'Menurunkan kunci…';
+    btn.querySelector('span').textContent = NH.t('js.deriving');
     NHC.vaultPhrase(phrase, form.dataset.sub).then(function (k) {
       return NH.api('POST', '/api/vault', { check: k.check }).then(function () {
         NH.store.set('nh_vault', { u: document.body.dataset.user, k: k.vault });

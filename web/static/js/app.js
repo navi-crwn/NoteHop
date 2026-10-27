@@ -4,6 +4,21 @@
   'use strict';
   var NH = window.NH = {};
 
+  // Interface text: the catalog for the chosen language comes from
+  // /i18n/<lang>.js (window.NH_I18N); English fills any gap server-side.
+  // t('key', {name: value}) fills "{name}"; a value named "time" is unix
+  // seconds and is shown as a local date.
+  var CAT = window.NH_I18N || {};
+  NH.lang = window.NH_LANG || 'en';
+  NH.t = function (key, vars) {
+    var s = Object.prototype.hasOwnProperty.call(CAT, key) ? CAT[key] : key;
+    if (vars) Object.keys(vars).forEach(function (k) {
+      var v = k === 'time' ? NH.date(vars[k]) : vars[k];
+      s = s.split('{' + k + '}').join(v);
+    });
+    return s;
+  };
+
   NH.$ = function (s, r) { return (r || document).querySelector(s); };
   NH.$$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
@@ -54,21 +69,23 @@
         var data = null;
         try { data = txt ? JSON.parse(txt) : {}; } catch (e) { data = { error: txt }; }
         if (!r.ok) {
-          var err = new Error((data && data.error) || ('HTTP ' + r.status));
+          var msg = data && data.code && Object.prototype.hasOwnProperty.call(CAT, data.code) ? NH.t(data.code, data.vars) : (data && data.error);
+          var err = new Error(msg || ('HTTP ' + r.status));
+          err.code = data && data.code;
           err.status = r.status;
           throw err;
         }
         return data;
       });
     }, function () {
-      var err = new Error('Tidak bisa terhubung ke server.');
+      var err = new Error(NH.t('err.network'));
       err.status = 0;
       throw err;
     });
   };
 
   NH.copy = function (text, msg) {
-    var done = function () { NH.toast(msg || 'Disalin', 'ok'); };
+    var done = function () { NH.toast(msg || NH.t('js.copied'), 'ok'); };
     if (navigator.clipboard && window.isSecureContext) {
       return navigator.clipboard.writeText(text).then(done, function () { fallback(); });
     }
@@ -78,7 +95,7 @@
       ta.value = text;
       document.body.appendChild(ta);
       ta.select();
-      try { document.execCommand('copy'); done(); } catch (e) { NH.toast('Gagal menyalin', 'err'); }
+      try { document.execCommand('copy'); done(); } catch (e) { NH.toast(NH.t('js.copy_failed'), 'err'); }
       ta.remove();
     }
     return Promise.resolve();
@@ -115,26 +132,26 @@
     return base + '/n/' + encodeURIComponent(token) + (s ? '#' + s : '');
   };
 
-  var rtf = window.Intl && Intl.RelativeTimeFormat ? new Intl.RelativeTimeFormat('id', { numeric: 'auto' }) : null;
+  var rtf = window.Intl && Intl.RelativeTimeFormat ? new Intl.RelativeTimeFormat(NH.lang, { numeric: 'auto' }) : null;
   NH.ago = function (unix) {
     var diff = unix - Date.now() / 1000, a = Math.abs(diff);
     var units = [[60, 'second', 1], [3600, 'minute', 60], [86400, 'hour', 3600], [604800, 'day', 86400], [2629800, 'week', 604800], [31557600, 'month', 2629800], [Infinity, 'year', 31557600]];
     for (var i = 0; i < units.length; i++) {
       if (a < units[i][0]) {
         var n = Math.round(diff / units[i][2]);
-        return rtf ? rtf.format(n, units[i][1]) : new Date(unix * 1000).toLocaleString('id');
+        return rtf ? rtf.format(n, units[i][1]) : new Date(unix * 1000).toLocaleString(NH.lang);
       }
     }
   };
   NH.date = function (unix) {
-    return new Date(unix * 1000).toLocaleString('id', { dateStyle: 'medium', timeStyle: 'short' });
+    return new Date(unix * 1000).toLocaleString(NH.lang, { dateStyle: 'medium', timeStyle: 'short' });
   };
 
   NH.modeInfo = {
-    edit: { label: 'Edit penuh', icon: 'edit' },
-    read: { label: 'Baca saja', icon: 'eye' },
-    append: { label: 'Tambah saja', icon: 'append' },
-    check: { label: 'Centang checklist', icon: 'check' }
+    edit: { label: NH.t('mode.edit'), icon: 'edit' },
+    read: { label: NH.t('mode.read'), icon: 'eye' },
+    append: { label: NH.t('mode.append'), icon: 'append' },
+    check: { label: NH.t('mode.check'), icon: 'check' }
   };
 
   // ---------- chrome ----------
@@ -147,11 +164,23 @@
   });
   var burger = document.getElementById('burger');
   if (burger) burger.addEventListener('click', function () { document.getElementById('nav').classList.toggle('open'); });
-  var menu = document.getElementById('menu');
-  if (menu) {
-    menu.firstElementChild.addEventListener('click', function (e) { e.stopPropagation(); menu.classList.toggle('open'); });
-    document.addEventListener('click', function () { menu.classList.remove('open'); });
-  }
+  NH.$$('.menu').forEach(function (menu) {
+    menu.firstElementChild.addEventListener('click', function (e) {
+      e.stopPropagation();
+      NH.$$('.menu.open').forEach(function (m) { if (m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
+    });
+  });
+  document.addEventListener('click', function () { NH.$$('.menu.open').forEach(function (m) { m.classList.remove('open'); }); });
+  // Language: remember it in a cookie and reload in place, keeping the #key
+  // part of note links (a plain ?lang= link would drop it).
+  NH.$$('[data-lang]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      document.cookie = 'nh_lang=' + a.dataset.lang + '; path=/; max-age=31536000; samesite=lax' + (location.protocol === 'https:' ? '; secure' : '');
+      location.reload();
+    });
+  });
   var logout = document.getElementById('logout');
   if (logout) logout.addEventListener('click', function () {
     NH.store.del('nh_vault');

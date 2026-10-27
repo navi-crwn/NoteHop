@@ -1,6 +1,6 @@
 # CLAUDE.md: konteks untuk sesi berikutnya
 
-Baca ini dulu sebelum menyentuh kode. Pemilik: **navi-crwn** (juga pemilik ImageApp, SSO, OtherApp). Bahasa percakapan dan UI: **Bahasa Indonesia**.
+Baca ini dulu sebelum menyentuh kode. Pemilik: **navi-crwn** (juga pemilik ImageApp, SSO, OtherApp). Bahasa percakapan dengan pemilik: **Bahasa Indonesia**. UI: **8 bahasa, default English** (produk dijual internasional; jangan jadikan Indonesia default).
 
 ## Apa ini
 
@@ -36,7 +36,8 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 6. Skema DB hanya berubah lewat migrasi baru di **akhir** daftar `migrations` (`internal/db/db.go`). Jangan ubah migrasi yang sudah ada.
 7. Fitur opsional per catatan: tambah field di `NoteConfig` dan satu nilai `feature` di file sendiri (lihat `internal/app/features.go`, contoh `lock.go`), bukan kolom baru atau `if` di `notes.go`.
 8. UI fitur: setiap fitur diaktifkan lewat **pill toggle** (`.pill-opt`), inputnya baru muncul setelah aktif. Fitur advance masuk **Pengaturan lanjutan** (`details.adv`). Fitur yang bentrok tidak boleh aktif bersamaan: aturannya di `RULES` (`new.js`) dan `TIMED` (`note.js`) untuk UI, dan **juga** dicek di server (`createReq.invalid`, `checkTimes`, `apiAddLink`).
-9. Gaya kode: komentar singkat yang menjelaskan *kenapa*, pesan error untuk pengguna dalam Bahasa Indonesia, tanpa framework frontend.
+9. **Teks UI selalu lewat katalog** `web/i18n/<lang>.json` (en, zh, es, ar, pt, ja, ru, id; English = sumber dan fallback). Template: `{{.L.T "kunci"}}` / `{{.L.H "kunci"}}` (bermarkup). JS: `NH.t('kunci', {var})`. Go: `apiErr(w, status, "err.kunci", "var", nilai)`. Kunci baru wajib ditambahkan ke **semua 8 file**; `go test ./internal/i18n` memeriksa kunci, placeholder, dan tag. Arab = RTL: pakai properti CSS logis (`margin-inline-start`, bukan `margin-left`).
+10. Gaya kode: komentar singkat yang menjelaskan *kenapa*, tanpa framework frontend.
 
 ## Perintah
 

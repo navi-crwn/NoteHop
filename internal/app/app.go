@@ -6,6 +6,8 @@ package app
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/json"
+	"fmt"
 	"encoding/hex"
 	"html/template"
 	"io/fs"
@@ -15,6 +17,7 @@ import (
 	"time"
 
 	"github.com/navi-crwn/NoteHop/internal/db"
+	"github.com/navi-crwn/NoteHop/internal/i18n"
 	"github.com/navi-crwn/NoteHop/web"
 )
 
@@ -89,10 +92,11 @@ func (a *App) routes() {
 	m.Handle("GET /static/", http.StripPrefix("/static/", cacheForever(files)))
 	m.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("ok")) })
 
-	m.HandleFunc("GET /{$}", a.page("new", "", "Catatan baru"))
-	m.HandleFunc("GET /about", a.page("about", "Cara kerja", "Bagaimana NoteHop menjaga catatanmu tetap privat"))
-	m.HandleFunc("GET /login", a.page("login", "Masuk", ""))
-	m.HandleFunc("GET /register", a.page("register", "Daftar", ""))
+	m.HandleFunc("GET /{$}", a.page("new", "", "meta.desc_new"))
+	m.HandleFunc("GET /about", a.page("about", "title.about", "meta.desc_about"))
+	m.HandleFunc("GET /login", a.page("login", "title.login", ""))
+	m.HandleFunc("GET /register", a.page("register", "title.register", ""))
+	m.HandleFunc("GET /i18n/{lang}", a.catalogJS)
 	m.HandleFunc("GET /dashboard", a.dashboardPage)
 	m.HandleFunc("GET /vault", a.vaultPage)
 	m.HandleFunc("GET /auth/sso", a.ssoStart)
@@ -143,6 +147,8 @@ type pageData struct {
 	Origin  string // scheme://host for absolute OpenGraph URLs
 	Main    string // main site, for admin links
 	Share   string // share domain, for links handed to readers (may be empty)
+	L       i18n.Locale
+	Langs   []i18n.Lang
 }
 
 func (a *App) loadTemplates() error {
@@ -159,6 +165,7 @@ func (a *App) loadTemplates() error {
 
 func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name string, d pageData) {
 	d.Site, d.Path, d.Asset, d.Reg = a.cfg.Site, r.URL.Path, a.asset, a.cfg.Registration
+	d.L, d.Langs = a.locale(w, r), i18n.Langs
 	d.SSO = a.cfg.SSOEnabled()
 	d.Origin = a.origin(r)
 	d.Main, d.Share = a.cfg.BaseURL, a.shareURL()
@@ -176,9 +183,18 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	}
 }
 
+// page serves a static page; title and desc are catalog keys.
 func (a *App) page(name, title, desc string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		a.render(w, r, http.StatusOK, name, pageData{Title: title, Desc: desc})
+		l := a.locale(w, r)
+		d := pageData{}
+		if title != "" {
+			d.Title = l.T(title)
+		}
+		if desc != "" {
+			d.Desc = l.T(desc)
+		}
+		a.render(w, r, http.StatusOK, name, d)
 	}
 }
 
@@ -188,7 +204,7 @@ func (a *App) dashboardPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login?next=/dashboard", http.StatusSeeOther)
 		return
 	}
-	a.render(w, r, http.StatusOK, "dashboard", pageData{Title: "Catatanku", User: u, NoIndex: true})
+	a.render(w, r, http.StatusOK, "dashboard", pageData{Title: a.locale(w, r).T("title.dashboard"), User: u, NoIndex: true})
 }
 
 func (a *App) notePage(w http.ResponseWriter, r *http.Request) {
@@ -198,7 +214,7 @@ func (a *App) notePage(w http.ResponseWriter, r *http.Request) {
 		a.notFound(w, r)
 		return
 	}
-	title, desc := previewText(n)
+	title, desc := previewText(n, a.locale(w, r))
 	// Chat apps only want the preview card; they get it without the app.
 	if isPreviewBot(r.UserAgent()) {
 		a.preview(w, r, title, desc)
@@ -224,10 +240,10 @@ func (a *App) origin(r *http.Request) string {
 
 func (a *App) notFound(w http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(r.URL.Path, "/api/") {
-		apiErr(w, http.StatusNotFound, "Tidak ditemukan.")
+		apiErr(w, http.StatusNotFound, "err.not_found")
 		return
 	}
-	a.render(w, r, http.StatusNotFound, "error", pageData{Title: "Tidak ditemukan", NoIndex: true})
+	a.render(w, r, http.StatusNotFound, "error", pageData{Title: a.locale(w, r).T("title.not_found"), NoIndex: true})
 }
 
 func cacheForever(h http.Handler) http.Handler {
@@ -241,16 +257,60 @@ func cacheForever(h http.Handler) http.Handler {
 	})
 }
 
-// assetVersion fingerprints the embedded static files for cache busting.
+// assetVersion fingerprints the embedded static files and catalogs for
+// cache busting.
 func assetVersion() string {
 	h := sha256.New()
-	_ = fs.WalkDir(web.Static, "static", func(p string, d fs.DirEntry, err error) error {
-		if err == nil && !d.IsDir() {
-			b, _ := fs.ReadFile(web.Static, p)
-			h.Write([]byte(p))
-			h.Write(b)
-		}
-		return nil
-	})
+	for _, src := range []struct {
+		fsys fs.FS
+		dir  string
+	}{{web.Static, "static"}, {web.I18n, "i18n"}} {
+		_ = fs.WalkDir(src.fsys, src.dir, func(p string, d fs.DirEntry, err error) error {
+			if err == nil && !d.IsDir() {
+				b, _ := fs.ReadFile(src.fsys, p)
+				h.Write([]byte(p))
+				h.Write(b)
+			}
+			return nil
+		})
+	}
 	return hex.EncodeToString(h.Sum(nil))[:10]
+}
+
+// ---------- language ----------
+
+const langCookie = "nh_lang"
+
+// locale is the reader's language: ?lang= (remembered in a cookie), then the
+// cookie, then English. Browsers' Accept-Language is deliberately ignored so
+// the site is the same for everyone until they choose.
+func (a *App) locale(w http.ResponseWriter, r *http.Request) i18n.Locale {
+	if q := r.URL.Query().Get("lang"); i18n.Supported(q) {
+		http.SetCookie(w, &http.Cookie{Name: langCookie, Value: q, Path: "/", MaxAge: 365 * 24 * 3600,
+			Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode})
+		return i18n.Locale{Lang: i18n.Get(q)}
+	}
+	code := i18n.Default
+	if c, err := r.Cookie(langCookie); err == nil && i18n.Supported(c.Value) {
+		code = c.Value
+	}
+	return i18n.Locale{Lang: i18n.Get(code)}
+}
+
+// catalogJS hands the browser scripts their text: GET /i18n/en.js sets
+// window.NH_I18N. A script file (not inline) because of the CSP.
+func (a *App) catalogJS(w http.ResponseWriter, r *http.Request) {
+	code := strings.TrimSuffix(r.PathValue("lang"), ".js")
+	if !i18n.Supported(code) {
+		a.notFound(w, r)
+		return
+	}
+	b, _ := json.Marshal(i18n.Catalog(code))
+	w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
+	if r.URL.RawQuery != "" {
+		w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+	} else {
+		w.Header().Set("Cache-Control", "public, max-age=300")
+	}
+	fmt.Fprintf(w, "window.NH_I18N=%s;window.NH_LANG=%q;\n", b, code)
 }

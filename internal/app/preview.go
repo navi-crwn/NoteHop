@@ -5,9 +5,11 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/navi-crwn/NoteHop/internal/db"
+	"github.com/navi-crwn/NoteHop/internal/i18n"
 )
 
 // Link previews in chat apps. The note page never contains content (it is
@@ -35,10 +37,10 @@ func isPreviewBot(ua string) bool {
 }
 
 // previewText is the card title and description for a note link.
-func previewText(n *db.Note) (title, desc string) {
-	title = "Catatan terenkripsi"
+func previewText(n *db.Note, l i18n.Locale) (title, desc string) {
+	title = l.T("preview.title_encrypted")
 	if !n.Encrypted {
-		title = "Catatan publik"
+		title = l.T("preview.title_public")
 		var body struct {
 			T string `json:"t"`
 		}
@@ -49,27 +51,31 @@ func previewText(n *db.Note) (title, desc string) {
 		}
 	}
 	if n.Frozen {
-		title = "Snapshot: " + title
+		title = l.T("preview.snapshot", "title", title)
 	}
 	var parts []string
 	if n.Encrypted {
-		parts = append(parts, "Isinya dienkripsi di browser; server tidak bisa membacanya")
+		parts = append(parts, l.T("preview.encrypted"))
 	}
 	if n.Password {
-		parts = append(parts, "butuh password")
+		parts = append(parts, l.T("preview.password"))
 	}
 	if n.MaxViews > 0 {
-		parts = append(parts, "hancur setelah dibaca")
+		parts = append(parts, l.T("preview.burn"))
 	}
 	if n.Expires > 0 {
-		parts = append(parts, "punya batas waktu")
+		parts = append(parts, l.T("preview.expires"))
 	}
-	desc = "Buka link untuk membaca."
+	desc = l.T("preview.open")
 	if len(parts) > 0 {
-		p := strings.Join(parts, ", ")
-		desc = strings.ToUpper(p[:1]) + p[1:] + ". " + desc
+		desc = upperFirst(strings.Join(parts, l.T("preview.sep"))+l.T("preview.end")) + " " + desc
 	}
 	return title, desc
+}
+
+func upperFirst(s string) string {
+	r, n := utf8.DecodeRuneInString(s)
+	return string(unicode.ToUpper(r)) + s[n:]
 }
 
 func clipRunes(s string, n int) string {

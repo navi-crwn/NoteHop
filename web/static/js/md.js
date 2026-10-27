@@ -69,9 +69,9 @@
       if (j >= lines.length) { out.push(line); continue; } // unclosed: leave as text
       var title = b[2].trim();
       if (b[1] === 'spoiler') {
-        out.push('', '<details class="spoiler"><summary>' + esc(title || 'Klik untuk membuka') + '</summary>', '', inner.join('\n'), '', '</details>', '');
+        out.push('', '<details class="spoiler"><summary>' + esc(title || NH.t('md.spoiler_default')) + '</summary>', '', inner.join('\n'), '', '</details>', '');
       } else {
-        out.push('', '<div class="locked" data-title="' + esc(title || 'Blok terkunci') + '" data-payload="' + esc(inner.join('').trim()) + '"></div>', '');
+        out.push('', '<div class="locked" data-title="' + esc(title || NH.t('md.locked_default')) + '" data-payload="' + esc(inner.join('').trim()) + '"></div>', '');
       }
       i = j;
     }
@@ -106,8 +106,8 @@
         }
       } catch (e) {}
       if (m) code.parentNode.dataset.lang = m[1];
-      var btn = NH.h('button.code-copy', { type: 'button', title: 'Salin kode', 'aria-label': 'Salin kode' }, NH.icon('copy'));
-      btn.addEventListener('click', function () { NH.copy(code.textContent, 'Kode disalin'); });
+      var btn = NH.h('button.code-copy', { type: 'button', title: NH.t('md.copy_code'), 'aria-label': NH.t('md.copy_code') }, NH.icon('copy'));
+      btn.addEventListener('click', function () { NH.copy(code.textContent, NH.t('md.code_copied')); });
       code.parentNode.appendChild(btn);
     });
   }
@@ -117,7 +117,7 @@
     root.querySelectorAll('img').forEach(function (img) {
       var src = img.getAttribute('src') || '';
       if (/^data:image\//.test(src)) return;
-      var a = NH.h('a.img-blocked', { href: src, target: '_blank', rel: 'noopener noreferrer nofollow' }, NH.icon('eye'), 'Gambar luar: ' + (img.alt || src));
+      var a = NH.h('a.img-blocked', { href: src, target: '_blank', rel: 'noopener noreferrer nofollow' }, NH.icon('eye'), NH.t('md.external_image', { name: img.alt || src }));
       img.replaceWith(a);
     });
   }
@@ -125,14 +125,14 @@
   function lockedBlocks(root) {
     root.querySelectorAll('.locked').forEach(function (box) {
       var title = box.dataset.title, payload = box.dataset.payload;
-      var pin = NH.h('input', { type: 'password', inputmode: 'numeric', placeholder: 'PIN', 'aria-label': 'PIN untuk ' + title, autocomplete: 'off' });
+      var pin = NH.h('input', { type: 'password', inputmode: 'numeric', placeholder: 'PIN', 'aria-label': NH.t('md.pin_for', { title: title }), autocomplete: 'off' });
       var err = NH.h('span.locked-err');
-      var form = NH.h('form.locked-form', pin, NH.h('button.btn.sm', { type: 'submit' }, NH.icon('unlock'), 'Buka'), err);
+      var form = NH.h('form.locked-form', pin, NH.h('button.btn.sm', { type: 'submit' }, NH.icon('unlock'), NH.t('vault.open_btn')), err);
       box.replaceChildren(NH.h('div.locked-head', NH.icon('lock'), NH.h('b', title)), form);
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         if (!pin.value) return;
-        err.textContent = 'Membuka…';
+        err.textContent = NH.t('md.opening');
         NHC.pinOpen(pin.value, payload).then(function (text) {
           var body = NH.h('div.locked-body');
           body.innerHTML = html(text);
@@ -140,7 +140,7 @@
           highlight(body);
           images(body);
           box.replaceChildren(NH.h('div.locked-head.open', NH.icon('unlock'), NH.h('b', title)), body);
-        }, function () { err.textContent = 'PIN salah.'; pin.select(); });
+        }, function () { err.textContent = NH.t('md.bad_pin'); pin.select(); });
       });
     });
   }
@@ -164,10 +164,10 @@
     var blocks = el.querySelectorAll(':scope > p, :scope > blockquote, :scope > table, li, details.spoiler > p');
     Array.prototype.forEach.call(blocks, function (b) {
       if (b.closest('.locked') || !b.textContent.trim()) return;
-      var btn = NH.h('button.blk-copy', { type: 'button', title: 'Salin bagian ini', 'aria-label': 'Salin bagian ini' }, NH.icon('copy'));
+      var btn = NH.h('button.blk-copy', { type: 'button', title: NH.t('md.copy_block'), 'aria-label': NH.t('md.copy_block') }, NH.icon('copy'));
       btn.addEventListener('click', function (e) {
         e.stopPropagation();
-        NH.copy(blockText(b), 'Disalin');
+        NH.copy(blockText(b), NH.t('js.copied'));
       });
       b.classList.add('cp');
       b.appendChild(btn);
@@ -202,7 +202,7 @@
     images(el);
     lockedBlocks(el);
     if (opts.copy) copyButtons(el);
-    if (!el.textContent.trim() && !el.querySelector('.locked, input, hr')) el.appendChild(NH.h('p.faint', 'Belum ada isi.'));
+    if (!el.textContent.trim() && !el.querySelector('.locked, input, hr')) el.appendChild(NH.h('p.faint', NH.t('md.empty')));
   }
 
   window.NHMD = { render: render, html: html, applyChecks: applyChecks, toggleTask: toggleTask };

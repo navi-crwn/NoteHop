@@ -8,24 +8,19 @@
   var submitted = false;
 
   if (!NHC.available) {
-    err.textContent = 'Browser ini tidak mendukung WebCrypto (butuh HTTPS atau localhost). Catatan tidak bisa dienkripsi.';
+    err.textContent = NH.t('js.no_webcrypto') + ' ' + NH.t('new.cant_encrypt');
     err.classList.remove('hide');
     btn.disabled = true;
   }
 
   // ---------- options: mode pills, feature toggles, conflicts ----------
-  var MODE_DESC = {
-    read: 'Hanya membaca. Tidak bisa mengubah apa pun.',
-    edit: 'Siapa pun yang punya link bisa mengubah isinya.',
-    append: 'Menambah baris di bawah; tidak bisa mengubah atau menghapus yang sudah ada.',
-    check: 'Isinya terkunci, tapi checkbox bisa dicentang.'
-  };
+  var MODE_DESC = { read: NH.t('mode.read_desc'), edit: NH.t('mode.edit_desc'), append: NH.t('mode.append_desc'), check: NH.t('mode.check_desc') };
   // A feature that would clash with the current choices is switched off and
   // dimmed; clicking it explains why instead of turning it on.
   var RULES = [
-    { feature: 'password', when: function () { return !on('encrypt'); }, why: 'Password butuh enkripsi E2E. Nyalakan Enkripsi E2E dulu.' },
-    { feature: 'burn', when: function () { return mode() !== 'read'; }, why: 'Sekali baca hanya untuk mode Baca: pengedit akan menghabiskan jatah bukanya.' },
-    { feature: 'lock', when: function () { return mode() === 'read'; }, why: 'Kunci otomatis untuk link Edit, Tambah, atau Centang; mode Baca sudah tidak bisa mengubah.' }
+    { feature: 'password', when: function () { return !on('encrypt'); }, why: NH.t('rule.password_e2e') },
+    { feature: 'burn', when: function () { return mode() !== 'read'; }, why: NH.t('rule.burn_read') },
+    { feature: 'lock', when: function () { return mode() === 'read'; }, why: NH.t('rule.lock_write') }
   ];
   function toggle(name) { return form.querySelector('[data-feature="' + name + '"]'); }
   function on(name) { return toggle(name).checked; }
@@ -48,7 +43,7 @@
     NH.$$('[data-panel]', form).forEach(function (p) { p.classList.toggle('hide', !on(p.dataset.panel)); });
     $('[data-for="encrypt-off"]').classList.toggle('hide', on('encrypt'));
     $('#mode-desc').textContent = MODE_DESC[mode()];
-    btn.querySelector('span').textContent = on('encrypt') ? 'Kunci & buat link' : 'Buat link publik';
+    btn.querySelector('span').textContent = NH.t(on('encrypt') ? 'new.create' : 'new.create_public');
     slugAdvice();
   }
   NH.$$('[data-feature]', form).forEach(function (input) {
@@ -62,10 +57,10 @@
   function slugAdvice() {
     slug.value = slug.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/^-+/, '');
     if (slug.value && mode() !== 'read') {
-      slugHint.textContent = 'Hati-hati: link mudah ditebak + mode ' + NH.modeInfo[mode()].label.toLowerCase() + '. Untuk catatan terenkripsi, tanpa kunci #k orang tetap tidak bisa membaca atau mengubah isinya.';
+      slugHint.textContent = NH.t('new.slug_warn', { mode: NH.modeInfo[mode()].label });
       slugHint.classList.add('warn');
     } else {
-      slugHint.textContent = 'Link mudah ditebak cocoknya untuk mode baca.';
+      slugHint.textContent = NH.t('new.slug_hint');
       slugHint.classList.remove('warn');
     }
   }
@@ -87,11 +82,11 @@
   // Times are checked together so they can't contradict each other.
   function timeProblem(openAt, lockAt, expiresIn) {
     var now = Math.floor(Date.now() / 1000);
-    if (on('capsule') && openAt <= now) return 'Waktu buka kapsul harus di masa depan.';
-    if (on('lock') && lockAt <= now) return 'Waktu kunci otomatis harus di masa depan.';
-    if (on('capsule') && on('lock') && lockAt <= openAt) return 'Kunci otomatis harus setelah kapsul waktu terbuka.';
-    if (on('capsule') && expiresIn && now + expiresIn <= openAt) return 'Catatan akan kedaluwarsa sebelum kapsul waktu terbuka. Perpanjang kedaluwarsa atau majukan waktu buka.';
-    if (on('lock') && expiresIn && now + expiresIn <= lockAt) return 'Catatan akan kedaluwarsa sebelum kunci otomatis berlaku.';
+    if (on('capsule') && openAt <= now) return NH.t('err.open_at_range');
+    if (on('lock') && lockAt <= now) return NH.t('err.lock_at_range');
+    if (on('capsule') && on('lock') && lockAt <= openAt) return NH.t('err.lock_before_open');
+    if (on('capsule') && expiresIn && now + expiresIn <= openAt) return NH.t('err.expires_before_open');
+    if (on('lock') && expiresIn && now + expiresIn <= lockAt) return NH.t('err.expires_before_lock');
     return '';
   }
 
@@ -105,10 +100,10 @@
     e.preventDefault();
     err.classList.add('hide');
     var title = $('#title').value.trim(), body = ed.value;
-    if (!title && !body.trim()) return fail('Catatan masih kosong.');
+    if (!title && !body.trim()) return fail(NH.t('new.empty'));
     var encrypted = on('encrypt'), password = encrypted && on('password') ? $('#password').value : '';
-    if (on('password') && !password) return fail('Isi password, atau matikan fitur Password.');
-    if (on('slug') && !slug.value.trim()) return fail('Isi alamat kustom, atau matikan fitur Alamat kustom.');
+    if (on('password') && !password) return fail(NH.t('new.need_password'));
+    if (on('slug') && !slug.value.trim()) return fail(NH.t('new.need_slug'));
     var expiresIn = on('expires') ? +$('#expires').value : 0;
     var openAt = on('capsule') ? unixOf('#open-at') : 0, lockAt = on('lock') ? unixOf('#lock-at') : 0;
     var problem = timeProblem(openAt, lockAt, expiresIn);
@@ -137,7 +132,7 @@
       // Hand the password to the next page without putting it in the URL.
       if (password) try { sessionStorage.setItem('nh_pw_' + res.token, password); } catch (x) {}
       location.href = NH.noteURL(res.token, { k: k, a: admin, new: '1' });
-    }).catch(function (x) { fail(x.message || 'Gagal membuat catatan.'); });
+    }).catch(function (x) { fail(x.message || NH.t('err.create_failed')); });
   });
 
   window.addEventListener('beforeunload', function (e) {
@@ -150,16 +145,16 @@
     box.classList.toggle('hide', !list.length);
     ul.replaceChildren.apply(ul, list.map(function (n) {
       var gone = n.expires && n.expires < Date.now() / 1000;
-      var rm = NH.h('button.icon-btn.sm', { type: 'button', title: 'Lupakan dari perangkat ini', 'aria-label': 'Lupakan' }, NH.icon('x'));
+      var rm = NH.h('button.icon-btn.sm', { type: 'button', title: NH.t('new.forget_one'), 'aria-label': NH.t('new.forget_one') }, NH.icon('x'));
       rm.addEventListener('click', function () { NH.recent.remove(n.token); drawRecent(); });
       return NH.h('li.note-row' + (gone ? '.gone' : ''),
-        NH.h('a.note-link', { href: NH.noteURL(n.token, { k: n.k, a: n.a }) }, NH.h('b', n.t || 'Tanpa judul'),
-          NH.h('small.muted', '/n/' + n.token + ' · ' + NH.ago(n.created) + (gone ? ' · kedaluwarsa' : '') + (n.p ? ' · berpassword' : ''))),
+        NH.h('a.note-link', { href: NH.noteURL(n.token, { k: n.k, a: n.a }) }, NH.h('b', n.t || NH.t('common.untitled')),
+          NH.h('small.muted', '/n/' + n.token + ' · ' + NH.ago(n.created) + (gone ? ' · ' + NH.t('new.expired') : '') + (n.p ? ' · ' + NH.t('new.has_password') : ''))),
         rm);
     }));
   }
   $('#recent-clear').addEventListener('click', function () {
-    if (confirm('Hapus semua link admin yang tersimpan di perangkat ini? Catatannya sendiri tidak terhapus.')) { NH.recent.clear(); drawRecent(); }
+    if (confirm(NH.t('new.forget_confirm'))) { NH.recent.clear(); drawRecent(); }
   });
   drawRecent();
   $('#title').focus();

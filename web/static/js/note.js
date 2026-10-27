@@ -39,15 +39,15 @@
     $('#note').classList.add('hide');
   }
   function gone(msg) {
-    showState('x', 'Catatan tidak bisa dibuka', msg, h('a.btn.primary', { href: '/' }, NH.icon('plus'), 'Tulis catatan baru'));
+    showState('x', NH.t('note.cant_open'), msg, h('a.btn.primary', { href: '/' }, NH.icon('plus'), NH.t('error.write_new')));
   }
 
   function start() {
-    if (!NHC.available) return gone('Browser ini tidak mendukung WebCrypto (butuh HTTPS atau localhost).');
+    if (!NHC.available) return gone(NH.t('js.no_webcrypto'));
     NH.api('GET', '/api/n/' + encodeURIComponent(token), undefined, A ? { 'X-Admin': A } : {}).then(function (meta) {
       S.meta = meta;
-      if (K && !/^[A-Za-z0-9_-]{43}$/.test(K)) return gone('Kunci di link rusak. Pastikan link tersalin utuh.');
-      if (meta.encrypted && !K) return gone('Bagian kunci (#k=…) tidak ada di link. Minta link lengkap dari pengirimnya; kunci itu tidak pernah disimpan di server.');
+      if (K && !/^[A-Za-z0-9_-]{43}$/.test(K)) return gone(NH.t('note.bad_key'));
+      if (meta.encrypted && !K) return gone(NH.t('note.no_key'));
       if (meta.open_at && !meta.admin) return capsule(meta.open_at);
       if (meta.password) return askPassword();
       return unlock('');
@@ -64,39 +64,39 @@
       var left = at - Math.floor(Date.now() / 1000);
       if (left <= 0) {
         clearInterval(capsuleTimer);
-        clock.textContent = 'Membuka…';
+        clock.textContent = NH.t('md.opening');
         // A few seconds of slack for clocks that disagree with the server.
         setTimeout(start, 3000);
         return;
       }
       var d = Math.floor(left / 86400), hh = Math.floor(left % 86400 / 3600), mm = Math.floor(left % 3600 / 60), ss = left % 60;
       var p2 = function (n) { return String(n).padStart(2, '0'); };
-      clock.textContent = (d ? d + ' hari ' : '') + p2(hh) + ':' + p2(mm) + ':' + p2(ss);
+      clock.textContent = (d ? NH.t('note.days', { n: d }) + ' ' : '') + p2(hh) + ':' + p2(mm) + ':' + p2(ss);
     };
     tick();
     capsuleTimer = setInterval(tick, 1000);
-    showState('clock', 'Belum waktunya dibuka', 'Catatan ini dikunci waktu sampai ' + NH.date(at) + '. Biarkan halaman ini terbuka; catatan akan terbuka sendiri.', clock);
+    showState('clock', NH.t('note.capsule_title'), NH.t('note.capsule_text', { time: at }), clock);
   }
 
   function askPassword(errMsg) {
     var handoff = null;
     try { handoff = sessionStorage.getItem('nh_pw_' + token); sessionStorage.removeItem('nh_pw_' + token); } catch (x) {}
     if (handoff && !errMsg) return unlock(handoff).catch(function () { askPassword(''); });
-    var input = h('input', { type: 'password', placeholder: 'Password', 'aria-label': 'Password catatan', autocomplete: 'off', required: true });
+    var input = h('input', { type: 'password', placeholder: NH.t('feat.password'), 'aria-label': NH.t('note.password_label'), autocomplete: 'off', required: true });
     var err = h('p.locked-err', errMsg || '');
-    var btn = h('button.btn.primary', { type: 'submit' }, NH.icon('unlock'), 'Buka');
+    var btn = h('button.btn.primary', { type: 'submit' }, NH.icon('unlock'), NH.t('vault.open_btn'));
     var form = h('form.pw-form', input, btn);
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       btn.disabled = true;
-      err.textContent = 'Menurunkan kunci…';
+      err.textContent = NH.t('js.deriving');
       unlock(input.value).catch(function (x) {
         btn.disabled = false;
-        err.textContent = x.status === 403 || x.name === 'OperationError' ? 'Password salah.' : x.message;
+        err.textContent = x.status === 403 || x.name === 'OperationError' ? NH.t('err.bad_password') : x.message;
         input.select();
       });
     });
-    showState('lock', 'Catatan ini dilindungi password', 'Link saja tidak cukup. Masukkan password yang diberikan pengirim.', form, err);
+    showState('lock', NH.t('note.pw_title'), NH.t('note.pw_text'), form, err);
     input.focus();
   }
 
@@ -112,19 +112,18 @@
 
   function confirmBurn() {
     var left = S.meta.max_views - S.meta.views;
-    var btn = h('button.btn.primary.lg', { type: 'button' }, NH.icon('eye'), 'Buka catatan sekarang');
+    var btn = h('button.btn.primary.lg', { type: 'button' }, NH.icon('eye'), NH.t('note.open_now'));
     btn.addEventListener('click', function () {
       btn.disabled = true;
       // A wrong password only shows up here: burn notes can't be test-opened
       // first. The server refuses without counting a view, so ask again.
       open(false).catch(function (x) {
-        if (x.status === 403 && S.meta.password) return askPassword('Password salah.');
+        if (x.status === 403 && S.meta.password) return askPassword(NH.t('err.bad_password'));
         gone(x.message);
       });
     });
-    showState('flame', left <= 1 ? 'Catatan ini hancur setelah dibuka' : 'Catatan ini punya jatah baca',
-      left <= 1 ? 'Begitu dibuka, catatan langsung dihapus dari server dan link ini mati. Pastikan kamu siap membacanya sekarang.'
-        : 'Catatan bisa dibuka ' + left + ' kali lagi sebelum dihapus otomatis.', btn);
+    showState('flame', NH.t(left <= 1 ? 'note.burn_title_once' : 'note.burn_title_many'),
+      left <= 1 ? NH.t('note.burn_text_once') : NH.t('note.burn_text_many', { n: left }), btn);
   }
 
   // ---------- loading content ----------
@@ -136,7 +135,7 @@
           function () { return { id: e.id, created: e.created, n: '', b: '', broken: true }; });
       }))
     ]).then(function (r) { return { note: r[0], entries: r[1] }; }, function () {
-      var err = new Error('Kunci tidak cocok dengan catatan ini. Link mungkin terpotong.');
+      var err = new Error(NH.t('note.key_mismatch'));
       err.status = 400;
       throw err;
     });
@@ -168,7 +167,7 @@
     }, function (x) {
       if (x.status === 425 && !poll) return start();
       if (x.status === 403 && S.meta.password && !poll) throw x;
-      if (poll) { if (x.status === 404) gone('Catatan ini baru saja dihapus atau kedaluwarsa.'); return; }
+      if (poll) { if (x.status === 404) gone(NH.t('note.just_gone')); return; }
       gone(x.message);
     });
   }
@@ -182,12 +181,12 @@
     $('#state').classList.add('hide');
     $('#note').classList.remove('hide');
 
-    if (burned) banner('flame', 'Catatan ini sudah dihancurkan dari server. Yang kamu lihat sekarang adalah satu-satunya salinan. Salin isinya sekarang jika perlu.', 'warn');
-    else if (m.frozen) banner('snow', 'Snapshot beku, dibuat ' + NH.date(m.created) + '. Isinya tidak bisa diubah siapa pun.', 'info',
-      m.admin && m.parent ? h('a', { href: NH.noteURL(m.parent, { k: K, a: A }) }, 'Buka catatan aslinya →') : null);
-    else if (m.open_at && m.admin) banner('clock', 'Kapsul waktu: pembaca baru bisa membuka catatan ini ' + NH.date(m.open_at) + '. Kamu bisa melihatnya karena memakai link admin.', 'info');
-    else if (m.locked && !m.admin && m.mode !== 'read') banner('lock', 'Catatan ini dikunci sejak ' + NH.date(m.lock_at) + '. Sekarang hanya bisa dibaca.', 'info');
-    else if (!S.keys && m.mode !== 'read') banner('key', 'Link ini tanpa kunci (#k), jadi hanya bisa membaca.', 'info');
+    if (burned) banner('flame', NH.t('note.burned'), 'warn');
+    else if (m.frozen) banner('snow', NH.t('note.frozen_banner', { time: m.created }), 'info',
+      m.admin && m.parent ? h('a', { href: NH.noteURL(m.parent, { k: K, a: A }) }, NH.t('note.open_original')) : null);
+    else if (m.open_at && m.admin) banner('clock', NH.t('note.capsule_admin', { time: m.open_at }), 'info');
+    else if (m.locked && !m.admin && m.mode !== 'read') banner('lock', NH.t('err.locked', { time: m.lock_at }), 'info');
+    else if (!S.keys && m.mode !== 'read') banner('key', NH.t('note.no_key_banner'), 'info');
 
     NH.$$('[data-admin]').forEach(function (b) { b.classList.toggle('hide', !m.admin); });
     if (m.frozen) $('#act-freeze').classList.add('hide');
@@ -210,7 +209,7 @@
 
     $('#act-copy').addEventListener('click', function () {
       var t = currentTitle(), b = NHMD.applyChecks(currentBody(), S.mode === 'edit' ? {} : S.checks);
-      NH.copy((t ? '# ' + t + '\n\n' : '') + b, 'Teks catatan disalin');
+      NH.copy((t ? '# ' + t + '\n\n' : '') + b, NH.t('note.text_copied'));
     });
     $('#act-share').addEventListener('click', openShare);
     $('#act-freeze').addEventListener('click', freeze);
@@ -230,7 +229,7 @@
   function currentBody() { return ed ? ed.value : S.body; }
 
   function drawBody(force) {
-    var title = S.title || 'Tanpa judul';
+    var title = S.title || NH.t('common.untitled');
     document.title = title + ' · NoteHop';
     $('#n-title').textContent = title;
     if (S.mode === 'edit') {
@@ -259,16 +258,16 @@
   function pill(icon, text, cls) { return h('span.pill' + (cls ? '.' + cls : ''), NH.icon(icon), text); }
   function drawMeta() {
     var m = S.meta, box = $('#n-meta'), kids = [];
-    if (m.admin) kids.push(pill('key', 'Admin', 'acc'));
+    if (m.admin) kids.push(pill('key', NH.t('pill.admin'), 'acc'));
     else kids.push(pill(NH.modeInfo[S.mode].icon, NH.modeInfo[S.mode].label));
-    kids.push(m.encrypted ? pill('shield', 'Terenkripsi', 'ok') : pill('eye', 'Publik', 'warn'));
-    if (m.password) kids.push(pill('lock', 'Berpassword'));
-    if (m.frozen) kids.push(pill('snow', 'Snapshot beku'));
-    if (m.expires) kids.push(pill('clock', 'Hilang ' + NH.ago(m.expires), 'warn'));
-    if (m.max_views) kids.push(pill('flame', 'Dibuka ' + m.views + '/' + m.max_views, 'bad'));
-    if (m.open_at) kids.push(pill('clock', 'Dibuka ' + NH.ago(m.open_at), 'warn'));
-    if (m.lock_at) kids.push(m.locked ? pill('lock', 'Dikunci') : pill('clock', 'Dikunci ' + NH.ago(m.lock_at), 'warn'));
-    kids.push(h('span.faint.small', 'Diubah ' + NH.ago(m.updated)));
+    kids.push(m.encrypted ? pill('shield', NH.t('pill.encrypted'), 'ok') : pill('eye', NH.t('pill.public'), 'warn'));
+    if (m.password) kids.push(pill('lock', NH.t('pill.password')));
+    if (m.frozen) kids.push(pill('snow', NH.t('pill.frozen')));
+    if (m.expires) kids.push(pill('clock', NH.t('pill.disappears', { ago: NH.ago(m.expires) }), 'warn'));
+    if (m.max_views) kids.push(pill('flame', NH.t('pill.opened', { n: m.views, max: m.max_views }), 'bad'));
+    if (m.open_at) kids.push(pill('clock', NH.t('pill.opens', { ago: NH.ago(m.open_at) }), 'warn'));
+    if (m.lock_at) kids.push(m.locked ? pill('lock', NH.t('pill.locked')) : pill('clock', NH.t('pill.locks', { ago: NH.ago(m.lock_at) }), 'warn'));
+    kids.push(h('span.faint.small', NH.t('pill.changed', { ago: NH.ago(m.updated) })));
     box.replaceChildren.apply(box, kids);
   }
 
@@ -280,7 +279,7 @@
   }
   function edited() {
     S.dirty = true;
-    setSave('Belum tersimpan');
+    setSave(NH.t('save.unsaved'));
     clearTimeout(saveTimer);
     saveTimer = setTimeout(save, 1200);
   }
@@ -290,7 +289,7 @@
     if (S.saving) { S.pending = true; return; }
     if (!S.dirty && !force) return;
     S.saving = true;
-    setSave('Menyimpan…');
+    setSave(NH.t('save.saving'));
     var t = currentTitle(), b = ed.value, vault = NHC.vault();
     var ownerBlob = S.meta.owned && S.meta.admin && vault ? vault.seal({ t: t, k: K, a: A, p: S.password }) : null;
     Promise.all([S.codec.encode({ t: t, b: b }), ownerBlob]).then(function (r) {
@@ -302,13 +301,13 @@
       S.title = t; S.body = b; S.checks = {};
       S.dirty = currentBody() !== b || currentTitle() !== t;
       S.meta.updated = Math.floor(Date.now() / 1000);
-      setSave(S.dirty ? 'Belum tersimpan' : 'Tersimpan', S.dirty ? '' : 'ok');
-      document.title = (t || 'Tanpa judul') + ' · NoteHop';
+      setSave(NH.t(S.dirty ? 'save.unsaved' : 'save.saved'), S.dirty ? '' : 'ok');
+      document.title = (t || NH.t('common.untitled')) + ' · NoteHop';
       if (A) NH.recent.update(token, { t: t });
       drawMeta();
     }).catch(function (x) {
       if (x.status === 409) return conflict();
-      setSave('Gagal menyimpan', 'err');
+      setSave(NH.t('err.save_failed'), 'err');
       NH.toast(x.message, 'err');
     }).finally(function () {
       S.saving = false;
@@ -317,14 +316,14 @@
   }
 
   function conflict() {
-    setSave('Bentrok', 'err');
-    var mine = h('button.btn.sm', { type: 'button' }, 'Timpa dengan versiku');
-    var theirs = h('button.btn.sm.primary', { type: 'button' }, 'Pakai versi terbaru');
-    banner('history', 'Orang lain menyimpan perubahan saat kamu mengetik.', 'warn', h('span.btn-row', theirs, mine));
+    setSave(NH.t('save.conflict'), 'err');
+    var mine = h('button.btn.sm', { type: 'button' }, NH.t('save.keep_mine'));
+    var theirs = h('button.btn.sm.primary', { type: 'button' }, NH.t('save.take_theirs'));
+    banner('history', NH.t('save.conflict_text'), 'warn', h('span.btn-row', theirs, mine));
     theirs.addEventListener('click', function () {
-      NH.copy((currentTitle() ? '# ' + currentTitle() + '\n\n' : '') + ed.value, 'Versimu disalin ke clipboard');
+      NH.copy((currentTitle() ? '# ' + currentTitle() + '\n\n' : '') + ed.value, NH.t('save.mine_copied'));
       S.dirty = false;
-      open(true).then(function () { drawBody(true); setSave('Versi terbaru dimuat', 'ok'); $('#banner').className = 'banner hide'; });
+      open(true).then(function () { drawBody(true); setSave(NH.t('save.latest_loaded'), 'ok'); $('#banner').className = 'banner hide'; });
     });
     mine.addEventListener('click', function () {
       api('POST', '/open', { poll: true }).then(function (d) {
@@ -353,14 +352,14 @@
     $('#entry-form').classList.toggle('hide', !canAppend());
     $('#entries-count').textContent = S.entries.length;
     list.replaceChildren.apply(list, S.entries.map(function (e) {
-      var body = h('div.md.entry-body');
-      if (e.broken) body.appendChild(h('p.faint', 'Baris ini tidak bisa didekripsi.'));
+      var body = h('div.md.entry-body', { dir: 'auto' });
+      if (e.broken) body.appendChild(h('p.faint', NH.t('entry.broken')));
       else NHMD.render(body, e.b, {});
-      var head = h('div.entry-head', h('b', e.n || 'Anonim'), h('time.faint', { datetime: new Date(e.created * 1000).toISOString(), title: NH.date(e.created) }, NH.ago(e.created)));
+      var head = h('div.entry-head', h('b', e.n || NH.t('entry.anon')), h('time.faint', { datetime: new Date(e.created * 1000).toISOString(), title: NH.date(e.created) }, NH.ago(e.created)));
       if (S.meta.admin && !S.meta.frozen) {
-        var del = h('button.icon-btn.sm', { type: 'button', title: 'Hapus baris ini', 'aria-label': 'Hapus baris' }, NH.icon('trash'));
+        var del = h('button.icon-btn.sm', { type: 'button', title: NH.t('entry.delete'), 'aria-label': NH.t('entry.delete') }, NH.icon('trash'));
         del.addEventListener('click', function () {
-          if (!confirm('Hapus baris dari ' + (e.n || 'Anonim') + '?')) return;
+          if (!confirm(NH.t('entry.confirm_delete', { name: e.n || NH.t('entry.anon') }))) return;
           api('DELETE', '/entries/' + e.id).then(function () {
             S.entries = S.entries.filter(function (x) { return x.id !== e.id; });
             drawEntries();
@@ -387,7 +386,7 @@
       S.entries.push({ id: res.id, created: res.created, n: n, b: b });
       entryText.value = '';
       drawEntries();
-      NH.toast('Ditambahkan', 'ok');
+      NH.toast(NH.t('entry.added'), 'ok');
     }, function (x) { NH.toast(x.message, 'err'); }).finally(function () { btn.disabled = false; });
   });
   entryText.addEventListener('keydown', function (e) {
@@ -400,16 +399,16 @@
   function linkRow(l, deletable) {
     var info = NH.modeInfo[l.mode];
     var url = shareURL(l.token);
-    var copy = h('button.btn.sm', { type: 'button' }, NH.icon('copy'), 'Salin');
-    copy.addEventListener('click', function () { NH.copy(url, 'Link ' + info.label.toLowerCase() + ' disalin'); });
-    var qr = h('button.icon-btn.sm', { type: 'button', title: 'QR code', 'aria-label': 'QR code' }, NH.icon('qr'));
+    var copy = h('button.btn.sm', { type: 'button' }, NH.icon('copy'), NH.t('share.copy'));
+    copy.addEventListener('click', function () { NH.copy(url, NH.t('share.link_copied', { mode: info.label })); });
+    var qr = h('button.icon-btn.sm', { type: 'button', title: NH.t('share.qr'), 'aria-label': NH.t('share.qr') }, NH.icon('qr'));
     qr.addEventListener('click', function () { showQR(url, info.label); });
     var row = h('li.link-row', h('span.link-mode', NH.icon(info.icon), info.label),
       h('code.link-url', { title: url }, '/n/' + l.token), h('span.btn-row', copy, qr));
     if (deletable) {
-      var del = h('button.icon-btn.sm', { type: 'button', title: 'Hapus link ini', 'aria-label': 'Hapus link' }, NH.icon('trash'));
+      var del = h('button.icon-btn.sm', { type: 'button', title: NH.t('share.delete_link'), 'aria-label': NH.t('share.delete_link') }, NH.icon('trash'));
       del.addEventListener('click', function () {
-        if (!confirm('Matikan link /n/' + l.token + '? Orang yang memegangnya tidak bisa membuka lagi. Link lain tetap jalan.')) return;
+        if (!confirm(NH.t('share.confirm_delete', { link: '/n/' + l.token }))) return;
         api('DELETE', '/links/' + encodeURIComponent(l.token)).then(openShare, function (x) { NH.toast(x.message, 'err'); });
       });
       row.lastChild.appendChild(del);
@@ -432,8 +431,8 @@
       var sl = $('#snap-list');
       sl.replaceChildren.apply(sl, snaps.map(function (s) {
         var url = shareURL(s.token);
-        var copy = h('button.btn.sm', { type: 'button' }, NH.icon('copy'), 'Salin');
-        copy.addEventListener('click', function () { NH.copy(url, 'Link snapshot disalin'); });
+        var copy = h('button.btn.sm', { type: 'button' }, NH.icon('copy'), NH.t('share.copy'));
+        copy.addEventListener('click', function () { NH.copy(url, NH.t('share.snapshot_copied')); });
         return h('li.link-row', h('span.link-mode', NH.icon('snow'), NH.date(s.created)),
           h('a.link-url', { href: NH.noteURL(s.token, { k: K, a: A }) }, '/n/' + s.token), h('span.btn-row', copy));
       }));
@@ -450,7 +449,7 @@
     var slugEl = $('#new-slug');
     api('POST', '/links', { mode: $('#new-mode').value, slug: slugEl.value.trim() }).then(function (l) {
       slugEl.value = '';
-      NH.copy(shareURL(l.token), 'Link baru dibuat dan disalin');
+      NH.copy(shareURL(l.token), NH.t('share.new_copied'));
       openShare();
     }, function (x) { NH.toast(x.message, 'err'); });
   });
@@ -458,7 +457,7 @@
     this.value = this.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/^-+/, '');
   });
   $('#copy-admin').addEventListener('click', function () {
-    NH.copy(NH.noteURL(token, { k: K, a: A }), 'Link admin disalin. Simpan baik-baik');
+    NH.copy(NH.noteURL(token, { k: K, a: A }), NH.t('share.admin_copied'));
   });
 
   // ---------- timed features (admin): time capsule and scheduled lock ----------
@@ -472,23 +471,21 @@
     open: {
       field: 'open_at', input: '#open-at', def: 86400,
       state: function (m) {
-        return m.open_at ? 'Aktif: pembaca baru bisa membuka ' + NH.date(m.open_at) + ' (' + NH.ago(m.open_at) + '). Server menahan isinya sampai saat itu.'
-          : 'Belum aktif. Pilih waktu lalu Simpan; sampai saat itu server menahan isinya dan pembaca melihat hitung mundur.';
+        return m.open_at ? NH.t('timed.open_on', { time: m.open_at, ago: NH.ago(m.open_at) }) : NH.t('timed.open_off');
       },
-      saved: 'Kapsul waktu disimpan', cleared: 'Kapsul waktu dibatalkan'
+      saved: NH.t('timed.open_saved'), cleared: NH.t('timed.open_cleared')
     },
     lock: {
       field: 'lock_at', input: '#lock-at', def: 7 * 86400,
       state: function (m) {
-        return m.locked ? 'Sudah berlaku sejak ' + NH.date(m.lock_at) + '. Pengunjung hanya bisa membaca; link admin tetap bisa mengubah.'
-          : m.lock_at ? 'Aktif: mulai ' + NH.date(m.lock_at) + ' (' + NH.ago(m.lock_at) + ') link edit, tambah, dan centang hanya bisa membaca.'
-            : 'Belum aktif. Pilih waktu lalu Simpan; setelah itu link edit, tambah, dan centang hanya bisa membaca.';
+        return m.locked ? NH.t('timed.lock_done', { time: m.lock_at })
+          : m.lock_at ? NH.t('timed.lock_on', { time: m.lock_at, ago: NH.ago(m.lock_at) }) : NH.t('timed.lock_off');
       },
       // Read-only links have nothing to lock.
       blocked: function (m) {
-        return (m.links || []).every(function (l) { return l.mode === 'read'; }) ? 'Kunci otomatis untuk link Edit, Tambah, atau Centang. Buat link seperti itu dulu.' : '';
+        return (m.links || []).every(function (l) { return l.mode === 'read'; }) ? NH.t('timed.lock_blocked') : '';
       },
-      saved: 'Kunci otomatis disimpan', cleared: 'Kunci otomatis dibatalkan'
+      saved: NH.t('timed.lock_saved'), cleared: NH.t('timed.lock_cleared')
     }
   };
   function drawTimed(m) {
@@ -539,19 +536,19 @@
     qr.addData(url);
     qr.make();
     var src = qr.createDataURL(6, 2);
-    var img = h('img', { src: src, alt: 'QR code untuk link ' + label, width: 240, height: 240 });
-    var dl = h('a.btn.sm', { href: src, download: 'notehop-' + token + '.gif' }, NH.icon('qr'), 'Unduh QR');
+    var img = h('img', { src: src, alt: NH.t('qr.alt', { mode: label }), width: 240, height: 240 });
+    var dl = h('a.btn.sm', { href: src, download: 'notehop-' + token + '.gif' }, NH.icon('qr'), NH.t('qr.download'));
     $('#qr-box').replaceChildren(img, dl);
-    $('#qr-mode').textContent = 'Link ' + label.toLowerCase() + ', termasuk kuncinya. Siapa pun yang memindai bisa membuka.';
+    $('#qr-mode').textContent = NH.t('qr.note', { mode: label });
     $('#qr-dlg').showModal();
   }
 
   function freeze() {
     if (ed && S.dirty) saveNow();
-    if (!confirm('Bekukan versi saat ini? Kamu akan mendapat link baca saja yang isinya tidak akan pernah berubah. Catatan ini tetap bisa kamu edit.')) return;
+    if (!confirm(NH.t('freeze.confirm'))) return;
     var go = function () {
       api('POST', '/freeze').then(function (l) {
-        NH.copy(shareURL(l.token), 'Snapshot dibuat, link-nya disalin');
+        NH.copy(shareURL(l.token), NH.t('freeze.done'));
         openShare();
       }, function (x) { NH.toast(x.message, 'err'); });
     };
@@ -560,7 +557,7 @@
   }
 
   function removeNote() {
-    if (!confirm('Hapus catatan ini selamanya? Semua link-nya akan mati. Snapshot beku tetap ada.')) return;
+    if (!confirm(NH.t('note.confirm_delete'))) return;
     S.dirty = false;
     api('DELETE', '').then(function () {
       NH.recent.remove(token);
