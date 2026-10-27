@@ -103,7 +103,7 @@ func TestTimeCapsule(t *testing.T) {
 	srv := httptest.NewServer(a.Handler())
 	t.Cleanup(func() { srv.Close(); d.Close() })
 	c := newClient(t, srv)
-	n := c.create(map[string]any{"mode": "edit", "max_views": 1})
+	n := c.create(map[string]any{"max_views": 1})
 	adm := map[string]string{"X-Admin": n.admin, "X-Write": n.write}
 	vis := map[string]string{"X-Write": n.write}
 	openAt := time.Now().Unix() + 3600
@@ -116,7 +116,8 @@ func TestTimeCapsule(t *testing.T) {
 			t.Fatalf("early open: %d %v", code, m)
 		}
 	}
-	if code, _, _ := c.do("PUT", "/api/n/"+n.token, map[string]any{"content": fakeCipher("x"), "version": 1}, vis); code != 425 {
+	e := c.create(map[string]any{"mode": "edit", "open_at": openAt})
+	if code, _, _ := c.do("PUT", "/api/n/"+e.token, map[string]any{"content": fakeCipher("x"), "version": 1}, map[string]string{"X-Write": e.write}); code != 425 {
 		t.Fatalf("early write: %d", code)
 	}
 	if _, m, _ := c.do("GET", "/api/n/"+n.token, nil, nil); m["views"].(float64) != 0 {
@@ -134,5 +135,42 @@ func TestTimeCapsule(t *testing.T) {
 	}
 	if code, m, _ := c.do("POST", "/api/n/"+n.token+"/open", nil, vis); code != 200 || m["burned"] != true {
 		t.Fatalf("open after time: %d %v", code, m)
+	}
+}
+
+func TestFeatureConflicts(t *testing.T) {
+	c := newClient(t, newTestApp(t))
+	now := time.Now().Unix()
+	bad := []map[string]any{
+		{"mode": "edit", "max_views": 1},                               // burn needs read
+		{"mode": "read", "lock_at": now + 3600},                        // lock needs a writable link
+		{"mode": "edit", "open_at": now + 7200, "lock_at": now + 3600}, // lock before opening
+		{"open_at": now + 7200, "expires_in": 3600},                    // expires before opening
+		{"mode": "check", "lock_at": now + 7200, "expires_in": 3600},   // expires before lock
+		{"open_at": now - 10},                                          // capsule in the past
+		{"mode": "edit", "lock_at": now + 400*24*3600},                 // too far ahead
+	}
+	for i, extra := range bad {
+		body := map[string]any{"encrypted": true, "content": fakeCipher("x"), "mode": "read", "admin": key(), "write": key()}
+		for k, v := range extra {
+			body[k] = v
+		}
+		if code, _, raw := c.do("POST", "/api/notes", body, nil); code != 400 {
+			t.Errorf("case %d: want 400, got %d %s", i, code, raw)
+		}
+	}
+	ok := c.create(map[string]any{"mode": "edit", "open_at": now + 3600, "lock_at": now + 7200, "expires_in": 86400})
+	if _, m, _ := c.do("GET", "/api/n/"+ok.token, nil, nil); m["open_at"].(float64) != float64(now+3600) || m["lock_at"].(float64) != float64(now+7200) {
+		t.Fatalf("config at create: %v", m)
+	}
+	// A burn note can't get an edit link later either.
+	b := c.create(map[string]any{"max_views": 1})
+	if code, _, _ := c.do("POST", "/api/n/"+b.token+"/links", map[string]any{"mode": "edit"}, map[string]string{"X-Admin": b.admin}); code != 400 {
+		t.Fatalf("edit link on burn note: %d", code)
+	}
+	// Config changes are checked against what's already set.
+	adm := map[string]string{"X-Admin": ok.admin}
+	if code, _, _ := c.do("POST", "/api/n/"+ok.token+"/config", map[string]any{"open_at": now + 9000}, adm); code != 400 {
+		t.Fatalf("capsule after lock via config: %d", code)
 	}
 }

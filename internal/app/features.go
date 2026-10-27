@@ -138,22 +138,25 @@ func (a *App) apiConfig(w http.ResponseWriter, r *http.Request) {
 	if !readJSON(w, r, &q, 1024) {
 		return
 	}
-	cfg := parseConfig(x.note.Config)
-	now := time.Now().Unix()
-	future := func(t int64) bool { return t == 0 || (t > now && time.Duration(t-now)*time.Second <= maxExpiry) }
+	cfg, old := parseConfig(x.note.Config), parseConfig(x.note.Config)
 	if q.LockAt != nil {
-		if !future(*q.LockAt) {
-			apiErr(w, http.StatusBadRequest, "Waktu kunci harus di masa depan, paling lama 1 tahun lagi.")
-			return
-		}
 		cfg.LockAt = *q.LockAt
 	}
 	if q.OpenAt != nil {
-		if !future(*q.OpenAt) {
-			apiErr(w, http.StatusBadRequest, "Waktu buka harus di masa depan, paling lama 1 tahun lagi.")
-			return
-		}
 		cfg.OpenAt = *q.OpenAt
+	}
+	// Times already in effect (a lock that has passed) aren't re-validated
+	// as "must be in the future"; only the ones being set now are.
+	check := cfg
+	if q.LockAt == nil && old.LockAt <= time.Now().Unix() {
+		check.LockAt = 0
+	}
+	if q.OpenAt == nil && old.OpenAt <= time.Now().Unix() {
+		check.OpenAt = 0
+	}
+	if msg := checkTimes(check, x.note.Expires, time.Now().Unix()); msg != "" {
+		apiErr(w, http.StatusBadRequest, msg)
+		return
 	}
 	x.note.Config = cfg.String()
 	if err := a.db.SetConfig(x.note.ID, x.note.Config); err != nil {
@@ -161,4 +164,23 @@ func (a *App) apiConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, a.meta(r, x))
+}
+
+// checkTimes keeps timed features from contradicting each other or the
+// note's expiry. Zero means "not set".
+func checkTimes(c NoteConfig, expires, now int64) string {
+	inRange := func(t int64) bool { return t > now && time.Duration(t-now)*time.Second <= maxExpiry }
+	switch {
+	case c.OpenAt != 0 && !inRange(c.OpenAt):
+		return "Waktu buka kapsul harus di masa depan, paling lama 1 tahun lagi."
+	case c.LockAt != 0 && !inRange(c.LockAt):
+		return "Waktu kunci otomatis harus di masa depan, paling lama 1 tahun lagi."
+	case c.OpenAt != 0 && c.LockAt != 0 && c.LockAt <= c.OpenAt:
+		return "Kunci otomatis harus setelah kapsul waktu terbuka."
+	case c.OpenAt != 0 && expires != 0 && expires <= c.OpenAt:
+		return "Catatan akan kedaluwarsa sebelum kapsul waktu terbuka."
+	case c.LockAt != 0 && expires != 0 && expires <= c.LockAt:
+		return "Catatan akan kedaluwarsa sebelum kunci otomatis berlaku."
+	}
+	return ""
 }
