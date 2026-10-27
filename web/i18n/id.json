@@ -259,6 +259,7 @@
  "err.file_too_large": "Ukuran file maksimal {n} MB.",
  "err.files_full": "Penyimpanan lampiran penuh. Coba lagi nanti.",
  "err.files_off": "Lampiran dimatikan di server ini.",
+ "err.files_quota": "Hari ini kamu sudah mengunggah banyak file (batas {n} MB per hari). Coba lagi nanti, atau tempel link file dari penyimpanan cloud-mu sendiri (Google Drive, Dropbox, OneDrive).",
  "err.freeze_failed": "Gagal membekukan.",
  "err.frozen": "Snapshot ini dibekukan dan tidak bisa diubah.",
  "err.full": "Catatan ini sudah penuh.",

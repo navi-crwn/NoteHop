@@ -35,7 +35,8 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 | Buat catatan | 30/menit per IP |
 | Simpan/tulis lain | 120/menit per IP |
 | Login/daftar/brankas | 15/menit per IP |
-| Upload file | 20/menit per IP |
+| Upload file | 20/menit per IP, dan `NOTEHOP_FILES_IP_MB` (default 100 MB) per IP per 24 jam |
+| Baca `/raw` dan `/mock` | 120/menit per IP |
 | Kotak masuk | 60/menit per IP |
 | `/nearby` | 30 sambungan/menit per IP |
 | SSH | 20/menit per IP |

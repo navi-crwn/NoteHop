@@ -259,6 +259,7 @@
  "err.file_too_large": "Os arquivos podem ter no máximo {n} MB.",
  "err.files_full": "O armazenamento de anexos está cheio. Tente mais tarde.",
  "err.files_off": "Os anexos estão desativados neste servidor.",
+ "err.files_quota": "Você já enviou muitos arquivos hoje (limite de {n} MB por dia). Tente mais tarde ou cole um link do arquivo no seu próprio armazenamento em nuvem (Google Drive, Dropbox, OneDrive).",
  "err.freeze_failed": "Não foi possível congelar.",
  "err.frozen": "Esta versão congelada não pode ser alterada.",
  "err.full": "Esta nota está cheia.",

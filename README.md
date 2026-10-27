@@ -60,6 +60,7 @@ UI tersedia dalam 9 bahasa (7 bahasa pengguna internet terbanyak + Русски�
 | `NOTEHOP_SITE` | `NoteHop` | Nama situs |
 | `NOTEHOP_SHARE_URL` | kosong | Domain kedua untuk link yang dibagikan (misalnya `https://nhop.link`). Login, dashboard, editor, dan link admin tetap di `NOTEHOP_BASE_URL` |
 | `NOTEHOP_FILE_MB` | `10` | Ukuran maksimal satu lampiran (MB). `0` = lampiran mati. Di nginx naikkan `client_max_body_size` juga |
+| `NOTEHOP_FILES_IP_MB` | `100` | Lampiran yang boleh diunggah satu alamat IP per 24 jam (MB). `0` = tanpa batas |
 | `NOTEHOP_FILES_TOTAL_MB` | `2048` | Batas total semua lampiran yang masih hidup (disimpan di SQLite, dihapus setelah 24 jam). `0` = tanpa batas |
 | `NOTEHOP_SSH_ADDR` | kosong | Aktifkan SSH untuk catatan publik, misalnya `:2222` |
 | `NOTEHOP_SSH_KEY` | `ssh_host_ed25519_key` di folder DB | Kunci host SSH (dibuat otomatis saat pertama jalan) |

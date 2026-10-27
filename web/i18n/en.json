@@ -259,6 +259,7 @@
  "err.file_too_large": "Files can be at most {n} MB.",
  "err.files_full": "Attachment storage is full. Try again later.",
  "err.files_off": "Attachments are turned off on this server.",
+ "err.files_quota": "You've uploaded a lot today ({n} MB per day). Try again later, or put a link to the file in your own cloud storage (Google Drive, Dropbox, OneDrive).",
  "err.freeze_failed": "Couldn't freeze it.",
  "err.frozen": "This snapshot is frozen and can't be changed.",
  "err.full": "This note is full.",

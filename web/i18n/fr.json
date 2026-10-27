@@ -259,6 +259,7 @@
  "err.file_too_large": "Les fichiers ne peuvent pas dépasser {n} Mo.",
  "err.files_full": "L’espace des pièces jointes est plein. Réessayez plus tard.",
  "err.files_off": "Les pièces jointes sont désactivées sur ce serveur.",
+ "err.files_quota": "Vous avez déjà envoyé beaucoup de fichiers aujourd’hui (limite de {n} Mo par jour). Réessayez plus tard, ou collez un lien vers le fichier dans votre propre stockage en ligne (Google Drive, Dropbox, OneDrive).",
  "err.freeze_failed": "Impossible de la figer.",
  "err.frozen": "Cette copie est figée et ne peut pas être modifiée.",
  "err.full": "Cette note est pleine.",

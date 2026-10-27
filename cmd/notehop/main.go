@@ -115,6 +115,7 @@ func main() {
 		ShareURL:      strings.TrimRight(env("NOTEHOP_SHARE_URL", ""), "/"),
 		FileMB:        envInt("NOTEHOP_FILE_MB", 10),
 		FilesTotalMB:  envInt("NOTEHOP_FILES_TOTAL_MB", 2048),
+		FilesPerIPMB:  envInt("NOTEHOP_FILES_IP_MB", 100),
 		PrivateHooks:  envBool("NOTEHOP_PRIVATE_HOOKS", false),
 		TelegramToken: env("TELEGRAM_BOT_TOKEN", ""),
 		Admins:        envList("NOTEHOP_ADMINS"),
