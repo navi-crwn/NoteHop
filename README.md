@@ -46,6 +46,7 @@ make build     # bin/notehop
 | `NOTEHOP_TRUST_PROXY` | `false` | Pakai `X-Forwarded-For` untuk rate limit (aktifkan di belakang reverse proxy) |
 | `NOTEHOP_REGISTRATION` | `true` | Buka/tutup pendaftaran akun |
 | `NOTEHOP_SITE` | `NoteHop` | Nama situs |
+| `NOTEHOP_SHARE_URL` | kosong | Domain kedua untuk link yang dibagikan (misalnya `https://nhop.link`). Login, dashboard, editor, dan link admin tetap di `NOTEHOP_BASE_URL` |
 | `NOTEHOP_SSO_URL` | kosong | Alamat SSO untuk "Masuk dengan SSO", misalnya `https://accounts.example.com`. Kosong = fitur mati |
 | `NOTEHOP_SSO_SECRET` | kosong | Rahasia bersama (minimal 32 karakter), sama dengan `NOTEHOP_SSO_SECRET` di SSO. SSO juga butuh `NOTEHOP_BASE_URL` |
 

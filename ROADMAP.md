@@ -119,7 +119,7 @@ Prinsip yang dipegang semua fitur:
 ## Catatan arsitektur & operasional
 
 1. **Bot preview vs burn after reading.** Sudah ditangani di Fase 1: halaman `/n/…` hanya kerangka, isi diambil lewat `POST` setelah tombol diklik. ✅ User-Agent bot preview (`WhatsApp`, `TelegramBot`, `Discordbot`, `Slackbot`, dll.) mendapat halaman OpenGraph saja; kartu menampilkan status (terenkripsi, password, burn, batas waktu), judul hanya untuk catatan publik.
-2. **Isolasi domain.** Domain utama untuk login/dashboard/editor, domain pendek terpisah untuk link publik/tamu. Kalau domain share dilaporkan (phishing/spam), aplikasi utama aman dan mirror bisa disiapkan. 🔜 Butuh konfigurasi `NOTEHOP_SHARE_URL` + cookie hanya di domain utama.
+2. **Isolasi domain.** Domain utama untuk login/dashboard/editor, domain pendek terpisah untuk link publik/tamu. Kalau domain share dilaporkan (phishing/spam), aplikasi utama aman dan mirror bisa disiapkan. ✅ `NOTEHOP_SHARE_URL`: link untuk pembaca memakai domain share, link admin/login/dashboard di domain utama, cookie sesi hanya di domain utama.
 3. **`noindex` default.** ✅ semua halaman catatan. 🔜 Opsi index hanya untuk profil publik akun terverifikasi.
 4. **Migrasi skema.** ✅ Berurutan dan bernomor (`PRAGMA user_version`). Hanya boleh menambah di akhir daftar; cabang paralel yang sama-sama menambah migrasi harus menomori ulang saat merge.
 5. **Skema DB tanpa 50 kolom.** 🔜 Tambah kolom `config TEXT` (JSON di SQLite / JSONB kalau pindah ke Postgres) yang di-map ke struct Go untuk fitur opsional (scheduled lock, decoy, webhook, sign-off, cron). Kolom yang diindeks tetap terpisah (`expires`, `owner_id`, link token).

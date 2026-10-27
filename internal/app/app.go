@@ -26,6 +26,7 @@ type Config struct {
 	Registration  bool
 	SSOURL     string // "Masuk dengan SSO"; empty turns it off
 	SSOSecret  string // shared with SSO's NOTEHOP_SSO_SECRET
+	ShareURL      string // optional second domain for share links; needs BaseURL
 }
 
 // SSOEnabled reports whether sign-in with SSO is configured. It needs the
@@ -58,7 +59,7 @@ func New(cfg Config, d *db.DB) (*App, error) {
 	return a, nil
 }
 
-func (a *App) Handler() http.Handler { return a.secure(a.mux) }
+func (a *App) Handler() http.Handler { return a.secure(a.shareGate(a.mux)) }
 
 // Janitor deletes expired notes and sessions until ctx ends.
 func (a *App) Janitor(ctx context.Context) {
@@ -137,6 +138,8 @@ type pageData struct {
 	Next    string // where to go after signing in
 	Msg     string // error page text; empty means "note not found"
 	Origin  string // scheme://host for absolute OpenGraph URLs
+	Main    string // main site, for admin links
+	Share   string // share domain, for links handed to readers (may be empty)
 }
 
 func (a *App) loadTemplates() error {
@@ -155,6 +158,7 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.Site, d.Path, d.Asset, d.Reg = a.cfg.Site, r.URL.Path, a.asset, a.cfg.Registration
 	d.SSO = a.cfg.SSOEnabled()
 	d.Origin = a.origin(r)
+	d.Main, d.Share = a.cfg.BaseURL, a.shareURL()
 	if d.Next == "" {
 		d.Next = safeNext(r.URL.Query().Get("next"))
 	}

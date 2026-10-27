@@ -21,7 +21,7 @@
 <link rel="stylesheet" href="/static/css/app.css?v={{.Asset}}">
 <script src="/static/js/theme.js?v={{.Asset}}"></script>
 </head>
-<body data-page="{{block "page" .}}{{end}}"{{with .Token}} data-token="{{.}}"{{end}}{{with .Mode}} data-mode="{{.}}"{{end}}{{if .User}} data-user="{{.User.Username}}"{{end}}>
+<body data-page="{{block "page" .}}{{end}}"{{with .Token}} data-token="{{.}}"{{end}}{{with .Mode}} data-mode="{{.}}"{{end}}{{if .User}} data-user="{{.User.Username}}"{{end}}{{with .Main}} data-main="{{.}}"{{end}}{{with .Share}} data-share="{{.}}"{{end}}>
 <a class="skip" href="#main">Langsung ke isi</a>
 {{template "icons"}}
 <header class="nav" id="nav">

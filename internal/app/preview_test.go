@@ -3,6 +3,7 @@ package app
 import (
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -46,5 +47,40 @@ func TestPreviewBot(t *testing.T) {
 	// Neither request spends the single view.
 	if code, m, _ := c.do("GET", "/api/n/"+n.token, nil, nil); code != 200 || m["views"].(float64) != 0 {
 		t.Fatalf("views after previews: %d %v", code, m)
+	}
+}
+
+func TestShareDomain(t *testing.T) {
+	d, err := db.Open(":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := New(Config{Registration: true, BaseURL: "https://note.test", ShareURL: "https://nh.test"}, d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	h := a.Handler()
+	req := func(host, path string) *http.Response {
+		r, _ := http.NewRequest("GET", "http://"+host+path, nil)
+		r.Host = host
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		return w.Result()
+	}
+	if res := req("nh.test", "/dashboard?x=1"); res.StatusCode != http.StatusFound || res.Header.Get("Location") != "https://note.test/dashboard?x=1" {
+		t.Fatalf("share host dashboard: %d %s", res.StatusCode, res.Header.Get("Location"))
+	}
+	if res := req("nh.test", "/"); res.StatusCode != http.StatusFound {
+		t.Fatalf("share host root: %d", res.StatusCode)
+	}
+	for _, p := range []string{"/n/nope-nope", "/api/n/nope-nope", "/healthz"} {
+		if res := req("nh.test", p); res.StatusCode == http.StatusFound {
+			t.Fatalf("share host %s redirected", p)
+		}
+	}
+	res := req("note.test", "/")
+	body, _ := io.ReadAll(res.Body)
+	if res.StatusCode != 200 || !strings.Contains(string(body), `data-share="https://nh.test"`) || !strings.Contains(string(body), `data-main="https://note.test"`) {
+		t.Fatalf("main site page: %d", res.StatusCode)
 	}
 }
