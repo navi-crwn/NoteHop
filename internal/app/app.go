@@ -17,9 +17,11 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/navi-crwn/NoteHop/internal/db"
+	"github.com/navi-crwn/NoteHop/internal/hop"
 	"github.com/navi-crwn/NoteHop/internal/i18n"
 	"github.com/navi-crwn/NoteHop/web"
 )
@@ -45,9 +47,12 @@ type Config struct {
 	AIOrigins     []string // extra API origins for "Other" (OpenAI-compatible) providers, e.g. a company proxy
 	PrivateHooks  bool     // let Watch webhooks reach private/loopback addresses (and plain http)
 	TelegramToken string   // bot token from @BotFather; empty turns the bot off
-	Admins        []string // usernames that may use short and reserved link names
+	Admins        []string // usernames given the admin role at start, if those accounts exist (NOTEHOP_ADMINS)
 	Reserved      []string // extra reserved names, e.g. upcoming campaigns
 	Contact       string   // shown on /contact: an email address or URL
+	HopClients    []string // apps that may call /hop/* with the SSO secret: the control center and the account server
+	SSHAddr       string   // where SSH for public notes listens; empty = off (reported to the control center only)
+	Version       string   // build version, for /hop/health
 }
 
 // Link is a related site shown in the footer (NOTEHOP_LINKS="Name=https://…").
@@ -82,20 +87,36 @@ type App struct {
 	live      liveHub
 	near      nearbyHub
 	watch     watcher
+	nonces    hop.Nonces // signed requests from the control center work once
+	started   time.Time  // for /hop/health uptime
+	settings  sync.Map   // run-time settings from the control center (key → value), mirrors the settings table
 }
 
 func New(cfg Config, d *db.DB) (*App, error) {
 	if cfg.Site == "" {
 		cfg.Site = "NoteHop"
 	}
+	if len(cfg.HopClients) == 0 {
+		cfg.HopClients = []string{"imperium", "helink"} // the control center and the account server
+	}
 	a := &App{cfg: cfg, db: d, limit: newLimiter(), quota: &dayQuota{m: map[string]*dayUse{}}, used: usedTickets{m: map[string]int64{}}, tickets: recoveryTickets{m: map[string]recoveryTicket{}}}
 	if err := a.loadTemplates(); err != nil {
 		return nil, err
 	}
 	a.asset = assetVersion()
+	a.started = time.Now()
+	if err := d.SeedAdmins(cfg.Admins); err != nil {
+		return nil, err
+	}
+	a.loadSettings()
 	a.routes()
 	return a, nil
 }
+
+// SeedAdmins gives the NOTEHOP_ADMINS usernames the admin role if their
+// accounts exist. The list grants nothing by itself: an account that
+// registers a listed name later stays an ordinary user.
+func (a *App) SeedAdmins() error { return a.db.SeedAdmins(a.cfg.Admins) }
 
 func (a *App) Handler() http.Handler { return a.secure(a.shareGate(a.mux)) }
 
@@ -205,6 +226,8 @@ func (a *App) routes() {
 	m.HandleFunc("POST /api/me/secret", a.apiChangeSecret)
 	m.HandleFunc("POST /api/recover", a.apiRecover)
 	m.HandleFunc("POST /api/recover/finish", a.apiRecoverFinish)
+	m.HandleFunc("POST /api/n/{token}/report", a.apiReport)
+	a.hopRoutes(m)
 
 	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { a.notFound(w, r) })
 	a.mux = m
@@ -258,7 +281,7 @@ func (a *App) loadTemplates() error {
 }
 
 func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name string, d pageData) {
-	d.Site, d.Path, d.Asset, d.Reg = a.cfg.Site, r.URL.Path, a.asset, a.cfg.Registration
+	d.Site, d.Path, d.Asset, d.Reg = a.cfg.Site, r.URL.Path, a.asset, a.registration()
 	d.L, d.Langs = a.locale(w, r), i18n.Langs
 	d.SSO, d.SSOName, d.Links = a.cfg.SSOEnabled(), a.cfg.SSOName, a.cfg.Links
 	d.AI, d.AICustom, d.Repo = a.cfg.aiMode(), len(a.cfg.AIOrigins) > 0, a.cfg.repo()
