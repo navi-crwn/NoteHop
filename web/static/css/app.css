@@ -422,3 +422,8 @@ details.spoiler[open] { padding-bottom: 4px; }
 .toast.err { border-color: color-mix(in srgb, var(--red) 50%, transparent); }
 .toast.out { opacity: 0; transform: translateY(6px); }
 @keyframes up { from { opacity: 0; transform: translateY(8px); } }
+
+/* SSO sign-in */
+.auth .btn.sso { margin-bottom: 6px; }
+.or { display: flex; align-items: center; gap: 10px; margin: 14px 0; color: var(--muted); font-size: .82rem; }
+.or::before, .or::after { content: ""; flex: 1; border-top: 1px solid var(--line); }

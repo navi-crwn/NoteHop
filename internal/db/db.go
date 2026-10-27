@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -91,7 +92,56 @@ func Open(path string) (*DB, error) {
 		sdb.Close()
 		return nil, err
 	}
-	return &DB{sdb}, nil
+	d := &DB{sdb}
+	if err := d.migrate(); err != nil {
+		sdb.Close()
+		return nil, err
+	}
+	return d, nil
+}
+
+// migrations run in order after the base schema; the database remembers how
+// many it has applied in PRAGMA user_version. Only ever append to this list:
+// never edit or reorder an entry that has shipped. Parallel branches that both
+// add one must renumber when they merge.
+var migrations = []string{
+	// 1: accounts that sign in with SSO, plus their vault phrase check.
+	`ALTER TABLE users ADD COLUMN sso_id TEXT;
+	ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT '';
+	ALTER TABLE users ADD COLUMN display_name TEXT NOT NULL DEFAULT '';
+	ALTER TABLE users ADD COLUMN avatar TEXT NOT NULL DEFAULT '';
+	ALTER TABLE users ADD COLUMN vault_check TEXT NOT NULL DEFAULT '';
+	CREATE UNIQUE INDEX users_sso ON users(sso_id) WHERE sso_id IS NOT NULL;`,
+}
+
+// migrate applies pending migrations, each in its own transaction together
+// with the version bump, so a crash never leaves one half applied.
+func (d *DB) migrate() error {
+	var v int
+	if err := d.QueryRow(`PRAGMA user_version`).Scan(&v); err != nil {
+		return err
+	}
+	if v > len(migrations) {
+		return fmt.Errorf("database is at schema version %d, newer than this binary (%d)", v, len(migrations))
+	}
+	for i := v; i < len(migrations); i++ {
+		tx, err := d.Begin()
+		if err != nil {
+			return err
+		}
+		if _, err := tx.Exec(migrations[i]); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("migration %d: %w", i+1, err)
+		}
+		if _, err := tx.Exec(fmt.Sprintf(`PRAGMA user_version = %d`, i+1)); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err := tx.Commit(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func now() int64 { return time.Now().Unix() }
@@ -420,11 +470,33 @@ func (d *DB) DeleteEntry(noteID, id int64) error {
 
 // ---------- users & sessions ----------
 
+// User is a NoteHop account. Password accounts have an AuthHash; accounts
+// that sign in with SSO have a SSOID instead and unlock their vault
+// with a separate phrase, checked against VaultCheck.
 type User struct {
-	ID       int64
-	Username string
-	AuthHash string
-	Created  int64
+	ID          int64
+	Username    string
+	AuthHash    string
+	Created     int64
+	SSOID    string
+	Email       string
+	DisplayName string
+	Avatar      string
+	VaultCheck  string
+}
+
+const userCols = `u.id, u.username, u.auth_hash, u.created, COALESCE(u.sso_id, ''), u.email, u.display_name, u.avatar, u.vault_check`
+
+func scanUser(row *sql.Row) (*User, error) {
+	u := &User{}
+	err := row.Scan(&u.ID, &u.Username, &u.AuthHash, &u.Created, &u.SSOID, &u.Email, &u.DisplayName, &u.Avatar, &u.VaultCheck)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
 }
 
 func (d *DB) CreateUser(username, authHash string) (*User, error) {
@@ -440,14 +512,47 @@ func (d *DB) CreateUser(username, authHash string) (*User, error) {
 	return u, nil
 }
 
-func (d *DB) UserByName(username string) (*User, error) {
-	u := &User{}
-	err := d.QueryRow(`SELECT id, username, auth_hash, created FROM users WHERE username = ?`, username).
-		Scan(&u.ID, &u.Username, &u.AuthHash, &u.Created)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, ErrNotFound
+// CreateSSOUser makes an account for a SSO user. It has no password
+// (empty auth_hash never matches). ErrTaken means the username or the SSO
+// id is already in use.
+func (d *DB) CreateSSOUser(u *User) error {
+	u.Created = now()
+	res, err := d.Exec(`INSERT INTO users (username, auth_hash, created, sso_id, email, display_name, avatar)
+		VALUES (?, '', ?, ?, ?, ?, ?)`, u.Username, u.Created, u.SSOID, u.Email, u.DisplayName, u.Avatar)
+	if isUnique(err) {
+		return ErrTaken
 	}
-	return u, err
+	if err != nil {
+		return err
+	}
+	u.ID, _ = res.LastInsertId()
+	return nil
+}
+
+// UpdateSSOProfile copies what SSO owns (email, name, photo).
+func (d *DB) UpdateSSOProfile(u *User) error {
+	_, err := d.Exec(`UPDATE users SET email = ?, display_name = ?, avatar = ? WHERE id = ?`, u.Email, u.DisplayName, u.Avatar, u.ID)
+	return err
+}
+
+// SetVaultCheck stores the vault check once; ErrConflict if one is already set.
+func (d *DB) SetVaultCheck(userID int64, hash string) error {
+	res, err := d.Exec(`UPDATE users SET vault_check = ? WHERE id = ? AND vault_check = ''`, hash, userID)
+	if err != nil {
+		return err
+	}
+	if k, _ := res.RowsAffected(); k == 0 {
+		return ErrConflict
+	}
+	return nil
+}
+
+func (d *DB) UserByName(username string) (*User, error) {
+	return scanUser(d.QueryRow(`SELECT `+userCols+` FROM users u WHERE u.username = ?`, username))
+}
+
+func (d *DB) UserBySSO(ssoID string) (*User, error) {
+	return scanUser(d.QueryRow(`SELECT `+userCols+` FROM users u WHERE u.sso_id = ?`, ssoID))
 }
 
 func (d *DB) CreateSession(tokenHash string, userID int64, ttl time.Duration) error {
@@ -456,13 +561,8 @@ func (d *DB) CreateSession(tokenHash string, userID int64, ttl time.Duration) er
 }
 
 func (d *DB) UserBySession(tokenHash string) (*User, error) {
-	u := &User{}
-	err := d.QueryRow(`SELECT u.id, u.username, u.auth_hash, u.created FROM sessions s JOIN users u ON u.id = s.user_id
-		WHERE s.token_hash = ? AND s.expires > ?`, tokenHash, now()).Scan(&u.ID, &u.Username, &u.AuthHash, &u.Created)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, ErrNotFound
-	}
-	return u, err
+	return scanUser(d.QueryRow(`SELECT `+userCols+` FROM sessions s JOIN users u ON u.id = s.user_id
+		WHERE s.token_hash = ? AND s.expires > ?`, tokenHash, now()))
 }
 
 func (d *DB) DeleteSession(tokenHash string) error {

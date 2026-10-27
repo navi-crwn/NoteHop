@@ -1,0 +1,23 @@
+{{define "page"}}vault{{end}}
+{{define "content"}}
+<section class="wrap auth-wrap">
+  <form class="card auth hide" id="vault-form" data-sub="{{.User.SSOID}}" data-next="{{.Next}}"{{if not .User.VaultCheck}} data-new="1"{{end}}>
+    {{if .User.VaultCheck}}
+    <h1>Buka brankas</h1>
+    <p class="muted">Masukkan kunci brankas yang kamu buat di NoteHop. Kunci ini membuka judul dan link catatan di akunmu, dan tidak pernah dikirim ke server.</p>
+    {{else}}
+    <h1>Buat kunci brankas</h1>
+    <p class="muted">Kamu masuk dengan SSO, jadi NoteHop tidak tahu password-mu. Buat satu frasa untuk mengenkripsi daftar catatan di akunmu. Frasa ini diminta lagi di perangkat baru. <b>Lupa frasa berarti daftar catatan tidak bisa dibuka</b>, karena kami pun tidak bisa.</p>
+    {{end}}
+    <div class="field"><label for="phrase">Kunci brankas</label><input type="password" id="phrase" autocomplete="{{if .User.VaultCheck}}current-password{{else}}new-password{{end}}" minlength="8" required>{{if not .User.VaultCheck}}<span class="hint">Minimal 8 karakter. Frasa beberapa kata lebih aman dan mudah diingat.</span>{{end}}</div>
+    {{if not .User.VaultCheck}}<div class="field"><label for="phrase2">Ulangi kunci brankas</label><input type="password" id="phrase2" autocomplete="new-password" minlength="8" required></div>{{end}}
+    <div class="alert err hide" id="vault-err" role="alert"></div>
+    <button class="btn primary lg block" type="submit"><span>{{if .User.VaultCheck}}Buka{{else}}Simpan{{end}}</span></button>
+    <p class="small muted center"><a href="{{.Next}}">Lewati dulu</a></p>
+  </form>
+</section>
+{{end}}
+{{define "scripts"}}
+<script src="/static/js/crypto.js?v={{.Asset}}"></script>
+<script src="/static/js/vault.js?v={{.Asset}}"></script>
+{{end}}

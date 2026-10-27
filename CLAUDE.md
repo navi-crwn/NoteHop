@@ -22,6 +22,7 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 - Frontend tanpa build step: `web/templates/*.html` + `web/static/js/*.js` + `web/static/css/app.css`. Library pihak ketiga di-vendor di `web/static/vendor/` (marked 15.0.12, DOMPurify 3.2.6, highlight.js 11.11.1, qrcode-generator 1.4.4).
 - Tes: `go test -race ./...` lulus (izin link, burn atomik, konflik edit, freeze, raw, auth, CSRF, header).
 - Sudah dicek di browser: membuat catatan, slash menu, lanjutan list, spoiler, pratinjau, redirect ke halaman catatan, dialog Bagikan.
+- Login dengan SSO (SSO) + frasa brankas: sisi NoteHop selesai dan dicek di browser dengan SSO tiruan (masuk, buat frasa, salah frasa, perangkat kedua, dashboard membuka judul). Sisi SSO (`/sso/notehop`) belum dibuat, lihat `docs/INTEGRASI-SSO-IMAGEAPP.md`.
 - **Belum dicek manual di browser**: blok PIN, centang lewat link checklist, mode append dari pengunjung, alur password + burn, dashboard akun, QR, freeze dari UI, tampilan HP. Kerjakan ini dulu sebelum menambah fitur.
 
 ## Aturan yang harus dijaga
@@ -31,7 +32,8 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 3. Halaman `/n/{token}` hanya kerangka; konten diambil lewat `POST /open` setelah aksi manusia (agar bot preview WA/Telegram tidak menghabiskan jatah burn).
 4. CSP ketat: `script-src 'self'`, `style-src 'self'`, jadi **tidak boleh ada inline script/style** di template. Pakai class CSS.
 5. Penomoran checkbox: urutan dokumen, di luar fenced code. Implementasinya ada di dua tempat dan harus identik: `applyChecks` (Go, `notes.go`) dan `eachTask` (JS, `md.js`).
-6. Gaya kode: komentar singkat yang menjelaskan *kenapa*, pesan error untuk pengguna dalam Bahasa Indonesia, tanpa framework frontend.
+6. Skema DB hanya berubah lewat migrasi baru di **akhir** daftar `migrations` (`internal/db/db.go`). Jangan ubah migrasi yang sudah ada.
+7. Gaya kode: komentar singkat yang menjelaskan *kenapa*, pesan error untuk pengguna dalam Bahasa Indonesia, tanpa framework frontend.
 
 ## Perintah
 
@@ -46,6 +48,6 @@ go build -o bin/notehop ./cmd/notehop                        # build
 ## Langkah berikutnya yang disarankan
 
 1. Uji manual alur yang belum dicek (daftar di atas), perbaiki bug.
-2. Login dengan SSO (lihat `docs/INTEGRASI-SSO-IMAGEAPP.md`). Butuh perubahan kecil juga di repo `navi-crwn/accounts`.
+2. Sisi SSO untuk SSO: route `/sso/notehop` di repo `navi-crwn/accounts` (lihat `docs/INTEGRASI-SSO-IMAGEAPP.md`).
 3. Dockerfile + contoh deploy (Caddy/nginx), sama seperti ImageApp.
 4. Lanjut ke Fase 2 di ROADMAP (real-time, riwayat, sticky keyboard bar HP).

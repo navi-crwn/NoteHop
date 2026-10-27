@@ -24,6 +24,15 @@ type Config struct {
 	SecureCookies bool
 	TrustProxy    bool
 	Registration  bool
+	SSOURL     string // "Masuk dengan SSO"; empty turns it off
+	SSOSecret  string // shared with SSO's NOTEHOP_SSO_SECRET
+}
+
+// SSOEnabled reports whether sign-in with SSO is configured. It needs the
+// public base URL too, because SSO only sends tickets back to an exact
+// callback address.
+func (c Config) SSOEnabled() bool {
+	return c.SSOURL != "" && len(c.SSOSecret) >= 32 && c.BaseURL != ""
 }
 
 type App struct {
@@ -33,13 +42,14 @@ type App struct {
 	asset string
 	limit *limiter
 	mux   *http.ServeMux
+	used  usedTickets
 }
 
 func New(cfg Config, d *db.DB) (*App, error) {
 	if cfg.Site == "" {
 		cfg.Site = "NoteHop"
 	}
-	a := &App{cfg: cfg, db: d, limit: newLimiter()}
+	a := &App{cfg: cfg, db: d, limit: newLimiter(), used: usedTickets{m: map[string]int64{}}}
 	if err := a.loadTemplates(); err != nil {
 		return nil, err
 	}
@@ -81,6 +91,9 @@ func (a *App) routes() {
 	m.HandleFunc("GET /login", a.page("login", "Masuk", ""))
 	m.HandleFunc("GET /register", a.page("register", "Daftar", ""))
 	m.HandleFunc("GET /dashboard", a.dashboardPage)
+	m.HandleFunc("GET /vault", a.vaultPage)
+	m.HandleFunc("GET /auth/sso", a.ssoStart)
+	m.HandleFunc("GET /auth/sso/callback", a.ssoCallback)
 	m.HandleFunc("GET /n/{token}", a.notePage)
 	m.HandleFunc("GET /raw/{token}", a.raw)
 
@@ -101,6 +114,7 @@ func (a *App) routes() {
 	m.HandleFunc("POST /api/logout", a.apiLogout)
 	m.HandleFunc("GET /api/me", a.apiMe)
 	m.HandleFunc("GET /api/me/notes", a.apiMyNotes)
+	m.HandleFunc("POST /api/vault", a.apiVault)
 
 	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { a.notFound(w, r) })
 	a.mux = m
@@ -119,11 +133,14 @@ type pageData struct {
 	NoIndex bool
 	Token   string
 	Mode    string
+	SSO     bool   // show "Masuk dengan SSO"
+	Next    string // where to go after signing in
+	Msg     string // error page text; empty means "note not found"
 }
 
 func (a *App) loadTemplates() error {
 	a.pages = map[string]*template.Template{}
-	for _, name := range []string{"new", "note", "about", "login", "register", "dashboard", "error"} {
+	for _, name := range []string{"new", "note", "about", "login", "register", "dashboard", "vault", "error"} {
 		t, err := template.New(name).ParseFS(web.Templates, "templates/base.html", "templates/icons.html", "templates/"+name+".html")
 		if err != nil {
 			return err
@@ -135,6 +152,10 @@ func (a *App) loadTemplates() error {
 
 func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name string, d pageData) {
 	d.Site, d.Path, d.Asset, d.Reg = a.cfg.Site, r.URL.Path, a.asset, a.cfg.Registration
+	d.SSO = a.cfg.SSOEnabled()
+	if d.Next == "" {
+		d.Next = safeNext(r.URL.Query().Get("next"))
+	}
 	if d.User == nil {
 		d.User = a.currentUser(r)
 	}

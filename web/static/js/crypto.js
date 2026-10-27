@@ -99,6 +99,14 @@
         return { vault: b64u(b.subarray(0, 32)), auth: b64u(b.subarray(32)) };
       });
     },
+    // SSO accounts: NoteHop never sees that password, so the vault key
+    // comes from a separate phrase, salted with the SSO user id. The
+    // server only gets HMAC(vault, …) to tell a right phrase from a typo.
+    vaultPhrase: function (phrase, sub) {
+      return pbkdf2(phrase, enc.encode('notehop/vault/' + sub), ACCOUNT_ITER, 256).then(function (v) {
+        return hmac(v, 'notehop/vault-check').then(function (c) { return { vault: b64u(v), check: b64u(c) }; });
+      });
+    },
     vault: function () {
       var v = window.NH && NH.store.get('nh_vault', null);
       var me = document.body.dataset.user;

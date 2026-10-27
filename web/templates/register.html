@@ -5,6 +5,11 @@
   <form class="card auth" id="auth-form" data-kind="register">
     <h1>Buat akun</h1>
     <p class="muted">Akun menyimpan daftar catatanmu, terenkripsi dengan kunci dari password-mu. <b>Lupa password berarti catatan di akun tidak bisa dibuka</b>, karena kami pun tidak bisa.</p>
+    {{if .SSO}}
+    <a class="btn lg block sso" href="/auth/sso?next={{.Next}}"><svg><use href="#i-link"/></svg><span>Masuk dengan SSO</span></a>
+    <p class="small muted center">Satu akun untuk SSO, ImageApp, dan NoteHop.</p>
+    <div class="or"><span>atau pakai akun NoteHop</span></div>
+    {{end}}
     <div class="field"><label for="username">Username</label><input type="text" id="username" autocomplete="username" autocapitalize="off" spellcheck="false" pattern="[a-z0-9_]{3,32}" required><span class="hint">3–32 huruf kecil, angka, atau garis bawah.</span></div>
     <div class="field"><label for="password">Password</label><input type="password" id="password" autocomplete="new-password" minlength="10" required><span class="hint">Minimal 10 karakter. Lebih panjang lebih baik.</span></div>
     <div class="field"><label for="password2">Ulangi password</label><input type="password" id="password2" autocomplete="new-password" minlength="10" required></div>
