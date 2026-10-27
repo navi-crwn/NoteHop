@@ -67,6 +67,7 @@ UI tersedia dalam 9 bahasa (7 bahasa pengguna internet terbanyak + Русски�
 | `NOTEHOP_FILE_MB` | `10` | Ukuran maksimal satu lampiran (MB). `0` = lampiran mati. Di nginx naikkan `client_max_body_size` juga |
 | `NOTEHOP_AI` | `on` | Bantuan menulis: `on` (AI di perangkat + kunci API sendiri; `connect-src` CSP di halaman editor dibuka untuk penyedia di `middleware.go`), `device` (hanya AI bawaan browser), `off` (tanpa tombol AI) |
 | `NOTEHOP_AI_ORIGINS` | kosong | Origin tambahan untuk penyedia "Lainnya" (kompatibel OpenAI), mis. `https://ai.perusahaan.example`. Hanya origin, dipisah koma |
+| `NOTEHOP_GITHUB` | `navi-crwn/NoteHop` | Repo GitHub (`pemilik/nama`) yang angkanya (bintang, fork, bahasa, commit per minggu) tampil di beranda lewat `GET /api/repo`. Server mengambilnya paling sering sekali per jam. `-` = bagian itu disembunyikan |
 | `NOTEHOP_FILES_IP_MB` | `100` | Lampiran yang boleh diunggah satu alamat IP per 24 jam (MB). `0` = tanpa batas |
 | `NOTEHOP_FILES_TOTAL_MB` | `2048` | Batas total semua lampiran yang masih hidup (disimpan di SQLite, dihapus setelah 24 jam). `0` = tanpa batas |
 | `NOTEHOP_SSH_ADDR` | kosong | Aktifkan SSH untuk catatan publik, misalnya `:2222` |
@@ -166,6 +167,7 @@ Semua JSON. Header: `X-Admin` (token admin), `X-Write` (bukti kunci).
 | `GET /diff` | siapa saja | Halaman pembanding dua teks (diff di browser) |
 | `POST /api/n/{token}/links` · `DELETE …/links/{t}` | admin | Tambah/matikan link |
 | `DELETE /api/n/{token}` | admin atau pemilik akun | Hapus catatan |
+| `GET /api/repo` | siapa saja | Angka repo dari GitHub untuk beranda (cache 1 jam): `{repo, url, stars, forks, issues, license, pushed, langs, weeks}`. 404 jika `NOTEHOP_GITHUB=-`, 503 jika belum pernah berhasil diambil |
 | `GET /raw/{token}` | siapa saja | Teks murni (hanya catatan publik) |
 | `POST /api/register` · `/api/login` · `/api/logout`, `GET /api/me`, `GET /api/me/notes` | | Akun |
 | `GET /auth/sso` · `GET /auth/sso/callback` | | Single sign-on (tiket HMAC, `aud`, `state` + cookie `nh_sso`, `jti` sekali pakai) |
@@ -188,6 +190,10 @@ web/static/vendor/    marked, DOMPurify, highlight.js, qrcode-generator, Mermaid
 docs/                 deploy, panduan fitur, audit, progres
 ROADMAP.md            semua rencana fitur
 ```
+
+## Lisensi
+
+NoteHop memakai lisensi MIT, lihat [`LICENSE`](LICENSE).
 
 ## Lisensi pihak ketiga
 

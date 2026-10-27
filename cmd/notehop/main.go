@@ -150,6 +150,7 @@ func main() {
 		FilesTotalMB:  envInt("NOTEHOP_FILES_TOTAL_MB", 2048),
 		FilesPerIPMB:  envInt("NOTEHOP_FILES_IP_MB", 100),
 		AI:            strings.ToLower(env("NOTEHOP_AI", "on")),
+		GitHub:        env("NOTEHOP_GITHUB", "navi-crwn/NoteHop"),
 		AIOrigins:     envOrigins("NOTEHOP_AI_ORIGINS"),
 		PrivateHooks:  envBool("NOTEHOP_PRIVATE_HOOKS", false),
 		TelegramToken: env("TELEGRAM_BOT_TOKEN", ""),
