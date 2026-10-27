@@ -2,10 +2,11 @@
 {{define "head"}}<link rel="stylesheet" href="/static/css/home.css?v={{.Asset}}">{{end}}
 {{define "content"}}
 <div class="home">
-  <section class="h-hero">
+  <!-- 1. hero: the logo in live 3D (hero3d.js); the picture stays without WebGL -->
+  <section class="h-hero" id="top">
     <div class="h-hero-copy">
-      <a class="h-chip" href="https://github.com/navi-crwn/NoteHop" rel="noopener"><b>{{len .Langs}}</b><svg><use href="#i-code"/></svg>{{.L.T "home.badge"}}</a>
-      <h1>{{.L.H "home.h1"}}</h1>
+      {{if .Repo}}<a class="h-chip" href="https://github.com/{{.Repo}}" rel="noopener"><b>{{len .Langs}}</b><svg><use href="#i-code"/></svg>{{.L.T "home.badge"}}</a>{{else}}<span class="h-chip"><b>{{len .Langs}}</b>{{.L.T "home.badge"}}</span>{{end}}
+      <h1 id="h-title">{{.L.H "home.h1"}}</h1>
       <p class="h-lead">{{.L.T "home.lead"}}</p>
       <div class="h-cta">
         <a class="h-pill dark" href="#quick"><svg><use href="#i-edit"/></svg>{{.L.T "home.cta_write"}}</a>
@@ -13,103 +14,174 @@
       </div>
       <p class="h-meta">{{.L.T "home.meta"}}</p>
     </div>
-    <figure class="h-hero-art"><img src="/static/img/home/hero.webp?v={{.Asset}}" alt="" width="560" height="560" fetchpriority="high"></figure>
+    <figure class="h-art">
+      <img src="/static/img/home/hero.webp?v={{.Asset}}" alt="" width="560" height="560" fetchpriority="high">
+      <canvas id="h3d" aria-label="{{.L.T "home.h_3d"}}"></canvas>
+      <figcaption class="h-drag">{{.L.T "home.h_drag"}}</figcaption>
+    </figure>
   </section>
 
-  <!-- The fast lane: write and share without leaving the home page. The full
-       create page (/new) has every option. -->
-  <section class="h-quick" id="quick" aria-labelledby="quick-h">
-    <form class="h-quick-card" id="quick-form">
-      <div class="h-quick-head"><h2 id="quick-h">{{.L.T "home.quick_h"}}</h2><span class="hint">{{.L.T "home.quick_hint"}}</span></div>
-      <input class="h-q-title" id="quick-title" maxlength="200" dir="auto" placeholder="{{.L.T "new.title_label"}}" aria-label="{{.L.T "new.title_label"}}">
-      <textarea class="h-q-body" id="quick-body" rows="5" dir="auto" placeholder="{{.L.T "home.quick_ph"}}" aria-label="{{.L.T "home.quick_h"}}"></textarea>
-      <div class="h-q-opts">
-        <div class="h-seg" role="radiogroup" aria-label="{{.L.T "new.access_mode"}}">
-          <label><input type="radio" name="quick-mode" value="read" checked><span>{{.L.T "mode.read"}}</span></label>
-          <label><input type="radio" name="quick-mode" value="edit"><span>{{.L.T "mode.edit"}}</span></label>
-          <label><input type="radio" name="quick-mode" value="append"><span>{{.L.T "mode.append"}}</span></label>
+  <!-- 2. the quick note is also the demo: what you type, and what the server would get -->
+  <section class="h-sec" id="quick" aria-labelledby="quick-h">
+    <span class="h-tag" data-rv>{{.L.T "home.d_tag"}}</span>
+    <h2 id="quick-h" data-split>{{.L.H "home.d_h"}}</h2>
+    <p class="h-sub" data-rv>{{.L.T "home.d_lead"}}</p>
+    <form class="h-demo" id="quick-form" data-rv>
+      <div class="h-you">
+        <span class="h-who"><i></i>{{.L.T "home.s_you"}}</span>
+        <input class="h-q-title" id="quick-title" maxlength="200" dir="auto" placeholder="{{.L.T "new.title_label"}}" aria-label="{{.L.T "new.title_label"}}">
+        <textarea class="h-q-body" id="quick-body" rows="5" dir="auto" placeholder="{{.L.T "home.quick_ph"}}" aria-label="{{.L.T "home.quick_h"}}"></textarea>
+        <div class="h-q-opts">
+          <div class="h-seg" role="radiogroup" aria-label="{{.L.T "new.access_mode"}}">
+            <label><input type="radio" name="quick-mode" value="read" checked><span>{{.L.T "mode.read"}}</span></label>
+            <label><input type="radio" name="quick-mode" value="edit"><span>{{.L.T "mode.edit"}}</span></label>
+            <label><input type="radio" name="quick-mode" value="append"><span>{{.L.T "mode.append"}}</span></label>
+          </div>
+          <label class="h-tog"><input type="checkbox" id="quick-once"><span class="h-sw"></span>{{.L.T "priv.once"}}</label>
         </div>
-        <label class="h-tog"><input type="checkbox" id="quick-once"><span class="h-sw"></span>{{.L.T "priv.once"}}</label>
+        <p class="h-url" dir="ltr"><span id="quick-url">{{.Origin}}/n/…</span><mark id="quick-frag">#k=…</mark></p>
+        <p class="h-small">{{.L.T "home.d_url_p"}}</p>
+        <div class="h-q-foot">
+          <a class="h-link" href="/new" id="quick-full"><svg><use href="#i-plus"/></svg>{{.L.T "home.quick_full"}}</a>
+          <button class="btn primary" type="submit" id="quick-create"><svg><use href="#i-share"/></svg>{{.L.T "new.create"}}</button>
+        </div>
+        <p class="h-err hide" id="quick-err" role="alert"></p>
       </div>
-      <div class="h-q-foot">
-        <span class="h-sum"><svg><use href="#i-lock"/></svg>{{.L.T "status.private"}}</span>
-        <a class="h-link" href="/new" id="quick-full"><svg><use href="#i-plus"/></svg>{{.L.T "home.quick_full"}}</a>
-        <button class="btn primary" type="submit" id="quick-create"><svg><use href="#i-share"/></svg>{{.L.T "new.create"}}</button>
+      <div class="h-srv" aria-live="off">
+        <span class="h-who srv"><i></i>{{.L.T "home.s_srv"}}</span>
+        <code class="h-cipher" id="quick-cipher" dir="ltr">x1.…</code>
+        <dl class="h-kv"><dt>{{.L.T "home.d_size"}}</dt><dd id="quick-size">0</dd><dt>{{.L.T "home.d_key"}}</dt><dd>{{.L.T "home.d_key_v"}}</dd><dt>{{.L.T "home.d_title"}}</dt><dd>{{.L.T "home.d_title_v"}}</dd></dl>
+        <p class="h-small">{{.L.T "home.s_srv_p"}}</p>
       </div>
-      <p class="h-err hide" id="quick-err" role="alert"></p>
     </form>
   </section>
 
-  <section class="h-sec" aria-labelledby="f-h">
-    <h2 class="h-sec-h" id="f-h">{{.L.H "home.f_h"}}</h2>
-    <p class="h-sec-lead">{{.L.T "home.f_lead"}}</p>
-    <!-- bento: uneven tiles on a 6-column grid; the biggest carries the main promise -->
-    <div class="bento">
-      <article class="b-lock">
-        <div><h3>{{.L.T "home.f_lock_h"}}</h3><p>{{.L.T "home.f_lock_p"}}</p>
-          <code class="b-cipher" aria-hidden="true">x1.Qm9yPq8uZ1hT0dGlhc2EtYmFyYS1rZXlraW5nLWJp…</code></div>
-        <img src="/static/img/home/lock.webp?v={{.Asset}}" alt="" width="280" height="280" loading="lazy">
-      </article>
-      <article class="b-burn">
-        <img src="/static/img/home/flame.webp?v={{.Asset}}" alt="" width="160" height="160" loading="lazy">
-        <h3>{{.L.T "home.f_burn_h"}}</h3><p>{{.L.T "home.f_burn_p"}}</p>
-        <span class="b-badge">{{.L.T "home.f_burn_badge"}}</span>
-      </article>
-      <article class="b-live">
-        <div><h3>{{.L.T "home.f_live_h"}}</h3><p>{{.L.T "home.f_live_p"}}</p></div>
-        <div class="b-cursors" aria-hidden="true"><p>{{.L.T "home.f_live_l1"}} <span class="cur c-a">Rani</span>{{.L.T "home.f_live_l2"}}<span class="cur c-b">Dimas</span></p><p class="faint">{{.L.T "home.f_live_l3"}}</p></div>
-      </article>
-      <article class="b-links">
-        <div><h3>{{.L.T "home.f_links_h"}}</h3><p>{{.L.T "home.f_links_p"}}</p></div>
-        <ul class="b-rows" aria-hidden="true"><li><b>{{.L.T "mode.read"}}</b><span>/n/RFbN3uTvAH</span></li><li><b>{{.L.T "mode.edit"}}</b><span>/n/k82LmQ0zPa</span></li><li class="off"><b>{{.L.T "mode.append"}}</b><span>{{.L.T "home.f_links_off"}}</span></li></ul>
-      </article>
-      <article class="b-clock"><img src="/static/img/home/clock.webp?v={{.Asset}}" alt="" width="96" height="96" loading="lazy"><h3>{{.L.T "home.f_clock_h"}}</h3><p>{{.L.T "home.f_clock_p"}}</p></article>
-      <article class="b-poll"><h3>{{.L.T "home.f_poll_h"}}</h3>
-        <div class="b-bars" aria-hidden="true"><span><i class="w70"></i>{{.L.T "home.f_poll_a"}}</span><span><i class="w45"></i>{{.L.T "home.f_poll_b"}}</span><span><i class="w20"></i>{{.L.T "home.f_poll_c"}}</span></div></article>
-      <article class="b-lang"><h3>{{.L.T "home.f_lang_h"}}</h3><p class="b-langs">{{range $i, $l := .Langs}}{{if $i}} · {{end}}<span lang="{{$l.Code}}">{{$l.Name}}</span>{{end}}</p></article>
+  <!-- 3. a note's life, played by the scroll (home.js) -->
+  <section class="h-sec h-life-sec" id="life" aria-labelledby="life-h">
+    <div class="h-life" id="h-life">
+      <div class="h-life-pin">
+        <div class="h-pinhead"><span class="h-tag" data-rv>{{.L.T "home.l_tag"}}</span>
+          <h2 id="life-h" data-split>{{.L.H "home.l_h"}}</h2></div>
+        <div class="h-life-grid">
+        <div>
+          <ol class="h-steps" id="h-steps">
+            <li class="on"><b>{{.L.T "home.l1_h"}}</b><span>{{.L.T "home.l1_p"}}</span></li>
+            <li><b>{{.L.T "home.l2_h"}}</b><span>{{.L.T "home.l2_p"}}</span></li>
+            <li><b>{{.L.T "home.l3_h"}}</b><span>{{.L.T "home.l3_p"}}</span></li>
+            <li><b>{{.L.T "home.l4_h"}}</b><span>{{.L.T "home.l4_p"}}</span></li>
+            <li><b>{{.L.T "home.l5_h"}}</b><span>{{.L.T "home.l5_p"}}</span></li>
+          </ol>
+          <div class="h-bar"><i id="h-life-bar"></i></div>
+        </div>
+        <div class="h-scene" aria-hidden="true">
+          <div class="h-paper" id="h-paper"><span class="h-lock"><svg><use href="#i-lock"/></svg></span><b>{{.L.T "home.l_note_t"}}</b><p id="h-paper-text" data-text="{{.L.T "home.l_note_b"}}"></p></div>
+          <div class="h-chiplink" id="h-chiplink" dir="ltr"><svg><use href="#i-link"/></svg>/n/RFbN3uTvAH#k=…</div>
+          <div class="h-phone" id="h-phone"><div class="h-screen"><span class="h-from">{{.L.T "home.l_from"}}</span>
+            <div id="h-phone-body"><p class="h-wait">{{.L.T "home.l_wait"}}</p></div>
+            <div class="h-fire" id="h-fire"></div><div class="h-gone" id="h-gone"><b>{{.L.T "home.l_gone_h"}}</b>{{.L.T "home.l_gone_p"}}</div></div></div>
+        </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="h-tools" aria-labelledby="t-h">
-    <div>
-      <h2 id="t-h">{{.L.T "home.t_h"}}</h2>
-      <p>{{.L.H "home.t_p"}}</p>
-      <a class="btn primary" href="/new"><svg><use href="#i-plus"/></svg>{{.L.T "home.t_cta"}}</a>
+  <!-- 4. the feature tour: pinned while you scroll, one group after another -->
+  <section class="h-sec" id="tour" aria-labelledby="tour-h">
+    <div class="h-tour" id="h-tour">
+      <div class="h-tour-pin">
+        <div class="h-pinhead"><span class="h-tag" data-rv>{{.L.T "home.t_tag"}}</span>
+          <h2 id="tour-h" data-split>{{.L.H "home.t_h"}}</h2></div>
+        <div class="h-tabs" role="tablist" aria-label="{{.L.T "home.t_tabs"}}">
+          {{range $i, $g := .TourGroups}}<button type="button" role="tab" id="tt-{{$g}}" aria-controls="tp-{{$g}}" aria-selected="{{if eq $i 0}}true{{else}}false{{end}}" data-i="{{$i}}">{{$.L.T (printf "home.g_%s" $g)}}</button>{{end}}
+        </div>
+        <div class="h-tour-body">
+          {{range $i, $g := .TourGroups}}<div class="h-panel{{if ne $i 0}} hide{{end}}" role="tabpanel" id="tp-{{$g}}" aria-labelledby="tt-{{$g}}" data-g="{{$g}}">
+            <ul class="h-feats">{{range $n := $.TourItems}}<li><svg><use href="#i-tick"/></svg><b>{{$.L.T (printf "home.f_%s_%d" $g $n)}}</b><span>{{$.L.T (printf "home.f_%s_%dp" $g $n)}}</span></li>{{end}}</ul>
+            <div class="h-mini" data-mini="{{$g}}"><p class="h-mini-h">{{$.L.T (printf "home.m_%s" $g)}}</p><div class="h-mini-in"></div></div>
+          </div>{{end}}
+          <nav class="h-tnav" aria-label="{{.L.T "home.t_tabs"}}">
+            <button type="button" class="h-tprev" aria-label="{{.L.T "home.t_prev"}}"><svg><use href="#i-down"/></svg></button>
+            {{range $i, $g := .TourGroups}}<button type="button" class="h-dot" data-i="{{$i}}" aria-label="{{$.L.T (printf "home.g_%s" $g)}}"{{if eq $i 0}} aria-current="true"{{end}}></button>{{end}}
+            <button type="button" class="h-tnext" aria-label="{{.L.T "home.t_next"}}"><svg><use href="#i-down"/></svg></button>
+          </nav>
+        </div>
+      </div>
     </div>
-    <ul class="h-chips">
-      <li>{{.L.T "home.c1"}}</li><li>{{.L.T "home.c2"}}</li><li>{{.L.T "home.c3"}}</li><li>{{.L.T "home.c4"}}</li><li>{{.L.T "home.c5"}}</li><li>{{.L.T "home.c6"}}</li>
-      <li>{{.L.T "home.c7"}}</li><li>{{.L.T "home.c8"}}</li><li>{{.L.T "home.c9"}}</li><li>{{.L.T "home.c10"}}</li><li>{{.L.T "home.c11"}}</li><li>{{.L.T "home.c12"}}</li>
-    </ul>
   </section>
 
-  <section class="h-sec" aria-labelledby="s-h">
-    <h2 class="h-sec-h" id="s-h">{{.L.H "home.s_h"}}</h2>
-    <div class="h-see">
-      <div class="h-see-card"><span class="h-tag">{{.L.T "home.s_you"}}</span><h3>{{.L.T "home.s_demo_t"}}</h3><p>{{.L.T "home.s_demo_1"}}<br>{{.L.T "home.s_demo_2"}}</p></div>
-      <div class="h-see-card dark"><span class="h-tag">{{.L.T "home.s_srv"}}</span><code dir="ltr">x1.Qm9yPq8uZ1hT0dGlhc2EtYmFyYS1rZXlr aW5nLWJpbmRhci1wYXBhbi1yb2RhLW1lc2Fu bGFoYWktdGFtdS1hZGEtMjAyNi1hbmltZQ…</code><p>{{.L.T "home.s_srv_p"}}</p></div>
+  <!-- 5. three everyday uses -->
+  <section class="h-sec" aria-labelledby="uses-h">
+    <span class="h-tag" data-rv>{{.L.T "home.u_tag"}}</span>
+    <h2 id="uses-h" data-split>{{.L.H "home.u_h"}}</h2>
+    <div class="h-uses" data-rv-group>
+      <article class="h-use"><div class="h-use-art" id="use-wifi"><img src="/static/img/home/flame.webp?v={{.Asset}}" alt="" width="160" height="160" loading="lazy">
+        <div class="h-card"><small>{{.L.T "home.u1_small"}}</small><b class="h-code" dir="ltr">coffee-milk-2026</b></div><span class="h-stamp">{{.L.T "home.u1_stamp"}}</span></div>
+        <div class="h-use-txt"><h3>{{.L.T "home.u1_h"}}</h3><p>{{.L.T "home.u1_p"}}</p></div></article>
+      <article class="h-use"><div class="h-use-art"><img src="/static/img/home/poll.webp?v={{.Asset}}" alt="" width="160" height="160" loading="lazy">
+        <div class="h-card" id="use-list" data-items="{{.L.T "home.u2_items"}}"><small>{{.L.T "home.u2_small"}}</small></div></div>
+        <div class="h-use-txt"><h3>{{.L.T "home.u2_h"}}</h3><p>{{.L.T "home.u2_p"}}</p></div></article>
+      <article class="h-use"><div class="h-use-art"><img src="/static/img/home/users.webp?v={{.Asset}}" alt="" width="160" height="160" loading="lazy">
+        <div class="h-card" id="use-meet" data-items="{{.L.T "home.u3_chat"}}"><small>{{.L.T "home.u3_small"}}</small><div class="h-chat"></div></div></div>
+        <div class="h-use-txt"><h3>{{.L.T "home.u3_h"}}</h3><p>{{.L.T "home.u3_p"}}</p></div></article>
     </div>
   </section>
 
-  <section class="h-sec" aria-labelledby="st-h">
-    <h2 class="h-sec-h" id="st-h">{{.L.H "home.st_h"}}</h2>
-    <ol class="h-steps">
-      <li><b>1</b><h3>{{.L.T "home.st1_h"}}</h3><p>{{.L.T "home.st1_p"}}</p></li>
-      <li><b>2</b><h3>{{.L.T "home.st2_h"}}</h3><p>{{.L.T "home.st2_p"}}</p></li>
-      <li><b>3</b><h3>{{.L.T "home.st3_h"}}</h3><p>{{.L.T "home.st3_p"}}</p></li>
-    </ol>
-  </section>
-
-  <section class="h-final">
-    <img src="/static/img/home/hero.webp?v={{.Asset}}" alt="" width="170" height="170" loading="lazy">
-    <h2>{{.L.T "home.fin_h"}}</h2>
-    <div class="h-cta center">
-      <a class="h-pill dark" href="#quick"><svg><use href="#i-edit"/></svg>{{.L.T "home.cta_write"}}</a>
-      <a class="h-pill" href="/new"><svg><use href="#i-plus"/></svg>{{.L.T "home.cta_full"}}</a>
+  {{if .Repo}}
+  <!-- 6. built in the open: numbers fetched by the server from GitHub (/api/repo) -->
+  <section class="h-sec" id="open" aria-labelledby="open-h">
+    <span class="h-tag" data-rv>{{.L.T "home.o_tag"}}</span>
+    <div class="h-open">
+      <div>
+        <h2 id="open-h" data-split>{{.L.H "home.o_h"}}</h2>
+        <p class="h-sub" data-rv>{{.L.T "home.o_p"}}</p>
+        <div class="h-cta" data-rv>
+          <a class="h-pill dark" href="https://github.com/{{.Repo}}" rel="noopener"><svg><use href="#i-code"/></svg>{{.L.T "home.o_gh"}}</a>
+          <a class="h-pill" href="https://github.com/{{.Repo}}/blob/main/docs/DEPLOY.md" rel="noopener">{{.L.T "home.o_install"}}</a>
+        </div>
+      </div>
+      <div class="h-repo" id="h-repo" data-repo="{{.Repo}}" data-rv>
+        <dl class="h-stats">
+          <div><dt>{{.L.T "home.o_stars"}}</dt><dd data-k="stars">–</dd></div><div><dt>{{.L.T "home.o_forks"}}</dt><dd data-k="forks">–</dd></div><div><dt>{{.L.T "home.o_issues"}}</dt><dd data-k="issues">–</dd></div>
+          <div><dt>{{.L.T "home.o_license"}}</dt><dd data-k="license">–</dd></div><div><dt>{{.L.T "home.o_updated"}}</dt><dd data-k="pushed">–</dd></div><div><dt>{{.L.T "home.o_langs"}}</dt><dd>{{len .Langs}}</dd></div>
+        </dl>
+        <div class="h-langbar" id="h-langbar"></div>
+        <p class="h-legend" id="h-legend"></p>
+        <div class="h-weeks" id="h-weeks" aria-hidden="true"></div>
+        <p class="h-small" id="h-weeks-p">{{.L.T "home.o_weeks"}}</p>
+      </div>
     </div>
+  </section>
+  {{end}}
+
+  <!-- 7. questions -->
+  <section class="h-sec" id="faq" aria-labelledby="faq-h">
+    <span class="h-tag" data-rv>{{.L.T "home.q_tag"}}</span>
+    <h2 id="faq-h" data-split>{{.L.H "home.q_h"}}</h2>
+    <div class="h-faq" data-rv-group>
+      <details open><summary>{{.L.T "faq.encrypt_q"}}</summary><p>{{.L.H "faq.encrypt_a"}}</p></details>
+      <details><summary>{{.L.T "faq.account_q"}}</summary><p>{{.L.H "faq.account_a"}}</p></details>
+      <details><summary>{{.L.T "faq.leak_q"}}</summary><p>{{.L.H "faq.leak_a"}}</p></details>
+      <details><summary>{{.L.T "faq.files_q"}}</summary><p>{{.L.H "faq.files_a"}}</p></details>
+      <details><summary>{{.L.T "home.q_ai_q"}}</summary><p>{{.L.T "home.q_ai_a"}}</p></details>
+      <details><summary>{{.L.T "home.q_web_q"}}</summary><p>{{.L.T "home.q_web_a"}}</p></details>
+    </div>
+    <p class="h-more" data-rv><a href="/faq">{{.L.T "home.q_more"}}</a></p>
   </section>
 </div>
+
+<div class="h-marquee" aria-hidden="true"><div id="h-mq" data-words="{{.L.T "home.mq"}}"></div></div>
+
+<section class="h-final" aria-labelledby="fin-h">
+  <h2 id="fin-h" data-split>{{.L.H "home.fin_h"}}</h2>
+  <div class="h-cta center" data-rv>
+    <a class="h-pill dark" href="#quick"><svg><use href="#i-edit"/></svg>{{.L.T "home.cta_write"}}</a>
+    <a class="h-pill" href="/new"><svg><use href="#i-plus"/></svg>{{.L.T "home.cta_full"}}</a>
+  </div>
+</section>
 {{end}}
 {{define "scripts"}}
 <script src="/static/js/crypto.js?v={{.Asset}}"></script>
+<script src="/static/js/motion.js?v={{.Asset}}"></script>
+<script src="/static/js/hero3d.js?v={{.Asset}}"></script>
 <script src="/static/js/home.js?v={{.Asset}}"></script>
 {{end}}

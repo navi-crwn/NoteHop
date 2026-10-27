@@ -37,6 +37,9 @@ Status: ✅ selesai · 🔨 dikerjakan · ⏳ antre · ⛔ sengaja tidak dibuat 
 ## Batch J: catatan Web yang bisa dijalankan (permintaan pemilik)
 ✅ Tipe Web: banyak file HTML/CSS/JS, penjelajah file + templat, Jalankan/Otomatis, hasil + konsol, lebar HP/tablet, layar penuh, tab di HP · ✅ Bingkai `/run` ber-sandbox dengan CSP tanpa jaringan · ✅ Pembaca ditanya sebelum menjalankan · uji: `scripts/e2e-web.js`
 
+## Batch K: beranda v2 (permintaan pemilik)
+✅ Logo 3D dari balok (WebGL tanpa library, gambar biasa jika WebGL tidak ada) · ✅ Demo enkripsi sungguhan: ciphertext pratinjau itulah yang dikirim saat Buat · ✅ Gerakan saat scroll (`motion.js`: muncul bertahap, judul per kata, scrub) · ✅ Kehidupan satu catatan dan tur 6 kelompok fitur yang ditahan di layar, dengan titik + panah atas/bawah untuk navigasi · ✅ Contoh pemakaian, angka repo dari GitHub (`/api/repo`, `NOTEHOP_GITHUB`), FAQ, marquee · ✅ "Kurangi gerakan" dihormati · ✅ LICENSE MIT · 175 teks baru di 9 bahasa · uji: `internal/app/repo_test.go`, `scripts/e2e-home.js`
+
 ## Tahap akhir
 ✅ Zip handoff (berisi sumber dari commit, binary linux amd64/arm64 + SHA256SUMS, HANDOFF.txt)
 

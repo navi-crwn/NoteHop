@@ -542,6 +542,7 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 
 | Halaman | Isi | Yang harus dilakukan pemilik |
 | --- | --- | --- |
+| `/` | Beranda: demo enkripsi sungguhan (pratinjau ciphertext = yang dikirim saat Buat), kehidupan satu catatan dan tur fitur yang mengikuti scroll (titik + panah atas/bawah untuk lompat kelompok), contoh pemakaian, angka repo dari GitHub, FAQ singkat. Tanpa gerakan jika "kurangi gerakan" aktif di perangkat | Atur `NOTEHOP_GITHUB` ke repo sendiri, atau `-` untuk menyembunyikan angka GitHub |
 | `/faq` | 33 tanya jawab, termasuk aturan nama link | |
 | `/help` | Dialihkan ke `/faq` | |
 | `/contact` | Kontak + cara melapor penyalahgunaan | **Isi `NOTEHOP_CONTACT`** (email atau URL). Tanpa itu, halaman menulis "pemilik situs belum mengisi alamat kontak". |
@@ -554,6 +555,7 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 | `NOTEHOP_ADMINS` | `navi,admin` | Username admin situs: boleh nama link pendek/cadangan dan username cadangan |
 | `NOTEHOP_RESERVED` | `promo,event2026` | Tambahan nama cadangan |
 | `NOTEHOP_CONTACT` | `abuse@example.com` | Kontak di `/contact` |
+| `NOTEHOP_GITHUB` | `pemilik/notehop` atau `-` | Repo yang angkanya tampil di beranda (`-` = sembunyikan) |
 
 **Perintah baru:**
 
