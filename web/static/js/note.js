@@ -195,6 +195,53 @@
   }
 
   // ---------- page ----------
+  // ---------- page chrome: status chips, phone dock ----------
+  function chrome() {
+    // The chips are the short form; a click shows the full sentence.
+    var meta = $('#n-meta'), status = $('#n-status');
+    function toggleStatus() {
+      var open = status.classList.toggle('hide') === false;
+      meta.setAttribute('aria-expanded', String(open));
+    }
+    meta.addEventListener('click', toggleStatus);
+    meta.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleStatus(); } });
+
+    // Each dock button presses the real control and is hidden when that one
+    // is (not the owner, no live session, burned note…). Copy only shows up
+    // when there is no Share, so the dock keeps four buttons at most.
+    var dock = $('#note-dock'), more = $('#more-menu');
+    // Submenus (View, Save to device): opening one closes the other; with a
+    // mouse they open on hover too. A click inside must not close the menu.
+    var subs = NH.$$('.menu-sub', more), hover = matchMedia('(hover: hover)');
+    function openSub(d) { subs.forEach(function (x) { x.open = x === d; }); }
+    subs.forEach(function (d) {
+      var s = d.querySelector('summary');
+      // With a mouse the hover has already opened it: a click keeps it open.
+      s.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); openSub(d.open && !hover.matches ? null : d); });
+      d.addEventListener('mouseenter', function () { if (hover.matches) openSub(d); });
+    });
+    new MutationObserver(function () { if (!more.classList.contains('open')) openSub(null); }).observe(more, { attributes: true, attributeFilter: ['class'] });
+    function hidden(el) { return !el || !!el.closest('.hide'); }
+    function sync() {
+      NH.$$('button[data-for]', dock).forEach(function (b) {
+        var id = b.dataset.for;
+        b.hidden = id === 'act-copy' ? !hidden($('#act-share')) : id !== 'more-menu' && hidden($('#' + id));
+      });
+      dock.querySelector('.dot').hidden = hidden($('#live-unread'));
+    }
+    NH.$$('button[data-for]', dock).forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        if (b.dataset.for !== 'more-menu') return $('#' + b.dataset.for).click();
+        e.stopPropagation(); // the document click would close it again
+        more.classList.toggle('open');
+      });
+    });
+    new MutationObserver(sync).observe($('#note'), { subtree: true, attributes: true, attributeFilter: ['class'] });
+    sync();
+    dock.classList.remove('hide');
+    document.body.classList.add('has-dock');
+  }
+
   function setup(burned) {
     var m = S.meta;
     S.mode = m.frozen ? 'read' : m.admin ? 'edit' : m.mode;
@@ -234,6 +281,7 @@
     drawBody(true);
     drawMeta();
     drawEntries();
+    chrome();
 
     $('#act-copy').addEventListener('click', function () {
       var t = currentTitle(), b = NHMD.applyChecks(currentBody(), S.mode === 'edit' ? {} : S.checks);
@@ -377,7 +425,7 @@
     if (m.reset) kids.push(pill('history', NH.t('pill.resets', { every: NH.t('reset.' + m.reset) })));
     if (m.ip_limited) kids.push(pill('shield', NH.t('pill.ip')));
     if (m.admin && m.last_open) kids.push(pill('eye', NH.t('pill.last_open', { n: m.views, ago: NH.ago(m.last_open) })));
-    kids.push(h('span.faint.small', NH.t('pill.changed', { ago: NH.ago(m.updated) })));
+    $('#n-changed').textContent = NH.t('pill.changed', { ago: NH.ago(m.updated) });
     box.replaceChildren.apply(box, kids);
   }
 

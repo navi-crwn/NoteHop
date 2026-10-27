@@ -5,6 +5,8 @@
 //   NOTEHOP_URL=http://127.0.0.1:8090 node scripts/e2e-server-features.js
 const { chromium } = require('playwright');
 const BASE = (process.env.NOTEHOP_URL || 'http://127.0.0.1:8090').replace(/\/$/, '');
+// Share dialog: settings live in tabs (time, privacy, together, expert).
+const tab = (p, name) => p.click(`#share-tabs [data-tab=${name}]`);
 const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n + ' | ' + (i || ''));
 const errs = [];
 async function pickMode(p, m) { await p.evaluate(() => { const d = document.getElementById('more-modes'); if (d) d.open = true; }); await p.check(`input[name=mode][value=${m}]`, { force: true }); }
@@ -89,20 +91,20 @@ const visitor = (adminURL) => { const u = new URL(adminURL); return BASE + u.pat
 
     // --- advanced share settings + watermark trace ---
     const adv = await create(p, { title: 'Rutin', body: '- [ ] minum air', mode: 'check' });
-    await p.click('#act-share'); await p.waitForSelector('#share-dlg[open]'); await p.click('#share-adv summary');
+    await p.click('#act-share'); await p.waitForSelector('#share-dlg[open]'); await tab(p, 'time');
     const pill = id => p.locator(`[data-adv=${id}]`), form = id => `[data-adv-form=${id}]`;
     await pill('reset').click(); await p.click(form('reset') + ' button[type=submit]'); await p.waitForTimeout(500);
     const rh = await p.textContent(form('reset') + ' .hint'); ok('reset: saved', rh.toLowerCase().includes('daily'), rh);
-    await pill('watermark').click(); await p.waitForTimeout(500);
+    await tab(p, 'privacy'); await pill('watermark').click(); await p.waitForTimeout(500);
     ok('watermark: on', await p.isVisible('#trace-box'));
-    await pill('dms').click(); await p.fill(form('dms') + ' input', '7'); await p.click(form('dms') + ' button[type=submit]'); await p.waitForTimeout(500);
+    await tab(p, 'time'); await pill('dms').click(); await p.fill(form('dms') + ' input', '7'); await p.click(form('dms') + ' button[type=submit]'); await p.waitForTimeout(500);
     ok('dms: on blocks manual capsule', await pill('open').evaluate(e => e.classList.contains('blocked')));
     await pill('dms').click(); await p.waitForTimeout(500);
     ok('dms: off', !(await pill('dms').locator('input').isChecked()));
     await p.keyboard.press('Escape');
     const w = await page(b); await w.goto(visitor(adv)); await w.waitForSelector('#note:not(.hide)');
     await w.click('#act-copy'); const leaked = await w.evaluate(() => navigator.clipboard.readText());
-    await p.click('#act-share'); await p.waitForSelector('#share-dlg[open]'); await p.click('#trace-box summary');
+    await p.click('#act-share'); await p.waitForSelector('#share-dlg[open]'); await tab(p, 'privacy'); await p.click('#trace-box summary');
     await p.fill('#trace-input', 'saya cuma salin: ' + leaked); await p.waitForTimeout(200);
     ok('watermark: traced to link', (await p.textContent('#trace-result')).includes('/n/'), await p.textContent('#trace-result'));
     await p.keyboard.press('Escape');

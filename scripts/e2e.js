@@ -173,8 +173,13 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     await p.waitForSelector('#qr-dlg[open] #qr-box img');
     const w = await p.$eval('#qr-box img', i => i.naturalWidth);
     ok('QR: image rendered', w > 100, 'width ' + w);
+    // One popup for links and settings: one tab at a time keeps it one screen tall.
+    const dh = await p.$eval('#share-dlg', d => d.getBoundingClientRect().height);
+    ok('Share: links and settings fit one screen', dh <= 640, Math.round(dh) + 'px');
     await p.screenshot({ path: OUT + '/qr.png' });
     await p.keyboard.press('Escape'); await p.keyboard.press('Escape');
+    const barH = await p.$eval('.note-bar', e => e.getBoundingClientRect().height);
+    ok('Desktop: note controls on one line', barH < 60, Math.round(barH) + 'px');
     await p.click('#more-menu > button'); await p.click('#act-freeze');
     await p.waitForSelector('#snap-list li', { timeout: 10000 });
     const snapHref = await p.$eval('#snap-list a.link-url', a => a.href);
@@ -202,6 +207,13 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     await m.keyboard.press('Escape');
     let over = await m.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     ok('Mobile: no horizontal scroll on note (admin)', over <= 0, 'overflow ' + over + 'px');
+    // Phones: actions sit in the dock; More opens the menu as a bottom sheet.
+    const dock = await m.$$eval('#note-dock button:not([hidden])', x => x.map(y => y.dataset.for));
+    ok('Mobile: dock with Share and More', dock.includes('act-share') && dock.includes('more-menu') && !(await m.isVisible('#act-share')), JSON.stringify(dock));
+    await m.click('#note-dock [data-for=more-menu]');
+    const sheet = await m.$eval('#more-menu .menu-list', l => { const r = l.getBoundingClientRect(); return getComputedStyle(l).position === 'fixed' && Math.abs(r.bottom - innerHeight) < 2 && r.height > 100; });
+    ok('Mobile: More opens as a bottom sheet', sheet);
+    await m.mouse.click(10, 10);
     await m.screenshot({ path: OUT + '/m-note-admin.png', fullPage: true });
     await m.goto(visitorURL(admin)); await m.waitForSelector('#note:not(.hide)');
     over = await m.evaluate(() => document.documentElement.scrollWidth - innerWidth);

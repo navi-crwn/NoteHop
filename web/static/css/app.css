@@ -495,7 +495,7 @@ body.has-overlay { overflow: hidden; }
 .prompter-text.mirrored { transform: scaleX(-1); }
 
 /* ---------- zen ---------- */
-body.zen .nav, body.zen footer, body.zen .note-meta, body.zen .note-actions, body.zen .banner, body.zen .entries, body.zen .tpl { display: none !important; }
+body.zen .nav, body.zen footer, body.zen .note-bar, body.zen .note-dock, body.zen .banner, body.zen .entries, body.zen .tpl { display: none !important; }
 body.zen main { padding-top: 24px; }
 .zen-bar { position: fixed; inset-block-end: 16px; inset-inline-start: 50%; transform: translateX(-50%); z-index: 90; display: flex; gap: 8px; align-items: center;
   padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--panel); box-shadow: var(--shadow); }
@@ -507,7 +507,7 @@ body.zen main { padding-top: 24px; }
 
 /* ---------- print / PDF ---------- */
 @media print {
-  .nav, footer, .note-actions, .banner, .tpl, .entry-form, .toasts, .skip, .blk-copy, .code-copy, .kbar, .zen-bar, body::before { display: none !important; }
+  .nav, footer, .note-bar, .note-dock, .status-line, .banner, .tpl, .entry-form, .toasts, .skip, .blk-copy, .code-copy, .kbar, .zen-bar, body::before { display: none !important; }
   body { background: #fff; color: #000; }
   .card, .note-body { border: 0; box-shadow: none; padding: 0; background: #fff; }
   .wrap { max-width: none; padding: 0; }
@@ -732,3 +732,78 @@ body.expert .seg-choice [data-tech]::after { display: none; }
 .faq details { scroll-margin-top: 80px; }
 .contact-card { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .nearby-pair { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; } .nearby-pair > div { flex: 1 1 220px; } .nearby-pair p { margin: 2px 0 0; } #nb-code { width: 9ch; font: 700 1.2rem ui-monospace, monospace; letter-spacing: .15em; text-align: center; }
+
+/* ---------- note page: one control bar, grouped menu, phone dock ----------
+   Everything you can do sits on one line above the note. The chips explain
+   themselves on click (#n-status). On phones the actions move to a dock at
+   the bottom and the menu opens as a sheet. */
+.note-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+.note-title h1, .note-title .title-input { margin-bottom: 0; }
+.note-title .title-input { flex: 1 1 100%; }
+.note-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 14px 0 0; padding: 6px 6px 6px 8px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+.note-bar .note-meta { margin: 0; gap: 6px; cursor: pointer; border-radius: 10px; }
+.note-bar .note-meta:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.note-bar .live-bar { margin: 0; margin-inline-start: auto; padding: 0; border: 0; background: none; gap: 8px; }
+.note-bar .live-tools { margin: 0; gap: 2px; }
+.note-bar .live-bar:not(.hide) + .note-actions { margin-inline-start: 0; padding-inline-start: 8px; border-inline-start: 1px solid var(--line-2); }
+.note-bar .note-actions { display: flex; align-items: center; gap: 6px; margin-inline-start: auto; }
+.note-bar .save-state { margin-inline-end: 4px; white-space: nowrap; }
+.btn.icon-only { width: 34px; padding: 0; }
+/* the avatars and the green dot say who is here; the sentence is for screen readers */
+.note-bar #live-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.note-bar .btn.ghost { border-color: transparent; }
+.note-bar .btn.ghost:hover { background: var(--panel-2); }
+.status-line { margin: 10px 2px 0; }
+.note-head { margin-bottom: 14px; }
+
+/* menu ⋯: a short list; views and downloads cascade into submenus */
+.more-menu .menu-list { min-width: 250px; }
+.menu-list hr { border: 0; border-top: 1px solid var(--line); margin: 5px 4px; }
+.menu-list hr:has(+ .hide) { display: none; }
+.menu-sub { position: relative; }
+.menu-sub > summary { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 8px; cursor: pointer; list-style: none; }
+.menu-sub > summary::-webkit-details-marker { display: none; }
+.menu-sub > summary::after { content: "›"; margin-inline-start: auto; color: var(--faint); font-size: 1.1rem; line-height: 1; }
+[dir=rtl] .menu-sub > summary::after { content: "‹"; }
+.menu-sub > summary:hover, .menu-sub[open] > summary { background: var(--panel-2); }
+.menu-list.sub { display: block; position: absolute; top: -6px; inset-inline-end: calc(100% + 6px); min-width: 200px; }
+.menu-sub:not([open]) > .menu-list.sub { display: none; }
+
+/* share dialog: one popup, one tab at a time */
+.dlg-tabs { display: flex; gap: 2px; margin: 4px -4px 14px; padding: 0 4px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.dlg-tabs button { display: inline-flex; align-items: center; gap: 6px; padding: 9px 11px; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; color: var(--muted); font: inherit; font-size: .9rem; font-weight: 650; white-space: nowrap; cursor: pointer; }
+.dlg-tabs button svg { width: 15px; height: 15px; }
+.dlg-tabs button[aria-selected=true] { color: var(--text); border-color: var(--accent); }
+.dlg-tabs em { font-style: normal; min-width: 18px; padding: 0 5px; border-radius: 9px; font-size: .7rem; font-weight: 750; text-align: center; background: color-mix(in srgb, var(--accent) 16%, var(--panel)); color: var(--accent); }
+.share-dlg .tab-panel[hidden], #adv-pills .adv-group[hidden], .share-adv[hidden] { display: none; }
+#adv-pills .adv-group { border-top: 0; padding-top: 0; }
+#adv-pills .adv-group > h3 { display: none; }
+#share-adv .adv-faq { display: inline-block; margin-top: 10px; }
+#share-dlg { min-height: min(520px, calc(100vh - 48px)); }
+
+/* phone: actions in a dock at the bottom, the menu as a sheet */
+.note-dock { display: none; }
+@media (max-width: 640px) {
+  .note-bar { padding: 5px 6px; }
+  /* the menu itself stays: it opens from the dock as a sheet */
+  .note-bar .note-actions > :not(.more-menu), .more-menu > button, .note-bar .live-tools #live-chat-btn, .note-bar #live-status { display: none; }
+  .note-bar .note-actions { margin: 0; }
+  .note-bar .live-tools #live-present span { display: none; }
+  .note-dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+    padding: 6px 8px calc(8px + env(safe-area-inset-bottom)); background: var(--panel); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px rgba(30, 30, 80, .08); }
+  .note-dock button { position: relative; display: grid; justify-items: center; gap: 2px; padding: 4px 2px; border: 0; background: none; color: var(--muted); font: inherit; font-size: .72rem; font-weight: 650; cursor: pointer; }
+  .note-dock button svg { width: 22px; height: 22px; }
+  .note-dock button.primary svg { width: 34px; height: 30px; padding: 6px 8px; border-radius: 10px; background: var(--grad); color: #061016; }
+  .note-dock button[hidden] { display: none; }
+  .note-dock .dot { position: absolute; top: 2px; inset-inline-end: calc(50% - 16px); width: 9px; height: 9px; border-radius: 50%; background: var(--accent); border: 2px solid var(--panel); }
+  body.has-dock main { padding-bottom: 76px; }
+  body.has-dock .toasts { bottom: 80px; }
+  body.kbar-on .note-dock, body.zen .note-dock { display: none; }
+  /* the menu opens from the dock as a bottom sheet; submenus fold open in place */
+  .more-menu.open .menu-list:not(.sub) { position: fixed; top: auto; left: 0; right: 0; bottom: 0; z-index: 70; max-height: 78vh; overflow-y: auto;
+    border-radius: 20px 20px 0 0; padding: 14px 12px calc(16px + env(safe-area-inset-bottom)); }
+  .more-menu.open::before { content: ""; position: fixed; inset: 0; z-index: 69; background: rgba(16, 18, 26, .38); }
+  .menu-list.sub { position: static; box-shadow: none; border: 0; padding: 0 0 4px 26px; min-width: 0; }
+  .menu-list button, .menu-list a, .menu-sub > summary { padding: 11px 10px; }
+  .menu-sub > summary::after, [dir=rtl] .menu-sub > summary::after { content: "⌄"; }
+}

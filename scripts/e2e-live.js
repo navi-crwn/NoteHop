@@ -5,6 +5,13 @@
 //   NOTEHOP_URL=http://127.0.0.1:8090 node scripts/e2e-live.js
 const { chromium } = require('playwright');
 const BASE = (process.env.NOTEHOP_URL || 'http://127.0.0.1:8090').replace(/\/$/, '');
+// Menu ⋯: some items sit in a submenu (View, Save to device).
+async function act(p, a) {
+  await p.click('#more-menu > button');
+  const sub = `.menu-sub:has([data-act=${a}])`;
+  if (await p.$(sub) && !(await p.$eval(sub, d => d.open))) await p.click(sub + ' > summary');
+  return p.click(`[data-act=${a}]`);
+}
 const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n + ' | ' + (i || ''));
 const errs = [];
 async function pickMode(p, m) { await p.evaluate(() => { const d = document.getElementById('more-modes'); if (d) d.open = true; }); await p.check(`input[name=mode][value=${m}]`, { force: true }); }
@@ -80,7 +87,7 @@ const wait = (p, fn, arg, t) => p.waitForFunction(fn, arg, { timeout: t || 10000
     await a.click('#live-present');
     await wait(v, () => !document.querySelector('#live-follow').classList.contains('hide'));
     await v.click('#live-follow button');
-    await a.click('#more-menu > button'); await a.click('[data-act=present]');
+    await act(a, 'present');
     await wait(v, () => !!document.querySelector('.overlay.present'));
     ok('follow: slides open for follower', true);
     await a.keyboard.press('Escape');
