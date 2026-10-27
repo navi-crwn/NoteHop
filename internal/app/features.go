@@ -24,8 +24,14 @@ import (
 // note's plaintext belongs here: the server never has it.
 
 type NoteConfig struct {
-	LockAt int64 `json:"lock_at,omitempty"` // unix time; after it, only the admin can change the note
-	OpenAt int64 `json:"open_at,omitempty"` // unix time; before it, only the admin can read the note
+	LockAt    int64    `json:"lock_at,omitempty"`   // unix time; after it, only the admin can change the note
+	OpenAt    int64    `json:"open_at,omitempty"`   // unix time; before it, only the admin can read the note
+	SignOff   bool     `json:"sign_off,omitempty"`  // readers can sign the current version
+	IPAllow   []string `json:"ip_allow,omitempty"`  // CIDRs/IPs allowed to read or change (empty: anyone)
+	Reset     string   `json:"reset,omitempty"`     // "daily", "weekly" or "monthly": clear checklist ticks
+	ResetAt   int64    `json:"reset_at,omitempty"`  // next reset
+	DMSDays   int      `json:"dms_days,omitempty"`  // dead man's switch: opens unless the admin checks in
+	Watermark bool     `json:"watermark,omitempty"` // copies carry an invisible mark of the link used
 }
 
 func parseConfig(s string) NoteConfig {
@@ -55,6 +61,7 @@ type hookCtx struct {
 	note *db.Note
 	cfg  NoteConfig
 	now  time.Time
+	ip   string
 }
 
 type feature struct {
@@ -67,10 +74,10 @@ type feature struct {
 }
 
 // features is the registry; order matters only for which refusal wins.
-var features = []feature{timeCapsule, scheduledLock}
+var features = []feature{ipAllow, timeCapsule, scheduledLock, recurringReset}
 
-func runBeforeRead(n *db.Note, now time.Time) *hookErr {
-	c := hookCtx{note: n, cfg: parseConfig(n.Config), now: now}
+func runBeforeRead(n *db.Note, now time.Time, ip string) *hookErr {
+	c := hookCtx{note: n, cfg: parseConfig(n.Config), now: now, ip: ip}
 	for _, f := range features {
 		if f.beforeRead != nil {
 			if e := f.beforeRead(c); e != nil {
@@ -81,8 +88,8 @@ func runBeforeRead(n *db.Note, now time.Time) *hookErr {
 	return nil
 }
 
-func runBeforeWrite(n *db.Note, now time.Time) *hookErr {
-	c := hookCtx{note: n, cfg: parseConfig(n.Config), now: now}
+func runBeforeWrite(n *db.Note, now time.Time, ip string) *hookErr {
+	c := hookCtx{note: n, cfg: parseConfig(n.Config), now: now, ip: ip}
 	for _, f := range features {
 		if f.beforeWrite != nil {
 			if e := f.beforeWrite(c); e != nil {
@@ -123,7 +130,8 @@ func (a *App) runJobs(ctx context.Context, now time.Time) {
 	}
 }
 
-// apiConfig lets the admin change a note's optional features.
+// apiConfig lets the admin change a note's optional features. The body is a
+// partial config: fields that are absent stay as they are.
 func (a *App) apiConfig(w http.ResponseWriter, r *http.Request) {
 	x, ok := a.access(w, r)
 	if !ok || !a.requireAdmin(w, x) {
@@ -134,29 +142,80 @@ func (a *App) apiConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var q struct {
-		LockAt *int64 `json:"lock_at"`
-		OpenAt *int64 `json:"open_at"`
+		LockAt    *int64    `json:"lock_at"`
+		OpenAt    *int64    `json:"open_at"`
+		SignOff   *bool     `json:"sign_off"`
+		IPAllow   *[]string `json:"ip_allow"`
+		Reset     *string   `json:"reset"`
+		DMSDays   *int      `json:"dms_days"`
+		Watermark *bool     `json:"watermark"`
+		CheckIn   bool      `json:"check_in"`
 	}
-	if !readJSON(w, r, &q, 1024) {
+	if !readJSON(w, r, &q, 8192) {
 		return
 	}
+	now := time.Now()
 	cfg, old := parseConfig(x.note.Config), parseConfig(x.note.Config)
 	if q.LockAt != nil {
 		cfg.LockAt = *q.LockAt
 	}
 	if q.OpenAt != nil {
+		if cfg.DMSDays > 0 && (q.DMSDays == nil || *q.DMSDays > 0) {
+			apiErr(w, http.StatusBadRequest, "err.dms_capsule")
+			return
+		}
 		cfg.OpenAt = *q.OpenAt
+	}
+	if q.SignOff != nil {
+		cfg.SignOff = *q.SignOff
+	}
+	if q.Watermark != nil {
+		cfg.Watermark = *q.Watermark
+	}
+	if q.IPAllow != nil {
+		list, ok := cleanIPList(*q.IPAllow)
+		if !ok {
+			apiErr(w, http.StatusBadRequest, "err.bad_ip_list")
+			return
+		}
+		cfg.IPAllow = list
+	}
+	if q.Reset != nil {
+		switch *q.Reset {
+		case "":
+			cfg.Reset, cfg.ResetAt = "", 0
+		case "daily", "weekly", "monthly":
+			if cfg.Reset != *q.Reset || cfg.ResetAt == 0 {
+				cfg.Reset, cfg.ResetAt = *q.Reset, nextReset(*q.Reset, now)
+			}
+		default:
+			apiErr(w, http.StatusBadRequest, "err.bad_reset")
+			return
+		}
+	}
+	if q.DMSDays != nil {
+		if *q.DMSDays < 0 || *q.DMSDays > 365 {
+			apiErr(w, http.StatusBadRequest, "err.bad_dms")
+			return
+		}
+		cfg.DMSDays = *q.DMSDays
+		if cfg.DMSDays == 0 && old.DMSDays > 0 {
+			cfg.OpenAt = 0 // switching the switch off also lifts the hold
+		}
+	}
+	if cfg.DMSDays > 0 && (q.DMSDays != nil || q.CheckIn) {
+		cfg.OpenAt = now.Unix() + int64(cfg.DMSDays)*86400
 	}
 	// Times already in effect (a lock that has passed) aren't re-validated
 	// as "must be in the future"; only the ones being set now are.
 	check := cfg
-	if q.LockAt == nil && old.LockAt <= time.Now().Unix() {
+	if q.LockAt == nil && old.LockAt <= now.Unix() {
 		check.LockAt = 0
 	}
-	if q.OpenAt == nil && old.OpenAt <= time.Now().Unix() {
+	if q.OpenAt == nil && q.DMSDays == nil && !q.CheckIn && old.OpenAt <= now.Unix() {
 		check.OpenAt = 0
 	}
-	if msg := checkTimes(check, x.note.Expires, time.Now().Unix()); msg != "" {
+	if msg := checkTimes(check, x.note.Expires, now.Unix()); msg != "" {
 		apiErr(w, http.StatusBadRequest, msg)
 		return
 	}

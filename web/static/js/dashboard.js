@@ -10,8 +10,11 @@
   // Groups that need the note text (to-dos, links, code) decrypt each note in
   // this browser with its admin link, which doesn't use up burn views.
   var group = 'all';
+  // Notes untouched for 90 days are archived: out of "All", in "Archived".
+  function archived(r) { return Math.max(r.n.updated, r.n.last_open || 0) < Date.now() / 1000 - 90 * 86400; }
   var GROUPS = {
-    all: function () { return true; },
+    all: function (r) { return !archived(r); },
+    archived: archived,
     todo: function (r) { return r.text != null && /^\s*(?:[-*+]|\d+[.)])\s+\[ \]/m.test(r.text); },
     links: function (r) { return r.text != null && /https?:\/\//.test(r.text); },
     code: function (r) { return r.text != null && /^\s*(```|~~~)/m.test(r.text); },
@@ -155,8 +158,33 @@
       return vault.open(n.blob).then(function (v) { return { n: n, title: v.t, k: v.k, a: v.a, p: v.p }; },
         function () { return { n: n, locked: true }; });
     }));
-  }).then(function (r) { rows = r; draw(); }, function (x) {
+  }).then(function (r) { rows = r; draw(); offerClaim(); }, function (x) {
     ul.replaceChildren(h('li.muted', x.message));
   });
   filter.addEventListener('input', draw);
+
+  // ---------- claim notes made on this device before signing in ----------
+  function offerClaim() {
+    if (!vault) return;
+    var mine = {};
+    rows.forEach(function (r) { mine[r.n.token] = true; });
+    var loose = NH.recent.all().filter(function (n) { return n.a && !mine[n.token] && !(n.expires && n.expires < Date.now() / 1000); });
+    var box = $('#claim');
+    box.classList.toggle('hide', !loose.length);
+    if (!loose.length) return;
+    var btn = h('button.btn.sm.primary', { type: 'button' }, NH.icon('plus'), NH.t('dash.claim_btn'));
+    box.replaceChildren(NH.icon('key'), h('span', NH.t('dash.claim', { n: loose.length })), btn);
+    btn.addEventListener('click', function () {
+      btn.disabled = true;
+      Promise.all(loose.map(function (n) {
+        return vault.seal({ t: n.t || '', k: n.k, a: n.a, p: '' }).then(function (blob) {
+          return NH.api('POST', '/api/n/' + encodeURIComponent(n.token) + '/claim', { owner_blob: blob }, { 'X-Admin': n.a }).then(function () { return 1; }, function () { return 0; });
+        });
+      })).then(function (res) {
+        var n = res.reduce(function (a, b) { return a + b; }, 0);
+        NH.toast(NH.t('dash.claimed', { n: n }), 'ok');
+        setTimeout(function () { location.reload(); }, 800);
+      });
+    });
+  }
 })();

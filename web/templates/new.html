@@ -18,6 +18,7 @@
           <label class="pill-opt"><input type="radio" name="mode" value="edit"><span><svg><use href="#i-edit"/></svg>{{.L.T "mode.edit_short"}}</span></label>
           <label class="pill-opt"><input type="radio" name="mode" value="append"><span><svg><use href="#i-append"/></svg>{{.L.T "mode.append_short"}}</span></label>
           <label class="pill-opt"><input type="radio" name="mode" value="check"><span><svg><use href="#i-check"/></svg>{{.L.T "mode.check_short"}}</span></label>
+          <label class="pill-opt"><input type="radio" name="mode" value="suggest"><span><svg><use href="#i-suggest"/></svg>{{.L.T "mode.suggest_short"}}</span></label>
         </div>
         <p class="hint opt-desc" id="mode-desc"></p>
       </fieldset>
@@ -68,7 +69,19 @@
         <div class="pills">
           <label class="pill-opt"><input type="checkbox" data-feature="capsule"><span><svg><use href="#i-clock"/></svg>{{.L.T "feat.capsule"}}</span></label>
           <label class="pill-opt"><input type="checkbox" data-feature="lock"><span><svg><use href="#i-lock"/></svg>{{.L.T "feat.lock"}}</span></label>
+          <label class="pill-opt"><input type="checkbox" data-feature="signoff"><span><svg><use href="#i-check"/></svg>{{.L.T "feat.signoff"}}</span></label>
+          <label class="pill-opt"><input type="checkbox" data-feature="decoy"><span><svg><use href="#i-key"/></svg>{{.L.T "feat.decoy"}}</span></label>
           <label class="pill-opt"><input type="checkbox" id="remember" checked><span><svg><use href="#i-key"/></svg>{{.L.T "feat.remember"}}</span></label>
+        </div>
+        <div class="feat hide" data-panel="signoff">
+          <span class="hint">{{.L.T "new.signoff_hint"}}</span>
+        </div>
+        <div class="feat hide" data-panel="decoy">
+          <label for="decoy-password">{{.L.T "new.decoy_password"}}</label>
+          <input type="password" id="decoy-password" autocomplete="new-password">
+          <label for="decoy-text">{{.L.T "new.decoy_text"}}</label>
+          <textarea id="decoy-text" rows="3" dir="auto"></textarea>
+          <span class="hint">{{.L.T "new.decoy_hint"}}</span>
         </div>
         <div class="feat hide" data-panel="capsule">
           <label for="open-at">{{.L.T "timed.open_label"}}</label>

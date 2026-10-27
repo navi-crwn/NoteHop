@@ -1,0 +1,23 @@
+{{define "page"}}diff{{end}}
+{{define "content"}}
+<section class="wrap">
+  <div class="page-head">
+    <div><h1>{{.L.T "diffpage.title"}}</h1><p class="muted">{{.L.T "diffpage.lead"}}</p></div>
+  </div>
+  <div class="diff-inputs">
+    <div class="field"><label for="diff-a">{{.L.T "diffpage.before"}}</label><textarea id="diff-a" rows="10" dir="auto"></textarea></div>
+    <div class="field"><label for="diff-b">{{.L.T "diffpage.after"}}</label><textarea id="diff-b" rows="10" dir="auto"></textarea></div>
+  </div>
+  <div class="btn-row">
+    <button type="button" class="btn" id="diff-swap">⇄ {{.L.T "diffpage.swap"}}</button>
+    <button type="button" class="btn primary" id="diff-share"><svg><use href="#i-share"/></svg>{{.L.T "diffpage.share"}}</button>
+    <span class="small muted" id="diff-stats"></span>
+  </div>
+  <div class="card" id="diff-out"></div>
+</section>
+{{end}}
+{{define "scripts"}}
+<script src="/static/js/crypto.js?v={{.Asset}}"></script>
+<script src="/static/js/diff.js?v={{.Asset}}"></script>
+<script src="/static/js/diffpage.js?v={{.Asset}}"></script>
+{{end}}

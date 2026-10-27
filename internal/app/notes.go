@@ -28,25 +28,28 @@ const (
 	maxCheckIndex = 4999
 	maxViews      = 1000
 	maxExpiry     = 365 * 24 * time.Hour
+	maxBurnBlocks = 50
 )
 
 // Link modes. The server enforces them; the key in the URL fragment only
 // decides who can read.
 const (
-	modeEdit   = "edit"   // change everything
-	modeRead   = "read"   // look only
-	modeAppend = "append" // add lines below, never change what's there
-	modeCheck  = "check"  // look, and tick checkboxes
+	modeEdit    = "edit"    // change everything
+	modeRead    = "read"    // look only
+	modeAppend  = "append"  // add lines below, never change what's there
+	modeCheck   = "check"   // look, and tick checkboxes
+	modeSuggest = "suggest" // look, and propose a changed version for the admin to accept
 )
 
 func validMode(m string) bool {
-	return m == modeEdit || m == modeRead || m == modeAppend || m == modeCheck
+	return m == modeEdit || m == modeRead || m == modeAppend || m == modeCheck || m == modeSuggest
 }
 
 var (
-	slugRe = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{2,47}$`)
-	keyRe  = regexp.MustCompile(`^[A-Za-z0-9_-]{43}$`) // 32 bytes, base64url without padding
-	b64Re  = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
+	slugRe   = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{2,47}$`)
+	keyRe    = regexp.MustCompile(`^[A-Za-z0-9_-]{43}$`) // 32 bytes, base64url without padding
+	b64Re    = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
+	burnIDRe = regexp.MustCompile(`^[A-Za-z0-9]{6,16}$`)
 )
 
 const tokenAlphabet = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"
@@ -97,7 +100,8 @@ type access struct {
 	note  *db.Note
 	link  *db.Link
 	admin bool
-	write bool // proved knowledge of the note key
+	write bool   // proved knowledge of the note key
+	ip    string // for features that restrict by address
 }
 
 func (x access) can(modes ...string) bool {
@@ -126,6 +130,7 @@ func (a *App) access(w http.ResponseWriter, r *http.Request) (access, bool) {
 		link:  l,
 		admin: hashMatch(r.Header.Get("X-Admin"), n.AdminHash),
 		write: hashMatch(r.Header.Get("X-Write"), n.WriteHash),
+		ip:    a.clientIP(r),
 	}, true
 }
 
@@ -140,7 +145,7 @@ func (a *App) writable(w http.ResponseWriter, x access, modes ...string) bool {
 		apiErr(w, http.StatusForbidden, "err.bad_key")
 	default:
 		if !x.admin {
-			if e := runBeforeWrite(x.note, time.Now()); e != nil {
+			if e := runBeforeWrite(x.note, time.Now(), x.ip); e != nil {
 				apiErr(w, e.status, e.key, e.kv...)
 				return false
 			}
@@ -173,6 +178,22 @@ type createReq struct {
 	OwnerBlob string `json:"owner_blob"`
 	OpenAt    int64  `json:"open_at"`
 	LockAt    int64  `json:"lock_at"`
+	SignOff   bool   `json:"sign_off"`
+	Decoy     *struct {
+		Content string `json:"content"`
+		Write   string `json:"write"`
+	} `json:"decoy"`
+	Burns []burnReq `json:"burns"`
+}
+
+type burnReq struct {
+	ID       string `json:"id"`
+	Key      string `json:"key"`
+	MaxViews int64  `json:"max_views"`
+}
+
+func (b burnReq) valid() bool {
+	return burnIDRe.MatchString(b.ID) && keyRe.MatchString(b.Key) && b.MaxViews >= 1 && b.MaxViews <= 100
 }
 
 func (q createReq) invalid() string {
@@ -197,6 +218,17 @@ func (q createReq) invalid() string {
 		return "err.lock_needs_write"
 	case len(q.OwnerBlob) > maxOwnerBlob:
 		return "err.owner_blob"
+	case q.Decoy != nil && (!q.Password || !keyRe.MatchString(q.Decoy.Write) || !validContent(true, q.Decoy.Content, maxContent, "t", "b")):
+		return "err.decoy_needs_password"
+	case len(q.Burns) > 0 && !q.Encrypted:
+		return "err.burn_block_needs_e2e"
+	case len(q.Burns) > maxBurnBlocks:
+		return "err.bad_burn_block"
+	}
+	for _, b := range q.Burns {
+		if !b.valid() {
+			return "err.bad_burn_block"
+		}
 	}
 	return ""
 }
@@ -225,7 +257,7 @@ func (a *App) apiCreate(w http.ResponseWriter, r *http.Request) {
 	if q.ExpiresIn > 0 {
 		n.Expires = time.Now().Unix() + q.ExpiresIn
 	}
-	cfg := NoteConfig{OpenAt: q.OpenAt, LockAt: q.LockAt}
+	cfg := NoteConfig{OpenAt: q.OpenAt, LockAt: q.LockAt, SignOff: q.SignOff}
 	if msg := checkTimes(cfg, n.Expires, time.Now().Unix()); msg != "" {
 		apiErr(w, http.StatusBadRequest, msg)
 		return
@@ -247,6 +279,16 @@ func (a *App) apiCreate(w http.ResponseWriter, r *http.Request) {
 		log.Printf("create: %v", err)
 		apiErr(w, http.StatusInternalServerError, "err.create_failed")
 		return
+	}
+	for _, b := range q.Burns {
+		if err := a.db.AddBurnKey(n.ID, db.BurnKey{ID: b.ID, Key: b.Key, MaxViews: b.MaxViews}); err != nil {
+			log.Printf("burn key: %v", err)
+		}
+	}
+	if q.Decoy != nil {
+		if err := a.db.SetDecoy(n.ID, q.Decoy.Content, hashHex(q.Decoy.Write)); err != nil {
+			log.Printf("decoy: %v", err)
+		}
 	}
 	writeJSON(w, http.StatusCreated, map[string]any{"token": link.Token, "expires": n.Expires})
 }
@@ -273,6 +315,22 @@ type metaResp struct {
 	LockAt    int64         `json:"lock_at,omitempty"`
 	Locked    bool          `json:"locked,omitempty"`
 	OpenAt    int64         `json:"open_at,omitempty"` // time capsule, until it opens
+	IPLimited bool          `json:"ip_limited,omitempty"`
+	Reset     string        `json:"reset,omitempty"`
+	ResetAt   int64         `json:"reset_at,omitempty"`
+	SignOff   bool          `json:"sign_off,omitempty"`
+	Watermark bool          `json:"watermark,omitempty"`
+	DMSDays   int           `json:"dms_days,omitempty"`
+	// admin only
+	IPAllow     []string   `json:"ip_allow,omitempty"`
+	LastOpen    int64      `json:"last_open,omitempty"`
+	Suggestions int        `json:"suggestions,omitempty"`
+	Decoy       *decoyInfo `json:"decoy,omitempty"`
+}
+
+type decoyInfo struct {
+	Opened     int64 `json:"opened"`
+	LastOpened int64 `json:"last_opened"`
 }
 
 func (a *App) meta(r *http.Request, x access) metaResp {
@@ -286,7 +344,14 @@ func (a *App) meta(r *http.Request, x access) metaResp {
 		m.Owned = true
 	}
 	fillMeta(n, &m, time.Now())
+	cfg := parseConfig(n.Config)
+	m.SignOff, m.Watermark, m.DMSDays = cfg.SignOff, cfg.Watermark, cfg.DMSDays
 	if x.admin {
+		m.IPAllow, m.LastOpen = cfg.IPAllow, n.LastOpen
+		m.Suggestions, _ = a.db.CountSuggestions(n.ID)
+		if d, err := a.db.Decoy(n.ID); err == nil {
+			m.Decoy = &decoyInfo{Opened: d.Opened, LastOpened: d.LastOpened}
+		}
 		m.Links, _ = a.db.Links(n.ID)
 		m.Snapshots, _ = a.db.Snapshots(n.ID)
 		m.Parent = a.db.ParentToken(n)
@@ -300,15 +365,21 @@ func (a *App) apiMeta(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	if x.admin {
+		a.checkIn(x)
+	}
 	writeJSON(w, http.StatusOK, a.meta(r, x))
 }
 
 type openResp struct {
 	metaResp
-	Content string          `json:"content"`
-	Checks  json.RawMessage `json:"checks"`
-	Entries []db.Entry      `json:"entries"`
-	Burned  bool            `json:"burned"`
+	Content    string                      `json:"content"`
+	Checks     json.RawMessage             `json:"checks"`
+	Entries    []db.Entry                  `json:"entries"`
+	Burned     bool                        `json:"burned"`
+	Votes      map[string]map[string]int64 `json:"votes,omitempty"`
+	BurnBlocks map[string]db.BurnKey       `json:"burn_blocks,omitempty"`
+	Signatures []db.Signature              `json:"signatures,omitempty"`
 }
 
 // apiOpen returns the content. Readers spend a view; once a burn-after-reading
@@ -329,12 +400,19 @@ func (a *App) apiOpen(w http.ResponseWriter, r *http.Request) {
 	n := x.note
 	// With a password the write key doubles as a password check, so a wrong
 	// guess is refused here instead of spending a burn-after-reading view.
+	// A decoy password opens the decoy text instead, looking just the same.
 	if n.Password && !x.write {
+		if a.openDecoy(w, r, x, q.Poll) {
+			return
+		}
 		apiErr(w, http.StatusForbidden, "err.bad_password")
 		return
 	}
+	if x.admin {
+		a.checkIn(x)
+	}
 	if !x.admin {
-		if e := runBeforeRead(n, time.Now()); e != nil {
+		if e := runBeforeRead(n, time.Now(), x.ip); e != nil {
 			apiErr(w, e.status, e.key, e.kv...)
 			return
 		}
@@ -359,6 +437,11 @@ func (a *App) apiOpen(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	resp := openResp{metaResp: a.meta(r, x), Content: n.Content, Checks: json.RawMessage(n.Checks), Entries: entries}
+	resp.Votes, _ = a.db.Votes(n.ID)
+	resp.BurnBlocks, _ = a.db.BurnKeys(n.ID)
+	if resp.SignOff {
+		resp.Signatures, _ = a.db.Signatures(n.ID)
+	}
 	if burnable && n.Views >= n.MaxViews {
 		resp.Burned = true
 		if err := a.db.DeleteNote(n.ID); err != nil {
@@ -385,7 +468,7 @@ func (a *App) raw(w http.ResponseWriter, r *http.Request) {
 			"Open it in a browser with the full link (including the #key part).\n"))
 		return
 	}
-	if e := runBeforeRead(n, time.Now()); e != nil {
+	if e := runBeforeRead(n, time.Now(), a.clientIP(r)); e != nil {
 		w.WriteHeader(e.status)
 		w.Write([]byte(i18n.T(i18n.Default, e.key, e.kv...) + "\n"))
 		return

@@ -150,8 +150,13 @@
         var entriesChanged = d.entries.length !== S.entries.length;
         Object.assign(S.meta, data);
         delete S.meta.content; delete S.meta.entries; delete S.meta.checks;
+        delete S.meta.votes; delete S.meta.burn_blocks; delete S.meta.signatures;
         S.checks = data.checks || {};
         S.entries = d.entries;
+        var countsChanged = JSON.stringify(data.votes || {}) !== JSON.stringify(S.votes || {});
+        S.votes = data.votes || {};
+        S.burnBlocks = data.burn_blocks || {};
+        S.signatures = data.signatures || [];
         if (fresh || !S.dirty) {
           S.version = data.version;
           S.title = d.note.t || '';
@@ -160,7 +165,8 @@
         if (fresh) { S.ready = true; setup(data.burned); return; }
         // The scheduled lock just passed: reload into read-only mode.
         if (S.meta.locked && !S.meta.admin && S.mode !== 'read' && !S.dirty) return location.reload();
-        if ((bodyChanged || checksChanged) && !S.dirty) drawBody(true);
+        if ((bodyChanged || checksChanged || countsChanged) && !S.dirty) drawBody(true);
+        if (window.NHFeat) NHFeat.refresh();
         if (entriesChanged) drawEntries();
         drawMeta();
       });
@@ -200,7 +206,13 @@
       $('#n-title').classList.add('hide');
       var ti = $('#n-title-input');
       ti.classList.remove('hide');
-      ed = NHEditor($('#n-edit [data-editor]'), { onChange: edited, onSave: saveNow });
+      ed = NHEditor($('#n-edit [data-editor]'), {
+        onChange: edited, onSave: saveNow,
+        onBurnKey: function (k) {
+          if (!S.meta.encrypted) return Promise.reject(new Error(NH.t('rule.burn_block_e2e')));
+          return api('POST', '/burns', k).then(function () { S.burnBlocks = S.burnBlocks || {}; S.burnBlocks[k.id] = { id: k.id, max_views: k.max_views, views: 0 }; });
+        }
+      });
       ti.addEventListener('input', edited);
     }
     drawBody(true);
@@ -216,6 +228,7 @@
     $('#act-delete').addEventListener('click', removeNote);
 
     if (isNew && m.admin) { openShare(); }
+    readyFns.forEach(function (fn) { fn(); });
     if (!(m.max_views > 0 && !m.admin) && !m.frozen && !burned) setInterval(poll, 12000);
   }
 
@@ -243,8 +256,11 @@
     }
     var canCheck = S.mode === 'check' && !S.meta.frozen && !!S.keys;
     drawTemplate();
+    var canWrite = !!S.keys && !S.meta.frozen && !S.meta.locked;
     NHMD.render($('#n-view'), S.body, { checks: S.checks, interactive: canCheck, onCheck: toggleCheck, copy: true,
-      vars: S.vars, wiki: S.wiki ? function (t) { return S.wiki[t.toLowerCase()]; } : null });
+      vars: S.vars, wiki: S.wiki ? function (t) { return S.wiki[t.toLowerCase()]; } : null,
+      votes: S.votes, myVote: myVote, onVote: canWrite ? vote : null,
+      burnBlocks: S.burnBlocks, onReveal: S.keys ? revealBurn : null });
   }
 
   // ---------- template fields ({{name}}) ----------
@@ -293,6 +309,25 @@
     }, function () {});
   }
 
+  // ---------- polls and self-destructing blocks ----------
+  function voteKey(poll) { return 'nh_vote_' + token + '_' + poll; }
+  function myVote(poll) { var v = NH.store.get(voteKey(poll), -1); return typeof v === 'number' ? v : -1; }
+  function vote(poll, option, prev) {
+    var body = { poll: poll, option: option };
+    if (prev >= 0) body.prev = prev;
+    api('POST', '/votes', body).then(function (r) {
+      S.votes = r.votes;
+      NH.store.set(voteKey(poll), option);
+      drawBody(false);
+    }, function (x) { NH.toast(x.message, 'err'); });
+  }
+  function revealBurn(id) {
+    return api('POST', '/burns/' + encodeURIComponent(id) + '/reveal').then(function (r) {
+      if (S.burnBlocks && S.burnBlocks[id]) S.burnBlocks[id].views = S.burnBlocks[id].max_views - r.left;
+      return r;
+    });
+  }
+
   function toggleCheck(i, checked, input) {
     api('POST', '/checks', { index: i, checked: checked }).then(function (r) {
       S.checks = r.checks;
@@ -315,6 +350,9 @@
     if (m.max_views) kids.push(pill('flame', NH.t('pill.opened', { n: m.views, max: m.max_views }), 'bad'));
     if (m.open_at) kids.push(pill('clock', NH.t('pill.opens', { ago: NH.ago(m.open_at) }), 'warn'));
     if (m.lock_at) kids.push(m.locked ? pill('lock', NH.t('pill.locked')) : pill('clock', NH.t('pill.locks', { ago: NH.ago(m.lock_at) }), 'warn'));
+    if (m.reset) kids.push(pill('history', NH.t('pill.resets', { every: NH.t('reset.' + m.reset) })));
+    if (m.ip_limited) kids.push(pill('shield', NH.t('pill.ip')));
+    if (m.admin && m.last_open) kids.push(pill('eye', NH.t('pill.last_open', { n: m.views, ago: NH.ago(m.last_open) })));
     kids.push(h('span.faint.small', NH.t('pill.changed', { ago: NH.ago(m.updated) })));
     box.replaceChildren.apply(box, kids);
   }
@@ -485,7 +523,7 @@
           h('a.link-url', { href: NH.noteURL(s.token, { k: K, a: A }) }, '/n/' + s.token), h('span.btn-row', copy));
       }));
       NH.$$('#new-mode option').forEach(function (o) { o.disabled = S.meta.frozen && o.value !== 'read'; });
-      drawTimed(Object.assign({}, S.meta, m));
+      if (window.NHAdv) NHAdv.draw(Object.assign({}, S.meta, m));
       // A burn-after-reading note can only get read links.
       if (S.meta.max_views > 0) NH.$$('#new-mode option').forEach(function (o) { if (o.value !== 'read') o.disabled = true; });
       if (!dlg.open) dlg.showModal();
@@ -506,77 +544,6 @@
   });
   $('#copy-admin').addEventListener('click', function () {
     NH.copy(NH.noteURL(token, { k: K, a: A }), NH.t('share.admin_copied'));
-  });
-
-  // ---------- timed features (admin): time capsule and scheduled lock ----------
-  // Each is a pill toggle: switching it on shows a time to save, switching an
-  // active one off cancels it on the server.
-  function localInput(unix) {
-    var d = new Date(unix * 1000), p = function (n) { return String(n).padStart(2, '0'); };
-    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
-  }
-  var TIMED = {
-    open: {
-      field: 'open_at', input: '#open-at', def: 86400,
-      state: function (m) {
-        return m.open_at ? NH.t('timed.open_on', { time: m.open_at, ago: NH.ago(m.open_at) }) : NH.t('timed.open_off');
-      },
-      saved: NH.t('timed.open_saved'), cleared: NH.t('timed.open_cleared')
-    },
-    lock: {
-      field: 'lock_at', input: '#lock-at', def: 7 * 86400,
-      state: function (m) {
-        return m.locked ? NH.t('timed.lock_done', { time: m.lock_at })
-          : m.lock_at ? NH.t('timed.lock_on', { time: m.lock_at, ago: NH.ago(m.lock_at) }) : NH.t('timed.lock_off');
-      },
-      // Read-only links have nothing to lock.
-      blocked: function (m) {
-        return (m.links || []).every(function (l) { return l.mode === 'read'; }) ? NH.t('timed.lock_blocked') : '';
-      },
-      saved: NH.t('timed.lock_saved'), cleared: NH.t('timed.lock_cleared')
-    }
-  };
-  function drawTimed(m) {
-    $('#share-adv').classList.toggle('hide', !!S.meta.frozen);
-    Object.keys(TIMED).forEach(function (k) {
-      var t = TIMED[k], toggle = $('[data-timed="' + k + '"]'), form = $('[data-timed-form="' + k + '"]');
-      var active = !!m[t.field], why = t.blocked && !active ? t.blocked(m) : '';
-      toggle.checked = active || (!why && toggle.checked);
-      toggle.closest('.pill-opt').classList.toggle('blocked', !!why);
-      toggle.closest('.pill-opt').title = why;
-      form.classList.toggle('hide', !toggle.checked);
-      var input = $(t.input);
-      input.min = localInput(Math.floor(Date.now() / 1000) + 60);
-      if (active) input.value = localInput(m[t.field]);
-      else if (!input.value) input.value = localInput(Math.floor(Date.now() / 1000) + t.def);
-      $('[data-timed-state="' + k + '"]').textContent = t.state(m);
-    });
-    if (m.open_at || m.lock_at) $('#share-adv').open = true;
-  }
-  function setTimed(k, at) {
-    var t = TIMED[k], body = {};
-    body[t.field] = at;
-    return api('POST', '/config', body).then(function (m) {
-      ['lock_at', 'locked', 'open_at'].forEach(function (f) { S.meta[f] = m[f]; });
-      drawTimed(Object.assign({}, S.meta, m)); drawMeta();
-      NH.toast(at ? t.saved : t.cleared, 'ok');
-    }, function (x) { NH.toast(x.message, 'err'); drawTimed(S.meta); });
-  }
-  Object.keys(TIMED).forEach(function (k) {
-    var t = TIMED[k], toggle = $('[data-timed="' + k + '"]');
-    toggle.addEventListener('click', function (e) {
-      var why = t.blocked && !S.meta[t.field] ? t.blocked(S.meta) : '';
-      if (why) { e.preventDefault(); NH.toast(why); }
-    });
-    toggle.addEventListener('change', function () {
-      if (!toggle.checked && S.meta[t.field]) { setTimed(k, 0); return; }
-      $('[data-timed-form="' + k + '"]').classList.toggle('hide', !toggle.checked);
-    });
-    $('[data-timed-form="' + k + '"]').addEventListener('submit', function (e) {
-      e.preventDefault();
-      var ms = new Date($(t.input).value).getTime();
-      if (ms) setTimed(k, Math.floor(ms / 1000));
-    });
   });
 
   function showQR(url, label) {
@@ -624,8 +591,22 @@
     meta: function () { return S.meta; },
     hasKey: function () { return !!S.keys; },
     encrypted: function () { return !!(S.meta && S.meta.encrypted); },
-    view: function () { return $('#n-view'); }
+    view: function () { return $('#n-view'); },
+    // for features.js
+    token: token, key: function () { return K; }, admin: function () { return A; },
+    password: function () { return S.password; },
+    state: S, api: api, codec: function () { return S.codec; },
+    editor: function () { return ed; },
+    redraw: function () { drawBody(false); drawMeta(); },
+    setText: function (title, body) { $('#n-title-input').value = title; ed.value = body; edited(); },
+    applyMeta: function (m) {
+      ['lock_at', 'locked', 'open_at', 'sign_off', 'watermark', 'dms_days', 'reset', 'reset_at', 'ip_allow', 'ip_limited', 'decoy', 'suggestions']
+        .forEach(function (f) { S.meta[f] = m[f]; });
+      drawMeta();
+    },
+    onReady: function (fn) { readyFns.push(fn); if (S.ready) fn(); }
   };
+  var readyFns = [];
   if (document.body.dataset.user) loadWiki();
   start();
 })();
