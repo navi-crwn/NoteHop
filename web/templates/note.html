@@ -62,22 +62,23 @@
     <div><b><svg class="ico"><use href="#i-key"/></svg> Link admin</b><p class="small muted">Bisa mengedit, membekukan, membuat link, dan menghapus. Simpan sendiri, jangan dibagikan.</p></div>
     <button type="button" class="btn sm" id="copy-admin"><svg><use href="#i-copy"/></svg>Salin link admin</button>
   </div>
-  <div class="admin-box lock-box">
-    <div><b><svg class="ico"><use href="#i-clock"/></svg> Kapsul waktu</b><p class="small muted" id="open-state">Pembaca baru bisa membuka catatan mulai waktu ini; server menahan isinya sampai saat itu.</p></div>
-    <form class="lock-form" id="open-form">
-      <input type="datetime-local" id="open-at" aria-label="Waktu catatan bisa dibuka" required>
-      <button class="btn sm" type="submit">Simpan</button>
-      <button class="btn sm ghost hide" type="button" id="open-clear">Batalkan</button>
+  <details class="adv share-adv" id="share-adv">
+    <summary>Pengaturan lanjutan</summary>
+    <div class="pills">
+      <label class="pill-opt"><input type="checkbox" data-timed="open"><span><svg><use href="#i-clock"/></svg>Kapsul waktu</span></label>
+      <label class="pill-opt"><input type="checkbox" data-timed="lock"><span><svg><use href="#i-lock"/></svg>Kunci otomatis</span></label>
+    </div>
+    <form class="feat timed-form hide" data-timed-form="open">
+      <label for="open-at">Bisa dibuka mulai</label>
+      <div class="timed-row"><input type="datetime-local" id="open-at" required><button class="btn sm" type="submit">Simpan</button></div>
+      <span class="hint" data-timed-state="open"></span>
     </form>
-  </div>
-  <div class="admin-box lock-box">
-    <div><b><svg class="ico"><use href="#i-clock"/></svg> Kunci otomatis</b><p class="small muted" id="lock-state">Pada waktu ini link edit, tambah, dan centang berubah jadi baca saja. Link admin tetap bisa mengubah.</p></div>
-    <form class="lock-form" id="lock-form">
-      <input type="datetime-local" id="lock-at" aria-label="Waktu kunci otomatis" required>
-      <button class="btn sm" type="submit">Simpan</button>
-      <button class="btn sm ghost hide" type="button" id="lock-clear">Batalkan</button>
+    <form class="feat timed-form hide" data-timed-form="lock">
+      <label for="lock-at">Jadi baca saja mulai</label>
+      <div class="timed-row"><input type="datetime-local" id="lock-at" required><button class="btn sm" type="submit">Simpan</button></div>
+      <span class="hint" data-timed-state="lock"></span>
     </form>
-  </div>
+  </details>
   <div id="snap-box" class="hide">
     <h3><svg class="ico"><use href="#i-history"/></svg> Snapshot beku</h3>
     <ul class="link-list" id="snap-list"></ul>

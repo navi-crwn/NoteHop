@@ -438,8 +438,9 @@
           h('a.link-url', { href: NH.noteURL(s.token, { k: K, a: A }) }, '/n/' + s.token), h('span.btn-row', copy));
       }));
       NH.$$('#new-mode option').forEach(function (o) { o.disabled = S.meta.frozen && o.value !== 'read'; });
-      drawLock(m);
-      drawCapsule(m);
+      drawTimed(Object.assign({}, S.meta, m));
+      // A burn-after-reading note can only get read links.
+      if (S.meta.max_views > 0) NH.$$('#new-mode option').forEach(function (o) { if (o.value !== 'read') o.disabled = true; });
       if (!dlg.open) dlg.showModal();
     }, function (x) { NH.toast(x.message, 'err'); });
   }
@@ -460,58 +461,78 @@
     NH.copy(NH.noteURL(token, { k: K, a: A }), 'Link admin disalin. Simpan baik-baik');
   });
 
-  // ---------- scheduled lock (admin) ----------
+  // ---------- timed features (admin): time capsule and scheduled lock ----------
+  // Each is a pill toggle: switching it on shows a time to save, switching an
+  // active one off cancels it on the server.
   function localInput(unix) {
     var d = new Date(unix * 1000), p = function (n) { return String(n).padStart(2, '0'); };
     return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
   }
-  function drawLock(m) {
-    $('#lock-form').closest('.lock-box').classList.toggle('hide', !!S.meta.frozen);
-    var input = $('#lock-at');
-    input.min = localInput(Math.floor(Date.now() / 1000) + 60);
-    if (m.lock_at) input.value = localInput(m.lock_at);
-    $('#lock-clear').classList.toggle('hide', !m.lock_at);
-    $('#lock-state').textContent = m.locked ? 'Sudah dikunci sejak ' + NH.date(m.lock_at) + '. Pengunjung hanya bisa membaca; link admin tetap bisa mengubah.'
-      : m.lock_at ? 'Dikunci ' + NH.date(m.lock_at) + ' (' + NH.ago(m.lock_at) + '). Setelah itu link edit, tambah, dan centang hanya bisa membaca.'
-        : 'Pada waktu ini link edit, tambah, dan centang berubah jadi baca saja. Link admin tetap bisa mengubah.';
+  var TIMED = {
+    open: {
+      field: 'open_at', input: '#open-at', def: 86400,
+      state: function (m) {
+        return m.open_at ? 'Aktif: pembaca baru bisa membuka ' + NH.date(m.open_at) + ' (' + NH.ago(m.open_at) + '). Server menahan isinya sampai saat itu.'
+          : 'Belum aktif. Pilih waktu lalu Simpan; sampai saat itu server menahan isinya dan pembaca melihat hitung mundur.';
+      },
+      saved: 'Kapsul waktu disimpan', cleared: 'Kapsul waktu dibatalkan'
+    },
+    lock: {
+      field: 'lock_at', input: '#lock-at', def: 7 * 86400,
+      state: function (m) {
+        return m.locked ? 'Sudah berlaku sejak ' + NH.date(m.lock_at) + '. Pengunjung hanya bisa membaca; link admin tetap bisa mengubah.'
+          : m.lock_at ? 'Aktif: mulai ' + NH.date(m.lock_at) + ' (' + NH.ago(m.lock_at) + ') link edit, tambah, dan centang hanya bisa membaca.'
+            : 'Belum aktif. Pilih waktu lalu Simpan; setelah itu link edit, tambah, dan centang hanya bisa membaca.';
+      },
+      // Read-only links have nothing to lock.
+      blocked: function (m) {
+        return (m.links || []).every(function (l) { return l.mode === 'read'; }) ? 'Kunci otomatis untuk link Edit, Tambah, atau Centang. Buat link seperti itu dulu.' : '';
+      },
+      saved: 'Kunci otomatis disimpan', cleared: 'Kunci otomatis dibatalkan'
+    }
+  };
+  function drawTimed(m) {
+    $('#share-adv').classList.toggle('hide', !!S.meta.frozen);
+    Object.keys(TIMED).forEach(function (k) {
+      var t = TIMED[k], toggle = $('[data-timed="' + k + '"]'), form = $('[data-timed-form="' + k + '"]');
+      var active = !!m[t.field], why = t.blocked && !active ? t.blocked(m) : '';
+      toggle.checked = active || (!why && toggle.checked);
+      toggle.closest('.pill-opt').classList.toggle('blocked', !!why);
+      toggle.closest('.pill-opt').title = why;
+      form.classList.toggle('hide', !toggle.checked);
+      var input = $(t.input);
+      input.min = localInput(Math.floor(Date.now() / 1000) + 60);
+      if (active) input.value = localInput(m[t.field]);
+      else if (!input.value) input.value = localInput(Math.floor(Date.now() / 1000) + t.def);
+      $('[data-timed-state="' + k + '"]').textContent = t.state(m);
+    });
+    if (m.open_at || m.lock_at) $('#share-adv').open = true;
   }
-  function drawCapsule(m) {
-    var input = $('#open-at');
-    input.min = localInput(Math.floor(Date.now() / 1000) + 60);
-    if (m.open_at) input.value = localInput(m.open_at);
-    $('#open-clear').classList.toggle('hide', !m.open_at);
-    $('#open-state').textContent = m.open_at ? 'Pembaca baru bisa membuka ' + NH.date(m.open_at) + ' (' + NH.ago(m.open_at) + '). Sampai saat itu server menahan isinya.'
-      : 'Pembaca baru bisa membuka catatan mulai waktu ini; server menahan isinya sampai saat itu.';
-    $('#open-form').closest('.lock-box').classList.toggle('hide', !!S.meta.frozen);
+  function setTimed(k, at) {
+    var t = TIMED[k], body = {};
+    body[t.field] = at;
+    return api('POST', '/config', body).then(function (m) {
+      ['lock_at', 'locked', 'open_at'].forEach(function (f) { S.meta[f] = m[f]; });
+      drawTimed(Object.assign({}, S.meta, m)); drawMeta();
+      NH.toast(at ? t.saved : t.cleared, 'ok');
+    }, function (x) { NH.toast(x.message, 'err'); drawTimed(S.meta); });
   }
-  function setCapsule(at) {
-    api('POST', '/config', { open_at: at }).then(function (m) {
-      S.meta.open_at = m.open_at;
-      drawCapsule(m); drawMeta();
-      NH.toast(at ? 'Kapsul waktu disimpan' : 'Kapsul waktu dibatalkan', 'ok');
-    }, function (x) { NH.toast(x.message, 'err'); });
-  }
-  $('#open-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var t = new Date($('#open-at').value).getTime();
-    if (t) setCapsule(Math.floor(t / 1000));
+  Object.keys(TIMED).forEach(function (k) {
+    var t = TIMED[k], toggle = $('[data-timed="' + k + '"]');
+    toggle.addEventListener('click', function (e) {
+      var why = t.blocked && !S.meta[t.field] ? t.blocked(S.meta) : '';
+      if (why) { e.preventDefault(); NH.toast(why); }
+    });
+    toggle.addEventListener('change', function () {
+      if (!toggle.checked && S.meta[t.field]) { setTimed(k, 0); return; }
+      $('[data-timed-form="' + k + '"]').classList.toggle('hide', !toggle.checked);
+    });
+    $('[data-timed-form="' + k + '"]').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var ms = new Date($(t.input).value).getTime();
+      if (ms) setTimed(k, Math.floor(ms / 1000));
+    });
   });
-  $('#open-clear').addEventListener('click', function () { setCapsule(0); });
-
-  function setLock(at) {
-    api('POST', '/config', { lock_at: at }).then(function (m) {
-      S.meta.lock_at = m.lock_at; S.meta.locked = m.locked;
-      drawLock(m); drawMeta();
-      NH.toast(at ? 'Kunci otomatis disimpan' : 'Kunci otomatis dibatalkan', 'ok');
-    }, function (x) { NH.toast(x.message, 'err'); });
-  }
-  $('#lock-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var t = new Date($('#lock-at').value).getTime();
-    if (!t) return;
-    setLock(Math.floor(t / 1000));
-  });
-  $('#lock-clear').addEventListener('click', function () { setLock(0); });
 
   function showQR(url, label) {
     var qr = qrcode(0, 'M');

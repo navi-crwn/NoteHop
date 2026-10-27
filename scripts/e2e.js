@@ -27,9 +27,9 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
   if (title) await p.fill('#title', title);
   if (body) await p.fill('.ed-src', body);
   await p.check(`input[name=mode][value=${mode}]`, { force: true });
-  if (!encrypt) await p.uncheck('#encrypt', { force: true });
-  if (pw) await p.fill('#password', pw);
-  await p.selectOption('#burn', burn);
+  if (!encrypt) await p.click('label:has(#encrypt)');
+  if (pw) { await p.click('label:has([data-feature=password])'); await p.fill('#password', pw); }
+  if (burn !== '0') { await p.click('label:has([data-feature=burn])'); await p.selectOption('#burn', burn); }
   await p.click('#create');
   await p.waitForURL(/\/n\//, { timeout: 20000 });
   await p.waitForSelector('#note:not(.hide)', { timeout: 20000 });

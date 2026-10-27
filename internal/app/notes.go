@@ -170,6 +170,8 @@ type createReq struct {
 	Admin     string `json:"admin"`
 	Write     string `json:"write"`
 	OwnerBlob string `json:"owner_blob"`
+	OpenAt    int64  `json:"open_at"`
+	LockAt    int64  `json:"lock_at"`
 }
 
 func (q createReq) invalid() string {
@@ -188,6 +190,10 @@ func (q createReq) invalid() string {
 		return "Waktu kedaluwarsa tidak valid."
 	case q.MaxViews < 0 || q.MaxViews > maxViews:
 		return "Batas kunjungan tidak valid."
+	case q.MaxViews > 0 && q.Mode != modeRead:
+		return "Sekali baca hanya untuk mode baca saja."
+	case q.LockAt > 0 && q.Mode == modeRead:
+		return "Kunci otomatis hanya untuk link edit, tambah, atau centang."
 	case len(q.OwnerBlob) > maxOwnerBlob:
 		return "Data pemilik terlalu besar."
 	}
@@ -218,6 +224,12 @@ func (a *App) apiCreate(w http.ResponseWriter, r *http.Request) {
 	if q.ExpiresIn > 0 {
 		n.Expires = time.Now().Unix() + q.ExpiresIn
 	}
+	cfg := NoteConfig{OpenAt: q.OpenAt, LockAt: q.LockAt}
+	if msg := checkTimes(cfg, n.Expires, time.Now().Unix()); msg != "" {
+		apiErr(w, http.StatusBadRequest, msg)
+		return
+	}
+	n.Config = cfg.String()
 	if u := a.currentUser(r); u != nil {
 		n.OwnerID = sql.NullInt64{Int64: u.ID, Valid: true}
 		n.OwnerBlob = q.OwnerBlob
@@ -590,6 +602,9 @@ func (a *App) apiAddLink(w http.ResponseWriter, r *http.Request) {
 		return
 	case x.note.Frozen && q.Mode != modeRead:
 		apiErr(w, http.StatusBadRequest, "Snapshot hanya bisa dibagikan sebagai baca saja.")
+		return
+	case x.note.MaxViews > 0 && q.Mode != modeRead:
+		apiErr(w, http.StatusBadRequest, "Catatan sekali baca hanya bisa dibagikan sebagai baca saja.")
 		return
 	case q.Slug != "" && !slugRe.MatchString(q.Slug):
 		apiErr(w, http.StatusBadRequest, "Slug: 3–48 karakter, huruf kecil, angka, dan tanda minus.")

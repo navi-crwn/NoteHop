@@ -13,59 +13,74 @@
     <aside class="card options" aria-label="Pengaturan berbagi">
       <fieldset class="opt">
         <legend>Pengunjung link bisa…</legend>
-        <div class="modes">
-          <label class="mode-card"><input type="radio" name="mode" value="read" checked><span><svg><use href="#i-eye"/></svg><b>Baca saja</b><small>Tidak bisa mengubah apa pun</small></span></label>
-          <label class="mode-card"><input type="radio" name="mode" value="edit"><span><svg><use href="#i-edit"/></svg><b>Edit penuh</b><small>Siapa pun yang punya link bisa mengubah</small></span></label>
-          <label class="mode-card"><input type="radio" name="mode" value="append"><span><svg><use href="#i-append"/></svg><b>Tambah saja</b><small>Menambah baris di bawah, tak bisa hapus</small></span></label>
-          <label class="mode-card"><input type="radio" name="mode" value="check"><span><svg><use href="#i-check"/></svg><b>Centang checklist</b><small>Terkunci, tapi checkbox bisa dicentang</small></span></label>
+        <div class="pills" role="radiogroup" aria-label="Mode akses">
+          <label class="pill-opt"><input type="radio" name="mode" value="read" checked><span><svg><use href="#i-eye"/></svg>Baca</span></label>
+          <label class="pill-opt"><input type="radio" name="mode" value="edit"><span><svg><use href="#i-edit"/></svg>Edit</span></label>
+          <label class="pill-opt"><input type="radio" name="mode" value="append"><span><svg><use href="#i-append"/></svg>Tambah</span></label>
+          <label class="pill-opt"><input type="radio" name="mode" value="check"><span><svg><use href="#i-check"/></svg>Centang</span></label>
         </div>
+        <p class="hint opt-desc" id="mode-desc"></p>
       </fieldset>
 
       <fieldset class="opt">
-        <legend>Keamanan</legend>
-        <label class="switch"><input type="checkbox" id="encrypt" checked><span class="track"></span><span><b>Enkripsi end-to-end</b><small>Matikan hanya untuk catatan publik yang mau diambil lewat <code>curl</code>.</small></span></label>
-        <div class="field" id="pw-field">
-          <label for="password">Password tambahan <span class="hint">opsional</span></label>
-          <input type="password" id="password" placeholder="Kosongkan jika tidak perlu" autocomplete="new-password">
+        <legend>Fitur</legend>
+        <div class="pills">
+          <label class="pill-opt"><input type="checkbox" id="encrypt" data-feature="encrypt" checked><span><svg><use href="#i-shield"/></svg>Enkripsi E2E</span></label>
+          <label class="pill-opt"><input type="checkbox" data-feature="password"><span><svg><use href="#i-lock"/></svg>Password</span></label>
+          <label class="pill-opt"><input type="checkbox" data-feature="expires"><span><svg><use href="#i-clock"/></svg>Kedaluwarsa</span></label>
+          <label class="pill-opt"><input type="checkbox" data-feature="burn"><span><svg><use href="#i-flame"/></svg>Sekali baca</span></label>
+          <label class="pill-opt"><input type="checkbox" data-feature="slug"><span><svg><use href="#i-link"/></svg>Alamat kustom</span></label>
+        </div>
+        <p class="hint opt-desc" data-for="encrypt-off">Tanpa enkripsi: catatan publik, bisa diambil lewat <code>curl</code>, dan server bisa membaca isinya.</p>
+
+        <div class="feat hide" data-panel="password">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Password tambahan" autocomplete="new-password">
           <span class="hint">Penerima butuh link <em>dan</em> password ini. Kirim lewat jalur berbeda.</span>
         </div>
-      </fieldset>
-
-      <fieldset class="opt">
-        <legend>Umur catatan</legend>
-        <div class="row2">
-          <div class="field">
-            <label for="expires">Kedaluwarsa</label>
-            <select id="expires">
-              <option value="0">Tidak pernah</option>
-              <option value="600">10 menit</option>
-              <option value="3600">1 jam</option>
-              <option value="86400">1 hari</option>
-              <option value="604800">7 hari</option>
-              <option value="2592000">30 hari</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="burn">Hancur setelah dibaca</label>
-            <select id="burn">
-              <option value="0">Tidak</option>
-              <option value="1">1× dibuka</option>
-              <option value="3">3× dibuka</option>
-              <option value="10">10× dibuka</option>
-            </select>
-          </div>
+        <div class="feat hide" data-panel="expires">
+          <label for="expires">Hilang setelah</label>
+          <select id="expires">
+            <option value="600">10 menit</option>
+            <option value="3600">1 jam</option>
+            <option value="86400" selected>1 hari</option>
+            <option value="604800">7 hari</option>
+            <option value="2592000">30 hari</option>
+          </select>
         </div>
-      </fieldset>
-
-      <fieldset class="opt">
-        <legend>Link</legend>
-        <div class="field">
-          <label for="slug">Alamat kustom <span class="hint">opsional</span></label>
+        <div class="feat hide" data-panel="burn">
+          <label for="burn">Hancur setelah dibuka</label>
+          <select id="burn">
+            <option value="1" selected>1×</option>
+            <option value="3">3×</option>
+            <option value="10">10×</option>
+          </select>
+        </div>
+        <div class="feat hide" data-panel="slug">
+          <label for="slug">Alamat kustom</label>
           <div class="prefix"><span>/n/</span><input type="text" id="slug" placeholder="rapat-senin" maxlength="48" pattern="[a-z0-9][a-z0-9\-]{2,47}" autocapitalize="off" spellcheck="false"></div>
-          <span class="hint" id="slug-hint">Kosongkan untuk link acak. Link mudah ditebak cocoknya untuk mode baca.</span>
+          <span class="hint" id="slug-hint">Link mudah ditebak cocoknya untuk mode baca.</span>
         </div>
-        <label class="check"><input type="checkbox" id="remember" checked> Simpan link admin di perangkat ini</label>
       </fieldset>
+
+      <details class="opt adv" id="adv">
+        <summary>Pengaturan lanjutan</summary>
+        <div class="pills">
+          <label class="pill-opt"><input type="checkbox" data-feature="capsule"><span><svg><use href="#i-clock"/></svg>Kapsul waktu</span></label>
+          <label class="pill-opt"><input type="checkbox" data-feature="lock"><span><svg><use href="#i-lock"/></svg>Kunci otomatis</span></label>
+          <label class="pill-opt"><input type="checkbox" id="remember" checked><span><svg><use href="#i-key"/></svg>Simpan link admin di perangkat ini</span></label>
+        </div>
+        <div class="feat hide" data-panel="capsule">
+          <label for="open-at">Bisa dibuka mulai</label>
+          <input type="datetime-local" id="open-at">
+          <span class="hint">Server menahan isinya sampai waktu ini; pembaca melihat hitung mundur.</span>
+        </div>
+        <div class="feat hide" data-panel="lock">
+          <label for="lock-at">Jadi baca saja mulai</label>
+          <input type="datetime-local" id="lock-at">
+          <span class="hint">Setelah waktu ini link edit, tambah, dan centang hanya bisa membaca. Link admin tetap bisa mengubah.</span>
+        </div>
+      </details>
 
       <div class="alert err hide" id="compose-err" role="alert"></div>
       <button class="btn primary lg block" type="submit" id="create"><svg><use href="#i-lock"/></svg><span>Kunci &amp; buat link</span></button>
