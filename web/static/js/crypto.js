@@ -178,6 +178,36 @@
         return hmac(v, 'notehop/vault-check').then(function (c) { return { vault: b64u(v), check: b64u(c) }; });
       });
     },
+    // The vault key is either the key from the password (or phrase) itself,
+    // or, once the password was changed or reset, sealed with it (wrap).
+    vaultKey: function (kek, wrap) {
+      if (!wrap) return Promise.resolve(kek);
+      return aesKey(unb64u(kek)).then(function (k) { return unseal(k, wrap); });
+    },
+    sealVault: function (kek, vault) { return aesKey(unb64u(kek)).then(function (k) { return seal(k, vault); }); },
+    remember: function (username, vault) { NH.store.set('nh_vault', { u: username, k: vault }); },
+
+    // Recovery codes: 16 characters from an alphabet without look-alikes
+    // (80 bits). HKDF turns a code into a key that seals the vault key and a
+    // proof the server keeps only as SHA-256. The server can't open the seal.
+    newRecoveryCode: function () {
+      var abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', r = rand(16), out = '';
+      for (var i = 0; i < 16; i++) out += (i && i % 4 === 0 ? '-' : '') + abc[r[i] % 32];
+      return out;
+    },
+    recoveryKeys: function (code, username) {
+      var norm = String(code).toUpperCase().replace(/[^A-Z0-9]/g, '');
+      return subtle.importKey('raw', enc.encode(norm), 'HKDF', false, ['deriveBits']).then(function (ikm) {
+        return subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt: enc.encode('notehop/recovery/' + username.toLowerCase()),
+          info: enc.encode('notehop/recovery') }, ikm, 512);
+      }).then(function (b) {
+        b = new Uint8Array(b);
+        return aesKey(b.subarray(0, 32)).then(function (k) {
+          return { proof: b64u(b.subarray(32)), seal: function (v) { return seal(k, v); }, open: function (w) { return unseal(k, w); } };
+        });
+      });
+    },
+
     vault: function () {
       var v = window.NH && NH.store.get('nh_vault', null);
       var me = document.body.dataset.user;

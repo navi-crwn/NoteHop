@@ -505,14 +505,26 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 ### 53. Akun dan dashboard
 - **Fungsi.** Brankas link (terenkripsi dengan sandi akun, PBKDF2 600.000), grup otomatis, wiki-link + graf, arsip setelah 90 hari tidak aktif, profil `/@user`, ekspor/impor, klaim catatan tamu, single sign-on (opsional).
 - **Batasan.**
-  - Lupa sandi akun = brankas tidak bisa dibuka (zero-knowledge).
+  - Lupa sandi tanpa kode pemulihan = brankas tidak bisa dibuka (zero-knowledge).
   - Backup otomatis ke Drive/Gist belum ada.
 
 | Kasus | Mitigasi |
 | --- | --- |
-| Lupa sandi akun. | ✅ Ekspor JSON berkala dari dashboard.<br>💡 Kode pemulihan saat daftar. |
+| Lupa sandi akun. | ✅ Kode pemulihan di `/security` (8 kode sekali pakai; akun SSO: memulihkan kunci brankas) dan halaman `/recover`.<br>✅ Ekspor JSON berkala dari dashboard. |
 | Username menyamar. | ✅ Aturan nama (bagian 1). |
 | Profil publik menampilkan catatan yang tidak sengaja dipublikasikan. | Hanya catatan yang pemiliknya pilih tampil di profil. |
+
+### 53b. Kode pemulihan dan ganti password ✅
+- **Fungsi.** Di `/security`: buat 8 kode pemulihan (diminta password/kunci brankas sekarang), unduh `.txt`, cetak, atau salin; kode hanya tampil sekali. Ganti password (atau kunci brankas akun SSO): perangkat lain otomatis keluar. Lupa password: `/recover` (tautan "Lupa password?" di halaman masuk), username + satu kode → password baru; catatan lama tetap terbuka.
+- **Batasan.** Tanpa kode, password tetap tidak bisa direset. Akun SSO hanya memulihkan kunci brankas (password masuknya di server akun) dan harus masuk dulu. Membuat kode baru membatalkan semua kode lama; ganti password tidak membatalkan kode.
+- **Mitigasi.** Kode 80 bit, server hanya menyimpan SHA-256 bukti; tebakan dibatasi per IP (20/menit) dan per akun (5/menit); kode dan sesi dipakai dalam satu transaksi; tiket langkah 2 sekali pakai, 10 menit; mengganti kode butuh secret sekarang (cookie curian tidak cukup).
+- **Uji.** `internal/app/recovery_test.go`, `scripts/e2e-recovery.js`.
+
+### 54a. Bantuan menulis (AI) ✅
+- **Fungsi.** Tombol **AI** di editor (dan "Tulis ulang/Ringkas dengan AI" di menu klik kanan): ringkas, tulis ulang (santai/jelas/formal/lebih pendek), perbaiki ejaan, terjemahkan, lanjutkan tulisan, jadikan poin; untuk teks yang dipilih atau seluruh catatan. Hasil tampil di panel; baru masuk catatan lewat **Ganti teks** atau **Sisipkan di bawah** (Ctrl+Z membatalkan).
+- **Mesin.** (1) AI bawaan browser (Chrome: Summarizer, Rewriter, Writer, Proofreader, Translator, LanguageModel), tidak ada yang keluar dari perangkat. (2) Kunci API sendiri: Anthropic (bawaan `claude-opus-5-5`, fallback server-side `default`), OpenAI, Google Gemini, OpenRouter, Ollama lokal, dan "Lainnya" bila operator mengisi `NOTEHOP_AI_ORIGINS`. Kunci disimpan di browser (disegel kunci brankas saat masuk) atau hanya selama tab terbuka.
+- **Batasan.** ⚠️ E2E: dengan kunci API, penyedia itu membaca teks yang dikirim (peringatan selalu tampil). AI bawaan browser baru ada di Chrome desktop versi baru dan belum mendukung semua bahasa. Tidak ada AI untuk catatan Kode. Operator: `NOTEHOP_AI=device|off`.
+- **Uji.** `internal/app/ai_test.go`, `scripts/e2e-ai.js` (penyedia dan AI bawaan disimulasikan).
 
 ### 54. AI, suara, domain sendiri, berbayar ⛔
 - Ditunda: isi harus dikirim ke pihak ketiga, dan pembayaran di luar inti produk.

@@ -31,6 +31,9 @@ Status: ✅ selesai · 🔨 dikerjakan · ⏳ antre · ⛔ sengaja tidak dibuat 
 ## Batch H: tipe catatan + menu klik kanan (permintaan pemilik)
 ✅ Tipe Biasa / Dokumen / Kode (disimpan di isi terenkripsi, ikut ke duplikat, embed, ekspor/impor dashboard) · ✅ Kode: bahasa, nomor baris, Tab indentasi, tampil sebagai teks, unduhan `.txt` · ✅ Menu klik kanan + lembar format di HP: warna, stabilo, ukuran, rata, huruf besar/kecil, tautan, hapus format · ✅ 51 teks baru di 9 bahasa · uji: `scripts/e2e-types.js`
 
+## Batch I: pemulihan akun + bantuan menulis (permintaan pemilik)
+✅ Kode pemulihan (8, sekali pakai) + halaman `/security` dan `/recover`, ganti password/kunci brankas, kunci brankas dibungkus (migrasi 8) · ✅ Bantuan menulis: AI bawaan browser atau kunci API sendiri (Anthropic, OpenAI, Gemini, OpenRouter, Ollama), CSP dibuka hanya di halaman editor, `NOTEHOP_AI` · uji: `internal/app/{recovery,ai}_test.go`, `scripts/e2e-recovery.js`, `scripts/e2e-ai.js`
+
 ## Tahap akhir
 ✅ Zip handoff (berisi sumber dari commit, binary linux amd64/arm64 + SHA256SUMS, HANDOFF.txt)
 
