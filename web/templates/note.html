@@ -3,73 +3,161 @@
 <section class="wrap note-wrap">
   <div class="card state" id="state" aria-live="polite">
     <div class="spinner" aria-hidden="true"></div>
-    <p class="muted">Membuka catatan…</p>
+    <p class="muted">{{.L.T "note.opening"}}</p>
   </div>
 
   <article class="note hide" id="note">
     <div class="banner hide" id="banner"></div>
     <header class="note-head">
       <div class="note-title">
-        <h1 id="n-title"></h1>
-        <input type="text" id="n-title-input" class="title-input hide" placeholder="Judul" maxlength="200" aria-label="Judul">
+        <h1 id="n-title" dir="auto"></h1>
+        <input type="text" id="n-title-input" class="title-input hide" dir="auto" placeholder="{{.L.T "new.title_label"}}" maxlength="200" aria-label="{{.L.T "new.title_label"}}">
       </div>
+      <p class="status-line" id="n-status"></p>
       <div class="note-meta" id="n-meta"></div>
       <div class="btn-row note-actions" id="n-actions">
         <span class="save-state" id="save-state" aria-live="polite"></span>
-        <button type="button" class="btn sm hide" id="act-share" data-admin><svg><use href="#i-share"/></svg>Bagikan</button>
-        <button type="button" class="btn sm hide" id="act-freeze" data-admin><svg><use href="#i-snow"/></svg>Bekukan versi</button>
-        <button type="button" class="btn sm" id="act-copy"><svg><use href="#i-copy"/></svg>Salin teks</button>
-        <a class="btn sm hide" id="act-raw" target="_blank" rel="noopener"><svg><use href="#i-code"/></svg>Raw</a>
-        <button type="button" class="btn sm danger hide" id="act-delete"><svg><use href="#i-trash"/></svg>Hapus</button>
+        <button type="button" class="btn sm primary hide" id="act-share" data-admin><svg><use href="#i-share"/></svg>{{.L.T "note.share"}}</button>
+        <button type="button" class="btn sm" id="act-copy"><svg><use href="#i-copy"/></svg>{{.L.T "note.copy_text"}}</button>
+        <div class="menu more-menu" id="more-menu">
+          <button type="button" class="btn sm" aria-haspopup="true"><svg><use href="#i-more"/></svg>{{.L.T "more.label"}}</button>
+          <div class="menu-list">
+            <button type="button" data-act="duplicate" data-needs-key><svg width="16" height="16"><use href="#i-copy"/></svg>{{.L.T "more.duplicate"}}</button>
+            <button type="button" data-act="export-md"><svg width="16" height="16"><use href="#i-code"/></svg>{{.L.T "more.export_md"}}</button>
+            <button type="button" data-act="print"><svg width="16" height="16"><use href="#i-print"/></svg>{{.L.T "more.print"}}</button>
+            <button type="button" data-act="present"><svg width="16" height="16"><use href="#i-play"/></svg>{{.L.T "more.present"}}</button>
+            <button type="button" data-act="prompter"><svg width="16" height="16"><use href="#i-scroll"/></svg>{{.L.T "more.prompter"}}</button>
+            <button type="button" data-act="listen"><svg width="16" height="16"><use href="#i-sound"/></svg>{{.L.T "more.listen"}}</button>
+            <button type="button" data-act="zen"><svg width="16" height="16"><use href="#i-zen"/></svg>{{.L.T "more.zen"}}</button>
+            <button type="button" data-act="margin" class="hide" id="act-margin"><svg width="16" height="16"><use href="#i-edit"/></svg>{{.L.T "margin.title"}}</button>
+            <button type="button" data-act="redact" data-needs-key><svg width="16" height="16"><use href="#i-shield"/></svg>{{.L.T "more.redact"}}</button>
+            <button type="button" class="hide" id="act-history"><svg width="16" height="16"><use href="#i-history"/></svg>{{.L.T "history.title"}}</button>
+            <button type="button" class="hide" id="act-freeze" data-admin><svg width="16" height="16"><use href="#i-snow"/></svg>{{.L.T "note.freeze"}}</button>
+            <a class="hide" id="act-raw" target="_blank" rel="noopener"><svg width="16" height="16"><use href="#i-code"/></svg>Raw</a>
+            <button type="button" class="danger hide" id="act-delete"><svg width="16" height="16"><use href="#i-trash"/></svg>{{.L.T "common.delete"}}</button>
+          </div>
+        </div>
       </div>
     </header>
 
+    <div class="live-bar hide" id="live-bar">
+      <span class="live-dot" aria-hidden="true"></span>
+      <span class="small muted" id="live-status" aria-live="polite"></span>
+      <div class="live-people" id="live-people"></div>
+      <span class="live-follow hide" id="live-follow"></span>
+      <span class="live-tools">
+        <button type="button" class="btn sm ghost" id="live-present" aria-pressed="false"><svg><use href="#i-play"/></svg>{{.L.T "live.present"}}</button>
+        <button type="button" class="btn sm" id="live-chat-btn"><svg><use href="#i-chat"/></svg>{{.L.T "live.chat"}}<span class="live-unread hide" id="live-unread"></span></button>
+      </span>
+    </div>
+    <aside class="card live-chat hide" id="live-chat" aria-labelledby="live-chat-h">
+      <div class="live-chat-head"><b id="live-chat-h">{{.L.T "live.chat"}}</b><span class="hint">{{.L.T "live.chat_hint"}}</span><button type="button" class="icon-btn sm" id="live-chat-close" aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
+      <ol class="live-msgs" id="live-msgs"></ol>
+      <form class="live-chat-form" id="live-chat-form"><input type="text" maxlength="500" dir="auto" autocomplete="off" aria-label="{{.L.T "live.chat_input"}}" placeholder="{{.L.T "live.chat_input"}}"><button type="submit" class="btn sm primary">{{.L.T "live.send"}}</button></form>
+    </aside>
+
+    <section class="card tpl hide" id="tpl" aria-labelledby="tpl-h">
+      <div class="tpl-head"><b id="tpl-h"><svg class="ico"><use href="#i-edit"/></svg> {{.L.T "tpl.title"}}</b><span class="hint">{{.L.T "tpl.hint"}}</span></div>
+      <div class="tpl-fields" id="tpl-fields"></div>
+      <div class="btn-row"><button type="button" class="btn sm primary" id="tpl-copy"><svg><use href="#i-copy"/></svg>{{.L.T "tpl.copy"}}</button><button type="button" class="btn sm ghost" id="tpl-clear">{{.L.T "tpl.clear"}}</button></div>
+    </section>
+
     <div class="card note-body">
-      <div class="md" id="n-view"></div>
-      <div id="n-edit" class="hide">{{template "editor"}}</div>
+      <div class="md" id="n-view" dir="auto"></div>
+      <div id="n-edit" class="hide">{{template "editor" .}}</div>
     </div>
 
+    <div class="suggest-bar hide" id="suggest-bar">
+      <span class="muted small">{{.L.T "suggest.editing"}}</span>
+      <button type="button" class="btn sm primary" id="suggest-send"><svg><use href="#i-suggest"/></svg>{{.L.T "suggest.send"}}</button>
+      <button type="button" class="btn sm ghost" id="suggest-cancel">{{.L.T "suggest.cancel"}}</button>
+    </div>
+    <div class="btn-row hide" id="suggest-start-row"><button type="button" class="btn" id="suggest-start"><svg><use href="#i-suggest"/></svg>{{.L.T "suggest.start"}}</button></div>
+
+    <section class="card signs hide" id="signs" aria-labelledby="signs-h">
+      <h2 id="signs-h"><svg class="ico"><use href="#i-check"/></svg> {{.L.T "sign.title"}} <span class="pill" id="signs-count">0</span></h2>
+      <ul class="sign-list" id="sign-list"></ul>
+      <form class="sign-form hide" id="sign-form">
+        <input type="text" id="sign-name" maxlength="80" dir="auto" placeholder="{{.L.T "sign.name"}}" aria-label="{{.L.T "sign.name"}}" required>
+        <button class="btn primary" type="submit"><svg><use href="#i-check"/></svg>{{.L.T "sign.button"}}</button>
+      </form>
+      <p class="hint">{{.L.T "sign.hint"}}</p>
+    </section>
+
+    <aside class="card margin hide" id="margin" aria-labelledby="margin-h">
+      <div class="tpl-head"><b id="margin-h"><svg class="ico"><use href="#i-lock"/></svg> {{.L.T "margin.title"}}</b><span class="hint">{{.L.T "margin.hint"}}</span></div>
+      <textarea id="margin-text" rows="5" dir="auto" placeholder="{{.L.T "margin.placeholder"}}"></textarea>
+      <span class="save-state" id="margin-state"></span>
+    </aside>
+
     <section class="entries hide" id="entries" aria-labelledby="entries-h">
-      <h2 id="entries-h">Tambahan <span class="pill" id="entries-count">0</span></h2>
+      <h2 id="entries-h">{{.L.T "note.entries"}} <span class="pill" id="entries-count">0</span></h2>
       <ol class="entry-list" id="entry-list"></ol>
       <form class="card entry-form hide" id="entry-form">
         <div class="entry-row">
-          <input type="text" id="entry-name" placeholder="Namamu" maxlength="40" aria-label="Nama">
-          <span class="hint">Tulisanmu ditambahkan di bawah dan tidak bisa diubah lagi.</span>
+          <input type="text" id="entry-name" placeholder="{{.L.T "note.your_name"}}" maxlength="40" aria-label="{{.L.T "note.name"}}">
+          <span class="hint">{{.L.T "note.entry_hint"}}</span>
         </div>
-        <textarea id="entry-text" rows="3" placeholder="Tulis tambahan… (Markdown didukung, Ctrl+Enter untuk kirim)" maxlength="20000" aria-label="Tambahan"></textarea>
-        <div class="btn-row end"><button class="btn primary" type="submit"><svg><use href="#i-plus"/></svg>Tambahkan</button></div>
+        <textarea id="entry-text" dir="auto" rows="3" placeholder="{{.L.T "note.entry_ph"}}" maxlength="20000" aria-label="{{.L.T "note.entries"}}"></textarea>
+        <div class="btn-row end"><button class="btn primary" type="submit"><svg><use href="#i-plus"/></svg>{{.L.T "note.add"}}</button></div>
       </form>
     </section>
   </article>
 </section>
 
 <dialog class="dlg wide" id="share-dlg" aria-labelledby="share-h">
-  <div class="dlg-head"><h2 id="share-h">Bagikan catatan</h2><button type="button" class="icon-btn" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button></div>
-  <p class="muted small">Setiap link punya izinnya sendiri. Kunci dekripsi ada di bagian <code>#</code> link dan tidak pernah dikirim ke server.</p>
+  <div class="dlg-head"><h2 id="share-h">{{.L.T "share.title"}}</h2><button type="button" class="icon-btn" data-close aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
+  <p class="muted small">{{.L.H "share.lead"}}</p>
+  <h3 class="h-sub">{{.L.T "share.links_h"}}</h3>
   <ul class="link-list" id="link-list"></ul>
   <form class="add-link" id="add-link">
-    <select id="new-mode" aria-label="Mode link baru">
-      <option value="read">Baca saja</option>
-      <option value="edit">Edit penuh</option>
-      <option value="append">Tambah saja</option>
-      <option value="check">Centang checklist</option>
+    <select id="new-mode" aria-label="{{.L.T "share.new_mode"}}">
+      <option value="read">{{.L.T "mode.read"}}</option>
+      <option value="edit">{{.L.T "mode.edit"}}</option>
+      <option value="append">{{.L.T "mode.append"}}</option>
+      <option value="check">{{.L.T "mode.check"}}</option>
+      <option value="suggest">{{.L.T "mode.suggest"}}</option>
     </select>
-    <div class="prefix"><span>/n/</span><input type="text" id="new-slug" placeholder="acak" maxlength="48" autocapitalize="off" spellcheck="false" aria-label="Alamat kustom"></div>
-    <button class="btn" type="submit"><svg><use href="#i-plus"/></svg>Link baru</button>
+    <div class="prefix"><span>/n/</span><input type="text" id="new-slug" placeholder="{{.L.T "share.random"}}" maxlength="48" autocapitalize="off" spellcheck="false" aria-label="{{.L.T "feat.slug"}}"></div>
+    <button class="btn" type="submit"><svg><use href="#i-plus"/></svg>{{.L.T "share.new_link"}}</button>
   </form>
-  <div class="admin-box">
-    <div><b><svg class="ico"><use href="#i-key"/></svg> Link admin</b><p class="small muted">Bisa mengedit, membekukan, membuat link, dan menghapus. Simpan sendiri, jangan dibagikan.</p></div>
-    <button type="button" class="btn sm" id="copy-admin"><svg><use href="#i-copy"/></svg>Salin link admin</button>
+  <div class="admin-box owner">
+    <div><b><svg class="ico"><use href="#i-key"/></svg> {{.L.T "share.admin"}}</b><p class="small muted">{{.L.T "share.admin_text"}}</p></div>
+    <button type="button" class="btn sm" id="copy-admin"><svg><use href="#i-copy"/></svg>{{.L.T "share.copy_admin"}}</button>
   </div>
+  <details class="adv share-adv" id="share-adv">
+    <summary>{{.L.T "common.advanced"}}</summary>
+    <div id="adv-pills"></div>
+    <a class="small" href="/faq#later">{{.L.T "adv.faq"}}</a>
+  </details>
+  <details class="adv share-adv" id="trace-box">
+    <summary>{{.L.T "trace.title"}}</summary>
+    <p class="small muted">{{.L.T "trace.lead"}}</p>
+    <textarea id="trace-input" rows="3" dir="auto" placeholder="{{.L.T "trace.placeholder"}}"></textarea>
+    <p class="small" id="trace-result" aria-live="polite"></p>
+  </details>
   <div id="snap-box" class="hide">
-    <h3><svg class="ico"><use href="#i-history"/></svg> Snapshot beku</h3>
+    <h3><svg class="ico"><use href="#i-history"/></svg> {{.L.T "share.snapshots"}}</h3>
     <ul class="link-list" id="snap-list"></ul>
   </div>
 </dialog>
 
+<dialog class="dlg wide" id="history-dlg" aria-labelledby="history-h">
+  <div class="dlg-head"><h2 id="history-h">{{.L.T "history.title"}}</h2><button type="button" class="icon-btn" data-close aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
+  <p class="muted small">{{.L.T "history.lead"}}</p>
+  <div class="history-pick"><input type="range" id="history-range" min="0" max="0" value="0" aria-label="{{.L.T "history.title"}}"><span id="history-label" class="small muted"></span></div>
+  <div id="history-diff"></div>
+  <div class="btn-row end"><button type="button" class="btn primary" id="history-restore"><svg><use href="#i-history"/></svg>{{.L.T "history.restore"}}</button></div>
+</dialog>
+
+<dialog class="dlg wide" id="suggest-dlg" aria-labelledby="suggest-h">
+  <div class="dlg-head"><h2 id="suggest-h">{{.L.T "suggest.review"}}</h2><button type="button" class="icon-btn" data-close aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
+  <p class="muted small">{{.L.T "suggest.review_lead"}}</p>
+  <div id="suggest-list"></div>
+</dialog>
+
 <dialog class="dlg" id="qr-dlg" aria-labelledby="qr-h">
-  <div class="dlg-head"><h2 id="qr-h">Pindai dengan HP</h2><button type="button" class="icon-btn" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button></div>
+  <div class="dlg-head"><h2 id="qr-h">{{.L.T "qr.title"}}</h2><button type="button" class="icon-btn" data-close aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
   <div class="qr" id="qr-box"></div>
   <p class="small muted center" id="qr-mode"></p>
 </dialog>
@@ -80,7 +168,15 @@
 <script src="/static/vendor/highlight.min.js?v={{.Asset}}"></script>
 <script src="/static/vendor/qrcode.js?v={{.Asset}}"></script>
 <script src="/static/js/crypto.js?v={{.Asset}}"></script>
+<script src="/static/js/files.js?v={{.Asset}}"></script>
 <script src="/static/js/md.js?v={{.Asset}}"></script>
+<script src="/static/js/blocks.js?v={{.Asset}}"></script>
 <script src="/static/js/editor.js?v={{.Asset}}"></script>
+<script src="/static/js/diff.js?v={{.Asset}}"></script>
 <script src="/static/js/note.js?v={{.Asset}}"></script>
+<script src="/static/js/features.js?v={{.Asset}}"></script>
+<script src="/static/js/kanban.js?v={{.Asset}}"></script>
+<script src="/static/js/extras.js?v={{.Asset}}"></script>
+<script src="/static/vendor/yjs.min.js?v={{.Asset}}"></script>
+<script src="/static/js/live.js?v={{.Asset}}"></script>
 {{end}}

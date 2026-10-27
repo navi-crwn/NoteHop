@@ -93,10 +93,89 @@
       return pbkdf2(pin, unb64u(parts[0]), PIN_ITER, 256).then(aesKey).then(function (k) { return unseal(k, parts[1]); });
     },
 
+    // Decoy: the same note key with a second password opens a harmless text.
+    // Both texts are padded to similar sizes so their length doesn't tell
+    // which is which. Returns {content, write} for the server.
+    decoy: function (k, password, salt, fake, real) {
+      var keyP = window.NHC.noteKeys(k, password, salt);
+      var target = JSON.stringify(real).length + Math.floor(Math.random() * 64);
+      var obj = Object.assign({}, fake);
+      var gap = target - JSON.stringify(obj).length - 6;
+      if (gap > 0) obj._ = new Array(gap + 1).join(' ');
+      return keyP.then(function (keys) {
+        return seal(keys.aes, JSON.stringify(obj)).then(function (c) { return { content: c, write: keys.write }; });
+      });
+    },
+
+    // Self-destructing blocks: text sealed with its own random key. The
+    // sealed text sits inside the note; the server keeps only the key and
+    // hands it out a limited number of times.
+    blockSeal: function (k, text) {
+      return aesKey(unb64u(k)).then(function (key) { return seal(key, text); });
+    },
+    blockOpen: function (k, payload) {
+      return aesKey(unb64u(k)).then(function (key) { return unseal(key, String(payload).replace(/\s+/g, '')); });
+    },
+
+    // Attachments: [4-byte header length][JSON {n: name, t: type}][bytes],
+    // sealed with a fresh key that is written only into the note text.
+    fileSeal: function (bytes, name, type) {
+      var k = rand(32), head = enc.encode(JSON.stringify({ n: name, t: type })), iv = rand(12);
+      var plain = new Uint8Array(4 + head.length + bytes.length);
+      new DataView(plain.buffer).setUint32(0, head.length);
+      plain.set(head, 4);
+      plain.set(bytes, 4 + head.length);
+      return aesKey(k).then(function (key) {
+        return subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, plain);
+      }).then(function (ct) { return { key: b64u(k), data: concat(iv, new Uint8Array(ct)) }; });
+    },
+    fileOpen: function (k, data) {
+      var raw = new Uint8Array(data);
+      return aesKey(unb64u(k)).then(function (key) {
+        return subtle.decrypt({ name: 'AES-GCM', iv: raw.subarray(0, 12) }, key, raw.subarray(12));
+      }).then(function (pt) {
+        var p = new Uint8Array(pt), n = new DataView(pt).getUint32(0), head = JSON.parse(dec.decode(p.subarray(4, 4 + n)));
+        return { name: String(head.n || 'file'), type: String(head.t || 'application/octet-stream'), bytes: p.subarray(4 + n) };
+      });
+    },
+
+    // Inbox: entries the server sealed to the note's P-256 key (see
+    // internal/app/inbox.go). inboxKeys makes the pair; the private JWK is
+    // then stored sealed with the note key.
+    inboxKeys: function () {
+      return subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']).then(function (kp) {
+        return Promise.all([subtle.exportKey('raw', kp.publicKey), subtle.exportKey('jwk', kp.privateKey)]);
+      }).then(function (r) { return { pub: b64u(r[0]), jwk: r[1] }; });
+    },
+    inboxOpen: function (jwk, content) {
+      var p = String(content).split('.');
+      return Promise.all([
+        subtle.importKey('jwk', jwk, { name: 'ECDH', namedCurve: 'P-256' }, false, ['deriveBits']),
+        subtle.importKey('raw', unb64u(p[1]), { name: 'ECDH', namedCurve: 'P-256' }, false, [])
+      ]).then(function (k) {
+        return subtle.deriveBits({ name: 'ECDH', public: k[1] }, k[0], 256);
+      }).then(function (shared) {
+        return subtle.importKey('raw', shared, 'HKDF', false, ['deriveBits']);
+      }).then(function (ikm) {
+        return subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(0), info: enc.encode('notehop/inbox') }, ikm, 256);
+      }).then(function (key) {
+        var raw = unb64u(p[2]);
+        return aesKey(new Uint8Array(key)).then(function (k) { return subtle.decrypt({ name: 'AES-GCM', iv: raw.subarray(0, 12) }, k, raw.subarray(12)); });
+      }).then(function (pt) { return JSON.parse(dec.decode(pt)); });
+    },
+
     // Account: one PBKDF2 run, split into a local vault key and a login secret.
     account: function (username, password) {
       return pbkdf2(password, enc.encode('notehop/account/' + username.toLowerCase()), ACCOUNT_ITER, 512).then(function (b) {
         return { vault: b64u(b.subarray(0, 32)), auth: b64u(b.subarray(32)) };
+      });
+    },
+    // SSO accounts: NoteHop never sees that password, so the vault key
+    // comes from a separate phrase, salted with the SSO user id. The
+    // server only gets HMAC(vault, …) to tell a right phrase from a typo.
+    vaultPhrase: function (phrase, sub) {
+      return pbkdf2(phrase, enc.encode('notehop/vault/' + sub), ACCOUNT_ITER, 256).then(function (v) {
+        return hmac(v, 'notehop/vault-check').then(function (c) { return { vault: b64u(v), check: b64u(c) }; });
       });
     },
     vault: function () {

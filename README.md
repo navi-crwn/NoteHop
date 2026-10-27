@@ -18,7 +18,15 @@ Satu keluarga dengan [ImageApp](https://github.com/navi-crwn/imageapp), [SSO](ht
 - **Akun opsional**: password tidak dikirim ke server; daftar catatan dienkripsi dengan kunci brankas lokal.
 - **Keamanan**: CSP ketat, tanpa inline script, `noindex`, `Referrer-Policy: no-referrer`, gambar pihak ketiga diblokir, tolak permintaan lintas situs, rate limit.
 
-Rencana fitur lengkap ada di [ROADMAP.md](ROADMAP.md). Integrasi login SSO dan ImageApp ada di [docs/INTEGRASI-SSO-IMAGEAPP.md](docs/INTEGRASI-SSO-IMAGEAPP.md).
+## Fitur lanjutan
+
+- **Kolaborasi langsung** (Yjs + WebSocket): kursor dan nama tamu, mini-chat, ikuti presenter. Server hanya meneruskan ciphertext.
+- **Di dalam teks**: `{{variabel}}`, ```` ```calc ````, Mermaid, `[[wiki-link]]`, `:::poll`, `:::burn` (blok hancur sendiri), `:::form` (jawaban jadi entri), `:::embed <link>` (catatan lain, diperbarui otomatis), lampiran terenkripsi 24 jam (pilih/seret/tempel; gambar jadi WebP), `[1:23]` memutar audio/video.
+- **Tampilan**: papan Kanban dari `## Kolom`, slide, teleprompter, baca nyaring, mode zen + pomodoro, command palette `Ctrl+K`.
+- **Pengaturan lanjutan per catatan**: kapsul waktu, kunci terjadwal, dead man's switch, checklist berulang, IP allowlist, tanda tangan (sign-off), watermark zero-width, password umpan, mode usul edit, riwayat versi + diff.
+- **Lainnya**: `/diff` (pembanding teks), `/nearby` (pad dan kirim file antar perangkat satu Wi-Fi lewat WebRTC), klaim catatan tamu ke akun, coretan pribadi (margin), web clipper.
+
+Rencana fitur lengkap ada di [ROADMAP.md](ROADMAP.md). Goals dan cara menyiapkan di komputer sendiri: [docs/GOALS-DAN-PERSIAPAN-LOKAL.md](docs/GOALS-DAN-PERSIAPAN-LOKAL.md). Integrasi login SSO dan ImageApp ada di [docs/INTEGRASI-SSO-IMAGEAPP.md](docs/INTEGRASI-SSO-IMAGEAPP.md).
 
 ## Menjalankan
 
@@ -35,6 +43,10 @@ make test      # go test -race ./...
 make build     # bin/notehop
 ```
 
+### Bahasa
+
+UI tersedia dalam 9 bahasa (7 bahasa pengguna internet terbanyak + Русский + Indonesia): English (default), 中文, Español, العربية (kanan-ke-kiri), Português, Français, 日本語, Русский, Bahasa Indonesia. Bahasa dipilih otomatis dari browser (`Accept-Language`), dengan English sebagai cadangan; pilihan lewat menu bola dunia di navbar disimpan di cookie `nh_lang` dan selalu menang, atau lewat `?lang=xx`. Teks ada di `web/i18n/*.json`; error API dikirim sebagai `{error, code, vars}` dan diterjemahkan di browser.
+
 ### Konfigurasi (env)
 
 | Variabel | Default | Arti |
@@ -46,16 +58,43 @@ make build     # bin/notehop
 | `NOTEHOP_TRUST_PROXY` | `false` | Pakai `X-Forwarded-For` untuk rate limit (aktifkan di belakang reverse proxy) |
 | `NOTEHOP_REGISTRATION` | `true` | Buka/tutup pendaftaran akun |
 | `NOTEHOP_SITE` | `NoteHop` | Nama situs |
+| `NOTEHOP_SHARE_URL` | kosong | Domain kedua untuk link yang dibagikan (misalnya `https://nhop.link`). Login, dashboard, editor, dan link admin tetap di `NOTEHOP_BASE_URL` |
+| `NOTEHOP_FILE_MB` | `10` | Ukuran maksimal satu lampiran (MB). `0` = lampiran mati. Di nginx naikkan `client_max_body_size` juga |
+| `NOTEHOP_FILES_TOTAL_MB` | `2048` | Batas total semua lampiran yang masih hidup (disimpan di SQLite, dihapus setelah 24 jam). `0` = tanpa batas |
+| `NOTEHOP_SSH_ADDR` | kosong | Aktifkan SSH untuk catatan publik, misalnya `:2222` |
+| `NOTEHOP_SSH_KEY` | `ssh_host_ed25519_key` di folder DB | Kunci host SSH (dibuat otomatis saat pertama jalan) |
+| `NOTEHOP_PRIVATE_HOOKS` | `false` | Izinkan webhook Watch ke alamat privat/loopback dan `http://` (hanya untuk jaringan sendiri) |
+| `TELEGRAM_BOT_TOKEN` | kosong | Token bot dari @BotFather; butuh `NOTEHOP_BASE_URL` (webhook didaftarkan saat start) |
+| `NOTEHOP_ADMINS` | kosong | Username admin situs (pisah koma): boleh nama link pendek (< 7) dan nama cadangan, dan boleh mendaftar username cadangan |
+| `NOTEHOP_RESERVED` | kosong | Nama cadangan tambahan (pisah koma), di luar `internal/app/names/reserved.txt` |
+| `NOTEHOP_CONTACT` | kosong | Email atau URL kontak/laporan penyalahgunaan di `/contact` |
+| `NOTEHOP_SSO_URL` | kosong | Alamat SSO untuk "Masuk dengan SSO", misalnya `https://accounts.example.com`. Kosong = fitur mati |
+| `NOTEHOP_SSO_SECRET` | kosong | Rahasia bersama (minimal 32 karakter), sama dengan `NOTEHOP_SSO_SECRET` di SSO. SSO juga butuh `NOTEHOP_BASE_URL` |
 
-### Deploy singkat (reverse proxy)
+Skema database dimigrasi otomatis saat start (nomor versi di `PRAGMA user_version`, daftar di `migrations` pada `internal/db/db.go`). Binary yang lebih lama menolak membuka database dengan versi skema yang lebih baru.
+
+### CLI dan SSH
 
 ```bash
-go build -o /usr/local/bin/notehop ./cmd/notehop
-NOTEHOP_ADDR=127.0.0.1:8090 NOTEHOP_DB=/var/lib/notehop/notehop.db \
-NOTEHOP_BASE_URL=https://note.example.com NOTEHOP_TRUST_PROXY=1 notehop
+notehop new -server https://note.domainanda.com < catatan.md        # terenkripsi di terminal, cetak link
+notehop new -server https://… -password rahasia -expires 24h -burn 1 file.md
+notehop get 'https://note.domainanda.com/n/TOKEN#k=…'               # unduh dan dekripsi di terminal
+ssh -p 2222 note.domainanda.com < catatan.md                       # ⚠️ catatan publik (jika NOTEHOP_SSH_ADDR aktif)
+notehop takedown -db notehop.db https://note.domainanda.com/n/xxxx  # moderasi: hapus + kunci nama link 365 hari
+notehop takedown -db notehop.db -file FILE_ID                      # moderasi: hapus satu lampiran
 ```
 
-Caddy: `note.example.com { reverse_proxy 127.0.0.1:8090 }`. Backup cukup salin file `.db` (pakai `sqlite3 notehop.db ".backup x.db"` saat berjalan).
+Aturan nama link sendiri dan username (minimal 7 karakter, nama cadangan, kata kasar, masa tunggu 90 hari setelah catatan dihapus) ada di `internal/app/names.go`; penjelasan lengkap di `docs/PANDUAN-FITUR.md` bagian 1.
+
+### Deploy ke VPS
+
+Panduan lengkap (systemd, Caddy/nginx, backup harian, update, restore): **[`docs/DEPLOY.md`](docs/DEPLOY.md)**. Ringkasnya:
+
+```bash
+sudo DOMAIN=note.example.com ./deploy/install.sh   # pasang/update sebagai service systemd
+make linux                                         # atau build binary statis untuk diunggah
+notehop backup -db notehop.db salinan.db           # backup aman saat berjalan
+```
 
 ## Cara kerja kriptografi
 
@@ -70,6 +109,7 @@ admin  = 32 byte acak                      → link admin: #k=<K>&a=<admin>; ser
 - Setiap perubahan butuh `X-Write` (membuktikan pemegang kunci) **dan** mode link yang mengizinkan. Jadi slug yang mudah ditebak tetap tidak bisa dipakai menulis tanpa kunci.
 - Catatan berpassword: `POST /open` juga butuh `X-Write`, sehingga password salah ditolak server **tanpa** menghabiskan jatah baca.
 - Akun: `PBKDF2(password, "notehop/account/"+username, 600000)` → 64 byte: 32 pertama = kunci brankas (tetap di browser), 32 terakhir = secret login (di-hash argon2id di server).
+- Akun SSO (SSO): NoteHop tidak pernah melihat password-nya, jadi kunci brankas berasal dari frasa terpisah: `vault = PBKDF2(frasa, "notehop/vault/"+sso_id, 600000)`. Server hanya menerima `HMAC(vault, "notehop/vault-check")` (di-hash argon2id) untuk membedakan frasa benar dan salah ketik.
 - Blok PIN: `salt.b64 + "." + AES-GCM(PBKDF2(PIN, salt, 250000))`.
 
 Yang terlihat oleh server: ukuran ciphertext, waktu, jumlah view, mode link, status centang (indeks + benar/salah), jumlah baris tambahan.
@@ -88,10 +128,32 @@ Semua JSON. Header: `X-Admin` (token admin), `X-Write` (bukti kunci).
 | `DELETE /api/n/{token}/entries/{id}` | admin | Hapus baris |
 | `POST /api/n/{token}/checks` | edit/check/admin + X-Write | `{index, checked}` |
 | `POST /api/n/{token}/freeze` | admin | Buat snapshot beku |
+| `POST /api/n/{token}/config` | admin | Fitur opsional, body parsial (unix, 0/kosong = batal): `lock_at`, `open_at` (425 sebelumnya), `sign_off`, `ip_allow` (IP/CIDR), `reset` (`daily`/`weekly`/`monthly`), `dms_days`, `watermark`, `check_in` |
+| `GET /api/n/{token}/versions` · `…/versions/{v}` | admin / mode edit + X-Write | Riwayat versi (ciphertext lama, maks 100, minimal 5 menit antar versi) |
+| `POST /api/n/{token}/suggestions` · `GET` · `DELETE …/{id}` | mode suggest + X-Write / admin | Usul edit terenkripsi; admin meninjau |
+| `POST /api/n/{token}/signatures` | X-Write, catatan dengan `sign_off` | Tanda tangan `{name}`; tanda tangan pertama membuat snapshot beku |
+| `POST /api/n/{token}/votes` | X-Write | `{poll, option, voter}` untuk blok `:::poll`; `voter` = ID acak dari browser, satu suara per pemilih (bisa diganti), maksimal 20 pemilih baru per jaringan |
+| `POST /api/n/{token}/burns` · `…/burns/{id}/reveal` | admin / X-Write | Blok `:::burn`: kunci blok disimpan terpisah, dibuka 1× lalu dihapus |
+| `PUT` · `DELETE /api/n/{token}/decoy` | admin | Password umpan: ciphertext kedua, pembukaannya dicatat untuk pemilik |
+| `POST /api/n/{token}/claim` | pemilik akun + X-Admin | Pindahkan catatan tamu ke akun |
+| `GET` · `PUT /api/margins/{ref}` | akun | Coretan pribadi (terenkripsi vault) di samping catatan siapa pun |
+| `GET /api/n/{token}/live` (WebSocket) | pemegang kunci | Kolaborasi langsung. Pesan pertama `{t:"auth", write, admin}`; sesudahnya `{t, to, d}` dengan `d` terenkripsi. Tipe: `y` (update Yjs, hanya penulis), `need`/`sync`/`nosync` (state awal), `aw` (kehadiran/kursor), `chat`, `follow`. Tidak untuk catatan beku/burn |
+| `GET /api/nearby` (WebSocket) | siapa saja, per IP publik + `?code=` 6 angka | Signaling WebRTC untuk `/nearby` (`hi`, `sig`); pad dan file lewat koneksi langsung antar browser |
+| `POST /api/files` | siapa saja (20/menit/IP) | Unggah lampiran: body = ciphertext mentah (`application/octet-stream`). Balas `{id, expires}`; kuncinya hanya ada di teks catatan (`nh-file:ID#KUNCI`) |
+| `GET /api/files/{id}` | siapa saja yang tahu ID | Ciphertext lampiran (404 setelah 24 jam) |
+| `POST /api/n/{token}/inbox` · `DELETE` | admin | Aktifkan kotak masuk `{pub, priv}` (kunci publik P-256 + kunci privat yang disegel browser) / matikan |
+| `POST /in/{token}` | siapa saja yang tahu alamatnya (60/menit/IP) | Teks mentah atau JSON `{text, from}` → entri terenkripsi |
+| `POST /api/telegram/{secret}` | Telegram | Webhook bot (diverifikasi header `X-Telegram-Bot-Api-Secret-Token`) |
+| `GET /mock/{token}/{path…}` | siapa saja | JSON dari catatan publik, CORS `*` |
+| `GET /@{username}` | siapa saja | Profil publik (catatan publik yang dipilih pemilik) |
+| `GET /sw.js` · `/manifest.webmanifest` · `/offline` | | PWA |
+| `GET /diff` | siapa saja | Halaman pembanding dua teks (diff di browser) |
 | `POST /api/n/{token}/links` · `DELETE …/links/{t}` | admin | Tambah/matikan link |
 | `DELETE /api/n/{token}` | admin atau pemilik akun | Hapus catatan |
 | `GET /raw/{token}` | siapa saja | Teks murni (hanya catatan publik) |
 | `POST /api/register` · `/api/login` · `/api/logout`, `GET /api/me`, `GET /api/me/notes` | | Akun |
+| `GET /auth/sso` · `GET /auth/sso/callback` | | Masuk dengan SSO (tiket HMAC, `state` + cookie `nh_sso`, `jti` sekali pakai) |
+| `POST /api/vault` | akun SSO | `{check}`: simpan cek frasa brankas pertama kali (201), atau periksa (200 / 401) |
 
 ## Struktur
 
@@ -102,7 +164,7 @@ internal/app/         handler HTTP, auth, middleware, tes
 web/templates/        HTML (base, icons+editor partial, halaman)
 web/static/js/        app.js (util), crypto.js, md.js, editor.js, new.js, note.js, auth.js, dashboard.js
 web/static/css/       app.css
-web/static/vendor/    marked, DOMPurify, highlight.js, qrcode-generator (di-vendor)
+web/static/vendor/    marked, DOMPurify, highlight.js, qrcode-generator, Mermaid (di-vendor)
 design-reference/     aset desain ImageApp / SSO / OtherApp (referensi, tidak di-build)
 docs/                 dokumen integrasi
 ROADMAP.md            semua rencana fitur
@@ -111,4 +173,4 @@ CLAUDE.md             konteks untuk sesi Claude berikutnya
 
 ## Lisensi pihak ketiga
 
-marked (MIT), DOMPurify (Apache-2.0/MPL-2.0), highlight.js (BSD-3-Clause), qrcode-generator (MIT), modernc.org/sqlite (BSD-3-Clause), golang.org/x/crypto (BSD-3-Clause).
+marked (MIT), DOMPurify (Apache-2.0/MPL-2.0), highlight.js (BSD-3-Clause), qrcode-generator (MIT), Mermaid 11.12.0 (MIT), Yjs 13.6.27 + lib0 (MIT), modernc.org/sqlite (BSD-3-Clause), golang.org/x/crypto (BSD-3-Clause), github.com/coder/websocket (ISC).

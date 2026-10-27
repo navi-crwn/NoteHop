@@ -6,25 +6,44 @@
 (function () {
   'use strict';
 
-  function today() { return new Date().toLocaleDateString('id', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
-  function now() { return new Date().toLocaleTimeString('id', { hour: '2-digit', minute: '2-digit' }); }
+  function today() { return new Date().toLocaleDateString(NH.lang, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+  function now() { return new Date().toLocaleTimeString(NH.lang, { hour: '2-digit', minute: '2-digit' }); }
 
-  // "|" in text marks where the caret lands.
+  // CARET in inserted text marks where the caret lands. It is a control
+  // character, not "|", so pasted or selected text containing "|" (tables!)
+  // comes through intact.
+  var CARET = '\u0001';
+
+  // Each command matches its English keywords and the translated ones, so
+  // "/table" works in every language.
+  function col(n) { return NH.t('cmd.column', { n: n }); }
   var COMMANDS = [
-    { label: 'Judul besar', hint: '#', keys: 'h1 judul heading besar', text: '# |' },
-    { label: 'Judul', hint: '##', keys: 'h2 judul heading', text: '## |' },
-    { label: 'Subjudul', hint: '###', keys: 'h3 subjudul heading kecil', text: '### |' },
-    { label: 'To-do', hint: '- [ ]', keys: 'todo tugas checklist centang task', text: '- [ ] |' },
-    { label: 'Daftar', hint: '-', keys: 'list daftar bullet poin', text: '- |' },
-    { label: 'Daftar bernomor', hint: '1.', keys: 'nomor angka urut ol numbered', text: '1. |' },
-    { label: 'Kutipan', hint: '>', keys: 'quote kutipan', text: '> |' },
-    { label: 'Blok kode', hint: '```', keys: 'code kode program script', text: '```\n|\n```\n' },
-    { label: 'Tabel', hint: '3 kolom', keys: 'table tabel grid', text: '| Kolom 1 | Kolom 2 | Kolom 3 |\n| --- | --- | --- |\n| | | |\n' },
-    { label: 'Pemisah', hint: '---', keys: 'garis divider hr pemisah', text: '---\n|' },
-    { label: 'Spoiler / toggle', hint: 'klik untuk buka', keys: 'spoiler toggle sembunyi lipat details', text: ':::spoiler Klik untuk membuka\n|\n:::\n' },
-    { label: 'Blok terkunci PIN', hint: 'dienkripsi lagi', keys: 'kunci lock pin rahasia secret password', action: 'locked' },
-    { label: 'Tanggal hari ini', hint: '', keys: 'tanggal date hari ini', text: function () { return today() + '|'; } },
-    { label: 'Jam sekarang', hint: '', keys: 'jam waktu time sekarang', text: function () { return now() + '|'; } }
+    { label: NH.t('cmd.h1'), hint: '#', keys: 'h1 heading title big ' + NH.t('cmd.h1_keys'), text: '# ' + CARET },
+    { label: NH.t('cmd.h2'), hint: '##', keys: 'h2 heading title ' + NH.t('cmd.h2_keys'), text: '## ' + CARET },
+    { label: NH.t('cmd.h3'), hint: '###', keys: 'h3 subheading small ' + NH.t('cmd.h3_keys'), text: '### ' + CARET },
+    { label: NH.t('ed.todo'), hint: '- [ ]', keys: 'todo task checklist check ' + NH.t('cmd.todo_keys'), text: '- [ ] ' + CARET },
+    { label: NH.t('cmd.list'), hint: '-', keys: 'list bullet ul ' + NH.t('cmd.list_keys'), text: '- ' + CARET },
+    { label: NH.t('cmd.olist'), hint: '1.', keys: 'numbered ordered ol number ' + NH.t('cmd.olist_keys'), text: '1. ' + CARET },
+    { label: NH.t('cmd.quote'), hint: '>', keys: 'quote blockquote ' + NH.t('cmd.quote_keys'), text: '> ' + CARET },
+    { label: NH.t('ed.code'), hint: '```', keys: 'code program script ' + NH.t('cmd.code_keys'), text: '```\n' + CARET + '\n```\n' },
+    { label: NH.t('ed.table'), hint: NH.t('cmd.table_hint'), keys: 'table grid ' + NH.t('cmd.table_keys'), text: '| ' + col(1) + ' | ' + col(2) + ' | ' + col(3) + ' |\n| --- | --- | --- |\n| ' + CARET + ' | | |\n' },
+    { label: NH.t('cmd.divider'), hint: '---', keys: 'divider hr line rule ' + NH.t('cmd.divider_keys'), text: '---\n' + CARET },
+    { label: NH.t('ed.spoiler'), hint: NH.t('cmd.spoiler_hint'), keys: 'spoiler toggle hide fold details ' + NH.t('cmd.spoiler_keys'), text: ':::spoiler ' + NH.t('md.spoiler_default') + '\n' + CARET + '\n:::\n' },
+    { label: NH.t('ed.locked'), hint: NH.t('cmd.locked_hint'), keys: 'lock pin secret password ' + NH.t('cmd.locked_keys'), action: 'locked' },
+    { label: NH.t('cmd.date'), hint: '', keys: 'date today ' + NH.t('cmd.date_keys'), text: function () { return today() + CARET; } },
+    { label: NH.t('cmd.time'), hint: '', keys: 'time now clock ' + NH.t('cmd.time_keys'), text: function () { return now() + CARET; } },
+    { label: NH.t('cmd.var'), hint: '{{ }}', keys: 'variable template field placeholder ' + NH.t('cmd.var_keys'), text: '{{' + CARET + '}}' },
+    { label: NH.t('cmd.calc'), hint: '```calc', keys: 'calc calculator math sum total ' + NH.t('cmd.calc_keys'), text: '```calc\n' + CARET + '\n```\n' },
+    { label: NH.t('cmd.diagram'), hint: 'mermaid', keys: 'diagram mermaid chart flow graph ' + NH.t('cmd.diagram_keys'), text: '```mermaid\nflowchart LR\n  A[' + CARET + '] --> B\n```\n' },
+    { label: NH.t('cmd.wiki'), hint: '[[ ]]', keys: 'wiki link note page ' + NH.t('cmd.wiki_keys'), text: '[[' + CARET + ']]' },
+    { label: NH.t('cmd.slide'), hint: '---', keys: 'slide present page break ' + NH.t('cmd.slide_keys'), text: '\n---\n\n' + CARET },
+    { label: NH.t('cmd.burn'), hint: NH.t('cmd.burn_hint'), keys: 'burn destroy self secret once ' + NH.t('cmd.burn_keys'), action: 'burn' },
+    { label: NH.t('cmd.poll'), hint: ':::poll', keys: 'poll vote survey choice ' + NH.t('cmd.poll_keys'), text: ':::poll ' + CARET + '\n- \n- \n:::\n' },
+    { label: NH.t('cmd.form'), hint: ':::form', keys: 'form survey rsvp signup question ' + NH.t('cmd.form_keys'),
+      text: function () { return ':::form ' + CARET + '\n- ' + NH.t('form.tpl_name') + ' *\n- ' + NH.t('form.tpl_email') + ' (email)\n- ' + NH.t('form.tpl_choice') + ' [' + NH.t('form.tpl_yes') + '|' + NH.t('form.tpl_no') + ']\n- ' + NH.t('form.tpl_note') + ' (long)\n:::\n'; } },
+    { label: NH.t('cmd.embed'), hint: ':::embed', keys: 'embed include transclude live note ' + NH.t('cmd.embed_keys'), text: ':::embed ' + CARET + '\n:::\n' },
+    { label: NH.t('cmd.file'), hint: NH.t('cmd.file_hint'), keys: 'file attach upload image photo audio video pdf ' + NH.t('cmd.file_keys'), action: 'file' },
+    { label: NH.t('cmd.stamp'), hint: '[1:23]', keys: 'timestamp media audio video seek ' + NH.t('cmd.stamp_keys'), action: 'stamp' }
   ];
 
   // Caret pixel position inside a textarea, via a mirrored div.
@@ -60,20 +79,21 @@
   function lockDialog(onInsert) {
     if (!lockDlg) {
       lockDlg = NH.h('dialog.dlg', { 'aria-labelledby': 'lock-h' });
+      var t = function (k) { return NH.t(k).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
       lockDlg.innerHTML =
-        '<div class="dlg-head"><h2 id="lock-h">Blok terkunci PIN</h2><button type="button" class="icon-btn" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button></div>' +
-        '<p class="small muted">Isi blok dienkripsi lagi dengan PIN, di dalam catatan yang sudah terenkripsi. Pembaca butuh link dan PIN. Setelah disisipkan, isinya tidak bisa diedit, hanya dihapus lalu dibuat ulang.</p>' +
-        '<form id="lock-form"><div class="field"><label for="lock-title">Judul blok</label><input type="text" id="lock-title" value="Rahasia" maxlength="80"></div>' +
-        '<div class="field"><label for="lock-text">Isi rahasia</label><textarea id="lock-text" rows="4" required></textarea></div>' +
-        '<div class="field"><label for="lock-pin">PIN</label><input type="password" id="lock-pin" minlength="4" required autocomplete="new-password"><span class="hint">Minimal 4 karakter. Kirim PIN lewat jalur lain.</span></div>' +
-        '<div class="btn-row end"><button class="btn primary" type="submit"><svg><use href="#i-lock"/></svg>Kunci &amp; sisipkan</button></div></form>';
+        '<div class="dlg-head"><h2 id="lock-h">' + t('ed.locked') + '</h2><button type="button" class="icon-btn" data-close aria-label="' + t('common.close') + '"><svg><use href="#i-x"/></svg></button></div>' +
+        '<p class="small muted">' + t('lock.lead') + '</p>' +
+        '<form id="lock-form"><div class="field"><label for="lock-title">' + t('lock.title') + '</label><input type="text" id="lock-title" value="' + t('lock.secret') + '" maxlength="80"></div>' +
+        '<div class="field"><label for="lock-text">' + t('lock.text') + '</label><textarea id="lock-text" rows="4" required></textarea></div>' +
+        '<div class="field"><label for="lock-pin">PIN</label><input type="password" id="lock-pin" minlength="4" required autocomplete="new-password"><span class="hint">' + t('lock.pin_hint') + '</span></div>' +
+        '<div class="btn-row end"><button class="btn primary" type="submit"><svg><use href="#i-lock"/></svg>' + t('lock.insert') + '</button></div></form>';
       document.body.appendChild(lockDlg);
     }
     var form = lockDlg.querySelector('form');
     form.reset();
     form.onsubmit = function (e) {
       e.preventDefault();
-      var title = NH.$('#lock-title', lockDlg).value.replace(/[\r\n]/g, ' ').trim() || 'Rahasia';
+      var title = NH.$('#lock-title', lockDlg).value.replace(/[\r\n]/g, ' ').trim() || NH.t('lock.secret');
       NHC.pinSeal(NH.$('#lock-pin', lockDlg).value, NH.$('#lock-text', lockDlg).value).then(function (payload) {
         lockDlg.close();
         onInsert(':::locked ' + title + '\n' + payload.match(/.{1,76}/g).join('\n') + '\n:::\n');
@@ -83,10 +103,60 @@
     NH.$('#lock-text', lockDlg).focus();
   }
 
+  // ---------- text utilities (command palette) ----------
+  // Each works on the selection, or the whole text when nothing is selected.
+  function lines(t) { return t.split('\n'); }
+  var collator = new Intl.Collator(NH.lang, { numeric: true, sensitivity: 'base' });
+  var UTILS = [
+    { id: 'sort_az', run: function (t) { return lines(t).sort(collator.compare).join('\n'); } },
+    { id: 'sort_za', run: function (t) { return lines(t).sort(collator.compare).reverse().join('\n'); } },
+    { id: 'dedupe', run: function (t) { var seen = {}; return lines(t).filter(function (l) { if (seen[l]) return false; seen[l] = 1; return true; }).join('\n'); } },
+    { id: 'trim', run: function (t) { return lines(t).map(function (l) { return l.trim(); }).join('\n'); } },
+    { id: 'no_empty', run: function (t) { return lines(t).filter(function (l) { return l.trim(); }).join('\n'); } },
+    { id: 'upper', run: function (t) { return t.toLocaleUpperCase(NH.lang); } },
+    { id: 'lower', run: function (t) { return t.toLocaleLowerCase(NH.lang); } },
+    { id: 'title', run: function (t) { return t.toLocaleLowerCase(NH.lang).replace(/(^|[\s(\-"'])(\p{L})/gu, function (m, a, c) { return a + c.toLocaleUpperCase(NH.lang); }); } },
+    { id: 'links', run: function (t) { return (t.match(/https?:\/\/[^\s<>()"']+/g) || []).filter(function (u, i, a) { return a.indexOf(u) === i; }).join('\n'); } },
+    { id: 'json', run: function (t) { return JSON.stringify(JSON.parse(t), null, 2); } },
+    { id: 'json_min', run: function (t) { return JSON.stringify(JSON.parse(t)); } },
+    { id: 'number', run: function (t) { return lines(t).map(function (l, i) { return (i + 1) + '. ' + l; }).join('\n'); } },
+    { id: 'count', run: null }
+  ];
+
+  // Self-destructing block: sealed with a fresh key; the key goes to the
+  // server (opts.onBurnKey) which hands it out only so many times.
+  var burnDlg;
+  function burnDialog(onInsert) {
+    if (!burnDlg) {
+      burnDlg = NH.h('dialog.dlg', { 'aria-label': NH.t('cmd.burn') });
+      var t = function (k) { return NH.t(k).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+      burnDlg.innerHTML =
+        '<div class="dlg-head"><h2>' + t('cmd.burn') + '</h2><button type="button" class="icon-btn" data-close aria-label="' + t('common.close') + '"><svg><use href="#i-x"/></svg></button></div>' +
+        '<p class="small muted">' + t('burn.lead') + '</p>' +
+        '<form><div class="field"><label for="burn-text">' + t('lock.text') + '</label><textarea id="burn-text" rows="4" required></textarea></div>' +
+        '<div class="field"><label for="burn-views">' + t('new.burn_after') + '</label><select id="burn-views"><option value="1">1×</option><option value="3">3×</option><option value="10">10×</option></select></div>' +
+        '<div class="btn-row end"><button class="btn primary" type="submit"><svg><use href="#i-flame"/></svg>' + t('lock.insert') + '</button></div></form>';
+      document.body.appendChild(burnDlg);
+    }
+    var form = burnDlg.querySelector('form');
+    form.reset();
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      var key = NHC.newKey(), views = +NH.$('#burn-views', burnDlg).value;
+      var id = Array.prototype.map.call(crypto.getRandomValues(new Uint8Array(10)), function (b) { return 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]; }).join('');
+      NHC.blockSeal(key, NH.$('#burn-text', burnDlg).value).then(function (payload) {
+        burnDlg.close();
+        onInsert(':::burn ' + id + ' ' + views + '\n' + payload.match(/.{1,76}/g).join('\n') + '\n:::\n', { id: id, key: key, max_views: views });
+      });
+    };
+    burnDlg.showModal();
+    NH.$('#burn-text', burnDlg).focus();
+  }
+
   window.NHEditor = function (root, opts) {
     opts = opts || {};
     var ta = NH.$('.ed-src', root), preview = NH.$('.ed-preview', root), count = NH.$('.ed-count', root), body = NH.$('.ed-body', root);
-    var menu = NH.h('ul.slash', { role: 'listbox', 'aria-label': 'Perintah' });
+    var menu = NH.h('ul.slash', { role: 'listbox', 'aria-label': NH.t('kbar.commands') });
     body.appendChild(menu);
     var slash = null; // {start, items, active}
     var renderTimer;
@@ -105,13 +175,14 @@
     function renderPreview() {
       if (root.dataset.view === 'write') return;
       NHMD.render(preview, ta.value, {
+        vars: {},
         interactive: true,
         onCheck: function (i, checked) { ta.value = NHMD.toggleTask(ta.value, i, checked); changed(); }
       });
     }
 
     function refresh() {
-      count.textContent = ta.value.length.toLocaleString('id') + ' karakter';
+      count.textContent = NH.t('ed.chars', { n: ta.value.length.toLocaleString(NH.lang) });
       clearTimeout(renderTimer);
       renderTimer = setTimeout(renderPreview, 150);
     }
@@ -123,8 +194,8 @@
     // ---------- inserting ----------
     // Replaces [from, to) with text, using execCommand so Ctrl+Z still works.
     function replace(from, to, text) {
-      var caret = text.indexOf('|');
-      text = text.replace('|', '');
+      var caret = text.indexOf(CARET);
+      text = text.replace(CARET, '');
       ta.focus();
       ta.setSelectionRange(from, to);
       if (!document.execCommand('insertText', false, text)) ta.setRangeText(text, from, to, 'end');
@@ -140,22 +211,53 @@
       replace(s, ta.selectionEnd, prefix + text);
     }
 
+    // ---------- attachments ----------
+    function attach(files, pasted) {
+      if (!window.NHFiles) return;
+      var s = ta.selectionStart, e = ta.selectionEnd;
+      files = Array.prototype.slice.call(files, 0, 10);
+      NH.toast(NH.t('file.uploading', { n: files.length }));
+      files.reduce(function (p, f) {
+        return p.then(function (out) { return NHFiles.upload(f, pasted).then(function (md) { return out.concat(md); }); });
+      }, Promise.resolve([])).then(function (mds) {
+        ta.focus();
+        ta.setSelectionRange(s, e);
+        insertBlock(mds.join('\n') + '\n' + CARET);
+        NH.toast(NH.t('file.uploaded'), 'ok');
+      }, function (x) { NH.toast(x.message, 'err'); });
+    }
+    var picker = NH.h('input.hide', { type: 'file', multiple: true });
+    root.appendChild(picker);
+    picker.addEventListener('change', function () { if (picker.files.length) attach(picker.files, false); picker.value = ''; });
+    ta.addEventListener('dragover', function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') !== -1) e.preventDefault(); });
+    ta.addEventListener('drop', function (e) {
+      if (!e.dataTransfer || !e.dataTransfer.files.length) return;
+      e.preventDefault();
+      attach(e.dataTransfer.files, false);
+    });
+
     var CMDS = {
+      file: function () { picker.click(); },
+      stamp: function () {
+        var t = window.NHFiles && NHFiles.stamp();
+        if (!t) return NH.toast(NH.t('file.no_media'));
+        replace(ta.selectionStart, ta.selectionEnd, t + ' ' + CARET);
+      },
       bold: function () {
         var s = ta.selectionStart, e = ta.selectionEnd, sel = ta.value.slice(s, e);
-        replace(s, e, sel ? '**' + sel + '**|' : '**|**');
+        replace(s, e, sel ? '**' + sel + '**' + CARET : '**' + CARET + '**');
       },
-      h2: function () { var ls = lineStart(ta.selectionStart); replace(ls, ls, '## |'); },
-      todo: function () { var ls = lineStart(ta.selectionStart); replace(ls, ls, '- [ ] |'); },
+      h2: function () { var ls = lineStart(ta.selectionStart); replace(ls, ls, '## ' + CARET); },
+      todo: function () { var ls = lineStart(ta.selectionStart); replace(ls, ls, '- [ ] ' + CARET); },
       code: function () {
         var s = ta.selectionStart, e = ta.selectionEnd, sel = ta.value.slice(s, e);
-        if (sel && sel.indexOf('\n') === -1) replace(s, e, '`' + sel + '`|');
-        else insertBlock('```\n' + (sel || '|') + '\n```\n');
+        if (sel && sel.indexOf('\n') === -1) replace(s, e, '`' + sel + '`' + CARET);
+        else insertBlock('```\n' + (sel || CARET) + '\n```\n');
       },
       table: function () { insertBlock(COMMANDS[8].text); },
       spoiler: function () {
         var s = ta.selectionStart, e = ta.selectionEnd, sel = ta.value.slice(s, e);
-        insertBlock(':::spoiler Klik untuk membuka\n' + (sel || '|') + '\n:::\n');
+        insertBlock(':::spoiler ' + NH.t('md.spoiler_default') + '\n' + (sel || CARET) + '\n:::\n');
       },
       locked: function () {
         var s = ta.selectionStart, e = ta.selectionEnd;
@@ -163,6 +265,17 @@
           ta.focus();
           ta.setSelectionRange(s, e);
           insertBlock(block);
+        });
+      },
+      burn: function () {
+        if (!opts.onBurnKey) return NH.toast(NH.t('burn.unavailable'), 'err');
+        var s = ta.selectionStart, e = ta.selectionEnd;
+        burnDialog(function (block, k) {
+          Promise.resolve(opts.onBurnKey(k)).then(function () {
+            ta.focus();
+            ta.setSelectionRange(s, e);
+            insertBlock(block);
+          }, function (x) { NH.toast(x.message, 'err'); });
         });
       }
     };
@@ -226,7 +339,7 @@
           e.preventDefault();
           if (!m[6].trim()) return replace(ls, pos, '');
           var marker = m[3] ? (parseInt(m[3], 10) + 1) + m[2].slice(-1) : m[2];
-          replace(pos, pos, '\n' + m[1] + marker + m[4] + (m[5] ? '[ ] ' : '') + '|');
+          replace(pos, pos, '\n' + m[1] + marker + m[4] + (m[5] ? '[ ] ' : '') + CARET);
         }
       }
     });
@@ -237,21 +350,164 @@
     ta.addEventListener('paste', function (e) {
       var cd = e.clipboardData;
       if (!cd) return;
+      // Screenshots and copied images arrive as files with no text.
+      if (cd.files && cd.files.length && !cd.getData('text/plain')) {
+        e.preventDefault();
+        attach(cd.files, true);
+        return;
+      }
       var table = tsvToTable(cd.getData('text/plain') || '');
       if (table) {
         e.preventDefault();
         insertBlock(table);
-        NH.toast('Tabel dari spreadsheet diubah ke Markdown', 'ok');
+        NH.toast(NH.t('ed.table_pasted'), 'ok');
       }
     });
+
+    // ---------- command palette (Ctrl+K) ----------
+    function utilRun(u) {
+      var s = ta.selectionStart, e = ta.selectionEnd, all = s === e;
+      var text = all ? ta.value : ta.value.slice(s, e);
+      if (!u.run) {
+        var words = (text.match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || []).length;
+        return NH.toast(NH.t('util.count_result', { words: words, chars: text.length, lines: text ? lines(text).length : 0 }));
+      }
+      var out;
+      try { out = u.run(text); } catch (x) { return NH.toast(NH.t('util.json_error'), 'err'); }
+      if (all) replace(0, ta.value.length, out + CARET); else replace(s, e, out + CARET);
+      NH.toast(NH.t('util.done', { name: NH.t('util.' + u.id) }), 'ok');
+    }
+    var palette = null;
+    function openPalette() {
+      var items = COMMANDS.map(function (c) { return { label: c.label, hint: c.hint, keys: c.keys, run: function () {
+        var p = ta.selectionStart;
+        if (c.action) return CMDS[c.action]();
+        replace(p, ta.selectionEnd, typeof c.text === 'function' ? c.text() : c.text);
+      } }; }).concat(UTILS.map(function (u) {
+        return { label: NH.t('util.' + u.id), hint: NH.t('util.group'), keys: u.id + ' ' + NH.t('util.' + u.id), run: function () { utilRun(u); } };
+      }));
+      if (!palette) {
+        palette = NH.h('dialog.dlg.palette', { 'aria-label': NH.t('palette.title') });
+        palette.append(NH.h('input', { type: 'search', placeholder: NH.t('palette.placeholder'), 'aria-label': NH.t('palette.title') }), NH.h('ul.palette-list', { role: 'listbox' }));
+        document.body.appendChild(palette);
+      }
+      var input = palette.firstChild, list = palette.lastChild, shown = [], active = 0;
+      function draw() {
+        var q = input.value.trim().toLowerCase();
+        shown = items.filter(function (it) { return !q || (it.label + ' ' + it.keys).toLowerCase().indexOf(q) !== -1; });
+        active = Math.min(active, Math.max(0, shown.length - 1));
+        list.replaceChildren.apply(list, shown.map(function (it, i) {
+          var li = NH.h('li', { role: 'option', 'aria-selected': i === active }, NH.h('span', it.label), NH.h('small', it.hint));
+          li.addEventListener('mousedown', function (e) { e.preventDefault(); run(it); });
+          return li;
+        }));
+        var act = list.children[active];
+        if (act) act.scrollIntoView({ block: 'nearest' });
+      }
+      function run(it) { palette.close(); ta.focus(); it.run(); }
+      input.oninput = function () { active = 0; draw(); };
+      input.onkeydown = function (e) {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); active = (active + (e.key === 'ArrowDown' ? 1 : -1) + shown.length) % Math.max(1, shown.length); draw(); }
+        if (e.key === 'Enter' && shown[active]) { e.preventDefault(); run(shown[active]); }
+      };
+      input.value = '';
+      draw();
+      palette.showModal();
+      input.focus();
+    }
+    ta.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); }
+      // Alt+T: timestamp of the media playing (Ctrl+T belongs to the browser).
+      if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === 'KeyT') { e.preventDefault(); CMDS.stamp(); }
+    });
+
+    // ---------- bubble toolbar on a selection (mouse/trackpad only) ----------
+    if (window.matchMedia && matchMedia('(pointer: fine)').matches) {
+      var bubble = NH.h('div.bubble', { role: 'toolbar', 'aria-label': NH.t('ed.insert') });
+      var bb = function (label, title, fn) {
+        var b = NH.h('button', { type: 'button', title: title, 'aria-label': title }, label);
+        b.addEventListener('mousedown', function (e) { e.preventDefault(); fn(); hideBubble(); });
+        return b;
+      };
+      bubble.append(
+        bb('B', NH.t('ed.bold'), CMDS.bold),
+        bb('I', NH.t('ed.italic'), function () { var s = ta.selectionStart, e = ta.selectionEnd; replace(s, e, '_' + ta.value.slice(s, e) + '_' + CARET); }),
+        bb('</>', NH.t('ed.code'), CMDS.code),
+        bb('🔗', NH.t('ed.link'), function () { var s = ta.selectionStart, e = ta.selectionEnd; replace(s, e, '[' + ta.value.slice(s, e) + '](' + CARET + ')'); }),
+        bb('{{ }}', NH.t('cmd.var'), function () { var s = ta.selectionStart, e = ta.selectionEnd; replace(s, e, '{{' + ta.value.slice(s, e) + '}}' + CARET); }),
+        bb('⌘K', NH.t('palette.title'), openPalette)
+      );
+      body.appendChild(bubble);
+      var hideBubble = function () { bubble.classList.remove('open'); };
+      var showBubble = function () {
+        if (ta.selectionStart === ta.selectionEnd || document.activeElement !== ta) return hideBubble();
+        var xy = caretXY(ta, ta.selectionStart);
+        bubble.style.left = Math.max(0, Math.min(xy.x + ta.offsetLeft, body.clientWidth - 230)) + 'px';
+        bubble.style.top = Math.max(0, xy.y + ta.offsetTop - ta.scrollTop - 62) + 'px';
+        bubble.classList.add('open');
+      };
+      ta.addEventListener('mouseup', function () { setTimeout(showBubble, 0); });
+      ta.addEventListener('keyup', function (e) { if (e.shiftKey) showBubble(); else hideBubble(); });
+      ta.addEventListener('blur', hideBubble);
+      ta.addEventListener('scroll', hideBubble);
+      ta.addEventListener('input', hideBubble);
+    }
+
+    // ---------- phone keyboard bar ----------
+    // "/" and the other insert buttons are hard to reach on a phone keyboard,
+    // so while typing on a touch screen a bar sits right above the keyboard.
+    // The keyboard doesn't shrink the layout viewport, hence visualViewport.
+    if (window.matchMedia && matchMedia('(pointer: coarse)').matches) {
+      var kb = NH.h('div.kbar', { role: 'toolbar', 'aria-label': NH.t('ed.insert') });
+      var kbBtn = function (label, icon, title, fn) {
+        var b = NH.h('button', { type: 'button', title: title, 'aria-label': title }, icon ? NH.icon(icon) : null, label);
+        b.addEventListener('pointerdown', function (e) { e.preventDefault(); }); // keep the keyboard open
+        b.addEventListener('click', fn);
+        return b;
+      };
+      kb.append(
+        kbBtn('/', null, NH.t('kbar.commands'), function () {
+          var s = ta.selectionStart, before = ta.value.slice(lineStart(s), s);
+          replace(s, ta.selectionEnd, (before && !/\s$/.test(before) ? ' ' : '') + '/' + CARET);
+          checkSlash();
+        }),
+        kbBtn('', 'check', NH.t('ed.todo'), CMDS.todo),
+        kbBtn('', 'paste', NH.t('kbar.paste'), function () {
+          if (!navigator.clipboard || !navigator.clipboard.readText) return NH.toast(NH.t('kbar.paste_hold'));
+          navigator.clipboard.readText().then(function (t) {
+            if (!t) return;
+            var table = tsvToTable(t);
+            if (table) insertBlock(table); else replace(ta.selectionStart, ta.selectionEnd, t + CARET);
+          }, function () { NH.toast(NH.t('kbar.paste_denied')); });
+        }),
+        kbBtn('', 'lock', NH.t('ed.locked'), CMDS.locked),
+        kbBtn('', 'attach', NH.t('cmd.file'), CMDS.file),
+        kbBtn(NH.t('kbar.done'), null, NH.t('kbar.close'), function () { ta.blur(); })
+      );
+      kb.lastChild.classList.add('kbar-done');
+      document.body.appendChild(kb);
+      var vv = window.visualViewport;
+      var place = function () {
+        if (!vv) return;
+        var hidden = Math.max(0, innerHeight - vv.height - vv.offsetTop);
+        kb.style.transform = 'translateY(' + (-hidden) + 'px)';
+      };
+      if (vv) { vv.addEventListener('resize', place); vv.addEventListener('scroll', place); }
+      ta.addEventListener('focus', function () { place(); kb.classList.add('show'); document.body.classList.add('kbar-on'); });
+      ta.addEventListener('blur', function () {
+        setTimeout(function () { if (document.activeElement !== ta) { kb.classList.remove('show'); document.body.classList.remove('kbar-on'); } }, 150);
+      });
+    }
 
     var api = {
       get value() { return ta.value; },
       set value(v) { ta.value = v; refresh(); }, // programmatic: not a user edit
       focus: function () { ta.focus(); },
+      palette: function () { openPalette(); },
       textarea: ta
     };
     refresh();
     return api;
   };
+  window.NHEditor.caretXY = caretXY;
 })();
