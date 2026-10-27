@@ -17,14 +17,13 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 | `docs/DEPLOY.md` | Deploy ke VPS: `deploy/install.sh`, systemd, Caddy/nginx, backup, update, restore |
 | `docs/PROMPT-LANJUTAN.md` | Prompt dan urutan kerja untuk sesi lanjutan |
 
-## Status saat ini (Fase 1 selesai)
+## Status saat ini (semua fase roadmap yang direncanakan selesai)
 
-- Backend: `internal/db` (skema + query), `internal/app` (handler, auth, middleware), `cmd/notehop` (main).
-- Frontend tanpa build step: `web/templates/*.html` + `web/static/js/*.js` + `web/static/css/app.css`. Library pihak ketiga di-vendor di `web/static/vendor/` (marked 15.0.12, DOMPurify 3.2.6, highlight.js 11.11.1, qrcode-generator 1.4.4).
-- Tes: `go test -race ./...` lulus (izin link, burn atomik, konflik edit, freeze, raw, auth, CSRF, header).
-- Sudah dicek di browser: membuat catatan, slash menu, lanjutan list, spoiler, pratinjau, redirect ke halaman catatan, dialog Bagikan.
-- Login dengan SSO (SSO) + frasa brankas: sisi NoteHop selesai dan dicek di browser dengan SSO tiruan (masuk, buat frasa, salah frasa, perangkat kedua, dashboard membuka judul). Sisi SSO (`/sso/notehop`) belum dibuat, lihat `docs/INTEGRASI-SSO-IMAGEAPP.md`.
-- Alur Fase 1 dicek di browser lewat `scripts/e2e.js` (Playwright, 30 cek): blok PIN, centang lewat link checklist, mode append, password + burn, dashboard akun, QR, freeze, tampilan HP 375px. Jalankan lagi setelah mengubah UI.
+- Backend: `internal/db` (skema + migrasi 1–5), `internal/app` (handler, fitur, live relay, nearby, inbox, watch, SSH, Telegram), `internal/client` (CLI, kripto sama dengan browser), `cmd/notehop` (server + `backup`/`new`/`get`).
+- Frontend tanpa build step: `web/templates/*.html` + `web/static/js/*.js` + `web/static/css/app.css`. Vendor di `web/static/vendor/`: marked 15.0.12, DOMPurify 3.2.6, highlight.js 11.11.1, qrcode-generator 1.4.4, Mermaid 11.12.0 (di iframe sandbox), Yjs 13.6.27 (bundle IIFE `window.Y`).
+- Progres per batch ada di `docs/PROGRESS.md` (A browser, B server, C lampiran, D real-time, E integrasi). Fitur yang sengaja tidak dibuat juga dicatat di sana beserta alasannya.
+- Tes: `go test -race ./...` (Go) dan 8 skrip Playwright di `scripts/` (lihat Perintah). Jalankan semua setelah mengubah UI.
+- Real-time: server hanya relay ciphertext (`live.go`); dokumen Yjs ada di browser; penulis tertua di room yang menyimpan (PUT biasa).
 
 ## Aturan yang harus dijaga
 
@@ -45,7 +44,8 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 go run ./cmd/notehop -addr 127.0.0.1:8090 -db data/dev.db   # dev
 go test -race ./...                                          # tes
 go build -o bin/notehop ./cmd/notehop                        # build
-NOTEHOP_URL=http://127.0.0.1:8090 node scripts/e2e.js       # uji browser (server di DB kosong)
+NOTEHOP_URL=http://127.0.0.1:8090 node scripts/e2e.js       # uji browser (server di DB kosong); juga e2e-features,
+#   e2e-server-features, e2e-files, e2e-live, e2e-blocks, e2e-nearby, e2e-integrations (butuh NOTEHOP_BIN=binary)
 make linux                                                   # binary statis amd64/arm64 untuk VPS
 notehop backup -db notehop.db salinan.db                     # backup saat berjalan
 ```
@@ -55,4 +55,5 @@ notehop backup -db notehop.db salinan.db                     # backup saat berja
 ## Langkah berikutnya yang disarankan
 
 1. Sisi SSO untuk SSO: route `/sso/notehop` di repo `navi-crwn/accounts` (lihat `docs/INTEGRASI-SSO-IMAGEAPP.md`).
-2. Lanjut ke Fase 2 di ROADMAP (real-time, riwayat, sticky keyboard bar HP).
+2. Deploy dan audit di VPS mengikuti `docs/DEPLOY.md` (ada di paket zip handoff).
+3. Sisa "belum" di ROADMAP: edit offline + sinkron, ekspor PNG, notifikasi Telegram/email untuk Watch, bot WhatsApp/Discord.

@@ -45,7 +45,7 @@ Prinsip yang dipegang semua fitur:
 - 🔜 Mermaid diagram & kanvas coretan
 - 🔜 Command palette `Ctrl+K` + floating bubble toolbar saat teks diseleksi
 - ✅ Sticky keyboard bar di HP (`/`, to-do, tempel, blok PIN, selesai), menempel di atas keyboard lewat `visualViewport`
-- 🔜 Offline-first (PWA + IndexedDB, sinkron saat online lagi)
+- ✅ PWA offline: aplikasi bisa dipasang, catatan yang pernah dibuka bisa dibaca offline (service worker menyimpan ciphertext, bukan kunci; catatan burn tidak disimpan). Edit offline lalu sinkron: belum
 - ✅ Mode "Usul Edit" (suggesting/pull request): pengunjung read-only mengusulkan, pemilik Terima/Tolak
 - ✅ Copy button per baris/blok di mode baca (paragraf, item daftar, kutipan, tabel sebagai TSV)
 
@@ -77,16 +77,16 @@ Prinsip yang dipegang semua fitur:
 - ✅ Live embed antar catatan (`:::embed <link>`, diperbarui tiap 10 detik; satu tingkat, tidak untuk catatan berpassword/burn)
 - ✅ Audio reader (Web Speech API, di browser)
 - 🔜 Zen mode + ambient sound + Pomodoro + target jumlah kata
-- 🔜 Export: PDF, Markdown, TXT, dan gambar PNG estetik (dibuat di browser)
+- ✅ Export: Markdown dan PDF (print) per catatan; ekspor/impor semua catatan akun sebagai JSON (backup ke penyimpanan sendiri). PNG estetik: belum
 
 ## Fase 5: Ekosistem, developer & pindah perangkat
 
-- 🔜 SSH access (`echo "log" | ssh notehop.id append/slug`) dengan Charmbracelet Wish ⚠️ E2E: hanya catatan publik, atau klien CLI yang mengenkripsi sendiri
-- 🔜 CLI resmi `notehop` (enkripsi lokal, jadi raw/curl tetap zero-knowledge)
-- 🔜 Instant Mock API / JSON server (`/api/slug` + CORS) ⚠️ E2E: hanya catatan publik
-- 🔜 Webhook-to-Note (URL unik per catatan, baris masuk otomatis) ⚠️ E2E: publik, atau payload dienkripsi pengirim dengan kunci publik catatan
-- 🔜 Watch Note: notifikasi perubahan via webhook/Telegram/email (hanya metadata, bukan isi)
-- 🔜 Bot Telegram/WhatsApp/Discord: kirim pesan → catatan baru
+- ✅ SSH access (`ssh -p 2222 host < file.md`, `ssh … get <link>`) dengan golang.org/x/crypto/ssh, aktif lewat `NOTEHOP_SSH_ADDR` ⚠️ E2E: hanya catatan publik (kedaluwarsa 30 hari); untuk catatan terenkripsi pakai CLI
+- ✅ CLI resmi: `notehop new` / `notehop get` (enkripsi lokal, format sama persis dengan browser)
+- ✅ Instant Mock API: `/mock/<link>/path/0` dari JSON di catatan (seluruh teks atau blok ```json), CORS terbuka ⚠️ E2E: hanya catatan publik
+- ✅ Webhook-to-Note (Kotak masuk): `POST /in/<token>` jadi entri; server menyegel tiap entri ke kunci publik catatan (P-256 ECDH + AES-GCM), kunci privat hanya bisa dibuka pemegang kunci catatan ⚠️ server melihat teks saat tiba, menyimpan ciphertext
+- ✅ Watch Note: webhook (hanya metadata: jenis perubahan, versi, waktu), ditandatangani HMAC, dikumpulkan per 5 detik, aman dari SSRF. Telegram/email: belum
+- ✅ Bot Telegram ⚠️: `/connect <alamat kotak masuk>` lalu setiap pesan masuk ke catatan (terenkripsi saat disimpan; Telegram dan server melihat teks saat dikirim). WhatsApp/Discord: belum
 - 🔜 Email-to-Note ⚠️ E2E: isi diterima server sebelum dienkripsi (pakai kunci publik catatan)
 - 🔜 Web clipper / bookmarklet "Kirim ke catatan"
 - 🔜 Fork / Clone ke ruang sendiri (di browser, kunci baru)
@@ -104,7 +104,7 @@ Prinsip yang dipegang semua fitur:
 
 - ✅ **Claimable notes**: catatan tamu otomatis pindah ke akun saat daftar/login (vault lokal → akun)
 - 🔜 Auto-grouping pintar (berisi link / to-do / kode / sedang di-share), dihitung di browser
-- 🔜 Link hub / profil publik `/@username` (catatan publik pilihan)
+- ✅ Profil publik `/@username`: catatan publik pilihan (pill "Di profil saya"), hanya link baca saja; 404 jika kosong
 - ✅ Auto-archive catatan yang lama tidak dibuka (cold archive)
 - ✅ Read receipts (jumlah buka + terakhir dibuka untuk admin; tanpa lokasi)
 - ✅ Shadow margin: coretan pribadi di samping catatan orang lain (terenkripsi vault)

@@ -10,6 +10,8 @@
   <div class="dash-tools">
     <input type="search" id="filter" class="filter" placeholder="{{.L.T "dash.search"}}" aria-label="{{.L.T "dash.search"}}">
     <button type="button" class="btn sm" id="graph-btn"><svg><use href="#i-share"/></svg>{{.L.T "dash.graph"}}</button>
+    <button type="button" class="btn sm" id="export-btn" title="{{.L.T "dash.export_hint"}}"><svg><use href="#i-download"/></svg>{{.L.T "dash.export"}}</button>
+    <label class="btn sm" id="import-btn" title="{{.L.T "dash.import_hint"}}"><svg><use href="#i-plus"/></svg>{{.L.T "dash.import"}}<input type="file" accept=".json,application/json" class="hide" id="import-file"></label>
   </div>
   <div class="pills groups" id="groups" role="toolbar" aria-label="{{.L.T "dash.groups"}}">
     <button type="button" class="chip" data-group="all" aria-pressed="true">{{.L.T "dash.g_all"}}</button>

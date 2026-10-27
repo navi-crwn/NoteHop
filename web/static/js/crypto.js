@@ -139,6 +139,31 @@
       });
     },
 
+    // Inbox: entries the server sealed to the note's P-256 key (see
+    // internal/app/inbox.go). inboxKeys makes the pair; the private JWK is
+    // then stored sealed with the note key.
+    inboxKeys: function () {
+      return subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']).then(function (kp) {
+        return Promise.all([subtle.exportKey('raw', kp.publicKey), subtle.exportKey('jwk', kp.privateKey)]);
+      }).then(function (r) { return { pub: b64u(r[0]), jwk: r[1] }; });
+    },
+    inboxOpen: function (jwk, content) {
+      var p = String(content).split('.');
+      return Promise.all([
+        subtle.importKey('jwk', jwk, { name: 'ECDH', namedCurve: 'P-256' }, false, ['deriveBits']),
+        subtle.importKey('raw', unb64u(p[1]), { name: 'ECDH', namedCurve: 'P-256' }, false, [])
+      ]).then(function (k) {
+        return subtle.deriveBits({ name: 'ECDH', public: k[1] }, k[0], 256);
+      }).then(function (shared) {
+        return subtle.importKey('raw', shared, 'HKDF', false, ['deriveBits']);
+      }).then(function (ikm) {
+        return subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(0), info: enc.encode('notehop/inbox') }, ikm, 256);
+      }).then(function (key) {
+        var raw = unb64u(p[2]);
+        return aesKey(new Uint8Array(key)).then(function (k) { return subtle.decrypt({ name: 'AES-GCM', iv: raw.subarray(0, 12) }, k, raw.subarray(12)); });
+      }).then(function (pt) { return JSON.parse(dec.decode(pt)); });
+    },
+
     // Account: one PBKDF2 run, split into a local vault key and a login secret.
     account: function (username, password) {
       return pbkdf2(password, enc.encode('notehop/account/' + username.toLowerCase()), ACCOUNT_ITER, 512).then(function (b) {

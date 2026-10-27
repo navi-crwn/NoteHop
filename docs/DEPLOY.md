@@ -133,3 +133,5 @@ Ada `Dockerfile` untuk yang lebih suka container: `docker build -t notehop .` la
 ## Mengerjakan langsung di VPS dengan Claude
 
 Sesi Claude Code di cloud tidak bisa SSH ke VPS. Kalau ingin Claude menginstal dan mengetes langsung di server, pasang Claude Code di VPS lalu jalankan `claude remote-control` di folder repo. Sesi itu akan muncul di aplikasi Claude Code dan berjalan di VPS Anda.
+
+Arahan lengkap untuk sesi itu (pasang, uji, audit, update repo) ada di [`docs/DEPLOY.md`](DEPLOY.md); paket zip handoff juga menyertakannya di folder teratas.

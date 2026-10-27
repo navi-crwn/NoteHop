@@ -140,6 +140,11 @@ var migrations = []string{
 	`CREATE TABLE files (id TEXT PRIMARY KEY, size INTEGER NOT NULL, data BLOB NOT NULL,
 		created INTEGER NOT NULL, expires INTEGER NOT NULL);
 	CREATE INDEX files_expires ON files(expires);`,
+	// 5: inboxes (webhook-to-note) and Telegram chats linked to them.
+	`CREATE TABLE inboxes (token TEXT PRIMARY KEY, note_id INTEGER NOT NULL UNIQUE REFERENCES notes(id) ON DELETE CASCADE,
+		pub TEXT NOT NULL, priv TEXT NOT NULL, created INTEGER NOT NULL);
+	CREATE TABLE telegram_chats (chat_id INTEGER PRIMARY KEY, inbox TEXT NOT NULL REFERENCES inboxes(token) ON DELETE CASCADE,
+		created INTEGER NOT NULL);`,
 }
 
 // migrate applies pending migrations, each in its own transaction together

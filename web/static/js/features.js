@@ -1,6 +1,7 @@
 // Note page features that need the server: advanced share settings (time
 // capsule, scheduled lock, dead man's switch, recurring checklist, IP
-// allowlist, sign-off, watermark, decoy), version history, suggestions,
+// allowlist, sign-off, watermark, decoy, watch webhook, inbox, profile),
+// version history, suggestions,
 // signatures, watermark tracing and private margins. Text is encrypted and
 // decrypted here; the server stores and counts.
 (function () {
@@ -62,7 +63,20 @@
       state: function (m) {
         return !m.decoy ? NH.t('decoy.off') : m.decoy.opened ? NH.t('decoy.used', { n: m.decoy.opened, time: m.decoy.last_opened }) : NH.t('decoy.on');
       },
-      saved: 'decoy.saved', cleared: 'decoy.cleared' }
+      saved: 'decoy.saved', cleared: 'decoy.cleared' },
+    { id: 'watch', icon: 'link', label: 'feat.watch', kind: 'url', field: 'watch',
+      active: function (m) { return !!m.watch; }, blocked: function () { return ''; },
+      state: function (m) { return m.watch ? NH.t('watch.on', { url: m.watch, key: m.watch_key }) : NH.t('watch.off'); },
+      clear: { watch: '' }, saved: 'watch.saved', cleared: 'watch.cleared' },
+    { id: 'inbox', icon: 'append', label: 'feat.inbox', kind: 'inbox',
+      active: function (m) { return !!m.inbox; }, blocked: function () { return ''; },
+      state: function (m) { return m.inbox ? NH.t('inbox.on', { url: m.inbox }) : NH.t('inbox.off'); },
+      saved: 'inbox.saved', cleared: 'inbox.cleared' },
+    { id: 'profile', icon: 'globe', label: 'feat.profile', kind: 'bool', field: 'profile',
+      active: function (m) { return !!m.profile; },
+      blocked: function (m) { return m.encrypted || !m.owned ? NH.t('rule.profile_public') : ''; },
+      state: function (m) { return NH.t(m.profile ? 'profile.on' : 'profile.off', { name: document.body.dataset.user || '' }); },
+      clear: { profile: false }, saved: 'profile.saved', cleared: 'profile.cleared' }
   ];
 
   var built = false;
@@ -79,6 +93,7 @@
       if (f.kind === 'number') f.field_el = h('input', { type: 'number', min: f.min, max: f.max, required: true });
       if (f.kind === 'select') f.field_el = h('select', f.options.map(function (o) { return h('option', { value: o }, NH.t('reset.' + o)); }));
       if (f.kind === 'list') f.field_el = h('textarea', { rows: 3, placeholder: '203.0.113.7\n10.0.0.0/8', dir: 'ltr' });
+      if (f.kind === 'url') f.field_el = h('input', { type: 'url', required: true, placeholder: 'https://example.com/hook', dir: 'ltr' });
       if (f.kind === 'decoy') {
         f.pw = h('input', { type: 'password', autocomplete: 'new-password', placeholder: NH.t('new.decoy_password'), required: true });
         f.text = h('textarea', { rows: 3, dir: 'auto', placeholder: NH.t('new.decoy_text') });
@@ -112,7 +127,9 @@
         if (f.kind === 'number') b[f.field] = +f.field_el.value;
         if (f.kind === 'select') b[f.field] = f.field_el.value;
         if (f.kind === 'list') b[f.field] = f.field_el.value.split(/[\s,]+/).filter(Boolean);
+        if (f.kind === 'url') b[f.field] = f.field_el.value.trim();
         if (f.kind === 'decoy') return saveDecoy(f);
+        if (f.kind === 'inbox') return saveInbox(f);
         save(f, b);
       });
     });
@@ -135,6 +152,7 @@
       }
       if (f.kind === 'number' && !f.field_el.value) f.field_el.value = m[f.field] || f.def;
       if (f.kind === 'select' && on) f.field_el.value = m[f.field];
+      if (f.kind === 'url' && on && document.activeElement !== f.field_el) f.field_el.value = m[f.field];
       if (f.kind === 'list' && on && document.activeElement !== f.field_el) f.field_el.value = (m.ip_allow || []).join('\n');
     });
     if (ADV.some(function (f) { return f.active(m); })) $('#share-adv').open = true;
@@ -149,8 +167,8 @@
     N.api('POST', '/config', body).then(function (m) { applied(f, m, true); }, function (x) { NH.toast(x.message, 'err'); draw(S.meta); });
   }
   function clear(f) {
-    if (f.kind === 'decoy') {
-      return N.api('DELETE', '/decoy').then(function (m) { applied(f, m, false); }, function (x) { NH.toast(x.message, 'err'); draw(S.meta); });
+    if (f.kind === 'decoy' || f.kind === 'inbox') {
+      return N.api('DELETE', '/' + f.kind).then(function (m) { applied(f, m, false); }, function (x) { NH.toast(x.message, 'err'); draw(S.meta); });
     }
     N.api('POST', '/config', f.clear).then(function (m) { applied(f, m, false); }, function (x) { NH.toast(x.message, 'err'); draw(S.meta); });
   }
@@ -160,6 +178,13 @@
     NHC.decoy(N.key(), pw, S.meta.salt, { t: N.title(), b: f.text.value }, { t: N.title(), b: N.body() }).then(function (d) {
       return N.api('PUT', '/decoy', d);
     }).then(function (m) { f.pw.value = ''; applied(f, m, true); }, function (x) { NH.toast(x.message, 'err'); });
+  }
+  // Inbox: a key pair made here; the server gets the public half and the
+  // private half sealed with the note key (so every reader can open entries).
+  function saveInbox(f) {
+    NHC.inboxKeys().then(function (k) {
+      return S.codec.encode({ jwk: k.jwk }).then(function (priv) { return N.api('POST', '/inbox', { pub: k.pub, priv: priv }); });
+    }).then(function (m) { applied(f, m, true); }, function (x) { NH.toast(x.message, 'err'); });
   }
   window.NHAdv = { draw: draw };
 

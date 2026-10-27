@@ -61,10 +61,23 @@ UI tersedia dalam 8 bahasa: English (default), 中文, Español, العربية 
 | `NOTEHOP_SHARE_URL` | kosong | Domain kedua untuk link yang dibagikan (misalnya `https://nhop.link`). Login, dashboard, editor, dan link admin tetap di `NOTEHOP_BASE_URL` |
 | `NOTEHOP_FILE_MB` | `10` | Ukuran maksimal satu lampiran (MB). `0` = lampiran mati. Di nginx naikkan `client_max_body_size` juga |
 | `NOTEHOP_FILES_TOTAL_MB` | `2048` | Batas total semua lampiran yang masih hidup (disimpan di SQLite, dihapus setelah 24 jam). `0` = tanpa batas |
+| `NOTEHOP_SSH_ADDR` | kosong | Aktifkan SSH untuk catatan publik, misalnya `:2222` |
+| `NOTEHOP_SSH_KEY` | `ssh_host_ed25519_key` di folder DB | Kunci host SSH (dibuat otomatis saat pertama jalan) |
+| `NOTEHOP_PRIVATE_HOOKS` | `false` | Izinkan webhook Watch ke alamat privat/loopback dan `http://` (hanya untuk jaringan sendiri) |
+| `TELEGRAM_BOT_TOKEN` | kosong | Token bot dari @BotFather; butuh `NOTEHOP_BASE_URL` (webhook didaftarkan saat start) |
 | `NOTEHOP_SSO_URL` | kosong | Alamat SSO untuk "Masuk dengan SSO", misalnya `https://accounts.example.com`. Kosong = fitur mati |
 | `NOTEHOP_SSO_SECRET` | kosong | Rahasia bersama (minimal 32 karakter), sama dengan `NOTEHOP_SSO_SECRET` di SSO. SSO juga butuh `NOTEHOP_BASE_URL` |
 
 Skema database dimigrasi otomatis saat start (nomor versi di `PRAGMA user_version`, daftar di `migrations` pada `internal/db/db.go`). Binary yang lebih lama menolak membuka database dengan versi skema yang lebih baru.
+
+### CLI dan SSH
+
+```bash
+notehop new -server https://note.domainanda.com < catatan.md        # terenkripsi di terminal, cetak link
+notehop new -server https://… -password rahasia -expires 24h -burn 1 file.md
+notehop get 'https://note.domainanda.com/n/TOKEN#k=…'               # unduh dan dekripsi di terminal
+ssh -p 2222 note.domainanda.com < catatan.md                       # ⚠️ catatan publik (jika NOTEHOP_SSH_ADDR aktif)
+```
 
 ### Deploy ke VPS
 
@@ -121,6 +134,12 @@ Semua JSON. Header: `X-Admin` (token admin), `X-Write` (bukti kunci).
 | `GET /api/nearby` (WebSocket) | siapa saja, per IP publik | Signaling WebRTC untuk `/nearby` (`hi`, `sig`); pad dan file lewat koneksi langsung antar browser |
 | `POST /api/files` | siapa saja (20/menit/IP) | Unggah lampiran: body = ciphertext mentah (`application/octet-stream`). Balas `{id, expires}`; kuncinya hanya ada di teks catatan (`nh-file:ID#KUNCI`) |
 | `GET /api/files/{id}` | siapa saja yang tahu ID | Ciphertext lampiran (404 setelah 24 jam) |
+| `POST /api/n/{token}/inbox` · `DELETE` | admin | Aktifkan kotak masuk `{pub, priv}` (kunci publik P-256 + kunci privat yang disegel browser) / matikan |
+| `POST /in/{token}` | siapa saja yang tahu alamatnya (60/menit/IP) | Teks mentah atau JSON `{text, from}` → entri terenkripsi |
+| `POST /api/telegram/{secret}` | Telegram | Webhook bot (diverifikasi header `X-Telegram-Bot-Api-Secret-Token`) |
+| `GET /mock/{token}/{path…}` | siapa saja | JSON dari catatan publik, CORS `*` |
+| `GET /@{username}` | siapa saja | Profil publik (catatan publik yang dipilih pemilik) |
+| `GET /sw.js` · `/manifest.webmanifest` · `/offline` | | PWA |
 | `GET /diff` | siapa saja | Halaman pembanding dua teks (diff di browser) |
 | `POST /api/n/{token}/links` · `DELETE …/links/{t}` | admin | Tambah/matikan link |
 | `DELETE /api/n/{token}` | admin atau pemilik akun | Hapus catatan |

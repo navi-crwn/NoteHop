@@ -188,7 +188,7 @@ func (a *App) apiSuggest(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInternalServerError, "err.save_failed")
 		return
 	}
-	runAfterUpdate(x.note, time.Now())
+	a.runAfterUpdate(x.note, time.Now(), "suggestion")
 	writeJSON(w, http.StatusCreated, map[string]any{"id": s.ID})
 }
 
@@ -274,7 +274,7 @@ func (a *App) apiSign(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInternalServerError, "err.save_failed")
 		return
 	}
-	runAfterUpdate(n, time.Now())
+	a.runAfterUpdate(n, time.Now(), "signature")
 	writeJSON(w, http.StatusCreated, s)
 }
 

@@ -20,10 +20,10 @@ Status: ✅ selesai · 🔨 dikerjakan · ⏳ antre · ⛔ sengaja tidak dibuat 
 ✅ Kolaborasi E2E (Yjs + WebSocket) · ✅ Kursor + nama tamu · ✅ Mini-chat · ✅ Follow presenter · ✅ Embed blok live · ✅ Kanban · ✅ Form-to-Note · ✅ Same-WiFi pad · ✅ P2P file drop (WebRTC) · uji: `scripts/e2e-live.js`, `scripts/e2e-blocks.js`, `scripts/e2e-nearby.js`, `internal/app/live_test.go`
 
 ## Batch E: integrasi
-⏳ CLI `notehop` (enkripsi lokal) · ⏳ Watch Note (webhook) · ⏳ Webhook-to-Note · ⏳ Profil publik `/@user` · ⏳ Mock API JSON · ⏳ SSH (catatan publik) · ⏳ Bot Telegram ⚠️ · ⏳ PWA offline · ⏳ Backup/BYO storage
+✅ CLI `notehop` (enkripsi lokal) · ✅ Watch Note (webhook) · ✅ Webhook-to-Note · ✅ Profil publik `/@user` · ✅ Mock API JSON · ✅ SSH (catatan publik) · ✅ Bot Telegram ⚠️ · ✅ PWA offline · ✅ Backup/BYO storage · uji: `scripts/e2e-integrations.js`, `internal/client/client_test.go`, `internal/app/{watch,public,sshd,telegram}_test.go`
 
 ## Tahap akhir
-⏳ Zip + arahan sesi Claude VPS
+✅ Zip + arahan sesi Claude VPS (`docs/DEPLOY.md`; zip berisi sumber dari commit, binary linux amd64/arm64 + SHA256SUMS, HANDOFF.txt)
 
 ## Sengaja tidak dibuat
 - ⛔ Paywalled note (D di tabel prioritas: pembayaran & kepatuhan, bukan inti)

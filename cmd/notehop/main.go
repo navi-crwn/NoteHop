@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -83,6 +84,8 @@ func main() {
 		ShareURL:      strings.TrimRight(env("NOTEHOP_SHARE_URL", ""), "/"),
 		FileMB:        envInt("NOTEHOP_FILE_MB", 10),
 		FilesTotalMB:  envInt("NOTEHOP_FILES_TOTAL_MB", 2048),
+		PrivateHooks:  envBool("NOTEHOP_PRIVATE_HOOKS", false),
+		TelegramToken: env("TELEGRAM_BOT_TOKEN", ""),
 	}
 	if cfg.ShareURL != "" && base == "" {
 		log.Printf("NOTEHOP_SHARE_URL is ignored: it needs NOTEHOP_BASE_URL for the main site")
@@ -104,6 +107,17 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	go a.Janitor(ctx)
+	if err := a.SetupTelegram(ctx); err != nil {
+		log.Printf("telegram bot is off: %v", err)
+	}
+	if sshAddr := env("NOTEHOP_SSH_ADDR", ""); sshAddr != "" {
+		key := env("NOTEHOP_SSH_KEY", filepath.Join(filepath.Dir(*dbPath), "ssh_host_ed25519_key"))
+		go func() {
+			if err := a.ServeSSH(ctx, sshAddr, key); err != nil {
+				log.Printf("ssh: %v", err)
+			}
+		}()
+	}
 
 	srv := &http.Server{
 		Addr:              *addr,
@@ -218,4 +232,7 @@ func cliGet(args []string) {
 		fmt.Printf("# %s\n\n", n.Title)
 	}
 	fmt.Print(n.Body)
+	if !strings.HasSuffix(n.Body, "\n") {
+		fmt.Println()
+	}
 }

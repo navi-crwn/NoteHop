@@ -34,6 +34,7 @@
   function start() {
     var m = S.meta;
     if (!S.keys || m.frozen || m.max_views > 0 || closed) return;
+    if (!navigator.onLine) { window.addEventListener('online', start, { once: true }); return; }
     var url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/api/n/' + encodeURIComponent(N.token) + '/live';
     ws = new WebSocket(url);
     ws.onopen = function () {
@@ -54,6 +55,7 @@
       drawPeers();
       if (closed) return;
       setStatus(NH.t('live.reconnecting'));
+      if (!navigator.onLine) return window.addEventListener('online', start, { once: true });
       setTimeout(start, Math.min(30000, 1000 * Math.pow(2, retry++)));
     };
   }
