@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -20,6 +21,13 @@ import (
 
 func env(key, def string) string {
 	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return def
+}
+
+func envInt(key string, def int) int {
+	if v, err := strconv.Atoi(os.Getenv(key)); err == nil {
 		return v
 	}
 	return def
@@ -62,6 +70,8 @@ func main() {
 		SSOURL:     strings.TrimRight(env("NOTEHOP_SSO_URL", ""), "/"),
 		SSOSecret:  env("NOTEHOP_SSO_SECRET", ""),
 		ShareURL:      strings.TrimRight(env("NOTEHOP_SHARE_URL", ""), "/"),
+		FileMB:        envInt("NOTEHOP_FILE_MB", 10),
+		FilesTotalMB:  envInt("NOTEHOP_FILES_TOTAL_MB", 2048),
 	}
 	if cfg.ShareURL != "" && base == "" {
 		log.Printf("NOTEHOP_SHARE_URL is ignored: it needs NOTEHOP_BASE_URL for the main site")

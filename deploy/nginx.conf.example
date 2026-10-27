@@ -16,8 +16,9 @@ server {
     ssl_certificate     /etc/letsencrypt/live/note.example.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/note.example.com/privkey.pem;
 
-    # Notes are up to 1 MB of ciphertext plus JSON overhead.
-    client_max_body_size 2m;
+    # Notes are up to 1 MB of ciphertext; attachments up to NOTEHOP_FILE_MB
+    # (default 10) plus a little encryption overhead.
+    client_max_body_size 12m;
 
     location / {
         proxy_pass http://127.0.0.1:8090;

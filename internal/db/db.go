@@ -135,6 +135,11 @@ var migrations = []string{
 		content TEXT NOT NULL, updated INTEGER NOT NULL, PRIMARY KEY (user_id, ref));
 	CREATE TABLE burn_keys (note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE, id TEXT NOT NULL,
 		key TEXT NOT NULL, max_views INTEGER NOT NULL, views INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (note_id, id));`,
+	// 4: temporary encrypted attachments (24 hours). Each file has its own
+	// key, kept only inside the note text.
+	`CREATE TABLE files (id TEXT PRIMARY KEY, size INTEGER NOT NULL, data BLOB NOT NULL,
+		created INTEGER NOT NULL, expires INTEGER NOT NULL);
+	CREATE INDEX files_expires ON files(expires);`,
 }
 
 // migrate applies pending migrations, each in its own transaction together
@@ -672,7 +677,7 @@ func (d *DB) SetConfig(id int64, config string) error {
 	return nil
 }
 
-// Sweep removes expired notes and sessions.
+// Sweep removes expired notes, sessions and attachments.
 func (d *DB) Sweep() (int64, error) {
 	t := now()
 	res, err := d.Exec(`DELETE FROM notes WHERE expires > 0 AND expires <= ?`, t)
@@ -680,6 +685,9 @@ func (d *DB) Sweep() (int64, error) {
 		return 0, err
 	}
 	k, _ := res.RowsAffected()
-	_, err = d.Exec(`DELETE FROM sessions WHERE expires <= ?`, t)
+	if _, err = d.Exec(`DELETE FROM sessions WHERE expires <= ?`, t); err != nil {
+		return k, err
+	}
+	_, err = d.Exec(`DELETE FROM files WHERE expires <= ?`, t)
 	return k, err
 }

@@ -13,7 +13,7 @@ import (
 	"github.com/navi-crwn/NoteHop/internal/i18n"
 )
 
-const csp = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; " +
+const csp = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; " +
 	"connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 
 // secure adds security headers, rejects cross-site writes and rate-limits the API.
@@ -38,6 +38,8 @@ func (a *App) secure(next http.Handler) http.Handler {
 			switch {
 			case r.URL.Path == "/api/notes":
 				bucket, rate = "c", 30
+			case r.URL.Path == "/api/files":
+				bucket, rate = "f", 20
 			case r.URL.Path == "/api/login" || r.URL.Path == "/api/register" || r.URL.Path == "/api/vault":
 				bucket, rate = "a", 15
 			}

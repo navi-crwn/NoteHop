@@ -107,7 +107,7 @@
         continue;
       }
       var b = !fence && line.match(/^:::(spoiler|locked|poll|burn)\s*(.*)$/);
-      if (!b) { out.push(line); continue; }
+      if (!b) { out.push(!fence && window.NHFiles ? NHFiles.preprocess(line) : line); continue; }
       var inner = [], j = i + 1;
       while (j < lines.length && !/^:::\s*$/.test(lines[j])) inner.push(lines[j++]);
       if (j >= lines.length) { out.push(line); continue; } // unclosed: leave as text
@@ -420,8 +420,9 @@
     lockedBlocks(el);
     polls(el, opts);
     burnBlocks(el, opts);
+    if (window.NHFiles) NHFiles.render(el);
     if (opts.copy) copyButtons(el);
-    if (!el.textContent.trim() && !el.querySelector('.locked, input, hr')) el.appendChild(NH.h('p.faint', NH.t('md.empty')));
+    if (!el.textContent.trim() && !el.querySelector('.locked, input, hr, .nhfile, .attach')) el.appendChild(NH.h('p.faint', NH.t('md.empty')));
   }
 
   window.NHMD = { render: render, html: html, applyChecks: applyChecks, toggleTask: toggleTask,

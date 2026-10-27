@@ -38,7 +38,9 @@
     { label: NH.t('cmd.wiki'), hint: '[[ ]]', keys: 'wiki link note page ' + NH.t('cmd.wiki_keys'), text: '[[' + CARET + ']]' },
     { label: NH.t('cmd.slide'), hint: '---', keys: 'slide present page break ' + NH.t('cmd.slide_keys'), text: '\n---\n\n' + CARET },
     { label: NH.t('cmd.burn'), hint: NH.t('cmd.burn_hint'), keys: 'burn destroy self secret once ' + NH.t('cmd.burn_keys'), action: 'burn' },
-    { label: NH.t('cmd.poll'), hint: ':::poll', keys: 'poll vote survey choice ' + NH.t('cmd.poll_keys'), text: ':::poll ' + CARET + '\n- \n- \n:::\n' }
+    { label: NH.t('cmd.poll'), hint: ':::poll', keys: 'poll vote survey choice ' + NH.t('cmd.poll_keys'), text: ':::poll ' + CARET + '\n- \n- \n:::\n' },
+    { label: NH.t('cmd.file'), hint: NH.t('cmd.file_hint'), keys: 'file attach upload image photo audio video pdf ' + NH.t('cmd.file_keys'), action: 'file' },
+    { label: NH.t('cmd.stamp'), hint: '[1:23]', keys: 'timestamp media audio video seek ' + NH.t('cmd.stamp_keys'), action: 'stamp' }
   ];
 
   // Caret pixel position inside a textarea, via a mirrored div.
@@ -206,7 +208,38 @@
       replace(s, ta.selectionEnd, prefix + text);
     }
 
+    // ---------- attachments ----------
+    function attach(files, pasted) {
+      if (!window.NHFiles) return;
+      var s = ta.selectionStart, e = ta.selectionEnd;
+      files = Array.prototype.slice.call(files, 0, 10);
+      NH.toast(NH.t('file.uploading', { n: files.length }));
+      files.reduce(function (p, f) {
+        return p.then(function (out) { return NHFiles.upload(f, pasted).then(function (md) { return out.concat(md); }); });
+      }, Promise.resolve([])).then(function (mds) {
+        ta.focus();
+        ta.setSelectionRange(s, e);
+        insertBlock(mds.join('\n') + '\n' + CARET);
+        NH.toast(NH.t('file.uploaded'), 'ok');
+      }, function (x) { NH.toast(x.message, 'err'); });
+    }
+    var picker = NH.h('input.hide', { type: 'file', multiple: true });
+    root.appendChild(picker);
+    picker.addEventListener('change', function () { if (picker.files.length) attach(picker.files, false); picker.value = ''; });
+    ta.addEventListener('dragover', function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') !== -1) e.preventDefault(); });
+    ta.addEventListener('drop', function (e) {
+      if (!e.dataTransfer || !e.dataTransfer.files.length) return;
+      e.preventDefault();
+      attach(e.dataTransfer.files, false);
+    });
+
     var CMDS = {
+      file: function () { picker.click(); },
+      stamp: function () {
+        var t = window.NHFiles && NHFiles.stamp();
+        if (!t) return NH.toast(NH.t('file.no_media'));
+        replace(ta.selectionStart, ta.selectionEnd, t + ' ' + CARET);
+      },
       bold: function () {
         var s = ta.selectionStart, e = ta.selectionEnd, sel = ta.value.slice(s, e);
         replace(s, e, sel ? '**' + sel + '**' + CARET : '**' + CARET + '**');
@@ -314,6 +347,12 @@
     ta.addEventListener('paste', function (e) {
       var cd = e.clipboardData;
       if (!cd) return;
+      // Screenshots and copied images arrive as files with no text.
+      if (cd.files && cd.files.length && !cd.getData('text/plain')) {
+        e.preventDefault();
+        attach(cd.files, true);
+        return;
+      }
       var table = tsvToTable(cd.getData('text/plain') || '');
       if (table) {
         e.preventDefault();
@@ -375,6 +414,8 @@
     }
     ta.addEventListener('keydown', function (e) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); }
+      // Alt+T: timestamp of the media playing (Ctrl+T belongs to the browser).
+      if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === 'KeyT') { e.preventDefault(); CMDS.stamp(); }
     });
 
     // ---------- bubble toolbar on a selection (mouse/trackpad only) ----------
@@ -437,6 +478,7 @@
           }, function () { NH.toast(NH.t('kbar.paste_denied')); });
         }),
         kbBtn('', 'lock', NH.t('ed.locked'), CMDS.locked),
+        kbBtn('', 'attach', NH.t('cmd.file'), CMDS.file),
         kbBtn(NH.t('kbar.done'), null, NH.t('kbar.close'), function () { ta.blur(); })
       );
       kb.lastChild.classList.add('kbar-done');

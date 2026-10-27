@@ -61,7 +61,10 @@
 
   NH.api = function (method, path, body, headers) {
     var init = { method: method, headers: Object.assign({}, headers || {}), credentials: 'same-origin' };
-    if (body !== undefined) {
+    if (body instanceof Uint8Array || body instanceof Blob) {
+      init.headers['Content-Type'] = 'application/octet-stream';
+      init.body = body;
+    } else if (body !== undefined) {
       init.headers['Content-Type'] = 'application/json';
       init.body = JSON.stringify(body);
     }
