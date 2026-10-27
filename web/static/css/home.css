@@ -35,6 +35,8 @@ body[data-page=home] main::before { content: ""; position: absolute; inset: 0 0 
 .h-pill { display: inline-flex; align-items: center; gap: 9px; height: 52px; padding: 0 24px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--panel); color: var(--text); font-weight: 650; font-size: 16px; white-space: nowrap; text-decoration: none; }
 .h-pill:hover { text-decoration: none; border-color: var(--accent); }
 .h-pill.dark { background: var(--text); color: var(--bg); border-color: var(--text); }
+/* sized here: the closing section sits outside the page box that sizes icons */
+.h-pill svg { width: 18px; height: 18px; flex: none; }
 
 /* ---------- motion (motion.js) ---------- */
 .mo .home [data-rv], .mo .h-final [data-rv] { opacity: 0; transform: translateY(28px); transition: opacity .8s cubic-bezier(.2, .8, .2, 1), transform .8s cubic-bezier(.2, .8, .2, 1); }

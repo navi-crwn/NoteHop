@@ -1,4 +1,5 @@
 const { chromium } = require('playwright');
+const OUT = process.argv[2] || require('os').tmpdir(); // screenshots
 // Browser checks for the note extras (templates, calc, diagrams, wiki links,
 // slides, zen, palette, redaction, dashboard groups, clipper).
 // Start a server on an empty database, then:
@@ -43,7 +44,7 @@ async function pickMode(p, m) { await p.evaluate(() => { const d = document.getE
   await p.waitForSelector('.mermaid-box img', { timeout: 20000 }).then(() => ok('mermaid renders as image', true), () => ok('mermaid renders as image', false, '').valueOf());
   await p.waitForSelector('#n-view a:has-text("Resep")', { timeout: 10000 }).then(() => ok('wiki link resolves', true), () => ok('wiki link resolves', false));
   ok('wiki missing marked', !!(await p.$('.wiki-missing')));
-  await p.screenshot({ path: __dirname + '/A-note.png', fullPage: true });
+  await p.screenshot({ path: OUT + '/A-note.png', fullPage: true });
   // more menu
   const [dl] = await Promise.all([p.waitForEvent('download'), act(p, 'export-md')]);
   ok('export md', /Utama\.md$/.test(dl.suggestedFilename()), dl.suggestedFilename());
@@ -82,7 +83,7 @@ async function pickMode(p, m) { await p.evaluate(() => { const d = document.getE
   await p.click('[data-group=todo]'); await p.waitForTimeout(2500);
   const todoTitles = await p.$$eval('#mine .note-row b', xs => xs.map(x => x.textContent)); ok('group to-do', todoTitles.length === 1 && todoTitles[0] === 'Resep', JSON.stringify(todoTitles));
   await p.click('#graph-btn'); await p.waitForSelector('#graph-box svg.graph', { timeout: 15000 }); ok('graph drawn', (await p.$$('svg.graph line')).length >= 1);
-  await p.screenshot({ path: __dirname + '/A-graph.png' }); await p.keyboard.press('Escape');
+  await p.screenshot({ path: OUT + '/A-graph.png' }); await p.keyboard.press('Escape');
   // clipper
   await p.goto(BASE + '/new#clip=' + encodeURIComponent(JSON.stringify({ t: 'Artikel', u: 'https://x.test/a', s: 'kutipan penting' })));
   await p.waitForTimeout(300);
