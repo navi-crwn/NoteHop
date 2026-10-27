@@ -24,7 +24,7 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 - Tes: `go test -race ./...` lulus (izin link, burn atomik, konflik edit, freeze, raw, auth, CSRF, header).
 - Sudah dicek di browser: membuat catatan, slash menu, lanjutan list, spoiler, pratinjau, redirect ke halaman catatan, dialog Bagikan.
 - Login dengan SSO (SSO) + frasa brankas: sisi NoteHop selesai dan dicek di browser dengan SSO tiruan (masuk, buat frasa, salah frasa, perangkat kedua, dashboard membuka judul). Sisi SSO (`/sso/notehop`) belum dibuat, lihat `docs/INTEGRASI-SSO-IMAGEAPP.md`.
-- **Belum dicek manual di browser**: blok PIN, centang lewat link checklist, mode append dari pengunjung, alur password + burn, dashboard akun, QR, freeze dari UI, tampilan HP. Kerjakan ini dulu sebelum menambah fitur.
+- Alur Fase 1 dicek di browser lewat `scripts/e2e.js` (Playwright, 30 cek): blok PIN, centang lewat link checklist, mode append, password + burn, dashboard akun, QR, freeze, tampilan HP 375px. Jalankan lagi setelah mengubah UI.
 
 ## Aturan yang harus dijaga
 
@@ -42,6 +42,7 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 go run ./cmd/notehop -addr 127.0.0.1:8090 -db data/dev.db   # dev
 go test -race ./...                                          # tes
 go build -o bin/notehop ./cmd/notehop                        # build
+NOTEHOP_URL=http://127.0.0.1:8090 node scripts/e2e.js       # uji browser (server di DB kosong)
 make linux                                                   # binary statis amd64/arm64 untuk VPS
 notehop backup -db notehop.db salinan.db                     # backup saat berjalan
 ```
@@ -50,6 +51,5 @@ notehop backup -db notehop.db salinan.db                     # backup saat berja
 
 ## Langkah berikutnya yang disarankan
 
-1. Uji manual alur yang belum dicek (daftar di atas), perbaiki bug.
-2. Sisi SSO untuk SSO: route `/sso/notehop` di repo `navi-crwn/accounts` (lihat `docs/INTEGRASI-SSO-IMAGEAPP.md`).
-3. Lanjut ke Fase 2 di ROADMAP (real-time, riwayat, sticky keyboard bar HP).
+1. Sisi SSO untuk SSO: route `/sso/notehop` di repo `navi-crwn/accounts` (lihat `docs/INTEGRASI-SSO-IMAGEAPP.md`).
+2. Lanjut ke Fase 2 di ROADMAP (real-time, riwayat, sticky keyboard bar HP).
