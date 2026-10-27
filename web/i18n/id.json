@@ -46,6 +46,7 @@
  "auth.sign_up": "Daftar",
  "auth.sso": "Masuk dengan {name}",
  "auth.sso_note": "Pakai akun yang sudah kamu punya di {name}.",
+ "auth.sso_via": "Proses masuk lewat {name}, lalu kamu langsung kembali ke sini.",
  "auth.username": "Username",
  "auth.username_hint": "3–32 huruf kecil, angka, atau garis bawah.",
  "board.board": "Papan",

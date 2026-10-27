@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
@@ -73,7 +74,8 @@ func newSSOApp(t *testing.T, reg bool) *httptest.Server {
 	if err != nil {
 		t.Fatal(err)
 	}
-	a, err := New(Config{Registration: reg, BaseURL: "https://note.test", SSOURL: "https://accounts.test", SSOSecret: testSecret, SSOName: "Accounts", SSOClient: "notehop"}, d)
+	a, err := New(Config{Registration: reg, BaseURL: "https://note.test", SSOURL: "https://accounts.test", SSOSecret: testSecret, SSOName: "Accounts", SSOClient: "notehop",
+		SSOProviders: []Link{{Name: "Google", URL: "google"}}}, d)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -240,5 +242,36 @@ func TestVaultNeedsSSOAccount(t *testing.T) {
 	}
 	if code, _, _ := c.do("GET", "/vault", nil, nil); code != http.StatusSeeOther {
 		t.Fatalf("vault page for password account: %d", code)
+	}
+}
+
+// A provider button goes to /sso/<client>/<id>, but only for configured ids,
+// and the login page shows it above the account server's own button.
+func TestSSOProvider(t *testing.T) {
+	srv := newSSOApp(t, true)
+	c := noRedirect(t, srv)
+	for provider, want := range map[string]string{"google": "/sso/notehop/google", "evil/../x": "/sso/notehop", "": "/sso/notehop"} {
+		res, err := c.hc.Get(srv.URL + "/auth/sso?next=%2Fdashboard&provider=" + url.QueryEscape(provider))
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		loc, _ := url.Parse(res.Header.Get("Location"))
+		if res.StatusCode != http.StatusFound || loc.Path != want || loc.Query().Get("state") == "" {
+			t.Errorf("provider %q: %d %s, want path %s", provider, res.StatusCode, loc, want)
+		}
+	}
+	for _, page := range []string{"/login", "/register"} {
+		res, err := c.hc.Get(srv.URL + page)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, _ := io.ReadAll(res.Body)
+		res.Body.Close()
+		html := string(b)
+		g, own := strings.Index(html, "/auth/sso?provider=google&amp;next="), strings.Index(html, `href="/auth/sso?next=`)
+		if g < 0 || own < 0 || g > own || !strings.Contains(html, "Continue with Google") || !strings.Contains(html, "handled by Accounts") {
+			t.Errorf("%s: provider button missing or after the account button", page)
+		}
 	}
 }

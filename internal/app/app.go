@@ -34,6 +34,7 @@ type Config struct {
 	SSOSecret     string   // shared with the account server, 32+ characters
 	SSOName       string   // shown on the button: "Continue with <name>"
 	SSOClient     string   // this app's name at the account server (/sso/<client>)
+	SSOProviders  []Link   // extra buttons straight to a provider: Name shown, URL is its id (/sso/<client>/<id>)
 	Links         []Link   // related sites in the footer
 	ShareURL      string   // optional second domain for share links; needs BaseURL
 	FileMB        int      // largest attachment in MB; 0 turns attachments off
@@ -203,6 +204,7 @@ type pageData struct {
 	Mode        string
 	SSO         bool // show "Continue with <SSOName>"
 	SSOName     string
+	SSOVia      []Link // provider buttons, from NOTEHOP_SSO_PROVIDERS
 	Links       []Link // related sites, from NOTEHOP_LINKS
 	Next        string // where to go after signing in
 	Msg         string // error page text; empty means "note not found"
@@ -233,6 +235,9 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.Site, d.Path, d.Asset, d.Reg = a.cfg.Site, r.URL.Path, a.asset, a.cfg.Registration
 	d.L, d.Langs = a.locale(w, r), i18n.Langs
 	d.SSO, d.SSOName, d.Links = a.cfg.SSOEnabled(), a.cfg.SSOName, a.cfg.Links
+	if d.SSO {
+		d.SSOVia = a.cfg.SSOProviders
+	}
 	d.Origin = a.origin(r)
 	d.Main, d.Share = a.cfg.BaseURL, a.shareURL()
 	d.Contact = a.cfg.Contact

@@ -46,6 +46,7 @@
  "auth.sign_up": "S’inscrire",
  "auth.sso": "Continuer avec {name}",
  "auth.sso_note": "Utilisez le compte que vous avez déjà sur {name}.",
+ "auth.sso_via": "La connexion passe par {name}, puis vous revenez directement ici.",
  "auth.username": "Nom d’utilisateur",
  "auth.username_hint": "3 à 32 lettres minuscules, chiffres ou tirets bas.",
  "board.board": "Tableau",

@@ -72,6 +72,7 @@ UI tersedia dalam 9 bahasa (7 bahasa pengguna internet terbanyak + Русски�
 | `NOTEHOP_SSO_URL` | kosong | Server akun untuk single sign-on (tombol "Lanjutkan dengan …"). Kosong = hanya akun NoteHop sendiri |
 | `NOTEHOP_SSO_SECRET` | kosong | Rahasia bersama dengan server akun (minimal 32 karakter). SSO juga butuh `NOTEHOP_BASE_URL` |
 | `NOTEHOP_SSO_NAME` | `SSO` | Nama server akun di tombol login |
+| `NOTEHOP_SSO_PROVIDERS` | kosong | Tombol tambahan yang langsung ke penyedia login di server akun, mis. `google=Google`: pengunjung dikirim ke `<SSO_URL>/sso/<client>/google` |
 | `NOTEHOP_SSO_CLIENT` | `notehop` | Nama aplikasi ini di server akun: pengunjung dikirim ke `<SSO_URL>/sso/<client>`, tiket kembali ke `/auth/sso/callback` |
 | `NOTEHOP_LINKS` | kosong | Situs terkait di footer, `Nama=URL` dipisah koma |
 

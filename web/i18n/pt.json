@@ -46,6 +46,7 @@
  "auth.sign_up": "Criar conta",
  "auth.sso": "Continuar com {name}",
  "auth.sso_note": "Use a conta que você já tem em {name}.",
+ "auth.sso_via": "O login é feito pelo {name}, e você volta direto para cá.",
  "auth.username": "Nome de usuário",
  "auth.username_hint": "3–32 letras minúsculas, números ou sublinhados.",
  "board.board": "Quadro",

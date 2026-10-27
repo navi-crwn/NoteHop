@@ -46,6 +46,7 @@
  "auth.sign_up": "Sign up",
  "auth.sso": "Continue with {name}",
  "auth.sso_note": "Use the account you already have at {name}.",
+ "auth.sso_via": "Sign-in is handled by {name}, and you come right back here.",
  "auth.username": "Username",
  "auth.username_hint": "3–32 lowercase letters, digits or underscores.",
  "board.board": "Board",

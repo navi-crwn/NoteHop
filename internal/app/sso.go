@@ -109,7 +109,15 @@ func (a *App) ssoStart(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{Name: ssoCookie, Value: state + "|" + url.QueryEscape(safeNext(r.FormValue("next"))),
 		Path: "/auth/", HttpOnly: true, Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode, MaxAge: 900})
 	q := url.Values{"state": {state}, "return_to": {a.cfg.BaseURL + "/auth/sso/callback"}}
-	http.Redirect(w, r, a.cfg.SSOURL+"/sso/"+url.PathEscape(a.cfg.SSOClient)+"?"+q.Encode(), http.StatusFound)
+	path := "/sso/" + url.PathEscape(a.cfg.SSOClient)
+	// A provider button (Google, say) skips the account server's login page.
+	// Only configured ids are passed on; anything else gets the plain login.
+	for _, p := range a.cfg.SSOProviders {
+		if p.URL == r.FormValue("provider") {
+			path += "/" + url.PathEscape(p.URL)
+		}
+	}
+	http.Redirect(w, r, a.cfg.SSOURL+path+"?"+q.Encode(), http.StatusFound)
 }
 
 func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
