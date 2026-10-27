@@ -34,6 +34,9 @@ Status: ✅ selesai · 🔨 dikerjakan · ⏳ antre · ⛔ sengaja tidak dibuat 
 ## Batch I: pemulihan akun + bantuan menulis (permintaan pemilik)
 ✅ Kode pemulihan (8, sekali pakai) + halaman `/security` dan `/recover`, ganti password/kunci brankas, kunci brankas dibungkus (migrasi 8) · ✅ Bantuan menulis: AI bawaan browser atau kunci API sendiri (Anthropic, OpenAI, Gemini, OpenRouter, Ollama), CSP dibuka hanya di halaman editor, `NOTEHOP_AI` · uji: `internal/app/{recovery,ai}_test.go`, `scripts/e2e-recovery.js`, `scripts/e2e-ai.js`
 
+## Batch J: catatan Web yang bisa dijalankan (permintaan pemilik)
+✅ Tipe Web: banyak file HTML/CSS/JS, penjelajah file + templat, Jalankan/Otomatis, hasil + konsol, lebar HP/tablet, layar penuh, tab di HP · ✅ Bingkai `/run` ber-sandbox dengan CSP tanpa jaringan · ✅ Pembaca ditanya sebelum menjalankan · uji: `scripts/e2e-web.js`
+
 ## Tahap akhir
 ✅ Zip handoff (berisi sumber dari commit, binary linux amd64/arm64 + SHA256SUMS, HANDOFF.txt)
 

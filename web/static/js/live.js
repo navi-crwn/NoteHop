@@ -219,6 +219,14 @@
       remoteChange.t = setTimeout(function () { N.showBody(ytitle.toString(), ybody.toString()); }, 80);
       return;
     }
+    // Web notes: the text box holds one file of the shared text, so offsets
+    // don't map; the editor keeps the open file's caret itself.
+    if (which === 'b' && ed.type === 'web') {
+      var t = ybody.toString();
+      ed.value = t; last.body = t;
+      if (leader() === me) N.edited();
+      return;
+    }
     var el = which === 'b' ? ed.textarea : $('#n-title-input');
     var s = el.selectionStart, e = el.selectionEnd, pos = 0;
     ev.delta.forEach(function (op) {
@@ -249,7 +257,7 @@
   }
   function cursorJSON() {
     var ed = N.editor();
-    if (!ed || !synced || document.activeElement !== ed.textarea) return null;
+    if (!ed || !synced || document.activeElement !== ed.textarea || ed.type === 'web') return null;
     var ta = ed.textarea;
     return [ta.selectionStart, ta.selectionEnd].map(function (i) {
       return b64(Y.encodeRelativePosition(Y.createRelativePositionFromTypeIndex(ybody, i)));
