@@ -98,6 +98,7 @@ func (a *App) routes() {
 	m.HandleFunc("GET /about", a.page("about", "title.about", "meta.desc_about"))
 	m.HandleFunc("GET /login", a.page("login", "title.login", ""))
 	m.HandleFunc("GET /register", a.page("register", "title.register", ""))
+	m.HandleFunc("GET /diff", a.page("diff", "diffpage.title", "diffpage.lead"))
 	m.HandleFunc("GET /i18n/{lang}", a.catalogJS)
 	m.HandleFunc("GET /render/mermaid", mermaidFrame)
 	m.HandleFunc("GET /dashboard", a.dashboardPage)
@@ -117,6 +118,20 @@ func (a *App) routes() {
 	m.HandleFunc("POST /api/n/{token}/checks", a.apiCheck)
 	m.HandleFunc("POST /api/n/{token}/freeze", a.apiFreeze)
 	m.HandleFunc("POST /api/n/{token}/config", a.apiConfig)
+	m.HandleFunc("GET /api/n/{token}/versions", a.apiVersions)
+	m.HandleFunc("GET /api/n/{token}/versions/{v}", a.apiVersion)
+	m.HandleFunc("POST /api/n/{token}/suggestions", a.apiSuggest)
+	m.HandleFunc("GET /api/n/{token}/suggestions", a.apiSuggestions)
+	m.HandleFunc("DELETE /api/n/{token}/suggestions/{id}", a.apiDeleteSuggestion)
+	m.HandleFunc("POST /api/n/{token}/signatures", a.apiSign)
+	m.HandleFunc("POST /api/n/{token}/votes", a.apiVote)
+	m.HandleFunc("POST /api/n/{token}/claim", a.apiClaim)
+	m.HandleFunc("PUT /api/n/{token}/decoy", a.apiSetDecoy)
+	m.HandleFunc("DELETE /api/n/{token}/decoy", a.apiDeleteDecoy)
+	m.HandleFunc("POST /api/n/{token}/burns", a.apiAddBurn)
+	m.HandleFunc("POST /api/n/{token}/burns/{id}/reveal", a.apiRevealBurn)
+	m.HandleFunc("GET /api/margins/{ref}", a.apiMargin)
+	m.HandleFunc("PUT /api/margins/{ref}", a.apiMargin)
 	m.HandleFunc("POST /api/n/{token}/links", a.apiAddLink)
 	m.HandleFunc("DELETE /api/n/{token}/links/{link}", a.apiDeleteLink)
 
@@ -157,7 +172,7 @@ type pageData struct {
 
 func (a *App) loadTemplates() error {
 	a.pages = map[string]*template.Template{}
-	for _, name := range []string{"new", "note", "about", "login", "register", "dashboard", "vault", "error"} {
+	for _, name := range []string{"new", "note", "about", "login", "register", "dashboard", "vault", "diff", "error"} {
 		t, err := template.New(name).ParseFS(web.Templates, "templates/base.html", "templates/icons.html", "templates/"+name+".html")
 		if err != nil {
 			return err

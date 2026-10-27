@@ -2,7 +2,12 @@
 (function () {
   'use strict';
   var $ = NH.$;
-  var ed = NHEditor($('[data-editor]'), { onSave: function () { $('#create').click(); } });
+  // Keys of self-destructing blocks wait here until the note is created.
+  var burnKeys = [];
+  var ed = NHEditor($('[data-editor]'), {
+    onSave: function () { $('#create').click(); },
+    onBurnKey: function (k) { burnKeys.push(k); }
+  });
   var form = $('#compose'), err = $('#compose-err'), btn = $('#create');
   var slug = $('#slug'), slugHint = $('#slug-hint');
   var submitted = false;
@@ -14,13 +19,14 @@
   }
 
   // ---------- options: mode pills, feature toggles, conflicts ----------
-  var MODE_DESC = { read: NH.t('mode.read_desc'), edit: NH.t('mode.edit_desc'), append: NH.t('mode.append_desc'), check: NH.t('mode.check_desc') };
+  var MODE_DESC = { read: NH.t('mode.read_desc'), edit: NH.t('mode.edit_desc'), append: NH.t('mode.append_desc'), check: NH.t('mode.check_desc'), suggest: NH.t('mode.suggest_desc') };
   // A feature that would clash with the current choices is switched off and
   // dimmed; clicking it explains why instead of turning it on.
   var RULES = [
     { feature: 'password', when: function () { return !on('encrypt'); }, why: NH.t('rule.password_e2e') },
     { feature: 'burn', when: function () { return mode() !== 'read'; }, why: NH.t('rule.burn_read') },
-    { feature: 'lock', when: function () { return mode() === 'read'; }, why: NH.t('rule.lock_write') }
+    { feature: 'lock', when: function () { return mode() === 'read'; }, why: NH.t('rule.lock_write') },
+    { feature: 'decoy', when: function () { return !on('password'); }, why: NH.t('rule.decoy_password') }
   ];
   function toggle(name) { return form.querySelector('[data-feature="' + name + '"]'); }
   function on(name) { return toggle(name).checked; }
@@ -120,20 +126,28 @@
     var openAt = on('capsule') ? unixOf('#open-at') : 0, lockAt = on('lock') ? unixOf('#lock-at') : 0;
     var problem = timeProblem(openAt, lockAt, expiresIn);
     if (problem) return fail(problem);
+    var burns = burnKeys.filter(function (k) { return body.indexOf(':::burn ' + k.id + ' ') !== -1; });
+    if (burns.length && !encrypted) return fail(NH.t('rule.burn_block_e2e'));
+    var decoyPw = on('decoy') ? $('#decoy-password').value : '';
+    if (on('decoy') && (!decoyPw || decoyPw === password)) return fail(NH.t('new.need_decoy'));
     var mode = form.querySelector('[name=mode]:checked').value;
     var k = NHC.newKey(), admin = NHC.newKey(), salt = password ? NHC.newSalt() : '';
+    var decoy = null;
     btn.disabled = true;
 
     NHC.noteKeys(k, password, salt).then(function (keys) {
       var codec = NHC.codec(encrypted, keys.aes), vault = NHC.vault();
       return Promise.all([
         codec.encode({ t: title, b: body }),
-        vault ? vault.seal({ t: title, k: k, a: admin, p: password }) : ''
+        vault ? vault.seal({ t: title, k: k, a: admin, p: password }) : '',
+        decoyPw ? NHC.decoy(k, decoyPw, salt, { t: title, b: $('#decoy-text').value }, { t: title, b: body }) : null
       ]).then(function (r) {
+        decoy = r[2];
         return NH.api('POST', '/api/notes', {
           encrypted: encrypted, password: !!password, salt: salt, content: r[0], mode: mode,
           slug: on('slug') ? slug.value.trim() : '', expires_in: expiresIn, max_views: on('burn') ? +$('#burn').value : 0,
-          open_at: openAt, lock_at: lockAt, admin: admin, write: keys.write, owner_blob: r[1]
+          open_at: openAt, lock_at: lockAt, admin: admin, write: keys.write, owner_blob: r[1],
+          burns: burns, sign_off: on('signoff'), decoy: decoy
         });
       });
     }).then(function (res) {

@@ -115,6 +115,26 @@ var migrations = []string{
 	// 2: optional per-note features as JSON (scheduled lock, ...), so each
 	// feature doesn't need its own column. See NoteConfig in internal/app.
 	`ALTER TABLE notes ADD COLUMN config TEXT NOT NULL DEFAULT '{}';`,
+	// 3: read receipts, version history, suggestions, sign-off, polls,
+	// decoys, private margins and partial-burn block keys (see extra.go).
+	`ALTER TABLE notes ADD COLUMN last_open INTEGER NOT NULL DEFAULT 0;
+	CREATE TABLE versions (id INTEGER PRIMARY KEY, note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+		version INTEGER NOT NULL, content TEXT NOT NULL, created INTEGER NOT NULL);
+	CREATE INDEX versions_note ON versions(note_id, version);
+	CREATE TABLE suggestions (id INTEGER PRIMARY KEY, note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+		content TEXT NOT NULL, base_version INTEGER NOT NULL, created INTEGER NOT NULL);
+	CREATE INDEX suggestions_note ON suggestions(note_id);
+	CREATE TABLE signatures (id INTEGER PRIMARY KEY, note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+		name TEXT NOT NULL, version INTEGER NOT NULL, snapshot TEXT NOT NULL DEFAULT '', created INTEGER NOT NULL);
+	CREATE INDEX signatures_note ON signatures(note_id);
+	CREATE TABLE votes (note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE, poll INTEGER NOT NULL,
+		option INTEGER NOT NULL, count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (note_id, poll, option));
+	CREATE TABLE decoys (note_id INTEGER PRIMARY KEY REFERENCES notes(id) ON DELETE CASCADE, content TEXT NOT NULL,
+		write_hash TEXT NOT NULL, opened INTEGER NOT NULL DEFAULT 0, last_opened INTEGER NOT NULL DEFAULT 0);
+	CREATE TABLE margins (user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, ref TEXT NOT NULL,
+		content TEXT NOT NULL, updated INTEGER NOT NULL, PRIMARY KEY (user_id, ref));
+	CREATE TABLE burn_keys (note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE, id TEXT NOT NULL,
+		key TEXT NOT NULL, max_views INTEGER NOT NULL, views INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (note_id, id));`,
 }
 
 // migrate applies pending migrations, each in its own transaction together
@@ -175,6 +195,7 @@ type Note struct {
 	Created   int64
 	Updated   int64
 	Config    string // JSON, decoded by the app layer
+	LastOpen  int64  // last counted (non-admin) open
 }
 
 type Link struct {
@@ -191,12 +212,12 @@ type Entry struct {
 }
 
 const noteCols = `n.id, n.owner_id, n.owner_blob, n.encrypted, n.password, n.salt, n.content, n.version, n.checks,
-	n.admin_hash, n.write_hash, n.parent_id, n.frozen, n.max_views, n.views, n.expires, n.created, n.updated, n.config`
+	n.admin_hash, n.write_hash, n.parent_id, n.frozen, n.max_views, n.views, n.expires, n.created, n.updated, n.config, n.last_open`
 
 func scanNote(row interface{ Scan(...any) error }, extra ...any) (*Note, error) {
 	n := &Note{}
 	dest := append([]any{&n.ID, &n.OwnerID, &n.OwnerBlob, &n.Encrypted, &n.Password, &n.Salt, &n.Content, &n.Version, &n.Checks,
-		&n.AdminHash, &n.WriteHash, &n.ParentID, &n.Frozen, &n.MaxViews, &n.Views, &n.Expires, &n.Created, &n.Updated, &n.Config}, extra...)
+		&n.AdminHash, &n.WriteHash, &n.ParentID, &n.Frozen, &n.MaxViews, &n.Views, &n.Expires, &n.Created, &n.Updated, &n.Config, &n.LastOpen}, extra...)
 	if err := row.Scan(dest...); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotFound
@@ -258,8 +279,8 @@ func (d *DB) NoteByLink(token string) (*Note, *Link, error) {
 // limit is reached, so two readers can never both get the "last" view.
 func (d *DB) TakeView(n *Note) (int64, error) {
 	var views int64
-	err := d.QueryRow(`UPDATE notes SET views = views + 1 WHERE id = ? AND (max_views = 0 OR views < max_views) RETURNING views`,
-		n.ID).Scan(&views)
+	err := d.QueryRow(`UPDATE notes SET views = views + 1, last_open = ? WHERE id = ? AND (max_views = 0 OR views < max_views) RETURNING views`,
+		now(), n.ID).Scan(&views)
 	if errors.Is(err, sql.ErrNoRows) {
 		return 0, ErrNotFound
 	}
@@ -269,20 +290,41 @@ func (d *DB) TakeView(n *Note) (int64, error) {
 // UpdateContent replaces the body if nobody saved since baseVersion. Saving
 // folds checklist ticks into the text, so the override map is cleared.
 func (d *DB) UpdateContent(id, baseVersion int64, content string, ownerBlob *string) (int64, error) {
+	tx, err := d.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+	var old string
+	var oldVersion, updated int64
+	if err := tx.QueryRow(`SELECT content, version, updated FROM notes WHERE id = ? AND frozen = 0`, id).Scan(&old, &oldVersion, &updated); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, ErrConflict
+		}
+		return 0, err
+	}
+	if oldVersion != baseVersion {
+		return 0, ErrConflict
+	}
 	q := `UPDATE notes SET content = ?, version = version + 1, checks = '{}', updated = ?`
 	args := []any{content, now()}
 	if ownerBlob != nil {
 		q += `, owner_blob = ?`
 		args = append(args, *ownerBlob)
 	}
-	q += ` WHERE id = ? AND version = ? AND frozen = 0 RETURNING version`
+	q += ` WHERE id = ? AND version = ? RETURNING version`
 	args = append(args, id, baseVersion)
 	var v int64
-	err := d.QueryRow(q, args...).Scan(&v)
-	if errors.Is(err, sql.ErrNoRows) {
-		return 0, ErrConflict
+	if err := tx.QueryRow(q, args...).Scan(&v); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, ErrConflict
+		}
+		return 0, err
 	}
-	return v, err
+	if err := keepVersion(tx, id, oldVersion, old, updated); err != nil {
+		return 0, err
+	}
+	return v, tx.Commit()
 }
 
 // SetCheck records one checkbox state on top of the note's text.
@@ -589,10 +631,11 @@ type OwnedNote struct {
 	Expires  int64  `json:"expires"`
 	Created  int64  `json:"created"`
 	Updated  int64  `json:"updated"`
+	LastOpen int64  `json:"last_open"`
 }
 
 func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
-	rows, err := d.Query(`SELECT l.token, l.mode, n.owner_blob, n.frozen, n.views, n.max_views, n.expires, n.created, n.updated
+	rows, err := d.Query(`SELECT l.token, l.mode, n.owner_blob, n.frozen, n.views, n.max_views, n.expires, n.created, n.updated, n.last_open
 		FROM notes n JOIN links l ON l.token = (SELECT token FROM links WHERE note_id = n.id ORDER BY rowid LIMIT 1)
 		WHERE n.owner_id = ? AND (n.expires = 0 OR n.expires > ?) ORDER BY n.updated DESC LIMIT 500`, userID, now())
 	if err != nil {
@@ -602,7 +645,7 @@ func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
 	out := []OwnedNote{}
 	for rows.Next() {
 		var o OwnedNote
-		if err := rows.Scan(&o.Token, &o.Mode, &o.Blob, &o.Frozen, &o.Views, &o.MaxViews, &o.Expires, &o.Created, &o.Updated); err != nil {
+		if err := rows.Scan(&o.Token, &o.Mode, &o.Blob, &o.Frozen, &o.Views, &o.MaxViews, &o.Expires, &o.Created, &o.Updated, &o.LastOpen); err != nil {
 			return nil, err
 		}
 		out = append(out, o)

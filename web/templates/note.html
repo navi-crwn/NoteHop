@@ -17,6 +17,7 @@
       <div class="btn-row note-actions" id="n-actions">
         <span class="save-state" id="save-state" aria-live="polite"></span>
         <button type="button" class="btn sm hide" id="act-share" data-admin><svg><use href="#i-share"/></svg>{{.L.T "note.share"}}</button>
+        <button type="button" class="btn sm hide" id="act-history"><svg><use href="#i-history"/></svg>{{.L.T "history.title"}}</button>
         <button type="button" class="btn sm hide" id="act-freeze" data-admin><svg><use href="#i-snow"/></svg>{{.L.T "note.freeze"}}</button>
         <button type="button" class="btn sm" id="act-copy"><svg><use href="#i-copy"/></svg>{{.L.T "note.copy_text"}}</button>
         <a class="btn sm hide" id="act-raw" target="_blank" rel="noopener"><svg><use href="#i-code"/></svg>Raw</a>
@@ -30,6 +31,7 @@
             <button type="button" data-act="prompter"><svg width="16" height="16"><use href="#i-scroll"/></svg>{{.L.T "more.prompter"}}</button>
             <button type="button" data-act="listen"><svg width="16" height="16"><use href="#i-sound"/></svg>{{.L.T "more.listen"}}</button>
             <button type="button" data-act="zen"><svg width="16" height="16"><use href="#i-zen"/></svg>{{.L.T "more.zen"}}</button>
+            <button type="button" data-act="margin" class="hide" id="act-margin"><svg width="16" height="16"><use href="#i-edit"/></svg>{{.L.T "margin.title"}}</button>
             <button type="button" data-act="redact" data-needs-key><svg width="16" height="16"><use href="#i-shield"/></svg>{{.L.T "more.redact"}}</button>
           </div>
         </div>
@@ -47,6 +49,29 @@
       <div class="md" id="n-view" dir="auto"></div>
       <div id="n-edit" class="hide">{{template "editor" .}}</div>
     </div>
+
+    <div class="suggest-bar hide" id="suggest-bar">
+      <span class="muted small">{{.L.T "suggest.editing"}}</span>
+      <button type="button" class="btn sm primary" id="suggest-send"><svg><use href="#i-suggest"/></svg>{{.L.T "suggest.send"}}</button>
+      <button type="button" class="btn sm ghost" id="suggest-cancel">{{.L.T "suggest.cancel"}}</button>
+    </div>
+    <div class="btn-row hide" id="suggest-start-row"><button type="button" class="btn" id="suggest-start"><svg><use href="#i-suggest"/></svg>{{.L.T "suggest.start"}}</button></div>
+
+    <section class="card signs hide" id="signs" aria-labelledby="signs-h">
+      <h2 id="signs-h"><svg class="ico"><use href="#i-check"/></svg> {{.L.T "sign.title"}} <span class="pill" id="signs-count">0</span></h2>
+      <ul class="sign-list" id="sign-list"></ul>
+      <form class="sign-form hide" id="sign-form">
+        <input type="text" id="sign-name" maxlength="80" dir="auto" placeholder="{{.L.T "sign.name"}}" aria-label="{{.L.T "sign.name"}}" required>
+        <button class="btn primary" type="submit"><svg><use href="#i-check"/></svg>{{.L.T "sign.button"}}</button>
+      </form>
+      <p class="hint">{{.L.T "sign.hint"}}</p>
+    </section>
+
+    <aside class="card margin hide" id="margin" aria-labelledby="margin-h">
+      <div class="tpl-head"><b id="margin-h"><svg class="ico"><use href="#i-lock"/></svg> {{.L.T "margin.title"}}</b><span class="hint">{{.L.T "margin.hint"}}</span></div>
+      <textarea id="margin-text" rows="5" dir="auto" placeholder="{{.L.T "margin.placeholder"}}"></textarea>
+      <span class="save-state" id="margin-state"></span>
+    </aside>
 
     <section class="entries hide" id="entries" aria-labelledby="entries-h">
       <h2 id="entries-h">{{.L.T "note.entries"}} <span class="pill" id="entries-count">0</span></h2>
@@ -73,6 +98,7 @@
       <option value="edit">{{.L.T "mode.edit"}}</option>
       <option value="append">{{.L.T "mode.append"}}</option>
       <option value="check">{{.L.T "mode.check"}}</option>
+      <option value="suggest">{{.L.T "mode.suggest"}}</option>
     </select>
     <div class="prefix"><span>/n/</span><input type="text" id="new-slug" placeholder="{{.L.T "share.random"}}" maxlength="48" autocapitalize="off" spellcheck="false" aria-label="{{.L.T "feat.slug"}}"></div>
     <button class="btn" type="submit"><svg><use href="#i-plus"/></svg>{{.L.T "share.new_link"}}</button>
@@ -83,25 +109,33 @@
   </div>
   <details class="adv share-adv" id="share-adv">
     <summary>{{.L.T "common.advanced"}}</summary>
-    <div class="pills">
-      <label class="pill-opt"><input type="checkbox" data-timed="open"><span><svg><use href="#i-clock"/></svg>{{.L.T "feat.capsule"}}</span></label>
-      <label class="pill-opt"><input type="checkbox" data-timed="lock"><span><svg><use href="#i-lock"/></svg>{{.L.T "feat.lock"}}</span></label>
-    </div>
-    <form class="feat timed-form hide" data-timed-form="open">
-      <label for="open-at">{{.L.T "timed.open_label"}}</label>
-      <div class="timed-row"><input type="datetime-local" id="open-at" required><button class="btn sm" type="submit">{{.L.T "common.save"}}</button></div>
-      <span class="hint" data-timed-state="open"></span>
-    </form>
-    <form class="feat timed-form hide" data-timed-form="lock">
-      <label for="lock-at">{{.L.T "timed.lock_label"}}</label>
-      <div class="timed-row"><input type="datetime-local" id="lock-at" required><button class="btn sm" type="submit">{{.L.T "common.save"}}</button></div>
-      <span class="hint" data-timed-state="lock"></span>
-    </form>
+    <div class="pills" id="adv-pills"></div>
+    <div id="adv-forms"></div>
+  </details>
+  <details class="adv share-adv" id="trace-box">
+    <summary>{{.L.T "trace.title"}}</summary>
+    <p class="small muted">{{.L.T "trace.lead"}}</p>
+    <textarea id="trace-input" rows="3" dir="auto" placeholder="{{.L.T "trace.placeholder"}}"></textarea>
+    <p class="small" id="trace-result" aria-live="polite"></p>
   </details>
   <div id="snap-box" class="hide">
     <h3><svg class="ico"><use href="#i-history"/></svg> {{.L.T "share.snapshots"}}</h3>
     <ul class="link-list" id="snap-list"></ul>
   </div>
+</dialog>
+
+<dialog class="dlg wide" id="history-dlg" aria-labelledby="history-h">
+  <div class="dlg-head"><h2 id="history-h">{{.L.T "history.title"}}</h2><button type="button" class="icon-btn" data-close aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
+  <p class="muted small">{{.L.T "history.lead"}}</p>
+  <div class="history-pick"><input type="range" id="history-range" min="0" max="0" value="0" aria-label="{{.L.T "history.title"}}"><span id="history-label" class="small muted"></span></div>
+  <div id="history-diff"></div>
+  <div class="btn-row end"><button type="button" class="btn primary" id="history-restore"><svg><use href="#i-history"/></svg>{{.L.T "history.restore"}}</button></div>
+</dialog>
+
+<dialog class="dlg wide" id="suggest-dlg" aria-labelledby="suggest-h">
+  <div class="dlg-head"><h2 id="suggest-h">{{.L.T "suggest.review"}}</h2><button type="button" class="icon-btn" data-close aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
+  <p class="muted small">{{.L.T "suggest.review_lead"}}</p>
+  <div id="suggest-list"></div>
 </dialog>
 
 <dialog class="dlg" id="qr-dlg" aria-labelledby="qr-h">
@@ -118,6 +152,8 @@
 <script src="/static/js/crypto.js?v={{.Asset}}"></script>
 <script src="/static/js/md.js?v={{.Asset}}"></script>
 <script src="/static/js/editor.js?v={{.Asset}}"></script>
+<script src="/static/js/diff.js?v={{.Asset}}"></script>
 <script src="/static/js/note.js?v={{.Asset}}"></script>
+<script src="/static/js/features.js?v={{.Asset}}"></script>
 <script src="/static/js/extras.js?v={{.Asset}}"></script>
 {{end}}

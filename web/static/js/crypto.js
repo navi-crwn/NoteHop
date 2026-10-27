@@ -93,6 +93,30 @@
       return pbkdf2(pin, unb64u(parts[0]), PIN_ITER, 256).then(aesKey).then(function (k) { return unseal(k, parts[1]); });
     },
 
+    // Decoy: the same note key with a second password opens a harmless text.
+    // Both texts are padded to similar sizes so their length doesn't tell
+    // which is which. Returns {content, write} for the server.
+    decoy: function (k, password, salt, fake, real) {
+      var keyP = window.NHC.noteKeys(k, password, salt);
+      var target = JSON.stringify(real).length + Math.floor(Math.random() * 64);
+      var obj = Object.assign({}, fake);
+      var gap = target - JSON.stringify(obj).length - 6;
+      if (gap > 0) obj._ = new Array(gap + 1).join(' ');
+      return keyP.then(function (keys) {
+        return seal(keys.aes, JSON.stringify(obj)).then(function (c) { return { content: c, write: keys.write }; });
+      });
+    },
+
+    // Self-destructing blocks: text sealed with its own random key. The
+    // sealed text sits inside the note; the server keeps only the key and
+    // hands it out a limited number of times.
+    blockSeal: function (k, text) {
+      return aesKey(unb64u(k)).then(function (key) { return seal(key, text); });
+    },
+    blockOpen: function (k, payload) {
+      return aesKey(unb64u(k)).then(function (key) { return unseal(key, String(payload).replace(/\s+/g, '')); });
+    },
+
     // Account: one PBKDF2 run, split into a local vault key and a login secret.
     account: function (username, password) {
       return pbkdf2(password, enc.encode('notehop/account/' + username.toLowerCase()), ACCOUNT_ITER, 512).then(function (b) {

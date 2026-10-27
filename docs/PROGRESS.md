@@ -11,7 +11,7 @@ Status: ✅ selesai · 🔨 dikerjakan · ⏳ antre · ⛔ sengaja tidak dibuat 
 ✅ Template `{{variabel}}` · ✅ Fork/duplikat · ✅ Export MD + PDF (print) · ✅ Mode slide + teleprompter · ✅ Baca nyaring (TTS) · ✅ Zen + pomodoro + suara latar · ✅ Command palette `Ctrl+K` + bubble toolbar · ✅ Utilitas teks · ✅ Kalkulator ```calc · ✅ Mermaid (iframe sandbox) · ✅ Auto-grouping dashboard · ✅ Wiki-links `[[Judul]]` + graf · ✅ Web clipper (bookmarklet) · ✅ Auto-redaction salinan · uji: `scripts/e2e-features.js`
 
 ## Batch B: fitur server (hook)
-⏳ Partial Burn · ⏳ Riwayat versi + diff · ⏳ Diff checker · ⏳ Saran edit (mode suggest) · ⏳ Sign-off · ⏳ Mini-poll · ⏳ Read receipts · ⏳ Claimable notes · ⏳ Decoy password · ⏳ IP allowlist · ⏳ Cron reset checklist · ⏳ Dead Man's Switch · ⏳ Watermark zero-width · ⏳ Auto-archive · ⏳ Shadow margin
+✅ Partial Burn · ✅ Riwayat versi + diff · ✅ Diff checker · ✅ Saran edit (mode suggest) · ✅ Sign-off · ✅ Mini-poll · ✅ Read receipts · ✅ Claimable notes · ✅ Decoy password · ✅ IP allowlist · ✅ Cron reset checklist · ✅ Dead Man's Switch · ✅ Watermark zero-width · ✅ Auto-archive · ✅ Shadow margin · uji: `scripts/e2e-server-features.js`, `internal/app/extra_test.go`
 
 ## Batch C: lampiran
 ⏳ Lampiran terenkripsi 24 jam · ⏳ Smart paste gambar → WebP terenkripsi · ⏳ Catatan media bertimestamp

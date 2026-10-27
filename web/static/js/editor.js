@@ -36,7 +36,9 @@
     { label: NH.t('cmd.calc'), hint: '```calc', keys: 'calc calculator math sum total ' + NH.t('cmd.calc_keys'), text: '```calc\n' + CARET + '\n```\n' },
     { label: NH.t('cmd.diagram'), hint: 'mermaid', keys: 'diagram mermaid chart flow graph ' + NH.t('cmd.diagram_keys'), text: '```mermaid\nflowchart LR\n  A[' + CARET + '] --> B\n```\n' },
     { label: NH.t('cmd.wiki'), hint: '[[ ]]', keys: 'wiki link note page ' + NH.t('cmd.wiki_keys'), text: '[[' + CARET + ']]' },
-    { label: NH.t('cmd.slide'), hint: '---', keys: 'slide present page break ' + NH.t('cmd.slide_keys'), text: '\n---\n\n' + CARET }
+    { label: NH.t('cmd.slide'), hint: '---', keys: 'slide present page break ' + NH.t('cmd.slide_keys'), text: '\n---\n\n' + CARET },
+    { label: NH.t('cmd.burn'), hint: NH.t('cmd.burn_hint'), keys: 'burn destroy self secret once ' + NH.t('cmd.burn_keys'), action: 'burn' },
+    { label: NH.t('cmd.poll'), hint: ':::poll', keys: 'poll vote survey choice ' + NH.t('cmd.poll_keys'), text: ':::poll ' + CARET + '\n- \n- \n:::\n' }
   ];
 
   // Caret pixel position inside a textarea, via a mirrored div.
@@ -115,6 +117,36 @@
     { id: 'number', run: function (t) { return lines(t).map(function (l, i) { return (i + 1) + '. ' + l; }).join('\n'); } },
     { id: 'count', run: null }
   ];
+
+  // Self-destructing block: sealed with a fresh key; the key goes to the
+  // server (opts.onBurnKey) which hands it out only so many times.
+  var burnDlg;
+  function burnDialog(onInsert) {
+    if (!burnDlg) {
+      burnDlg = NH.h('dialog.dlg', { 'aria-label': NH.t('cmd.burn') });
+      var t = function (k) { return NH.t(k).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+      burnDlg.innerHTML =
+        '<div class="dlg-head"><h2>' + t('cmd.burn') + '</h2><button type="button" class="icon-btn" data-close aria-label="' + t('common.close') + '"><svg><use href="#i-x"/></svg></button></div>' +
+        '<p class="small muted">' + t('burn.lead') + '</p>' +
+        '<form><div class="field"><label for="burn-text">' + t('lock.text') + '</label><textarea id="burn-text" rows="4" required></textarea></div>' +
+        '<div class="field"><label for="burn-views">' + t('new.burn_after') + '</label><select id="burn-views"><option value="1">1×</option><option value="3">3×</option><option value="10">10×</option></select></div>' +
+        '<div class="btn-row end"><button class="btn primary" type="submit"><svg><use href="#i-flame"/></svg>' + t('lock.insert') + '</button></div></form>';
+      document.body.appendChild(burnDlg);
+    }
+    var form = burnDlg.querySelector('form');
+    form.reset();
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      var key = NHC.newKey(), views = +NH.$('#burn-views', burnDlg).value;
+      var id = Array.prototype.map.call(crypto.getRandomValues(new Uint8Array(10)), function (b) { return 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]; }).join('');
+      NHC.blockSeal(key, NH.$('#burn-text', burnDlg).value).then(function (payload) {
+        burnDlg.close();
+        onInsert(':::burn ' + id + ' ' + views + '\n' + payload.match(/.{1,76}/g).join('\n') + '\n:::\n', { id: id, key: key, max_views: views });
+      });
+    };
+    burnDlg.showModal();
+    NH.$('#burn-text', burnDlg).focus();
+  }
 
   window.NHEditor = function (root, opts) {
     opts = opts || {};
@@ -197,6 +229,17 @@
           ta.focus();
           ta.setSelectionRange(s, e);
           insertBlock(block);
+        });
+      },
+      burn: function () {
+        if (!opts.onBurnKey) return NH.toast(NH.t('burn.unavailable'), 'err');
+        var s = ta.selectionStart, e = ta.selectionEnd;
+        burnDialog(function (block, k) {
+          Promise.resolve(opts.onBurnKey(k)).then(function () {
+            ta.focus();
+            ta.setSelectionRange(s, e);
+            insertBlock(block);
+          }, function (x) { NH.toast(x.message, 'err'); });
         });
       }
     };

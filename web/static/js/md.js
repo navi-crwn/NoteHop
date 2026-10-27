@@ -106,7 +106,7 @@
         out.push(line);
         continue;
       }
-      var b = !fence && line.match(/^:::(spoiler|locked)\s*(.*)$/);
+      var b = !fence && line.match(/^:::(spoiler|locked|poll|burn)\s*(.*)$/);
       if (!b) { out.push(line); continue; }
       var inner = [], j = i + 1;
       while (j < lines.length && !/^:::\s*$/.test(lines[j])) inner.push(lines[j++]);
@@ -114,6 +114,14 @@
       var title = b[2].trim();
       if (b[1] === 'spoiler') {
         out.push('', '<details class="spoiler"><summary>' + esc(title || NH.t('md.spoiler_default')) + '</summary>', '', inner.join('\n'), '', '</details>', '');
+      } else if (b[1] === 'poll') {
+        // :::poll Question, then one "- option" per line
+        var opts = inner.map(function (l) { return l.replace(/^\s*(?:[-*+]|\d+[.)])\s+/, '').trim(); }).filter(Boolean).slice(0, 20);
+        out.push('', '<div class="poll" data-q="' + esc(title) + '" data-opts="' + esc(JSON.stringify(opts)) + '"></div>', '');
+      } else if (b[1] === 'burn') {
+        // :::burn <id> <views>, then the sealed text (see NHC.blockSeal)
+        var parts = title.split(/\s+/);
+        out.push('', '<div class="burnblk" data-id="' + esc(parts[0] || '') + '" data-views="' + esc(parts[1] || '1') + '" data-payload="' + esc(inner.join('').trim()) + '"></div>', '');
       } else {
         out.push('', '<div class="locked" data-title="' + esc(title || NH.t('md.locked_default')) + '" data-payload="' + esc(inner.join('').trim()) + '"></div>', '');
       }
@@ -338,6 +346,55 @@
     });
   }
 
+  // ---------- polls ----------
+  // Counts come from the server (only numbers; the question and options are
+  // in the encrypted text). A browser remembers its own vote locally.
+  function polls(root, opts) {
+    root.querySelectorAll('.poll').forEach(function (box, pi) {
+      var q = box.dataset.q, options = [];
+      try { options = JSON.parse(box.dataset.opts); } catch (e) {}
+      var counts = (opts.votes && opts.votes[pi]) || {}, total = 0;
+      options.forEach(function (o, i) { total += counts[i] || 0; });
+      var mine = opts.myVote ? opts.myVote(pi) : -1;
+      var list = NH.h('div.poll-opts');
+      options.forEach(function (o, i) {
+        var n = counts[i] || 0, pct = total ? Math.round(n * 100 / total) : 0;
+        var btn = NH.h('button.poll-opt' + (mine === i ? '.mine' : ''), { type: 'button', disabled: !opts.onVote },
+          NH.h('span.poll-bar'), NH.h('span.poll-label', o), NH.h('b.poll-n', n + ' · ' + pct + '%'));
+        btn.firstChild.style.width = pct + '%';
+        if (opts.onVote) btn.addEventListener('click', function () { opts.onVote(pi, mine === i ? -1 : i, mine); });
+        list.appendChild(btn);
+      });
+      box.replaceChildren(NH.h('div.poll-q', NH.icon('check'), NH.h('b', q || NH.t('md.poll_default'))), list,
+        NH.h('small.faint', NH.t('md.poll_total', { n: total })));
+    });
+  }
+
+  // ---------- self-destructing blocks ----------
+  function burnBlocks(root, opts) {
+    root.querySelectorAll('.burnblk').forEach(function (box) {
+      var id = box.dataset.id, info = opts.burnBlocks && opts.burnBlocks[id];
+      var head = NH.h('div.locked-head', NH.icon('flame'), NH.h('b', NH.t('md.burn_title')));
+      if (!info) { box.replaceChildren(head, NH.h('p.faint', NH.t('md.burn_gone'))); return; }
+      var left = info.max_views - info.views;
+      var btn = NH.h('button.btn.sm', { type: 'button', disabled: !opts.onReveal }, NH.icon('eye'), NH.t('md.burn_reveal'));
+      var note = NH.h('span.locked-err', NH.t('md.burn_left', { n: left }));
+      btn.addEventListener('click', function () {
+        if (!confirm(NH.t(left <= 1 ? 'md.burn_confirm_last' : 'md.burn_confirm', { n: left }))) return;
+        btn.disabled = true;
+        opts.onReveal(id).then(function (r) {
+          return NHC.blockOpen(r.key, box.dataset.payload).then(function (text) {
+            var body = NH.h('div.locked-body');
+            body.innerHTML = html(text);
+            box.replaceChildren(NH.h('div.locked-head.open', NH.icon('flame'), NH.h('b', NH.t('md.burn_title'))), body,
+              NH.h('p.hint.warn', r.left > 0 ? NH.t('md.burn_left_after', { n: r.left }) : NH.t('md.burn_now_gone')));
+          });
+        }).catch(function (x) { box.replaceChildren(head, NH.h('p.faint', x.message || NH.t('md.burn_gone'))); });
+      });
+      box.replaceChildren(head, NH.h('div.locked-form', btn, note));
+    });
+  }
+
   // render(el, src, {checks, interactive, onCheck, copy, vars, wiki})
   //   vars: values for {{name}} template fields; wiki: title → note URL
   function render(el, src, opts) {
@@ -361,6 +418,8 @@
     highlight(el);
     images(el);
     lockedBlocks(el);
+    polls(el, opts);
+    burnBlocks(el, opts);
     if (opts.copy) copyButtons(el);
     if (!el.textContent.trim() && !el.querySelector('.locked, input, hr')) el.appendChild(NH.h('p.faint', NH.t('md.empty')));
   }

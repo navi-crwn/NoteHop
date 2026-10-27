@@ -28,7 +28,8 @@
     var el = document.createElement(parts[0] || 'div');
     if (parts.length > 1) el.className = parts.slice(1).join(' ');
     var kids = Array.prototype.slice.call(arguments, 2);
-    if (attrs && (typeof attrs !== 'object' || attrs.nodeType)) { kids.unshift(attrs); attrs = null; }
+    if (attrs && (typeof attrs !== 'object' || attrs.nodeType || Array.isArray(attrs))) { kids.unshift(attrs); attrs = null; }
+    kids = [].concat.apply([], kids); // children may be passed as an array
     if (attrs) Object.keys(attrs).forEach(function (k) {
       var v = attrs[k];
       if (v == null || v === false) return;
@@ -151,7 +152,8 @@
     edit: { label: NH.t('mode.edit'), icon: 'edit' },
     read: { label: NH.t('mode.read'), icon: 'eye' },
     append: { label: NH.t('mode.append'), icon: 'append' },
-    check: { label: NH.t('mode.check'), icon: 'check' }
+    check: { label: NH.t('mode.check'), icon: 'check' },
+    suggest: { label: NH.t('mode.suggest'), icon: 'suggest' }
   };
 
   // ---------- chrome ----------

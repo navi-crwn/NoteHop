@@ -98,7 +98,16 @@ Semua JSON. Header: `X-Admin` (token admin), `X-Write` (bukti kunci).
 | `DELETE /api/n/{token}/entries/{id}` | admin | Hapus baris |
 | `POST /api/n/{token}/checks` | edit/check/admin + X-Write | `{index, checked}` |
 | `POST /api/n/{token}/freeze` | admin | Buat snapshot beku |
-| `POST /api/n/{token}/config` | admin | Fitur opsional (unix, 0 = batal): `lock_at` mengunci link non-admin pada waktu itu, `open_at` menahan isi sampai waktu itu (425 sebelumnya) |
+| `POST /api/n/{token}/config` | admin | Fitur opsional, body parsial (unix, 0/kosong = batal): `lock_at`, `open_at` (425 sebelumnya), `sign_off`, `ip_allow` (IP/CIDR), `reset` (`daily`/`weekly`/`monthly`), `dms_days`, `watermark`, `check_in` |
+| `GET /api/n/{token}/versions` · `…/versions/{v}` | admin / mode edit + X-Write | Riwayat versi (ciphertext lama, maks 100, minimal 5 menit antar versi) |
+| `POST /api/n/{token}/suggestions` · `GET` · `DELETE …/{id}` | mode suggest + X-Write / admin | Usul edit terenkripsi; admin meninjau |
+| `POST /api/n/{token}/signatures` | X-Write, catatan dengan `sign_off` | Tanda tangan `{name}`; tanda tangan pertama membuat snapshot beku |
+| `POST /api/n/{token}/votes` | X-Write | `{poll, option, prev}` untuk blok `:::poll` (server hanya menyimpan hitungan) |
+| `POST /api/n/{token}/burns` · `…/burns/{id}/reveal` | admin / X-Write | Blok `:::burn`: kunci blok disimpan terpisah, dibuka 1× lalu dihapus |
+| `PUT` · `DELETE /api/n/{token}/decoy` | admin | Password umpan: ciphertext kedua, pembukaannya dicatat untuk pemilik |
+| `POST /api/n/{token}/claim` | pemilik akun + X-Admin | Pindahkan catatan tamu ke akun |
+| `GET` · `PUT /api/margins/{ref}` | akun | Coretan pribadi (terenkripsi vault) di samping catatan siapa pun |
+| `GET /diff` | siapa saja | Halaman pembanding dua teks (diff di browser) |
 | `POST /api/n/{token}/links` · `DELETE …/links/{t}` | admin | Tambah/matikan link |
 | `DELETE /api/n/{token}` | admin atau pemilik akun | Hapus catatan |
 | `GET /raw/{token}` | siapa saja | Teks murni (hanya catatan publik) |

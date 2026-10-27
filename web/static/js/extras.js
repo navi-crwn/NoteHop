@@ -11,7 +11,7 @@
     var b = e.target.closest('[data-act]');
     if (!b) return;
     menu.classList.remove('open');
-    ACTIONS[b.dataset.act]();
+    if (ACTIONS[b.dataset.act]) ACTIONS[b.dataset.act]();
   });
   // Actions that create a note need the note key (not a key-less read link).
   var keyCheck = setInterval(function () {

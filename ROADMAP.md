@@ -38,34 +38,34 @@ Prinsip yang dipegang semua fitur:
 - 🔜 Anonymous guest cursors (nama samaran + warna)
 - 🔜 Ephemeral mini-chat (hanya di memori, hilang saat semua keluar)
 - 🔜 Follow Presenter Mode (scroll & highlight sinkron)
-- 🔜 Diff slider / mesin waktu riwayat (riwayat versi terenkripsi)
-- 🔜 Side-by-side diff checker (bandingkan 2 teks, link baca saja)
+- ✅ Diff slider / mesin waktu riwayat (riwayat versi terenkripsi)
+- ✅ Side-by-side diff checker (bandingkan 2 teks, link baca saja)
 - 🔜 Split-screen dua catatan
 - 🔜 Smart paste gambar → WebP terkompresi (lampiran terenkripsi)
 - 🔜 Mermaid diagram & kanvas coretan
 - 🔜 Command palette `Ctrl+K` + floating bubble toolbar saat teks diseleksi
 - ✅ Sticky keyboard bar di HP (`/`, to-do, tempel, blok PIN, selesai), menempel di atas keyboard lewat `visualViewport`
 - 🔜 Offline-first (PWA + IndexedDB, sinkron saat online lagi)
-- 🔜 Mode "Usul Edit" (suggesting/pull request): pengunjung read-only mengusulkan, pemilik Terima/Tolak
+- ✅ Mode "Usul Edit" (suggesting/pull request): pengunjung read-only mengusulkan, pemilik Terima/Tolak
 - ✅ Copy button per baris/blok di mode baca (paragraf, item daftar, kutipan, tabel sebagai TSV)
 
 ## Fase 3: Kontrol waktu & akses lanjutan
 
 - ✅ **Scheduled Lock**: link edit/tambah/centang otomatis jadi read-only pada jam tertentu (server-side, aman E2E); link admin tetap bisa mengubah
 - ✅ **Time-Capsule / Embargo**: isi baru bisa dibuka setelah waktu tertentu, dengan countdown (server menahan ciphertext sampai waktunya; link admin tetap bisa membuka)
-- 🔜 **Partial Burn**: satu blok di dalam catatan hancur setelah dilihat 1× (blok disimpan terpisah dengan penghitung sendiri)
-- 🔜 **Decoy Password**: password kedua membuka catatan palsu + peringatan diam-diam ke pemilik (dua ciphertext, server tidak tahu mana yang asli)
-- 🔜 **Sign-Off Lock**: tombol setuju/tanda tangan, catat waktu (+IP opsional), lalu kunci catatan permanen (otomatis jadi snapshot)
-- 🔜 **Cron reset / catatan berulang**: misalnya setiap Senin 06:00 arsipkan ke riwayat lalu reset centang
-- 💡 Geo-fencing / IP whitelist (Pro/Bisnis)
-- 💡 Honeypot: watermark tipis / zero-width per pengunjung (anti screenshot-sebar)
-- 💡 Dead Man's Switch: kirim catatan ke orang kepercayaan jika pemilik tidak aktif X bulan (kunci dititipkan terenkripsi untuk penerima)
+- ✅ **Partial Burn**: satu blok di dalam catatan hancur setelah dilihat 1× (blok disimpan terpisah dengan penghitung sendiri)
+- ✅ **Decoy Password**: password kedua membuka catatan palsu + peringatan diam-diam ke pemilik (dua ciphertext, server tidak tahu mana yang asli)
+- ✅ **Sign-Off Lock**: tombol setuju/tanda tangan, catat waktu (+IP opsional), lalu kunci catatan permanen (otomatis jadi snapshot)
+- ✅ **Cron reset / catatan berulang**: centang lewat link checklist direset harian/mingguan/bulanan
+- ✅ IP allowlist (IP/CIDR) per catatan · 💡 Geo-fencing (butuh database GeoIP)
+- ✅ Honeypot: watermark tipis / zero-width per pengunjung (anti screenshot-sebar)
+- ✅ Dead Man's Switch: kapsul waktu yang terus diundur setiap admin membuka catatan; jika admin tidak muncul N hari, isi terbuka bagi pemegang link (kunci sudah ada di link penerima, server tetap tidak tahu isinya)
 
 ## Fase 4: Smart blocks (catatan hidup)
 
 - 🔜 Template fill-in-the-blanks `{{variabel}}`: pengunjung isi kolom, teks langsung siap di-copy (berjalan di browser, aman E2E)
 - 🔜 Inline math / kalkulator teks gaya Numi/Soulver (`Konsumsi = 50 * 35.000` → `= 1.750.000`)
-- 🔜 Mini-poll / voting di dalam catatan read-only (seperti checklist: server simpan hitungan, bukan teks)
+- ✅ Mini-poll / voting di dalam catatan read-only (seperti checklist: server simpan hitungan, bukan teks)
 - 🔜 Form-to-Note: catatan tampil sebagai formulir, setiap submit menjadi baris baru (memakai mekanisme append terenkripsi)
 - 🔜 Kanban view dari sub-judul To-Do/Proses/Selesai (drag-and-drop untuk pemegang link edit)
 - 🔜 View switcher pill: Teks | Kanban | Form | Slide | Diff
@@ -102,12 +102,12 @@ Prinsip yang dipegang semua fitur:
 
 ## Fase 6: Akun & monetisasi
 
-- 🔜 **Claimable notes**: catatan tamu otomatis pindah ke akun saat daftar/login (vault lokal → akun)
+- ✅ **Claimable notes**: catatan tamu otomatis pindah ke akun saat daftar/login (vault lokal → akun)
 - 🔜 Auto-grouping pintar (berisi link / to-do / kode / sedang di-share), dihitung di browser
 - 🔜 Link hub / profil publik `/@username` (catatan publik pilihan)
-- 🔜 Auto-archive catatan yang lama tidak dibuka (cold archive)
-- 🔜 Read receipts & access log (jumlah buka, terakhir diedit; lokasi kasar opsional)
-- 🔜 Shadow margin: coretan pribadi di samping catatan orang lain (terenkripsi vault)
+- ✅ Auto-archive catatan yang lama tidak dibuka (cold archive)
+- ✅ Read receipts (jumlah buka + terakhir dibuka untuk admin; tanpa lokasi)
+- ✅ Shadow margin: coretan pribadi di samping catatan orang lain (terenkripsi vault)
 - ✅ Login dengan akun SSO (SSO) + frasa brankas (sisi NoteHop; sisi SSO masih perlu `/sso/notehop`)
 - 🔜 Login dengan Google (lewat SSO, sudah tercakup SSO di atas)
 - 💡 Micro-blog gaya Telegraph + custom domain (Pro)
