@@ -14,6 +14,7 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 | `ROADMAP.md` | **Semua** ide fitur dari pemilik (Fase 1 sampai 6), status ✅/🔜/💡, catatan arsitektur |
 | `docs/INTEGRASI-SSO-IMAGEAPP.md` | Rencana login dengan akun SSO (SSO) dan kombinasi dengan ImageApp |
 | `design-reference/README.md` | Aset desain dari repo ImageApp, SSO, OtherApp, dan cara memakainya |
+| `docs/PROMPT-LANJUTAN.md` | Prompt dan urutan kerja untuk sesi lanjutan |
 
 ## Status saat ini (Fase 1 selesai)
 
