@@ -57,3 +57,30 @@ func TestAIButton(t *testing.T) {
 		}
 	}
 }
+
+// The frame that runs web notes: its own strict CSP (no network, no forms,
+// no frames), framable only by this site, never cached.
+func TestRunFrame(t *testing.T) {
+	srv := newTestApp(t)
+	res, err := http.Get(srv.URL + "/run")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := io.ReadAll(res.Body)
+	res.Body.Close()
+	c := res.Header.Get("Content-Security-Policy")
+	for _, want := range []string{"connect-src 'none'", "form-action 'none'", "frame-src 'none'", "default-src 'none'", "frame-ancestors 'self'", "worker-src 'none'"} {
+		if !strings.Contains(c, want) {
+			t.Errorf("run CSP lacks %s: %s", want, c)
+		}
+	}
+	if res.Header.Get("X-Frame-Options") != "SAMEORIGIN" || res.Header.Get("Cache-Control") != "no-store" || !strings.Contains(string(b), "/static/js/run-frame.js") {
+		t.Errorf("run frame: %v %s", res.Header, b)
+	}
+	// Every other page still refuses to be framed.
+	res, _ = http.Get(srv.URL + "/new")
+	res.Body.Close()
+	if res.Header.Get("X-Frame-Options") != "DENY" {
+		t.Error("/new must not be framable")
+	}
+}

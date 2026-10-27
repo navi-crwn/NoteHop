@@ -144,6 +144,7 @@ func (a *App) routes() {
 	m.HandleFunc("GET /api/nearby", a.apiNearby)
 	m.HandleFunc("GET /i18n/{lang}", a.catalogJS)
 	m.HandleFunc("GET /render/mermaid", mermaidFrame)
+	m.HandleFunc("GET /run", runFrame)
 	m.HandleFunc("GET /dashboard", a.dashboardPage)
 	m.HandleFunc("GET /vault", a.vaultPage)
 	m.HandleFunc("GET /security", a.securityPage)
@@ -437,6 +438,25 @@ func mermaidFrame(w http.ResponseWriter, r *http.Request) {
 	h.Set("Cache-Control", "public, max-age=3600")
 	io.WriteString(w, `<!doctype html><meta charset="utf-8"><title>Mermaid</title>`+
 		`<script src="/static/vendor/mermaid.min.js"></script><script src="/static/js/mermaid-frame.js"></script>`)
+}
+
+// runCSP is the policy of the frame that runs a web note's code (web.js). The
+// code may run its own inline scripts and styles, but it can't load anything
+// from elsewhere, connect anywhere, submit forms or embed frames. The frame is
+// sandboxed without allow-same-origin, so it can't reach the note page,
+// cookies or storage either.
+const runCSP = "default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; " +
+	"font-src data:; media-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; frame-src 'none'; worker-src 'none'; frame-ancestors 'self'"
+
+// runFrame is that frame's empty page: run-frame.js receives the page to run
+// from the note page and writes it in. Each run loads a fresh frame.
+func runFrame(w http.ResponseWriter, r *http.Request) {
+	h := w.Header()
+	h.Set("Content-Security-Policy", runCSP)
+	h.Set("X-Frame-Options", "SAMEORIGIN")
+	h.Set("Content-Type", "text/html; charset=utf-8")
+	h.Set("Cache-Control", "no-store")
+	io.WriteString(w, `<!doctype html><meta charset="utf-8"><title>Run</title><script src="/static/js/run-frame.js"></script>`)
 }
 
 // serviceWorker serves the worker from the site root (so it may control every
