@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
@@ -73,7 +74,8 @@ func newSSOApp(t *testing.T, reg bool) *httptest.Server {
 	if err != nil {
 		t.Fatal(err)
 	}
-	a, err := New(Config{Registration: reg, BaseURL: "https://note.test", SSOURL: "https://hel.test", SSOSecret: testSecret}, d)
+	a, err := New(Config{Registration: reg, BaseURL: "https://note.test", SSOURL: "https://accounts.test", SSOSecret: testSecret, SSOName: "Accounts", SSOClient: "notehop",
+		SSOProviders: []Link{{Name: "Google", URL: "google"}}}, d)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +84,7 @@ func newSSOApp(t *testing.T, reg bool) *httptest.Server {
 	return srv
 }
 
-// ssoLogin runs /auth/sso and returns the state SSO would receive.
+// ssoLogin runs /auth/sso and returns the state the account server would receive.
 func ssoStart(t *testing.T, c *client, next string) string {
 	t.Helper()
 	res, err := c.hc.Get(c.srv.URL + "/auth/sso?next=" + url.QueryEscape(next))
@@ -91,7 +93,7 @@ func ssoStart(t *testing.T, c *client, next string) string {
 	}
 	res.Body.Close()
 	loc, _ := url.Parse(res.Header.Get("Location"))
-	if res.StatusCode != http.StatusFound || loc.Host != "hel.test" || loc.Path != "/sso/notehop" ||
+	if res.StatusCode != http.StatusFound || loc.Host != "accounts.test" || loc.Path != "/sso/notehop" ||
 		loc.Query().Get("return_to") != "https://note.test/auth/sso/callback" {
 		t.Fatalf("start: %d %s", res.StatusCode, loc)
 	}
@@ -119,6 +121,24 @@ func ticketFor(sub, state string) string {
 	n := time.Now().Unix()
 	return signTicket(ssoTicket{Sub: sub, Email: "Budi.Santoso@example.com", Name: "Budi", State: state,
 		Jti: randToken(16), Iat: n, Exp: n + 120}, testSecret)
+}
+
+// A ticket the account server made for another of its apps is refused; one
+// for this app (or without aud, from older servers) is accepted.
+func TestSSOAudience(t *testing.T) {
+	srv := newSSOApp(t, true)
+	c := noRedirect(t, srv)
+	n := time.Now().Unix()
+	state := ssoStart(t, c, "/dashboard")
+	other := signTicket(ssoTicket{Sub: "9", Aud: "otherapp", Email: "a@example.com", State: state, Jti: randToken(16), Iat: n, Exp: n + 120}, testSecret)
+	if code, _ := ssoCallback(t, c, other); code != http.StatusBadRequest {
+		t.Fatalf("ticket for another app: %d", code)
+	}
+	state = ssoStart(t, c, "/dashboard")
+	mine := signTicket(ssoTicket{Sub: "9", Aud: "notehop", Email: "a@example.com", State: state, Jti: randToken(16), Iat: n, Exp: n + 120}, testSecret)
+	if code, loc := ssoCallback(t, c, mine); code != http.StatusSeeOther || loc != "/vault?next=%2Fdashboard" {
+		t.Fatalf("ticket for this app: %d %s", code, loc)
+	}
 }
 
 func TestSSOLoginAndVault(t *testing.T) {
@@ -172,7 +192,7 @@ func TestSSOLoginAndVault(t *testing.T) {
 	}
 
 	// Signing in again (new device) reaches the same account, and a second
-	// SSO user with the same email local part gets another username.
+	// A sign-on user with the same email local part gets another username.
 	d := noRedirect(t, srv)
 	if code, _ := ssoCallback(t, d, ticketFor("42", ssoStart(t, d, "/"))); code != http.StatusSeeOther {
 		t.Fatalf("second device: %d", code)
@@ -222,5 +242,36 @@ func TestVaultNeedsSSOAccount(t *testing.T) {
 	}
 	if code, _, _ := c.do("GET", "/vault", nil, nil); code != http.StatusSeeOther {
 		t.Fatalf("vault page for password account: %d", code)
+	}
+}
+
+// A provider button goes to /sso/<client>/<id>, but only for configured ids,
+// and the login page shows it above the account server's own button.
+func TestSSOProvider(t *testing.T) {
+	srv := newSSOApp(t, true)
+	c := noRedirect(t, srv)
+	for provider, want := range map[string]string{"google": "/sso/notehop/google", "evil/../x": "/sso/notehop", "": "/sso/notehop"} {
+		res, err := c.hc.Get(srv.URL + "/auth/sso?next=%2Fdashboard&provider=" + url.QueryEscape(provider))
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		loc, _ := url.Parse(res.Header.Get("Location"))
+		if res.StatusCode != http.StatusFound || loc.Path != want || loc.Query().Get("state") == "" {
+			t.Errorf("provider %q: %d %s, want path %s", provider, res.StatusCode, loc, want)
+		}
+	}
+	for _, page := range []string{"/login", "/register"} {
+		res, err := c.hc.Get(srv.URL + page)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, _ := io.ReadAll(res.Body)
+		res.Body.Close()
+		html := string(b)
+		g, own := strings.Index(html, "/auth/sso?provider=google&amp;next="), strings.Index(html, `href="/auth/sso?next=`)
+		if g < 0 || own < 0 || g > own || !strings.Contains(html, "Continue with Google") || !strings.Contains(html, "handled by Accounts") {
+			t.Errorf("%s: provider button missing or after the account button", page)
+		}
 	}
 }

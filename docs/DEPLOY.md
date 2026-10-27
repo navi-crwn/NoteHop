@@ -57,7 +57,7 @@ sudo cp deploy/Caddyfile.example /etc/caddy/Caddyfile   # ganti note.example.com
 sudo systemctl reload caddy
 ```
 
-Kalau Caddy sudah melayani situs lain (misalnya ImageApp), cukup tambahkan blok `note.domainanda.com { … }` ke Caddyfile yang ada.
+Kalau Caddy sudah melayani situs lain, cukup tambahkan blok `note.domainanda.com { … }` ke Caddyfile yang ada.
 
 **nginx** + certbot:
 
@@ -116,15 +116,15 @@ sudo systemctl start notehop
 
 Isi catatan di backup tetap terenkripsi; kuncinya hanya ada di link milik pengguna.
 
-## 7. Nanti: hubungkan dengan SSO
+## 7. Opsional: single sign-on dengan server akun sendiri
 
-NoteHop berjalan sendiri (standalone) selama `NOTEHOP_SSO_URL` kosong. Saat SSO sudah punya route `/sso/notehop`:
+NoteHop memakai akunnya sendiri selama `NOTEHOP_SSO_URL` kosong. Kalau Anda punya server akun yang bisa mengeluarkan tiket NoteHop:
 
 1. Buat rahasia: `openssl rand -hex 32`.
-2. Isi di `/etc/notehop/notehop.env`: `NOTEHOP_SSO_URL=https://accounts.example.com` dan `NOTEHOP_SSO_SECRET=<rahasia>`. Lalu `sudo systemctl restart notehop`.
-3. Di SSO: `NOTEHOP_URL=https://note.domainanda.com` dan `NOTEHOP_SSO_SECRET=<rahasia yang sama>`.
+2. Isi di `/etc/notehop/notehop.env`: `NOTEHOP_SSO_URL=https://akun.domainanda.com`, `NOTEHOP_SSO_SECRET=<rahasia>`, `NOTEHOP_SSO_NAME=<nama di tombol>`. Lalu `sudo systemctl restart notehop`.
+3. Di server akun: daftarkan NoteHop dengan rahasia yang sama dan callback `https://note.domainanda.com/auth/sso/callback`.
 
-Detailnya di `docs/INTEGRASI-SSO-IMAGEAPP.md`.
+Server akun menerima `GET <SSO_URL>/sso/<NOTEHOP_SSO_CLIENT>?state=…&return_to=…`, membuat pengguna masuk, lalu mengalihkan ke `return_to?ticket=…`. Tiket: `base64url(JSON).base64url(HMAC-SHA256(rahasia, bagian pertama))` dengan `sub`, `email`, `name`, `avatar`, `state`, `iat`, `exp` (≤ 2 menit), `jti`, dan opsional `aud` (= `NOTEHOP_SSO_CLIENT`).
 
 ## Docker (opsional)
 
@@ -134,4 +134,3 @@ Ada `Dockerfile` untuk yang lebih suka container: `docker build -t notehop .` la
 
 Sesi Claude Code di cloud tidak bisa SSH ke VPS. Kalau ingin Claude menginstal dan mengetes langsung di server, pasang Claude Code di VPS lalu jalankan `claude remote-control` di folder repo. Sesi itu akan muncul di aplikasi Claude Code dan berjalan di VPS Anda.
 
-Arahan lengkap untuk sesi itu (pasang, uji, audit, update repo) ada di [`docs/DEPLOY.md`](DEPLOY.md); paket zip handoff juga menyertakannya di folder teratas.

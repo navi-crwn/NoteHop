@@ -35,7 +35,8 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 | Buat catatan | 30/menit per IP |
 | Simpan/tulis lain | 120/menit per IP |
 | Login/daftar/brankas | 15/menit per IP |
-| Upload file | 20/menit per IP |
+| Upload file | 20/menit per IP, dan `NOTEHOP_FILES_IP_MB` (default 100 MB) per IP per 24 jam |
+| Baca `/raw` dan `/mock` | 120/menit per IP |
 | Kotak masuk | 60/menit per IP |
 | `/nearby` | 30 sambungan/menit per IP |
 | SSH | 20/menit per IP |
@@ -80,7 +81,7 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 | --- | --- |
 | Panjang | Minimal **7 karakter** untuk nama link sendiri. Admin situs (`NOTEHOP_ADMINS`) boleh 3–6 karakter, misalnya untuk link marketing `/n/promo`. |
 | Bentuk | Huruf kecil, angka, `-`, `_`. Tidak boleh diakhiri `-` atau berisi `--`. |
-| Nama cadangan | Nama situs/sistem/merek: `admin`, `api`, `faq`, `help`, `contact`, `terms`, `privacy`, `login`, `notehop`, `sso`, `imageapp`, dll.<br>Awalan `notehop-*`, `official-*`, `admin-*`, `support-*`.<br>Daftar di `internal/app/names/reserved.txt`; tambahan lewat env `NOTEHOP_RESERVED=promo,event2026`. |
+| Nama cadangan | Nama situs/sistem/merek: `admin`, `api`, `faq`, `help`, `contact`, `terms`, `privacy`, `login`, `notehop`, dll. (merek Anda sendiri lewat `NOTEHOP_RESERVED`).<br>Awalan `notehop-*`, `official-*`, `admin-*`, `support-*`.<br>Daftar di `internal/app/names/reserved.txt`; tambahan lewat env `NOTEHOP_RESERVED=promo,event2026`. |
 | Kata kasar | Daftar di `internal/app/names/blocked.txt` (9 bahasa, huruf Latin). Dicek per kata utuh, jadi `class-notes` tidak ikut tertolak karena berisi "ass". |
 | Masa tunggu (recycle) | Saat catatan dihapus atau kedaluwarsa, nama linknya **ditahan 90 hari**.<br>Pemilik akun yang sama boleh langsung memakainya lagi; orang lain menunggu.<br>Catatan yang di-takedown: ditahan **365 hari** untuk semua orang. |
 | Link acak | Tidak perlu ditahan karena tidak akan pernah sama (lihat 0.3). |
@@ -94,7 +95,7 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 | Nama pendek habis dipakai orang (`/n/a`, `/n/cv`). | ✅ Minimal 7 karakter.<br>Nama pendek untuk admin saja. |
 | Kata kasar di link publik. | ✅ Daftar blokir.<br>Batas: varian ejaan (`b4ngs4t`) dan huruf non-Latin tidak tertangkap. 💡 Tambahkan ke `blocked.txt` saat ditemukan. |
 | Nama tertahan padahal pemiliknya ingin memakai lagi tanpa login. | Tanpa akun, server tidak tahu siapa pemiliknya, jadi tetap menunggu 90 hari. Admin bisa melepas lewat DB (`DELETE FROM slug_holds WHERE slug=…`). |
-| Username dari login SSO kena aturan (misal `admin`). | ✅ Otomatis diganti `admin_xxxxx`. |
+| Username dari single sign-on kena aturan (misal `admin`). | ✅ Otomatis diganti `admin_xxxxx`. |
 
 ---
 
@@ -329,6 +330,13 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 - **Fungsi.** Format teks dan menyisipkan blok.
 - **Cara pakai.** Ketik `/` di awal baris, atau tombol `/` di bar keyboard HP.
 
+### 27b. Tipe catatan dan menu klik kanan ✅
+- **Fungsi.** Pilih tipe dari tombol di kiri atas editor: **Biasa** (teks apa adanya), **Dokumen** (Markdown, bawaan) atau **Kode** (pilih bahasa, nomor baris, Tab/Shift+Tab untuk indentasi, Esc lalu Tab untuk keluar dari kotak). Di Dokumen, klik kanan pada teks membuka menu format; di HP tombol **Aa** di bilah keyboard membuka lembar yang sama.
+- **Batasan.** Warna, stabilo, ukuran, dan rata disimpan sebagai teks (`[teks]{.red}`, `:::center`), jadi tampil di Pratinjau dan di halaman catatan, bukan langsung di kotak ketik. Blok rata tidak bisa berisi blok `:::` lain. Ganti dari Dokumen ke Biasa/Kode melepas gaya itu (ditanya dulu; Ctrl+Z mengembalikan). Tombol Tempel di menu butuh izin papan klip browser; kalau ditolak, pakai Ctrl+V.
+- **Keamanan kode.** Kode tidak pernah dijalankan: tampil sebagai teks (highlight.js hanya mewarnai teks yang sudah di-escape), unduhan selalu `.txt`, `/raw` `text/plain` + `nosniff`. Isi catatan rahasia sampai di server sudah terenkripsi; catatan publik disimpan sebagai data dengan query berparameter.
+- **Kasus.** Bagikan potongan konfigurasi ke rekan tanpa takut terjalankan; catatan rapat polos dari HP; dokumen dengan bagian penting distabilo.
+- **Uji.** `scripts/e2e-types.js` (49 cek).
+
 ### 28. Tampilan Teks ⇄ Papan
 - **Fungsi.** Catatan dengan `## Kolom` + daftar tampil sebagai papan Kanban; kartu bisa digeser.
 - **Batasan.** Form, Slide, dan Diff ada di tempat lain (belum satu pill).
@@ -495,7 +503,7 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 - **Batasan.** Ekspor PNG belum ada. Clipper berupa bookmarklet, bukan ekstensi.
 
 ### 53. Akun dan dashboard
-- **Fungsi.** Brankas link (terenkripsi dengan sandi akun, PBKDF2 600.000), grup otomatis, wiki-link + graf, arsip setelah 90 hari tidak aktif, profil `/@user`, ekspor/impor, klaim catatan tamu, login SSO.
+- **Fungsi.** Brankas link (terenkripsi dengan sandi akun, PBKDF2 600.000), grup otomatis, wiki-link + graf, arsip setelah 90 hari tidak aktif, profil `/@user`, ekspor/impor, klaim catatan tamu, single sign-on (opsional).
 - **Batasan.**
   - Lupa sandi akun = brankas tidak bisa dibuka (zero-knowledge).
   - Backup otomatis ke Drive/Gist belum ada.
@@ -526,7 +534,7 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 | --- | --- | --- |
 | `NOTEHOP_ADMINS` | `navi,admin` | Username admin situs: boleh nama link pendek/cadangan dan username cadangan |
 | `NOTEHOP_RESERVED` | `promo,event2026` | Tambahan nama cadangan |
-| `NOTEHOP_CONTACT` | `abuse@accounts.example.com` | Kontak di `/contact` |
+| `NOTEHOP_CONTACT` | `abuse@example.com` | Kontak di `/contact` |
 
 **Perintah baru:**
 

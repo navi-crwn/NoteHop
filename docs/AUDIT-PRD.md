@@ -9,7 +9,7 @@ Dokumen ini mencocokkan **Master Blueprint (PRD) pemilik** (54 fitur, 5 zona UI,
 
 Risiko, contoh kasus, dan mitigasi per fitur ada di `docs/PANDUAN-FITUR.md`.
 
-Kolom **Cara cek** dipakai untuk audit langsung di <https://note.example.com>. Nama menu ditulis sesuai UI berbahasa Indonesia (ganti bahasa lewat ikon globe; default situs English).
+Kolom **Cara cek** dipakai untuk audit langsung di situs Anda (contoh di bawah memakai `note.example.com`). Nama menu ditulis sesuai UI berbahasa Indonesia (ganti bahasa lewat ikon globe; default situs English).
 
 **Ringkasan:** dari 54 fitur, **27 ✅**, **21 🟡**, **4 ❌**, **2 ⛔**. Untuk 5 zona UI: 1 ✅, 3 🟡, 1 ❌. Beberapa rekomendasi teknis PRD diganti dengan alternatif yang lebih cocok untuk satu VPS dan zero-knowledge (bagian 3).
 
