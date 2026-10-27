@@ -176,16 +176,16 @@
       return setInterval(tick, 500);
     },
     together: function (el) {
-      var a = h('span'), b = h('span'), doc = h('div.mdoc'), chat = h('div.mchat');
-      doc.append(NH.t('home.m_t_1') + ' ', a, h('span.mcur.a', { 'data-n': 'Rani' }), '\n' + NH.t('home.m_t_2') + ' ', b, h('span.mcur.b', { 'data-n': 'Dimas' }));
+      var a = h('span'), b = h('span'), doc = h('div.mdoc'), chat = h('div.mchat'), who = NH.t('home.names').split('|');
+      doc.append(NH.t('home.m_t_1') + ' ', a, h('span.mcur.a', { 'data-n': who[0] }), '\n' + NH.t('home.m_t_2') + ' ', b, h('span.mcur.b', { 'data-n': who[1] }));
       el.append(doc, chat);
       var A = NH.t('home.m_t_a'), B = NH.t('home.m_t_b'), C = NH.t('home.m_t_chat').split('|'), i = 0, j = 0, t = 0;
       return setInterval(function () {
         t++;
         if (i < A.length && t % 2) a.textContent = A.slice(0, ++i);
         if (t > 14 && j < B.length && t % 2 === 0) b.textContent = B.slice(0, ++j);
-        if (t === 30) chat.appendChild(h('div.mbub', 'Dimas: ' + C[0]));
-        if (t === 46) chat.appendChild(h('div.mbub.me', 'Rani: ' + (C[1] || '')));
+        if (t === 30) chat.appendChild(h('div.mbub', who[1] + ': ' + C[0]));
+        if (t === 46) chat.appendChild(h('div.mbub.me', who[0] + ': ' + (C[1] || '')));
         if (t > 90) { t = i = j = 0; a.textContent = b.textContent = ''; chat.replaceChildren(); }
       }, 90);
     },

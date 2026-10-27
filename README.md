@@ -1,200 +1,178 @@
-# NoteHop
+<p align="center">🌐 <b>English</b> · <a href="README.zh.md">简体中文</a> · <a href="README.es.md">Español</a> · <a href="README.ar.md">العربية</a> · <a href="README.pt.md">Português</a> · <a href="README.fr.md">Français</a> · <a href="README.ja.md">日本語</a> · <a href="README.ru.md">Русский</a> · <a href="README.id.md">Bahasa Indonesia</a></p>
 
-Catatan online yang bisa dibagikan dan **dienkripsi di browser**. Server hanya menyimpan acakan (ciphertext); kunci ada di bagian `#` link dan tidak pernah dikirim ke server. Satu binary Go + satu file SQLite, tanpa build step frontend.
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/hero-en-dark.webp"><img src="docs/readme/hero-en-light.webp" alt="NoteHop: notes only the people you choose can read" width="100%"></picture></p>
 
-Mau coba catatan online tanpa memasang apa pun? Coba di **[note.hel.ink](https://note.hel.ink)**, satu keluarga dengan [HEL.ink](https://hel.ink) (link pendek) dan [PixelHop](https://p.hel.ink) (hosting gambar).
+<p align="center">
+  <b>Write a note, send the link, done.<br>It's locked in your browser before it's saved, so not even the server can read it.</b>
+</p>
 
-## Fitur (Fase 1)
+<p align="center">
+  <a href="https://note.hel.ink"><b>✍️ Try it online</b></a> ·
+  <a href="#run-your-own">Run your own</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#faq">FAQ</a> ·
+  <a href="docs/SELF-HOSTING.md">Self-hosting guide</a> ·
+  <a href="docs/REFERENCE.md">Reference</a> ·
+  <a href="CHANGELOG.md">Changelog</a>
+</p>
 
-- **Zero-knowledge**: AES-256-GCM di browser, kunci 256-bit di `#k=…`. Password tambahan opsional (PBKDF2 310k).
-- **Banyak link per catatan, izin berbeda**: Edit penuh · Baca saja · **Tambah saja** (append-only) · **Centang checklist** (terkunci, tapi checkbox bisa dicentang). Link bocor bisa dimatikan tanpa mengganggu link lain.
-- **Link admin** terpisah: edit, bagikan, bekukan, hapus.
-- **Bekukan versi (snapshot)**: salinan permanen baca saja, catatan asli tetap bisa diedit.
-- **Hancur setelah dibaca** (1/3/10×) dan **kedaluwarsa** (10 menit sampai 30 hari). Aman dari bot preview chat, dan hitungan view atomik.
-- **Alamat kustom** `/n/rapat-senin` + **QR code** (dibuat di browser).
-- **`/raw/slug`** untuk catatan publik (`curl`).
-- **Editor**: Markdown, menu `/` (judul, to-do, tabel, kode, spoiler, blok PIN, tanggal…), lanjutan list otomatis, paste tabel dari Excel/Sheets jadi tabel Markdown, pratinjau berdampingan, highlight kode otomatis.
-- **Tipe catatan**: **Dokumen** (Markdown, semua fitur di atas), **Biasa** (teks apa adanya seperti Notepad) atau **Kode** (bahasa, nomor baris, Tab untuk indentasi). Kode tidak pernah dijalankan: tampil sebagai teks, unduhannya selalu `.txt` (`script.js` → `script-js.txt`), dan `/raw` tetap `text/plain`. Tipe disimpan di dalam isi terenkripsi (`y`, `l`), jadi server tidak tahu.
-- **Tipe Web (HTML/CSS/JS)**: beberapa file dalam satu catatan, penjelajah file, templat, tombol **Jalankan** (Ctrl+Enter, opsional otomatis), hasil di panel kanan + konsol, lebar HP/tablet/penuh, layar penuh. Kode berjalan **hanya di browser**, di bingkai `/run` ber-sandbox (`allow-scripts allow-forms allow-modals`, tanpa `allow-same-origin`) dengan CSP sendiri: tidak bisa memuat atau mengirim apa pun lewat internet, dan tidak bisa menyentuh halaman catatan, cookie, atau penyimpanan. Pembaca selalu ditanya dulu sebelum kode orang lain dijalankan. File disimpan sebagai satu teks (`--- file: nama ---` sebelum tiap file), jadi enkripsi, tulis bersama, riwayat, `/raw`, dan unduhan `.txt` tetap sama.
-- **Menu klik kanan** di kotak teks Dokumen: tebal/miring/garis bawah/coret/superskrip/subskrip, potong-salin-tempel, warna teks dan stabilo `[teks]{.red .hl-yellow}`, ukuran `{.small|.large|.huge}`, rata `:::center` / `:::right` / `:::justify`, huruf besar/kecil, tautan, hapus format. Shift + klik kanan membuka menu browser; di HP lewat tombol **Aa** di bilah keyboard. Gaya memakai class tetap (bukan atribut `style`), jadi CSP tidak perlu dilonggarkan.
-- **Spoiler** `:::spoiler` dan **blok terkunci PIN** `:::locked` (dienkripsi lagi dengan PIN).
-- **Akun opsional**: password tidak dikirim ke server; daftar catatan dienkripsi dengan kunci brankas lokal.
-- **Kode pemulihan** (halaman `/security`): 8 kode sekali pakai yang membuka lagi akun (atau kunci brankas akun SSO) kalau lupa password, plus ganti password. Server tidak pernah melihat kode, password, maupun kunci brankas.
-- **Bantuan menulis (AI), opsional**: ringkas, tulis ulang, perbaiki ejaan, terjemahkan, lanjutkan, jadikan poin. Pilih AI bawaan browser (Chrome, tidak keluar dari perangkat) atau **kunci API sendiri** (Anthropic, OpenAI, Google Gemini, OpenRouter, Ollama di komputer sendiri). Browser memanggil penyedia langsung; NoteHop tidak melihat teks maupun kunci. Hasil baru masuk ke catatan setelah pengguna menekan Ganti/Sisipkan.
-- **Keamanan**: CSP ketat, tanpa inline script, `noindex`, `Referrer-Policy: no-referrer`, gambar pihak ketiga diblokir, tolak permintaan lintas situs, rate limit.
+<p align="center"><sub>One Go binary + one SQLite file · 9 languages · no ads, no trackers · free and open source (MIT)</sub></p>
 
-## Fitur lanjutan
+> [!IMPORTANT]
+> **The key is in the link.** Whoever has the link can read the note, and if you lose every link, nobody can open it again: not you, not the server, not us. Send links to the people you mean, and keep your owner link somewhere safe.
 
-- **Kolaborasi langsung** (Yjs + WebSocket): kursor dan nama tamu, mini-chat, ikuti presenter. Server hanya meneruskan ciphertext.
-- **Di dalam teks**: `{{variabel}}`, ```` ```calc ````, Mermaid, `[[wiki-link]]`, `:::poll`, `:::burn` (blok hancur sendiri), `:::form` (jawaban jadi entri), `:::embed <link>` (catatan lain, diperbarui otomatis), lampiran terenkripsi 24 jam (pilih/seret/tempel; gambar jadi WebP), `[1:23]` memutar audio/video.
-- **Tampilan**: papan Kanban dari `## Kolom`, slide, teleprompter, baca nyaring, mode zen + pomodoro, command palette `Ctrl+K`.
-- **Pengaturan lanjutan per catatan**: kapsul waktu, kunci terjadwal, dead man's switch, checklist berulang, IP allowlist, tanda tangan (sign-off), watermark zero-width, password umpan, mode usul edit, riwayat versi + diff.
-- **Lainnya**: `/diff` (pembanding teks), `/nearby` (pad dan kirim file antar perangkat satu Wi-Fi lewat WebRTC), klaim catatan tamu ke akun, coretan pribadi (margin), web clipper.
+---
 
-Rencana fitur lengkap ada di [ROADMAP.md](ROADMAP.md). Goals dan cara menyiapkan di komputer sendiri: [docs/GOALS-DAN-PERSIAPAN-LOKAL.md](docs/GOALS-DAN-PERSIAPAN-LOKAL.md).
+## What is NoteHop?
 
-## Menjalankan
+Think of a note as a letter in a locked box. NoteHop locks the box **in your browser**, puts the key in the link, and only then sends the box to the server. The server keeps a box it can't open. Whoever you give the link to can open it, right there in their own browser.
 
-Butuh Go 1.27+.
+On top of that, a note can do much more than a notepad: links with different rights (read only, can write, reply only, tick only), deleting itself after it's read, writing together live, checklists, polls, forms, code, and even small web pages that run in a sealed box.
+
+**Good for you if you:**
+- send passwords, addresses or private notes through chat and don't want them sitting in the history,
+- share a shopping list, a meeting note or a sign-up sheet without making everyone create an account,
+- want a pastebin or notepad you can run on your own server, in one file.
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/demo-dark.webp"><img src="docs/readme/demo-light.webp" alt="Live demo: type on the left, see the scrambled text the server gets on the right" width="100%"></picture></p>
+
+<details>
+<summary><b>A closer look</b></summary>
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/note-dark.webp"><img src="docs/readme/note-light.webp" alt="A note with a checklist, a table and a poll" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/share-dark.webp"><img src="docs/readme/share-light.webp" alt="The Share dialog: links with their own rights, and the owner link" width="70%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/tour-dark.webp"><img src="docs/readme/tour-light.webp" alt="The feature tour on the home page" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/web-dark.webp"><img src="docs/readme/web-light.webp" alt="A web note: HTML, CSS and JS files with the result and console" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/phone-dark.webp"><img src="docs/readme/phone-light.webp" alt="NoteHop on a phone" width="32%"></picture></p>
+
+</details>
+
+## What the server sees, and what it never sees
+
+| 🙈 Never reaches the server | 👀 What the server does see |
+|---|---|
+| The note's title and text | Scrambled text (ciphertext) and its size |
+| The key (it's after the `#` in the link, which browsers never send) | When the note was made, changed and opened, and how many times |
+| Attachments, chat messages and live edits (locked too) | Which kind of link was used (read only, can write…) |
+| Your account password and your list of notes | Which checkboxes are ticked, and how many replies there are |
+| Text you send to AI writing help (it goes from your browser straight to the provider you pick) | Your IP address, for rate limits |
+
+<a id="features"></a>
+
+## Features
+
+- **🔒 Locked in your browser.** AES-256-GCM with a random 256-bit key that lives only in the link. Add an extra password if you like.
+- **🔗 Many links, different rights.** Read only, can write, reply only (like a guestbook) or tick only (for checklists). A link leaked? Turn it off; the others keep working.
+- **🔑 Owner link.** A separate link to change, share, freeze or delete the note.
+- **🔥 Delete after reading.** Opened 1, 3 or 10 times, then destroyed. Chat apps' link preview bots don't use up a view.
+- **⏳ Expiry and time capsules.** Gone after 10 minutes to 30 days, or locked until the date you pick.
+- **🏷️ Your own address + QR.** `/n/monday-meeting`, and a QR code made in your browser.
+- **📌 Fixed copies and sign-off.** Freeze a version nobody can change, and let readers approve it with their name.
+- **🧑‍🤝‍🧑 Write together.** Everyone's cursor and name live, a chat on the side and "follow the presenter". The server only passes locked data along.
+- **✅ Smart blocks.** Checklists, polls (one vote each), forms, a calculator, Mermaid diagrams, a Kanban board from your headings, and secret blocks behind a PIN or ones that destroy themselves.
+- **📝 Note types.** Plain (like Notepad), Document (Markdown with a `/` menu and a right-click format menu), Code (line numbers, never run, downloads as `.txt`) and Web.
+- **🌐 Web notes.** HTML, CSS and JS files in one note, with a Run button, the result and a console. The code runs only in a sealed box in your browser, with no internet and no access to the page, and readers are asked before someone else's code runs.
+- **✨ Writing help (optional).** Summarize, rewrite, translate, fix spelling. Use your browser's built-in AI (the text stays on your device) or your own API key (Claude, ChatGPT, Gemini, OpenRouter or Ollama). NoteHop never sees the text or the key.
+- **📎 Attachments.** Drop files or images into a note; they're locked too and kept for 24 hours.
+- **👤 Accounts are optional.** With one, your list of notes is locked with a key only your password opens. Recovery codes get you back in if you forget the password.
+- **🕵️ Extra privacy.** Decoy password (opens a fake note), only from certain networks, a leak tracer that tells you which link leaked, and history with differences.
+- **📶 Nearby.** Send a pad or files to a device on the same Wi-Fi, straight from browser to browser.
+- **🧑‍💻 For developers.** `/raw` for curl, a `notehop` CLI that encrypts in the terminal, a mock API from JSON in a note, webhooks in and out, SSH and a Telegram bot.
+- **🌍 9 languages.** English, 简体中文, Español, العربية (right to left), Português, Français, 日本語, Русский and Bahasa Indonesia, picked from your browser.
+- **🛡️ Strict by default.** A strict Content Security Policy, no third-party scripts, no ads, no trackers, `noindex`, rate limits. Works offline as an installable app (PWA).
+
+<a id="run-your-own"></a>
+
+## Run your own
+
+NoteHop is **one Go binary and one SQLite file**. No Node, no build step, no other services.
+
+**Option 1: on a VPS** (systemd + Caddy or nginx, daily backups)
+
+```bash
+git clone https://github.com/navi-crwn/NoteHop.git && cd NoteHop
+sudo DOMAIN=note.example.com ./deploy/install.sh
+```
+
+The full guide, with HTTPS, updates, backups and restore, is in **[docs/SELF-HOSTING.md](docs/SELF-HOSTING.md)**.
+
+**Option 2: on your own computer** (needs Go 1.27+)
 
 ```bash
 go run ./cmd/notehop -addr 127.0.0.1:8090 -db data/dev.db
 ```
 
-Buka http://127.0.0.1:8090. WebCrypto hanya jalan di **HTTPS atau localhost**.
+Open http://127.0.0.1:8090. Browsers only allow the encryption on **HTTPS or localhost**.
+
+**Option 3: Docker**
 
 ```bash
-make test      # go test -race ./...
-make build     # bin/notehop
+docker build -t notehop .
+docker run -d -p 127.0.0.1:8090:8080 -v notehop:/data -e NOTEHOP_BASE_URL=https://note.example.com notehop
 ```
 
-### Bahasa
+Every setting is an environment variable (`NOTEHOP_*`). They're all listed in **[docs/REFERENCE.md](docs/REFERENCE.md)**, together with the encryption model and the API.
 
-UI tersedia dalam 9 bahasa (7 bahasa pengguna internet terbanyak + Русский + Indonesia): English (default), 中文, Español, العربية (kanan-ke-kiri), Português, Français, 日本語, Русский, Bahasa Indonesia. Bahasa dipilih otomatis dari browser (`Accept-Language`), dengan English sebagai cadangan; pilihan lewat menu bola dunia di navbar disimpan di cookie `nh_lang` dan selalu menang, atau lewat `?lang=xx`. Teks ada di `web/i18n/*.json`; error API dikirim sebagai `{error, code, vars}` dan diterjemahkan di browser.
+## Your first note
 
-### Konfigurasi (env)
+1. Open the home page, type in the box, and watch the scrambled text the server would get.
+2. Pick who can do what: **View only**, **Can write** or **Can reply**. Tick **Read once** for a secret.
+3. Press **Create link** and send it. That's it, no account needed.
+4. Want more (timing, extra privacy, writing together)? Use **Open the full notepad**, or the **Share** button on any note you own.
 
-| Variabel | Default | Arti |
-| --- | --- | --- |
-| `NOTEHOP_ADDR` | `:8080` | Alamat listen (atau `-addr`) |
-| `NOTEHOP_DB` | `notehop.db` | File SQLite (atau `-db`) |
-| `NOTEHOP_BASE_URL` | kosong | URL publik, misalnya `https://note.example.com` |
-| `NOTEHOP_SECURE_COOKIES` | otomatis `true` jika BASE_URL https | Cookie `Secure` + HSTS |
-| `NOTEHOP_TRUST_PROXY` | `false` | Pakai `X-Forwarded-For` untuk rate limit (aktifkan di belakang reverse proxy) |
-| `NOTEHOP_REGISTRATION` | `true` | Buka/tutup pendaftaran akun |
-| `NOTEHOP_SITE` | `NoteHop` | Nama situs |
-| `NOTEHOP_SHARE_URL` | kosong | Domain kedua untuk link yang dibagikan (misalnya `https://nhop.link`). Login, dashboard, editor, dan link admin tetap di `NOTEHOP_BASE_URL` |
-| `NOTEHOP_FILE_MB` | `10` | Ukuran maksimal satu lampiran (MB). `0` = lampiran mati. Di nginx naikkan `client_max_body_size` juga |
-| `NOTEHOP_AI` | `on` | Bantuan menulis: `on` (AI di perangkat + kunci API sendiri; `connect-src` CSP di halaman editor dibuka untuk penyedia di `middleware.go`), `device` (hanya AI bawaan browser), `off` (tanpa tombol AI) |
-| `NOTEHOP_AI_ORIGINS` | kosong | Origin tambahan untuk penyedia "Lainnya" (kompatibel OpenAI), mis. `https://ai.perusahaan.example`. Hanya origin, dipisah koma |
-| `NOTEHOP_GITHUB` | `navi-crwn/NoteHop` | Repo GitHub (`pemilik/nama`) yang angkanya (bintang, fork, bahasa, commit per minggu) tampil di beranda lewat `GET /api/repo`. Server mengambilnya paling sering sekali per jam. `-` = bagian itu disembunyikan |
-| `NOTEHOP_FILES_IP_MB` | `100` | Lampiran yang boleh diunggah satu alamat IP per 24 jam (MB). `0` = tanpa batas |
-| `NOTEHOP_FILES_TOTAL_MB` | `2048` | Batas total semua lampiran yang masih hidup (disimpan di SQLite, dihapus setelah 24 jam). `0` = tanpa batas |
-| `NOTEHOP_SSH_ADDR` | kosong | Aktifkan SSH untuk catatan publik, misalnya `:2222` |
-| `NOTEHOP_SSH_KEY` | `ssh_host_ed25519_key` di folder DB | Kunci host SSH (dibuat otomatis saat pertama jalan) |
-| `NOTEHOP_PRIVATE_HOOKS` | `false` | Izinkan webhook Watch ke alamat privat/loopback dan `http://` (hanya untuk jaringan sendiri) |
-| `TELEGRAM_BOT_TOKEN` | kosong | Token bot dari @BotFather; butuh `NOTEHOP_BASE_URL` (webhook didaftarkan saat start) |
-| `NOTEHOP_ADMINS` | kosong | Username admin situs (pisah koma): boleh nama link pendek (< 7) dan nama cadangan, dan boleh mendaftar username cadangan |
-| `NOTEHOP_RESERVED` | kosong | Nama cadangan tambahan (pisah koma), di luar `internal/app/names/reserved.txt` |
-| `NOTEHOP_CONTACT` | kosong | Email atau URL kontak/laporan penyalahgunaan di `/contact` |
-| `NOTEHOP_SSO_URL` | kosong | Server akun untuk single sign-on (tombol "Lanjutkan dengan …"). Kosong = hanya akun NoteHop sendiri |
-| `NOTEHOP_SSO_SECRET` | kosong | Rahasia bersama dengan server akun (minimal 32 karakter). SSO juga butuh `NOTEHOP_BASE_URL` |
-| `NOTEHOP_SSO_NAME` | `SSO` | Nama server akun di tombol login |
-| `NOTEHOP_SSO_PROVIDERS` | kosong | Tombol tambahan yang langsung ke penyedia login di server akun, mis. `google=Google`: pengunjung dikirim ke `<SSO_URL>/sso/<client>/google` |
-| `NOTEHOP_SSO_CLIENT` | `notehop` | Nama aplikasi ini di server akun: pengunjung dikirim ke `<SSO_URL>/sso/<client>`, tiket kembali ke `/auth/sso/callback` |
-| `NOTEHOP_LINKS` | kosong | Situs terkait di footer, `Nama=URL` dipisah koma |
+<a id="faq"></a>
 
-Skema database dimigrasi otomatis saat start (nomor versi di `PRAGMA user_version`, daftar di `migrations` pada `internal/db/db.go`). Binary yang lebih lama menolak membuka database dengan versi skema yang lebih baru.
+## FAQ
 
-### CLI dan SSH
+**Can the people who run the server read my notes?**
+No. The note is locked in your browser before it's sent, and the key is in the part of the link after `#`, which browsers never send to a server. The server only has scrambled text.
 
-```bash
-notehop new -server https://note.domainanda.com < catatan.md        # terenkripsi di terminal, cetak link
-notehop new -server https://… -password rahasia -expires 24h -burn 1 file.md
-notehop get 'https://note.domainanda.com/n/TOKEN#k=…'               # unduh dan dekripsi di terminal
-ssh -p 2222 note.domainanda.com < catatan.md                       # ⚠️ catatan publik (jika NOTEHOP_SSH_ADDR aktif)
-notehop takedown -db notehop.db https://note.domainanda.com/n/xxxx  # moderasi: hapus + kunci nama link 365 hari
-notehop takedown -db notehop.db -file FILE_ID                      # moderasi: hapus satu lampiran
-```
+**What if I lose the link?**
+Then the note can't be opened, by anyone. If you have an account, your notes are listed in **My notes** and you can open them from there. Without an account, recent notes are remembered in this browser only.
 
-Aturan nama link sendiri dan username (minimal 7 karakter, nama cadangan, kata kasar, masa tunggu 90 hari setelah catatan dihapus) ada di `internal/app/names.go`; penjelasan lengkap di `docs/PANDUAN-FITUR.md` bagian 1.
+**Is "delete after reading" safe from link previews?**
+Yes. Opening the page alone doesn't show the content; the reader presses a button first. Chat apps' preview bots get a preview card, not a view.
 
-### Deploy ke VPS
+**Does the AI read my notes?**
+Writing help is off until you choose it. Your browser's built-in AI works on your device. With your own API key, the text goes from your browser straight to that provider, never through NoteHop. Server owners can switch AI off with `NOTEHOP_AI=off`.
 
-Panduan lengkap (systemd, Caddy/nginx, backup harian, update, restore): **[`docs/DEPLOY.md`](docs/DEPLOY.md)**. Ringkasnya:
+**Can code in a note hack the people who open it?**
+Code notes are never run: they're shown as text and download as `.txt`. Web notes run only in a sealed frame with no internet, no cookies and no access to the note page or its key, and readers are asked first.
 
-```bash
-sudo DOMAIN=note.example.com ./deploy/install.sh   # pasang/update sebagai service systemd
-make linux                                         # atau build binary statis untuk diunggah
-notehop backup -db notehop.db salinan.db           # backup aman saat berjalan
-```
+**Can I use my own login server?**
+Yes. NoteHop has its own accounts, and can also sign people in through an account server you run (single sign-on). See `NOTEHOP_SSO_*` in [docs/REFERENCE.md](docs/REFERENCE.md).
 
-## Cara kerja kriptografi
+**How do I back up?**
+`notehop backup -db notehop.db copy.db` works while the server runs. The VPS installer also sets up a daily backup. Notes stay locked in the backup too.
 
-```
-K      = 32 byte acak                      → di link: /n/<token>#k=<K>
-secret = K, atau PBKDF2(password, K‖salt, 310000) jika ada password
-enc    = HMAC-SHA256(secret, "notehop/enc")   → kunci AES-256-GCM isi & baris tambahan
-write  = HMAC-SHA256(secret, "notehop/write") → dikirim di header X-Write; server simpan SHA-256-nya
-admin  = 32 byte acak                      → link admin: #k=<K>&a=<admin>; server simpan SHA-256-nya
-```
+## Under the hood
 
-- Setiap perubahan butuh `X-Write` (membuktikan pemegang kunci) **dan** mode link yang mengizinkan. Jadi slug yang mudah ditebak tetap tidak bisa dipakai menulis tanpa kunci.
-- Catatan berpassword: `POST /open` juga butuh `X-Write`, sehingga password salah ditolak server **tanpa** menghabiskan jatah baca.
-- Akun: `PBKDF2(password, "notehop/account/"+username, 600000)` → 64 byte: 32 pertama = kunci brankas (tetap di browser), 32 terakhir = secret login (di-hash argon2id di server).
-- Akun single sign-on: NoteHop tidak pernah melihat password-nya, jadi kunci brankas berasal dari frasa terpisah: `vault = PBKDF2(frasa, "notehop/vault/"+sso_id, 600000)`. Server hanya menerima `HMAC(vault, "notehop/vault-check")` (di-hash argon2id) untuk membedakan frasa benar dan salah ketik.
-- Blok PIN: `salt.b64 + "." + AES-GCM(PBKDF2(PIN, salt, 250000))`.
+| Folder | What's in it |
+|---|---|
+| `cmd/notehop/` | The program: server, settings, and the `backup`, `new`, `get` and `takedown` commands |
+| `internal/app/` | HTTP handlers, note features, live collaboration relay, SSH, Telegram, single sign-on |
+| `internal/db/` | SQLite schema and automatic migrations |
+| `internal/client/` | The CLI's encryption (the same as the browser's) |
+| `internal/i18n/` | Loading the 9 languages, and a test that keeps them in step |
+| `web/templates/`, `web/static/` | Pages, plain JavaScript and CSS, no build step. Third-party libraries are vendored in `web/static/vendor/` |
+| `web/i18n/` | The UI text in 9 languages |
+| `deploy/` | Installer, systemd units, backups, Caddy and nginx examples |
+| `scripts/` | Browser tests (Playwright): `./scripts/e2e-all.sh` runs every suite against a fresh server |
 
-Yang terlihat oleh server: ukuran ciphertext, waktu, jumlah view, mode link, status centang (indeks + benar/salah), jumlah baris tambahan.
+Run the tests with `go test -race ./...` and `./scripts/e2e-all.sh`.
 
-- **Pemulihan akun**: sejak password diganti atau direset, kunci brankas tidak lagi sama dengan 32 byte pertama PBKDF2 password; 32 byte itu menjadi kunci pembungkus, dan `users.vault_wrap = AES-GCM(kunci itu, kunci brankas)`. Kunci brankas sendiri tidak pernah berubah, jadi daftar catatan lama tetap terbuka. Kode pemulihan: 16 karakter (80 bit); `HKDF-SHA256(kode, salt "notehop/recovery/"+username)` → 32 byte kunci yang menyegel kunci brankas (`recovery_codes.wrap`) + 32 byte bukti; server hanya menyimpan SHA-256 bukti itu.
+<a id="family"></a>
 
-## API
+## The Hop family
 
-Semua JSON. Header: `X-Admin` (token admin), `X-Write` (bukti kunci).
+NoteHop has two open-source siblings, built the same way: free, self-hostable, no trackers.
 
-| Method & path | Siapa | Fungsi |
-| --- | --- | --- |
-| `POST /api/notes` | siapa saja | Buat catatan `{encrypted, password, salt, content, mode, slug, expires_in, max_views, admin, write, owner_blob}` |
-| `GET /api/n/{token}` | siapa saja | Metadata tanpa isi (admin: + links, snapshots) |
-| `POST /api/n/{token}/open` | siapa saja (+X-Write jika berpassword) | Isi + entries + checks; menghitung view. `{"poll":true}` tidak menghitung (ditolak untuk catatan burn) |
-| `PUT /api/n/{token}` | mode edit / admin + X-Write | Simpan `{content, version}`; 409 jika versi basi |
-| `POST /api/n/{token}/entries` | edit/append/admin + X-Write | Tambah baris |
-| `DELETE /api/n/{token}/entries/{id}` | admin | Hapus baris |
-| `POST /api/n/{token}/checks` | edit/check/admin + X-Write | `{index, checked}` |
-| `POST /api/n/{token}/freeze` | admin | Buat snapshot beku |
-| `POST /api/n/{token}/config` | admin | Fitur opsional, body parsial (unix, 0/kosong = batal): `lock_at`, `open_at` (425 sebelumnya), `sign_off`, `ip_allow` (IP/CIDR), `reset` (`daily`/`weekly`/`monthly`), `dms_days`, `watermark`, `check_in` |
-| `GET /api/n/{token}/versions` · `…/versions/{v}` | admin / mode edit + X-Write | Riwayat versi (ciphertext lama, maks 100, minimal 5 menit antar versi) |
-| `POST /api/n/{token}/suggestions` · `GET` · `DELETE …/{id}` | mode suggest + X-Write / admin | Usul edit terenkripsi; admin meninjau |
-| `POST /api/n/{token}/signatures` | X-Write, catatan dengan `sign_off` | Tanda tangan `{name}`; tanda tangan pertama membuat snapshot beku |
-| `POST /api/n/{token}/votes` | X-Write | `{poll, option, voter}` untuk blok `:::poll`; `voter` = ID acak dari browser, satu suara per pemilih (bisa diganti), maksimal 20 pemilih baru per jaringan |
-| `POST /api/n/{token}/burns` · `…/burns/{id}/reveal` | admin / X-Write | Blok `:::burn`: kunci blok disimpan terpisah, dibuka 1× lalu dihapus |
-| `PUT` · `DELETE /api/n/{token}/decoy` | admin | Password umpan: ciphertext kedua, pembukaannya dicatat untuk pemilik |
-| `POST /api/n/{token}/claim` | pemilik akun + X-Admin | Pindahkan catatan tamu ke akun |
-| `GET` · `PUT /api/margins/{ref}` | akun | Coretan pribadi (terenkripsi vault) di samping catatan siapa pun |
-| `GET /api/n/{token}/live` (WebSocket) | pemegang kunci | Kolaborasi langsung. Pesan pertama `{t:"auth", write, admin}`; sesudahnya `{t, to, d}` dengan `d` terenkripsi. Tipe: `y` (update Yjs, hanya penulis), `need`/`sync`/`nosync` (state awal), `aw` (kehadiran/kursor), `chat`, `follow`. Tidak untuk catatan beku/burn |
-| `GET /api/nearby` (WebSocket) | siapa saja, per IP publik + `?code=` 6 angka | Signaling WebRTC untuk `/nearby` (`hi`, `sig`); pad dan file lewat koneksi langsung antar browser |
-| `POST /api/files` | siapa saja (20/menit/IP) | Unggah lampiran: body = ciphertext mentah (`application/octet-stream`). Balas `{id, expires}`; kuncinya hanya ada di teks catatan (`nh-file:ID#KUNCI`) |
-| `GET /api/files/{id}` | siapa saja yang tahu ID | Ciphertext lampiran (404 setelah 24 jam) |
-| `POST /api/n/{token}/inbox` · `DELETE` | admin | Aktifkan kotak masuk `{pub, priv}` (kunci publik P-256 + kunci privat yang disegel browser) / matikan |
-| `POST /in/{token}` | siapa saja yang tahu alamatnya (60/menit/IP) | Teks mentah atau JSON `{text, from}` → entri terenkripsi |
-| `POST /api/telegram/{secret}` | Telegram | Webhook bot (diverifikasi header `X-Telegram-Bot-Api-Secret-Token`) |
-| `GET /mock/{token}/{path…}` | siapa saja | JSON dari catatan publik, CORS `*` |
-| `GET /@{username}` | siapa saja | Profil publik (catatan publik yang dipilih pemilik) |
-| `GET /sw.js` · `/manifest.webmanifest` · `/offline` | | PWA |
-| `GET /` | siapa saja | Beranda: pengenalan + catatan cepat (terenkripsi di browser) |
-| `GET /new` | siapa saja | Halaman Buat lengkap (semua opsi) |
-| `GET /diff` | siapa saja | Halaman pembanding dua teks (diff di browser) |
-| `POST /api/n/{token}/links` · `DELETE …/links/{t}` | admin | Tambah/matikan link |
-| `DELETE /api/n/{token}` | admin atau pemilik akun | Hapus catatan |
-| `GET /api/repo` | siapa saja | Angka repo dari GitHub untuk beranda (cache 1 jam): `{repo, url, stars, forks, issues, license, pushed, langs, weeks}`. 404 jika `NOTEHOP_GITHUB=-`, 503 jika belum pernah berhasil diambil |
-| `GET /raw/{token}` | siapa saja | Teks murni (hanya catatan publik) |
-| `POST /api/register` · `/api/login` · `/api/logout`, `GET /api/me`, `GET /api/me/notes` | | Akun |
-| `GET /auth/sso` · `GET /auth/sso/callback` | | Single sign-on (tiket HMAC, `aud`, `state` + cookie `nh_sso`, `jti` sekali pakai) |
-| `POST /api/vault` | akun SSO | `{check}`: simpan cek frasa brankas pertama kali (201), atau periksa (200 / 401). Jawaban berisi `vault_wrap` |
-| `POST /api/me/recovery` | akun | `{current, codes:[{proof, wrap}]×8}`: ganti semua kode pemulihan (butuh secret sekarang) |
-| `POST /api/me/secret` | akun | `{current, next, vault_wrap}`: ganti password (atau kunci brankas SSO); perangkat lain keluar |
-| `POST /api/recover` | publik | `{username, proof}` (akun SSO: tanpa username, harus masuk): cek kode → `{wrap, ticket}` |
-| `POST /api/recover/finish` | publik | `{ticket, next, vault_wrap}`: password baru, kode hangus, semua sesi keluar, sesi baru dimulai |
+|  | What it does | Try it | Code |
+|---|---|---|---|
+| 🔗 **LinkHop** | Short links and link-in-bio pages: custom names, QR codes, analytics and 20+ bio themes | [hel.ink](https://hel.ink) | [GitHub](https://github.com/navi-crwn/LinkHop) |
+| 🖼️ **PixelHop** | Image, video and PDF hosting in one Go binary: strips GPS on upload, albums, ShareX and a photo studio in your browser | [p.hel.ink](https://p.hel.ink) | [GitHub](https://github.com/navi-crwn/PixelHop) |
+| 📝 **NoteHop** | Notes only the people you choose can read | [note.hel.ink](https://note.hel.ink) | you are here |
 
-## Struktur
+---
 
-```
-cmd/notehop/          main: config env, server, janitor
-internal/db/          skema SQLite + query
-internal/app/         handler HTTP, auth, middleware, tes
-web/templates/        HTML (base, icons+editor partial, halaman)
-web/static/js/        app.js (util), crypto.js, md.js, editor.js, new.js, note.js, auth.js, dashboard.js
-web/static/css/       app.css
-web/static/vendor/    marked, DOMPurify, highlight.js, qrcode-generator, Mermaid (di-vendor)
-docs/                 deploy, panduan fitur, audit, progres
-ROADMAP.md            semua rencana fitur
-```
-
-## Lisensi
-
-NoteHop memakai lisensi MIT, lihat [`LICENSE`](LICENSE).
-
-## Lisensi pihak ketiga
-
-marked (MIT), DOMPurify (Apache-2.0/MPL-2.0), highlight.js (BSD-3-Clause), qrcode-generator (MIT), Mermaid 11.12.0 (MIT), Yjs 13.6.27 + lib0 (MIT), modernc.org/sqlite (BSD-3-Clause), golang.org/x/crypto (BSD-3-Clause), github.com/coder/websocket (ISC).
+<p align="center">MIT License · <a href="docs/REFERENCE.md">Reference</a> · <a href="docs/SELF-HOSTING.md">Self-hosting</a> · <a href="CHANGELOG.md">Changelog</a><br><sub>HEL.ink family: <a href="https://github.com/navi-crwn/LinkHop">LinkHop</a> (short links) · <a href="https://github.com/navi-crwn/PixelHop">PixelHop</a> (image hosting) · <a href="https://note.hel.ink">NoteHop</a></sub></p>
