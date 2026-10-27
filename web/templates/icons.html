@@ -28,31 +28,44 @@
 <symbol id="i-heading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 5v14M18 5v14M6 12h12"/></symbol>
 <symbol id="i-table" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M3.5 10h17M3.5 14.5h17M10 5v14"/></symbol>
 <symbol id="i-spoiler" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 12 6c6.4 0 10 6 10 6a17 17 0 0 1-2.9 3.6M6.6 7.6C3.9 9.3 2 12 2 12s3.6 6 10 6c1.7 0 3.2-.4 4.5-1"/></symbol>
+<symbol id="i-paste" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 5V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M9 11h6M9 15h4"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></symbol>
+<symbol id="i-print" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 9V3h10v6M7 18H4v-7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7h-3"/><rect x="7" y="14" width="10" height="7" rx="1"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M10 8l5 2.5-5 2.5zM8 21h8M12 17v4"/></symbol>
+<symbol id="i-scroll" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 6h14M5 10h14M5 14h10M5 18h7M19 14v6M16.5 17.5L19 20l2.5-2.5"/></symbol>
+<symbol id="i-sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></symbol>
+<symbol id="i-zen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+<symbol id="i-suggest" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18 10a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M15 19h5M17.5 16.5v5"/></symbol>
 <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 8v4l3 2"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+<symbol id="i-attach" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5l-7.8 7.8a5 5 0 0 1-7.1-7.1l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7l-8.5 8.5a1.7 1.7 0 0 1-2.4-2.4l7.8-7.8"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></symbol>
 </defs></svg>{{end}}
 
 {{define "editor"}}
 <div class="editor" data-editor data-view="write">
   <div class="ed-bar">
-    <div class="seg" role="tablist" aria-label="Tampilan editor">
-      <button type="button" role="tab" data-view="write" aria-selected="true">Tulis</button>
-      <button type="button" role="tab" data-view="preview" aria-selected="false">Pratinjau</button>
-      <button type="button" role="tab" data-view="split" aria-selected="false" class="wide-only">Berdampingan</button>
+    <div class="seg" role="tablist" aria-label="{{.L.T "ed.view"}}">
+      <button type="button" role="tab" data-view="write" aria-selected="true">{{.L.T "ed.write"}}</button>
+      <button type="button" role="tab" data-view="preview" aria-selected="false">{{.L.T "ed.preview"}}</button>
+      <button type="button" role="tab" data-view="split" aria-selected="false" class="wide-only">{{.L.T "ed.split"}}</button>
     </div>
-    <div class="ed-tools" aria-label="Sisipkan">
-      <button type="button" class="icon-btn sm" data-cmd="bold" title="Tebal (Ctrl+B)"><svg><use href="#i-bold"/></svg></button>
-      <button type="button" class="icon-btn sm" data-cmd="h2" title="Judul"><svg><use href="#i-heading"/></svg></button>
-      <button type="button" class="icon-btn sm" data-cmd="todo" title="To-do"><svg><use href="#i-check"/></svg></button>
-      <button type="button" class="icon-btn sm" data-cmd="code" title="Blok kode"><svg><use href="#i-code"/></svg></button>
-      <button type="button" class="icon-btn sm" data-cmd="table" title="Tabel"><svg><use href="#i-table"/></svg></button>
-      <button type="button" class="icon-btn sm" data-cmd="spoiler" title="Spoiler / toggle"><svg><use href="#i-spoiler"/></svg></button>
-      <button type="button" class="icon-btn sm" data-cmd="locked" title="Blok terkunci PIN"><svg><use href="#i-lock"/></svg></button>
+    <div class="ed-tools" aria-label="{{.L.T "ed.insert"}}">
+      <button type="button" class="icon-btn sm" data-cmd="bold" title="{{.L.T "ed.bold"}}"><svg><use href="#i-bold"/></svg></button>
+      <button type="button" class="icon-btn sm" data-cmd="h2" title="{{.L.T "ed.heading"}}"><svg><use href="#i-heading"/></svg></button>
+      <button type="button" class="icon-btn sm" data-cmd="todo" title="{{.L.T "ed.todo"}}"><svg><use href="#i-check"/></svg></button>
+      <button type="button" class="icon-btn sm" data-cmd="code" title="{{.L.T "ed.code"}}"><svg><use href="#i-code"/></svg></button>
+      <button type="button" class="icon-btn sm" data-cmd="table" title="{{.L.T "ed.table"}}"><svg><use href="#i-table"/></svg></button>
+      <button type="button" class="icon-btn sm" data-cmd="spoiler" title="{{.L.T "ed.spoiler"}}"><svg><use href="#i-spoiler"/></svg></button>
+      <button type="button" class="icon-btn sm" data-cmd="locked" title="{{.L.T "ed.locked"}}"><svg><use href="#i-lock"/></svg></button>
     </div>
   </div>
   <div class="ed-body">
-    <textarea class="ed-src" aria-label="Isi catatan" spellcheck="true" placeholder="Mulai menulis… ketik / untuk menu cepat"></textarea>
-    <div class="ed-preview md" aria-live="polite"></div>
+    <textarea class="ed-src" dir="auto" aria-label="{{.L.T "ed.body"}}" spellcheck="true" placeholder="{{.L.T "ed.placeholder"}}"></textarea>
+    <div class="ed-preview md" dir="auto" aria-live="polite"></div>
   </div>
-  <div class="ed-foot"><span>Markdown · ketik <span class="kbd">/</span> untuk menu cepat</span><span class="ed-count"></span></div>
+  <div class="ed-foot"><span>{{.L.H "ed.foot"}}</span><span class="ed-count"></span></div>
 </div>
 {{end}}

@@ -70,18 +70,18 @@ type authReq struct {
 func (q *authReq) parse() ([]byte, error) {
 	q.Username = strings.ToLower(strings.TrimSpace(q.Username))
 	if !userRe.MatchString(q.Username) {
-		return nil, errors.New("Username: 3–32 karakter, huruf kecil, angka, atau garis bawah.")
+		return nil, errors.New("err.bad_username")
 	}
 	secret, err := base64.RawURLEncoding.DecodeString(q.Auth)
 	if err != nil || len(secret) != 32 {
-		return nil, errors.New("Data masuk tidak valid.")
+		return nil, errors.New("err.bad_auth")
 	}
 	return secret, nil
 }
 
 func (a *App) apiRegister(w http.ResponseWriter, r *http.Request) {
 	if !a.cfg.Registration {
-		apiErr(w, http.StatusForbidden, "Pendaftaran sedang ditutup.")
+		apiErr(w, http.StatusForbidden, "err.registration_closed")
 		return
 	}
 	var q authReq
@@ -93,14 +93,18 @@ func (a *App) apiRegister(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	if key := a.usernameProblem(q.Username); key != "" {
+		apiErr(w, http.StatusBadRequest, key)
+		return
+	}
 	u, err := a.db.CreateUser(q.Username, hashAuth(secret))
 	if errors.Is(err, db.ErrTaken) {
-		apiErr(w, http.StatusConflict, "Username itu sudah dipakai.")
+		apiErr(w, http.StatusConflict, "err.username_taken")
 		return
 	}
 	if err != nil {
 		log.Printf("register: %v", err)
-		apiErr(w, http.StatusInternalServerError, "Gagal mendaftar.")
+		apiErr(w, http.StatusInternalServerError, "err.register_failed")
 		return
 	}
 	a.startSession(w, u)
@@ -120,11 +124,11 @@ func (a *App) apiLogin(w http.ResponseWriter, r *http.Request) {
 	u, err := a.db.UserByName(q.Username)
 	if err != nil {
 		checkAuth(secret, dummyHash)
-		apiErr(w, http.StatusUnauthorized, "Username atau password salah.")
+		apiErr(w, http.StatusUnauthorized, "err.bad_login")
 		return
 	}
 	if !checkAuth(secret, u.AuthHash) {
-		apiErr(w, http.StatusUnauthorized, "Username atau password salah.")
+		apiErr(w, http.StatusUnauthorized, "err.bad_login")
 		return
 	}
 	a.startSession(w, u)
@@ -167,7 +171,7 @@ func (a *App) currentUser(r *http.Request) *db.User {
 func (a *App) apiMe(w http.ResponseWriter, r *http.Request) {
 	u := a.currentUser(r)
 	if u == nil {
-		apiErr(w, http.StatusUnauthorized, "Belum masuk.")
+		apiErr(w, http.StatusUnauthorized, "err.not_signed_in")
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"username": u.Username})
@@ -176,13 +180,13 @@ func (a *App) apiMe(w http.ResponseWriter, r *http.Request) {
 func (a *App) apiMyNotes(w http.ResponseWriter, r *http.Request) {
 	u := a.currentUser(r)
 	if u == nil {
-		apiErr(w, http.StatusUnauthorized, "Belum masuk.")
+		apiErr(w, http.StatusUnauthorized, "err.not_signed_in")
 		return
 	}
 	notes, err := a.db.NotesByOwner(u.ID)
 	if err != nil {
 		log.Printf("my notes: %v", err)
-		apiErr(w, http.StatusInternalServerError, "Gagal memuat catatan.")
+		apiErr(w, http.StatusInternalServerError, "err.load_notes_failed")
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"notes": notes})

@@ -9,9 +9,11 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/navi-crwn/NoteHop/internal/i18n"
 )
 
-const csp = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; " +
+const csp = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; " +
 	"connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 
 // secure adds security headers, rejects cross-site writes and rate-limits the API.
@@ -29,19 +31,23 @@ func (a *App) secure(next http.Handler) http.Handler {
 		}
 		if r.Method != http.MethodGet && r.Method != http.MethodHead {
 			if !sameOrigin(r) {
-				apiErr(w, http.StatusForbidden, "Permintaan lintas situs ditolak.")
+				apiErr(w, http.StatusForbidden, "err.cross_site")
 				return
 			}
 			bucket, rate := "w", 120
 			switch {
 			case r.URL.Path == "/api/notes":
 				bucket, rate = "c", 30
-			case r.URL.Path == "/api/login" || r.URL.Path == "/api/register":
+			case r.URL.Path == "/api/files":
+				bucket, rate = "f", 20
+			case strings.HasPrefix(r.URL.Path, "/in/"):
+				bucket, rate = "i", 60
+			case r.URL.Path == "/api/login" || r.URL.Path == "/api/register" || r.URL.Path == "/api/vault":
 				bucket, rate = "a", 15
 			}
 			if !a.limit.allow(bucket+a.clientIP(r), rate) {
 				w.Header().Set("Retry-After", "60")
-				apiErr(w, http.StatusTooManyRequests, "Terlalu banyak permintaan. Coba lagi sebentar lagi.")
+				apiErr(w, http.StatusTooManyRequests, "err.rate_limited")
 				return
 			}
 		}
@@ -115,9 +121,9 @@ func readJSON(w http.ResponseWriter, r *http.Request, v any, max int64) bool {
 	if err := dec.Decode(v); err != nil {
 		var tooBig *http.MaxBytesError
 		if errors.As(err, &tooBig) {
-			apiErr(w, http.StatusRequestEntityTooLarge, "Catatan terlalu besar.")
+			apiErr(w, http.StatusRequestEntityTooLarge, "err.too_large")
 		} else {
-			apiErr(w, http.StatusBadRequest, "Permintaan tidak valid.")
+			apiErr(w, http.StatusBadRequest, "err.bad_request")
 		}
 		return false
 	}
@@ -131,6 +137,23 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 	_ = json.NewEncoder(w).Encode(v)
 }
 
-func apiErr(w http.ResponseWriter, status int, msg string) {
-	writeJSON(w, status, map[string]string{"error": msg})
+// apiErr answers with a catalog key ("code"), its English text ("error",
+// for curl and logs) and the values for its placeholders ("vars"); the
+// browser shows the text in the reader's language. A time.Time value is
+// sent as unix seconds so the browser can show it in local time.
+func apiErr(w http.ResponseWriter, status int, key string, kv ...any) {
+	resp := map[string]any{"error": i18n.T(i18n.Default, key, kv...), "code": key}
+	if len(kv) > 1 {
+		vars := map[string]any{}
+		for i := 0; i+1 < len(kv); i += 2 {
+			name, _ := kv[i].(string)
+			if t, ok := kv[i+1].(time.Time); ok {
+				vars[name] = t.Unix()
+			} else {
+				vars[name] = kv[i+1]
+			}
+		}
+		resp["vars"] = vars
+	}
+	writeJSON(w, status, resp)
 }
