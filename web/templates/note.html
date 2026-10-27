@@ -39,6 +39,22 @@
       </div>
     </header>
 
+    <div class="live-bar hide" id="live-bar">
+      <span class="live-dot" aria-hidden="true"></span>
+      <span class="small muted" id="live-status" aria-live="polite"></span>
+      <div class="live-people" id="live-people"></div>
+      <span class="live-follow hide" id="live-follow"></span>
+      <span class="live-tools">
+        <button type="button" class="btn sm ghost" id="live-present" aria-pressed="false"><svg><use href="#i-play"/></svg>{{.L.T "live.present"}}</button>
+        <button type="button" class="btn sm" id="live-chat-btn"><svg><use href="#i-chat"/></svg>{{.L.T "live.chat"}}<span class="live-unread hide" id="live-unread"></span></button>
+      </span>
+    </div>
+    <aside class="card live-chat hide" id="live-chat" aria-labelledby="live-chat-h">
+      <div class="live-chat-head"><b id="live-chat-h">{{.L.T "live.chat"}}</b><span class="hint">{{.L.T "live.chat_hint"}}</span><button type="button" class="icon-btn sm" id="live-chat-close" aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
+      <ol class="live-msgs" id="live-msgs"></ol>
+      <form class="live-chat-form" id="live-chat-form"><input type="text" maxlength="500" dir="auto" autocomplete="off" aria-label="{{.L.T "live.chat_input"}}" placeholder="{{.L.T "live.chat_input"}}"><button type="submit" class="btn sm primary">{{.L.T "live.send"}}</button></form>
+    </aside>
+
     <section class="card tpl hide" id="tpl" aria-labelledby="tpl-h">
       <div class="tpl-head"><b id="tpl-h"><svg class="ico"><use href="#i-edit"/></svg> {{.L.T "tpl.title"}}</b><span class="hint">{{.L.T "tpl.hint"}}</span></div>
       <div class="tpl-fields" id="tpl-fields"></div>
@@ -152,9 +168,13 @@
 <script src="/static/js/crypto.js?v={{.Asset}}"></script>
 <script src="/static/js/files.js?v={{.Asset}}"></script>
 <script src="/static/js/md.js?v={{.Asset}}"></script>
+<script src="/static/js/blocks.js?v={{.Asset}}"></script>
 <script src="/static/js/editor.js?v={{.Asset}}"></script>
 <script src="/static/js/diff.js?v={{.Asset}}"></script>
 <script src="/static/js/note.js?v={{.Asset}}"></script>
 <script src="/static/js/features.js?v={{.Asset}}"></script>
+<script src="/static/js/kanban.js?v={{.Asset}}"></script>
 <script src="/static/js/extras.js?v={{.Asset}}"></script>
+<script src="/static/vendor/yjs.min.js?v={{.Asset}}"></script>
+<script src="/static/js/live.js?v={{.Asset}}"></script>
 {{end}}

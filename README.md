@@ -18,6 +18,14 @@ Satu keluarga dengan [ImageApp](https://github.com/navi-crwn/imageapp), [SSO](ht
 - **Akun opsional**: password tidak dikirim ke server; daftar catatan dienkripsi dengan kunci brankas lokal.
 - **Keamanan**: CSP ketat, tanpa inline script, `noindex`, `Referrer-Policy: no-referrer`, gambar pihak ketiga diblokir, tolak permintaan lintas situs, rate limit.
 
+## Fitur lanjutan
+
+- **Kolaborasi langsung** (Yjs + WebSocket): kursor dan nama tamu, mini-chat, ikuti presenter. Server hanya meneruskan ciphertext.
+- **Di dalam teks**: `{{variabel}}`, ```` ```calc ````, Mermaid, `[[wiki-link]]`, `:::poll`, `:::burn` (blok hancur sendiri), `:::form` (jawaban jadi entri), `:::embed <link>` (catatan lain, diperbarui otomatis), lampiran terenkripsi 24 jam (pilih/seret/tempel; gambar jadi WebP), `[1:23]` memutar audio/video.
+- **Tampilan**: papan Kanban dari `## Kolom`, slide, teleprompter, baca nyaring, mode zen + pomodoro, command palette `Ctrl+K`.
+- **Pengaturan lanjutan per catatan**: kapsul waktu, kunci terjadwal, dead man's switch, checklist berulang, IP allowlist, tanda tangan (sign-off), watermark zero-width, password umpan, mode usul edit, riwayat versi + diff.
+- **Lainnya**: `/diff` (pembanding teks), `/nearby` (pad dan kirim file antar perangkat satu Wi-Fi lewat WebRTC), klaim catatan tamu ke akun, coretan pribadi (margin), web clipper.
+
 Rencana fitur lengkap ada di [ROADMAP.md](ROADMAP.md). Integrasi login SSO dan ImageApp ada di [docs/INTEGRASI-SSO-IMAGEAPP.md](docs/INTEGRASI-SSO-IMAGEAPP.md).
 
 ## Menjalankan
@@ -109,6 +117,8 @@ Semua JSON. Header: `X-Admin` (token admin), `X-Write` (bukti kunci).
 | `PUT` · `DELETE /api/n/{token}/decoy` | admin | Password umpan: ciphertext kedua, pembukaannya dicatat untuk pemilik |
 | `POST /api/n/{token}/claim` | pemilik akun + X-Admin | Pindahkan catatan tamu ke akun |
 | `GET` · `PUT /api/margins/{ref}` | akun | Coretan pribadi (terenkripsi vault) di samping catatan siapa pun |
+| `GET /api/n/{token}/live` (WebSocket) | pemegang kunci | Kolaborasi langsung. Pesan pertama `{t:"auth", write, admin}`; sesudahnya `{t, to, d}` dengan `d` terenkripsi. Tipe: `y` (update Yjs, hanya penulis), `need`/`sync`/`nosync` (state awal), `aw` (kehadiran/kursor), `chat`, `follow`. Tidak untuk catatan beku/burn |
+| `GET /api/nearby` (WebSocket) | siapa saja, per IP publik | Signaling WebRTC untuk `/nearby` (`hi`, `sig`); pad dan file lewat koneksi langsung antar browser |
 | `POST /api/files` | siapa saja (20/menit/IP) | Unggah lampiran: body = ciphertext mentah (`application/octet-stream`). Balas `{id, expires}`; kuncinya hanya ada di teks catatan (`nh-file:ID#KUNCI`) |
 | `GET /api/files/{id}` | siapa saja yang tahu ID | Ciphertext lampiran (404 setelah 24 jam) |
 | `GET /diff` | siapa saja | Halaman pembanding dua teks (diff di browser) |
@@ -136,4 +146,4 @@ ROADMAP.md            semua rencana fitur
 
 ## Lisensi pihak ketiga
 
-marked (MIT), DOMPurify (Apache-2.0/MPL-2.0), highlight.js (BSD-3-Clause), qrcode-generator (MIT), Mermaid 11.12.0 (MIT), modernc.org/sqlite (BSD-3-Clause), golang.org/x/crypto (BSD-3-Clause).
+marked (MIT), DOMPurify (Apache-2.0/MPL-2.0), highlight.js (BSD-3-Clause), qrcode-generator (MIT), Mermaid 11.12.0 (MIT), Yjs 13.6.27 + lib0 (MIT), modernc.org/sqlite (BSD-3-Clause), golang.org/x/crypto (BSD-3-Clause), github.com/coder/websocket (ISC).

@@ -51,6 +51,8 @@ type App struct {
 	limit *limiter
 	mux   *http.ServeMux
 	used  usedTickets
+	live  liveHub
+	near  nearbyHub
 }
 
 func New(cfg Config, d *db.DB) (*App, error) {
@@ -101,6 +103,8 @@ func (a *App) routes() {
 	m.HandleFunc("GET /login", a.page("login", "title.login", ""))
 	m.HandleFunc("GET /register", a.page("register", "title.register", ""))
 	m.HandleFunc("GET /diff", a.page("diff", "diffpage.title", "diffpage.lead"))
+	m.HandleFunc("GET /nearby", a.page("nearby", "nearby.title", "nearby.lead"))
+	m.HandleFunc("GET /api/nearby", a.apiNearby)
 	m.HandleFunc("GET /i18n/{lang}", a.catalogJS)
 	m.HandleFunc("GET /render/mermaid", mermaidFrame)
 	m.HandleFunc("GET /dashboard", a.dashboardPage)
@@ -132,6 +136,7 @@ func (a *App) routes() {
 	m.HandleFunc("DELETE /api/n/{token}/decoy", a.apiDeleteDecoy)
 	m.HandleFunc("POST /api/n/{token}/burns", a.apiAddBurn)
 	m.HandleFunc("POST /api/n/{token}/burns/{id}/reveal", a.apiRevealBurn)
+	m.HandleFunc("GET /api/n/{token}/live", a.apiLive)
 	m.HandleFunc("POST /api/files", a.apiUpload)
 	m.HandleFunc("GET /api/files/{id}", a.apiFile)
 	m.HandleFunc("GET /api/margins/{ref}", a.apiMargin)
@@ -176,7 +181,7 @@ type pageData struct {
 
 func (a *App) loadTemplates() error {
 	a.pages = map[string]*template.Template{}
-	for _, name := range []string{"new", "note", "about", "login", "register", "dashboard", "vault", "diff", "error"} {
+	for _, name := range []string{"new", "note", "about", "login", "register", "dashboard", "vault", "diff", "nearby", "error"} {
 		t, err := template.New(name).ParseFS(web.Templates, "templates/base.html", "templates/icons.html", "templates/"+name+".html")
 		if err != nil {
 			return err
