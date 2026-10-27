@@ -345,8 +345,7 @@ func assetVersion() string {
 const langCookie = "nh_lang"
 
 // locale is the reader's language: ?lang= (remembered in a cookie), then the
-// cookie, then English. Browsers' Accept-Language is deliberately ignored so
-// the site is the same for everyone until they choose.
+// cookie, then the browser's Accept-Language, then English.
 func (a *App) locale(w http.ResponseWriter, r *http.Request) i18n.Locale {
 	if q := r.URL.Query().Get("lang"); i18n.Supported(q) {
 		http.SetCookie(w, &http.Cookie{Name: langCookie, Value: q, Path: "/", MaxAge: 365 * 24 * 3600,
