@@ -1,0 +1,23 @@
+# Words a link name or username may not contain as a whole word (words are
+# split at "-", "_" and digits, and the whole name is checked joined up too).
+# Slugs are plain a-z, so other scripts are written in Latin letters.
+
+# English
+fuck fucker fucking motherfucker fck shit bullshit bitch bastard asshole cunt dick dickhead cock pussy
+whore slut fag faggot nigger nigga retard rape rapist porn porno twat wanker kike spic chink nazi hitler
+# Español
+puta puto mierda joder cabron cabrona pendejo pendeja verga culero maricon gilipollas zorra chingar chingada mamada
+# Português
+porra caralho buceta merda foda foder viado arrombado cuzao desgracado
+# Français
+putain connard connasse salope encule enculer batard nique niquer pute couille
+# Bahasa Indonesia / Jawa
+bangsat bajingan kontol memek ngentot jancok jancuk goblok tolol perek pelacur lonte kampret ngewe
+# Русский (latinica)
+blyat blyad pizdec pizdets pizda khuy ebat yebat mudak gandon pidor pidar shlyukha suka-blyat
+# 日本語 (romaji)
+chinko manko yariman
+# 中文 (pinyin)
+caonima shabi tamade wocao jiba
+# العربية (latin)
+sharmouta sharmuta kuss khara manyak metnak

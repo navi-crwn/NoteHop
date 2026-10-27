@@ -243,6 +243,12 @@ func (a *App) apiCreate(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusBadRequest, msg)
 		return
 	}
+	if q.Slug != "" {
+		if key, kv := a.slugProblem(r, q.Slug); key != "" {
+			apiErr(w, http.StatusBadRequest, key, kv...)
+			return
+		}
+	}
 	n := &db.Note{
 		Encrypted: q.Encrypted,
 		Password:  q.Password,
@@ -279,6 +285,9 @@ func (a *App) apiCreate(w http.ResponseWriter, r *http.Request) {
 		log.Printf("create: %v", err)
 		apiErr(w, http.StatusInternalServerError, "err.create_failed")
 		return
+	}
+	if q.Slug != "" {
+		a.db.ReleaseSlug(q.Slug) // its owner took it back
 	}
 	for _, b := range q.Burns {
 		if err := a.db.AddBurnKey(n.ID, db.BurnKey{ID: b.ID, Key: b.Key, MaxViews: b.MaxViews}); err != nil {
@@ -705,6 +714,12 @@ func (a *App) apiAddLink(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusBadRequest, "err.bad_slug")
 		return
 	}
+	if q.Slug != "" {
+		if key, kv := a.slugProblem(r, q.Slug); key != "" {
+			apiErr(w, http.StatusBadRequest, key, kv...)
+			return
+		}
+	}
 	l := &db.Link{Token: q.Slug, NoteID: x.note.ID, Mode: q.Mode}
 	if l.Token == "" {
 		l.Token = randToken(10)
@@ -717,6 +732,9 @@ func (a *App) apiAddLink(w http.ResponseWriter, r *http.Request) {
 		log.Printf("link: %v", err)
 		apiErr(w, http.StatusInternalServerError, "err.link_failed")
 		return
+	}
+	if q.Slug != "" {
+		a.db.ReleaseSlug(q.Slug)
 	}
 	writeJSON(w, http.StatusCreated, l)
 }

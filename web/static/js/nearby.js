@@ -19,7 +19,7 @@
 
   // ---------- signalling ----------
   function connect() {
-    ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/api/nearby');
+    ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/api/nearby?code=' + code);
     ws.onopen = function () { retry = 0; hi(); };
     ws.onmessage = function (e) {
       var m;
@@ -40,6 +40,7 @@
       }
     };
     ws.onclose = function () {
+      if (this.switching) return; // closed on purpose to join another code
       Object.keys(peers).forEach(drop);
       status(NH.t('nearby.reconnecting'));
       setTimeout(connect, Math.min(30000, 1000 * Math.pow(2, retry++)));
@@ -195,6 +196,25 @@
     $('#nb-name').textContent = name;
     hi();
   });
+  // ---------- pairing code ----------
+  // Devices only see each other when they use the same code (and network):
+  // on mobile data many strangers share one public address.
+  var code = (location.hash.match(/^#(\d{6})$/) || [])[1] || NH.store.get('nh_pair', '') || randomCode();
+  function randomCode() { return String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, '0'); }
+  function useCode(c) {
+    code = c;
+    NH.store.set('nh_pair', c);
+    $('#nb-code').value = c;
+    history.replaceState(null, '', '#' + c);
+    if (ws) { ws.switching = true; ws.close(); ws = null; Object.keys(peers).forEach(drop); }
+    connect();
+  }
+  $('#nb-pair').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var c = $('#nb-code').value.trim();
+    if (/^\d{6}$/.test(c)) useCode(c);
+  });
+  $('#nb-new-code').addEventListener('click', function () { useCode(randomCode()); });
   draw();
-  connect();
+  useCode(code);
 })();

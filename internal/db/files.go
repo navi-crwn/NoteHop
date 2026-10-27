@@ -132,3 +132,61 @@ func (d *DB) ProfileNotes(userID int64) ([]*Note, error) {
 	}
 	return out, rows.Err()
 }
+
+// SlugHoldDays is how long a link name stays reserved after its note or link
+// is gone. Only the same account may take it back in that time.
+const SlugHoldDays = 90
+
+type execer interface {
+	Exec(query string, args ...any) (sql.Result, error)
+}
+
+// holdSlugs reserves the names of the links matching where (over links l
+// joined with notes n). Random tokens almost always contain capitals, so
+// only lowercase names, the custom ones, are held.
+func holdSlugs(e execer, where string, args ...any) error {
+	_, err := e.Exec(`INSERT OR REPLACE INTO slug_holds (slug, owner_id, until)
+		SELECT l.token, n.owner_id, ? FROM links l JOIN notes n ON n.id = l.note_id
+		WHERE `+where+` AND l.token NOT GLOB '*[A-Z]*'`, append([]any{now() + SlugHoldDays*86400}, args...)...)
+	return err
+}
+
+// SlugHold reports whether a name is on hold, and for which account (if any).
+func (d *DB) SlugHold(slug string) (owner sql.NullInt64, until int64, held bool) {
+	err := d.QueryRow(`SELECT owner_id, until FROM slug_holds WHERE slug = ? AND until > ?`, slug, now()).Scan(&owner, &until)
+	return owner, until, err == nil
+}
+
+// ReleaseSlug drops a hold once the name is in use again.
+func (d *DB) ReleaseSlug(slug string) {
+	d.Exec(`DELETE FROM slug_holds WHERE slug = ?`, slug)
+}
+
+// Takedown removes a reported note. Its link names are held for a year for
+// everyone, its owner included, so the same content can't come straight back
+// under the same address.
+func (d *DB) Takedown(noteID int64) error {
+	tx, err := d.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err := tx.Exec(`INSERT OR REPLACE INTO slug_holds (slug, owner_id, until)
+		SELECT token, NULL, ? FROM links WHERE note_id = ? AND token NOT GLOB '*[A-Z]*'`, now()+365*86400, noteID); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(`DELETE FROM notes WHERE id = ?`, noteID); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// DeleteFile removes an attachment before its 24 hours are up.
+func (d *DB) DeleteFile(id string) (bool, error) {
+	res, err := d.Exec(`DELETE FROM files WHERE id = ?`, id)
+	if err != nil {
+		return false, err
+	}
+	k, _ := res.RowsAffected()
+	return k > 0, nil
+}

@@ -93,6 +93,10 @@ func (a *App) apiRegister(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	if key := a.usernameProblem(q.Username); key != "" {
+		apiErr(w, http.StatusBadRequest, key)
+		return
+	}
 	u, err := a.db.CreateUser(q.Username, hashAuth(secret))
 	if errors.Is(err, db.ErrTaken) {
 		apiErr(w, http.StatusConflict, "err.username_taken")

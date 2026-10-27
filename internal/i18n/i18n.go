@@ -135,6 +135,13 @@ func T(lang, key string, kv ...any) string {
 		switch x := kv[i+1].(type) {
 		case time.Time:
 			v = x.UTC().Format("2006-01-02 15:04 UTC")
+		case int64:
+			// API errors pass times as unix seconds (the browser formats them).
+			if name == "time" {
+				v = time.Unix(x, 0).UTC().Format("2006-01-02 15:04 UTC")
+			} else {
+				v = fmt.Sprint(x)
+			}
 		default:
 			v = fmt.Sprint(x)
 		}

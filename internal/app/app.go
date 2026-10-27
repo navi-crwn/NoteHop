@@ -30,13 +30,16 @@ type Config struct {
 	SecureCookies bool
 	TrustProxy    bool
 	Registration  bool
-	SSOURL     string // "Masuk dengan SSO"; empty turns it off
-	SSOSecret  string // shared with SSO's NOTEHOP_SSO_SECRET
-	ShareURL      string // optional second domain for share links; needs BaseURL
-	FileMB        int    // largest attachment in MB; 0 turns attachments off
-	FilesTotalMB  int    // disk budget for all live attachments; 0 = no limit
-	PrivateHooks  bool   // let Watch webhooks reach private/loopback addresses (and plain http)
-	TelegramToken string // bot token from @BotFather; empty turns the bot off
+	SSOURL     string   // "Masuk dengan SSO"; empty turns it off
+	SSOSecret  string   // shared with SSO's NOTEHOP_SSO_SECRET
+	ShareURL      string   // optional second domain for share links; needs BaseURL
+	FileMB        int      // largest attachment in MB; 0 turns attachments off
+	FilesTotalMB  int      // disk budget for all live attachments; 0 = no limit
+	PrivateHooks  bool     // let Watch webhooks reach private/loopback addresses (and plain http)
+	TelegramToken string   // bot token from @BotFather; empty turns the bot off
+	Admins        []string // usernames that may use short and reserved link names
+	Reserved      []string // extra reserved names, e.g. upcoming campaigns
+	Contact       string   // shown on /contact: an email address or URL
 }
 
 // SSOEnabled reports whether sign-in with SSO is configured. It needs the
@@ -110,6 +113,10 @@ func (a *App) routes() {
 	m.HandleFunc("GET /diff", a.page("diff", "diffpage.title", "diffpage.lead"))
 	m.HandleFunc("GET /nearby", a.page("nearby", "nearby.title", "nearby.lead"))
 	m.HandleFunc("GET /faq", a.page("faq", "faq.title", "faq.lead"))
+	m.HandleFunc("GET /help", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/faq", http.StatusMovedPermanently) })
+	m.HandleFunc("GET /contact", a.page("contact", "contact.title", "contact.lead"))
+	m.HandleFunc("GET /terms", a.page("terms", "terms.title", "terms.lead"))
+	m.HandleFunc("GET /privacy", a.page("privacy", "privacy.title", "privacy.lead"))
 	m.HandleFunc("GET /offline", a.page("offline", "offline.title", "offline.lead"))
 	m.HandleFunc("GET /sw.js", a.serviceWorker)
 	m.HandleFunc("GET /manifest.webmanifest", a.manifest)
@@ -175,31 +182,33 @@ func (a *App) routes() {
 // ---------- pages ----------
 
 type pageData struct {
-	Site    string
-	Title   string
-	Desc    string
-	Path    string
-	Asset   string
-	User    *db.User
-	Reg     bool
-	NoIndex bool
-	Token   string
-	Mode    string
-	SSO     bool   // show "Masuk dengan SSO"
-	Next    string // where to go after signing in
-	Msg     string // error page text; empty means "note not found"
-	Origin  string // scheme://host for absolute OpenGraph URLs
-	Main    string // main site, for admin links
-	Share   string // share domain, for links handed to readers (may be empty)
-	L       i18n.Locale
-	Langs   []i18n.Lang
-	Clipper template.URL // bookmarklet for the about page
-	Profile []profileNote
+	Site        string
+	Title       string
+	Desc        string
+	Path        string
+	Asset       string
+	User        *db.User
+	Reg         bool
+	NoIndex     bool
+	Token       string
+	Mode        string
+	SSO         bool   // show "Masuk dengan SSO"
+	Next        string // where to go after signing in
+	Msg         string // error page text; empty means "note not found"
+	Origin      string // scheme://host for absolute OpenGraph URLs
+	Main        string // main site, for admin links
+	Share       string // share domain, for links handed to readers (may be empty)
+	L           i18n.Locale
+	Langs       []i18n.Lang
+	Clipper     template.URL // bookmarklet for the about page
+	Profile     []profileNote
+	Contact     string // operator contact for /contact
+	ContactHref string // mailto: for an address, the URL otherwise
 }
 
 func (a *App) loadTemplates() error {
 	a.pages = map[string]*template.Template{}
-	for _, name := range []string{"new", "note", "about", "login", "register", "dashboard", "vault", "diff", "nearby", "profile", "offline", "faq", "error"} {
+	for _, name := range []string{"new", "note", "about", "login", "register", "dashboard", "vault", "diff", "nearby", "profile", "offline", "faq", "contact", "terms", "privacy", "error"} {
 		t, err := template.New(name).ParseFS(web.Templates, "templates/base.html", "templates/icons.html", "templates/"+name+".html")
 		if err != nil {
 			return err
@@ -215,6 +224,13 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.SSO = a.cfg.SSOEnabled()
 	d.Origin = a.origin(r)
 	d.Main, d.Share = a.cfg.BaseURL, a.shareURL()
+	d.Contact = a.cfg.Contact
+	if d.Contact != "" {
+		d.ContactHref = d.Contact
+		if !strings.HasPrefix(d.Contact, "http://") && !strings.HasPrefix(d.Contact, "https://") {
+			d.ContactHref = "mailto:" + d.Contact
+		}
+	}
 	d.Clipper = clipper(d.Origin)
 	if d.Next == "" {
 		d.Next = safeNext(r.URL.Query().Get("next"))

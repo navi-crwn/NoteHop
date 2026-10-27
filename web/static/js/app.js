@@ -46,6 +46,10 @@
   NH.on = function (name, fn) { (handlers[name] = handlers[name] || []).push(fn); };
   NH.emit = function (name, data) { (handlers[name] || []).forEach(function (fn) { fn(data); }); };
 
+  // Keys of private notes (#k=…) or attachments (nh-file:…#…) pasted into a
+  // public note become readable by anyone with its address.
+  NH.leaksKeys = function (text) { return /[#&]k=[A-Za-z0-9_-]{20,}|nh-file:[A-Za-z0-9]{20}#/.test(text || ''); };
+
   NH.icon = function (name, cls) {
     var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     if (cls) s.setAttribute('class', cls);

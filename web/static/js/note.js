@@ -328,10 +328,15 @@
   // ---------- polls and self-destructing blocks ----------
   function voteKey(poll) { return 'nh_vote_' + token + '_' + poll; }
   function myVote(poll) { var v = NH.store.get(voteKey(poll), -1); return typeof v === 'number' ? v : -1; }
-  function vote(poll, option, prev) {
-    var body = { poll: poll, option: option };
-    if (prev >= 0) body.prev = prev;
-    api('POST', '/votes', body).then(function (r) {
+  // A random id per browser: the server remembers each voter's choice, so a
+  // vote can be moved or taken back but not counted twice.
+  function voter() {
+    var v = NH.store.get('nh_voter', '');
+    if (!/^[A-Za-z0-9_-]{16,64}$/.test(v)) { v = NHC.newKey(); NH.store.set('nh_voter', v); }
+    return v;
+  }
+  function vote(poll, option) {
+    api('POST', '/votes', { poll: poll, option: option, voter: voter() }).then(function (r) {
       S.votes = r.votes;
       NH.store.set(voteKey(poll), option);
       drawBody(false);
@@ -403,6 +408,7 @@
     S.saving = true;
     setSave(NH.t('save.saving'));
     var t = currentTitle(), b = ed.value, vault = NHC.vault();
+    if (!S.meta.encrypted && !S.keyWarned && NH.leaksKeys(t + '\n' + b)) { S.keyWarned = true; NH.toast(NH.t('warn.public_keys'), 'err'); }
     var ownerBlob = S.meta.owned && S.meta.admin && vault ? vault.seal({ t: t, k: K, a: A, p: S.password }) : null;
     Promise.all([S.codec.encode({ t: t, b: b }), ownerBlob]).then(function (r) {
       var body = { content: r[0], version: S.version };

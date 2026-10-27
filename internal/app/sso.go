@@ -165,6 +165,9 @@ func (a *App) linkSSOUser(t *ssoTicket) (*db.User, error) {
 		}
 		u = &prof
 		u.Username = ssoUsername(t.Email, try)
+		if a.usernameProblem(u.Username) != "" {
+			u.Username = ssoUsername("user@", try+1) // e-mail named after a reserved word
+		}
 		err = a.db.CreateSSOUser(u)
 		if !errors.Is(err, db.ErrTaken) {
 			return u, err

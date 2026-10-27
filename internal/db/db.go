@@ -145,6 +145,15 @@ var migrations = []string{
 		pub TEXT NOT NULL, priv TEXT NOT NULL, created INTEGER NOT NULL);
 	CREATE TABLE telegram_chats (chat_id INTEGER PRIMARY KEY, inbox TEXT NOT NULL REFERENCES inboxes(token) ON DELETE CASCADE,
 		created INTEGER NOT NULL);`,
+	// 6: link names of deleted notes are held for a while before anyone else
+	// can take them (so an old link never opens a stranger's note).
+	`CREATE TABLE slug_holds (slug TEXT PRIMARY KEY, owner_id INTEGER, until INTEGER NOT NULL);
+	CREATE INDEX slug_holds_until ON slug_holds(until);`,
+	// 7: one row per poll voter, so the server knows each voter's last choice
+	// (instead of trusting the browser) and can limit votes per network.
+	`CREATE TABLE poll_voters (note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE, poll INTEGER NOT NULL,
+		voter TEXT NOT NULL, option INTEGER NOT NULL, net TEXT NOT NULL, PRIMARY KEY (note_id, poll, voter));
+	CREATE INDEX poll_voters_net ON poll_voters(note_id, poll, net);`,
 }
 
 // migrate applies pending migrations, each in its own transaction together
@@ -362,8 +371,18 @@ func (d *DB) SetCheck(id int64, index int, checked bool) (map[string]bool, error
 }
 
 func (d *DB) DeleteNote(id int64) error {
-	_, err := d.Exec(`DELETE FROM notes WHERE id = ?`, id)
-	return err
+	tx, err := d.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if err := holdSlugs(tx, `n.id = ?`, id); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(`DELETE FROM notes WHERE id = ?`, id); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 // Freeze copies the note as it is right now (text, ticks and appended entries)
@@ -469,6 +488,9 @@ func (d *DB) DeleteLink(noteID int64, token string) error {
 	}
 	if count <= 1 {
 		return ErrLastLink
+	}
+	if err := holdSlugs(d, `l.note_id = ? AND l.token = ?`, noteID, token); err != nil {
+		return err
 	}
 	res, err := d.Exec(`DELETE FROM links WHERE note_id = ? AND token = ?`, noteID, token)
 	if err != nil {
@@ -685,8 +707,14 @@ func (d *DB) SetConfig(id int64, config string) error {
 // Sweep removes expired notes, sessions and attachments.
 func (d *DB) Sweep() (int64, error) {
 	t := now()
+	if err := holdSlugs(d, `n.expires > 0 AND n.expires <= ?`, t); err != nil {
+		return 0, err
+	}
 	res, err := d.Exec(`DELETE FROM notes WHERE expires > 0 AND expires <= ?`, t)
 	if err != nil {
+		return 0, err
+	}
+	if _, err := d.Exec(`DELETE FROM slug_holds WHERE until <= ?`, t); err != nil {
 		return 0, err
 	}
 	k, _ := res.RowsAffected()
