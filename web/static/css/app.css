@@ -704,7 +704,10 @@ body.expert .seg-choice [data-tech]::after { display: none; }
 .tour-target { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: var(--radius-sm); }
 .status-line { margin: 4px 0 10px; font-size: .9rem; color: var(--muted); }
 .status-line svg { width: 14px; height: 14px; vertical-align: -2px; }
-.seg-choice { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); border-radius: 12px; }
+/* Equal-ish options, but never narrower than their longest word: a long word
+   (Selamanya, Другое…) would spill into its neighbour. They wrap instead. */
+.seg-choice { border-radius: 12px; }
+.seg-choice label { flex: 1 1 0; }
 .seg-choice span { white-space: normal; line-height: 1.25; padding: 7px 6px; border-radius: 9px; font-size: .82rem; }
 @media (max-width: 640px) {
   /* Starters scroll sideways on phones, so the editor stays near the top. */

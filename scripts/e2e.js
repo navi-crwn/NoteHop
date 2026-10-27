@@ -207,6 +207,11 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     over = await m.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     ok('Mobile: no horizontal scroll on note (visitor)', over <= 0, 'overflow ' + over + 'px');
     await m.screenshot({ path: OUT + '/m-note-visitor.png', fullPage: true });
+    // Smallest common phone: option words ("With a password", "Always") must
+    // not spill into the next option.
+    await m.setViewportSize({ width: 320, height: 700 }); await m.goto(BASE + '/'); await m.waitForTimeout(300);
+    const spill = await m.$$eval('.seg-choice span', xs => xs.filter(s => s.scrollWidth > s.clientWidth + 1).map(s => s.textContent));
+    ok('Mobile: 320px options fit their text', spill.length === 0, JSON.stringify(spill));
   } catch (e) { ok('Mobile flow', false, e.message.split('\n')[0]); }
 
   await b.close();
