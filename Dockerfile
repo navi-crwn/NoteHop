@@ -1,4 +1,4 @@
-# Optional: the VPS setup in docs/DEPLOY.md runs the binary under systemd.
+# Optional: the VPS setup in docs/SELF-HOSTING.md runs the binary under systemd.
 FROM golang:1.27 AS build
 WORKDIR /src
 COPY go.mod go.sum ./
