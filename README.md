@@ -2,7 +2,7 @@
 
 Catatan online yang bisa dibagikan dan **dienkripsi di browser**. Server hanya menyimpan acakan (ciphertext); kunci ada di bagian `#` link dan tidak pernah dikirim ke server. Satu binary Go + satu file SQLite, tanpa build step frontend.
 
-Mau coba catatan online tanpa memasang apa pun? Coba di **[note.example.com](https://note.example.com)**, satu keluarga dengan [SSO](https://accounts.example.com) (link pendek) dan [ImageApp](https://images.example.com) (hosting gambar).
+Mau coba catatan online tanpa memasang apa pun? Coba di **[note.hel.ink](https://note.hel.ink)**, satu keluarga dengan [HEL.ink](https://hel.ink) (link pendek) dan [PixelHop](https://p.hel.ink) (hosting gambar).
 
 ## Fitur (Fase 1)
 
