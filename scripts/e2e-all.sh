@@ -12,7 +12,7 @@ BIN="$TMP/notehop"
 trap 'kill "$PID" 2>/dev/null; rm -rf "$TMP"' EXIT
 
 go build -o "$BIN" ./cmd/notehop || exit 1
-SUITES="${*:-e2e e2e-features e2e-server-features e2e-files e2e-live e2e-blocks e2e-nearby e2e-integrations}"
+SUITES="${*:-e2e e2e-features e2e-server-features e2e-files e2e-live e2e-blocks e2e-nearby e2e-integrations e2e-types}"
 FAILED=""
 PID=""
 for s in $SUITES; do

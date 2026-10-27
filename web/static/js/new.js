@@ -239,7 +239,7 @@
     NHC.noteKeys(k, password, salt).then(function (keys) {
       var codec = NHC.codec(encrypted, keys.aes), vault = NHC.vault();
       return Promise.all([
-        codec.encode({ t: title, b: body }),
+        codec.encode(Object.assign({ t: title, b: body }, ed.fields())),
         vault ? vault.seal({ t: title, k: k, a: admin, p: password }) : '',
         decoyPw ? NHC.decoy(k, decoyPw, salt, { t: title, b: $('#decoy-text').value }, { t: title, b: body }) : null
       ]).then(function (r) {

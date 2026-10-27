@@ -1,5 +1,7 @@
 // Markdown rendering for NoteHop: marked + DOMPurify + highlight.js, plus
-// two block extensions:
+// inline styles from the format menu: [text]{.red .hl-yellow .large}
+// (only the names in SPAN; see format.js), alignment blocks (:::center,
+// :::right, :::justify) and these block extensions:
 //   :::spoiler Title      →  click-to-open <details>
 //   ...
 //   :::
@@ -11,6 +13,34 @@
 (function () {
   'use strict';
   marked.setOptions({ gfm: true, breaks: true });
+
+  // [text]{.name …}: a fixed list of names, each a class (never a style
+  // attribute: the CSP forbids those) or one of three harmless tags.
+  var SPAN = {
+    red: 'tc-red', orange: 'tc-orange', green: 'tc-green', cyan: 'tc-cyan', blue: 'tc-blue', violet: 'tc-violet', pink: 'tc-pink', gray: 'tc-gray',
+    'hl-yellow': 'hl-yellow', 'hl-green': 'hl-green', 'hl-blue': 'hl-blue', 'hl-pink': 'hl-pink', 'hl-violet': 'hl-violet',
+    small: 'fs-small', large: 'fs-large', huge: 'fs-huge', u: 'u', sup: 'sup', sub: 'sub'
+  };
+  var SPAN_RE = /^\[((?:\\.|[^\[\]\\\n])+)\]\{((?:\s*\.[a-z][a-z-]*)+)\s*\}/;
+  marked.use({ extensions: [{
+    name: 'nhspan', level: 'inline',
+    start: function (src) { var i = src.indexOf('['); return i < 0 ? undefined : i; },
+    tokenizer: function (src) {
+      var m = SPAN_RE.exec(src);
+      if (!m) return;
+      var names = m[2].trim().split(/\s+/).map(function (n) { return n.slice(1); }).filter(function (n) { return SPAN[n]; });
+      if (!names.length) return;
+      return { type: 'nhspan', raw: m[0], names: names, tokens: this.lexer.inlineTokens(m[1]) };
+    },
+    renderer: function (t) {
+      var out = this.parser.parseInline(t.tokens), cls = [];
+      t.names.forEach(function (n) {
+        if (n === 'u' || n === 'sup' || n === 'sub') out = '<' + n + '>' + out + '</' + n + '>';
+        else cls.push(SPAN[n]);
+      });
+      return cls.length ? '<span class="' + cls.join(' ') + '">' + out + '</span>' : out;
+    }
+  }] });
 
   var TASK = /^(\s*(?:[-*+]|\d+[.)])\s+)\[([ xX])\]/;
   var FENCE = /^\s*(```|~~~)/;
@@ -106,13 +136,15 @@
         out.push(line);
         continue;
       }
-      var b = !fence && line.match(/^:::(spoiler|locked|poll|burn|embed|form)\s*(.*)$/);
+      var b = !fence && line.match(/^:::(spoiler|locked|poll|burn|embed|form|center|right|justify)\s*(.*)$/);
       if (!b) { out.push(!fence && window.NHFiles ? NHFiles.preprocess(line) : line); continue; }
       var inner = [], j = i + 1;
       while (j < lines.length && !/^:::\s*$/.test(lines[j])) inner.push(lines[j++]);
       if (j >= lines.length) { out.push(line); continue; } // unclosed: leave as text
       var title = b[2].trim();
-      if (b[1] === 'spoiler') {
+      if (b[1] === 'center' || b[1] === 'right' || b[1] === 'justify') {
+        out.push('', '<div class="al-' + b[1] + '">', '', inner.join('\n'), '', '</div>', '');
+      } else if (b[1] === 'spoiler') {
         out.push('', '<details class="spoiler"><summary>' + esc(title || NH.t('md.spoiler_default')) + '</summary>', '', inner.join('\n'), '', '</details>', '');
       } else if (b[1] === 'poll') {
         // :::poll Question, then one "- option" per line
@@ -454,6 +486,34 @@
     if (!el.textContent.trim() && !el.querySelector('.locked, input, hr, .nhfile, .attach, .embed, .nhform')) el.appendChild(NH.h('p.faint', NH.t('md.empty')));
   }
 
-  window.NHMD = { render: render, html: html, applyChecks: applyChecks, toggleTask: toggleTask,
+  // Plain and code notes are shown as text: never parsed as Markdown or HTML.
+  function renderPlain(el, src) {
+    el.replaceChildren(src ? NH.h('div.plain-view', { dir: 'auto' }, src) : NH.h('p.faint', NH.t('md.empty')));
+  }
+  function renderCode(el, src, lang) {
+    if (!src) return el.replaceChildren(NH.h('p.faint', NH.t('md.empty')));
+    var n = src.replace(/\n$/, '').split('\n').length, nums = [];
+    for (var i = 1; i <= n; i++) nums.push(i);
+    var code = NH.h('code', { dir: 'ltr' }, src);
+    try {
+      if (lang && hljs.getLanguage(lang)) { code.className = 'language-' + lang; hljs.highlightElement(code); }
+      else if (src.length < 100000) {
+        var r = hljs.highlightAuto(src); // hljs escapes the text it returns
+        code.innerHTML = r.value;
+        code.classList.add('hljs');
+        lang = r.language || '';
+      }
+    } catch (e) {}
+    el.replaceChildren(NH.h('div.code-note', { dir: 'ltr', 'data-lang': lang || '' },
+      NH.h('pre.code-gutter', { 'aria-hidden': 'true' }, nums.join('\n')), NH.h('pre.code-text', code)));
+  }
+  // renderAs(el, {y, l}, src, opts): by note type (y), Markdown by default.
+  function renderAs(el, type, src, opts) {
+    if (type && type.y === 'plain') return renderPlain(el, src || '');
+    if (type && type.y === 'code') return renderCode(el, src || '', type.l);
+    render(el, src, opts);
+  }
+
+  window.NHMD = { render: render, renderAs: renderAs, html: html, applyChecks: applyChecks, toggleTask: toggleTask, SPAN: SPAN,
     templateVars: templateVars, fillVars: fillVars, calcLine: calcLine, parseNum: parseNum };
 })();

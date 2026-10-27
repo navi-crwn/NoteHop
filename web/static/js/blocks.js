@@ -23,7 +23,7 @@
     return NH.api('POST', '/api/n/' + encodeURIComponent(e.token) + '/open', { poll: true }, { 'X-Write': e.keys.write }).then(function (d) {
       if (d.version === e.version) return false;
       return e.codec.decode(d.content).then(function (n) {
-        e.version = d.version; e.title = n.t || ''; e.body = n.b || '';
+        e.version = d.version; e.title = n.t || ''; e.body = n.b || ''; e.type = { y: n.y, l: n.l };
         return true;
       });
     });
@@ -32,7 +32,7 @@
   function drawEmbed(box, e, opts) {
     var body = h('div.md.embed-body', { dir: 'auto' });
     // One level only: an embed inside an embed stays a link.
-    NHMD.render(body, e.body, { noEmbed: true, copy: false });
+    NHMD.renderAs(body, e.type, e.body, { noEmbed: true, copy: false });
     box.replaceChildren(h('div.embed-head', NH.icon('link'), h('b', e.title || NH.t('common.untitled')),
       h('a.embed-open', { href: box.dataset.src, target: '_blank', rel: 'noopener' }, NH.t('embed.open'))), body);
   }

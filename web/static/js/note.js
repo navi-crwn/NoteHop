@@ -172,6 +172,8 @@
           S.title = d.note.t || '';
           S.body = d.note.b || '';
         }
+        // The type comes along unless this browser changed it and hasn't saved yet.
+        if (fresh || !S.typeDirty) S.type = { y: d.note.y, l: d.note.l };
         if (fresh) {
           S.ready = true;
           setup(data.burned);
@@ -271,6 +273,7 @@
       ti.classList.remove('hide');
       ed = NHEditor($('#n-edit [data-editor]'), {
         onChange: edited, onSave: saveNow,
+        onType: function () { S.typeDirty = true; typeChrome(); edited(); },
         onBurnKey: function (k) {
           if (!S.meta.encrypted) return Promise.reject(new Error(NH.t('rule.burn_block_e2e')));
           return api('POST', '/burns', k).then(function () { S.burnBlocks = S.burnBlocks || {}; S.burnBlocks[k.id] = { id: k.id, max_views: k.max_views, views: 0 }; });
@@ -285,7 +288,8 @@
 
     $('#act-copy').addEventListener('click', function () {
       var t = currentTitle(), b = NHMD.applyChecks(currentBody(), S.mode === 'edit' ? {} : S.checks);
-      NH.copy((t ? '# ' + t + '\n\n' : '') + b, NH.t('note.text_copied'));
+      // Plain and Code copy just the text; a Document gets its title as a heading.
+      NH.copy(noteType().y ? b : (t ? '# ' + t + '\n\n' : '') + b, NH.t('note.text_copied'));
     });
     $('#act-share').addEventListener('click', openShare);
     $('#act-freeze').addEventListener('click', freeze);
@@ -302,10 +306,15 @@
     b.replaceChildren(NH.icon(icon), h('span', text), extra || '');
   }
 
+  function noteType() { return ed ? ed.fields() : (S.type || {}); }
   function currentTitle() { return ed ? $('#n-title-input').value.trim() : S.title; }
   function currentBody() { return ed ? ed.value : S.body; }
 
+  // Markdown export only for Documents; the .txt download is always there.
+  function typeChrome() { $('#act-export-md').classList.toggle('hide', !!noteType().y); }
+
   function drawBody(force) {
+    typeChrome();
     var title = S.title || NH.t('common.untitled');
     document.title = title + ' · NoteHop';
     $('#n-title').textContent = title;
@@ -316,6 +325,13 @@
         // the next save makes them part of the note and clears the overrides.
         ed.value = NHMD.applyChecks(S.body, S.checks);
       }
+      if (force || !S.typeDirty) ed.setType(S.type, true);
+      return;
+    }
+    if (S.type && S.type.y) { // Plain and Code: the text as typed
+      $('#tpl-fields').classList.add('hide');
+      NHMD.renderAs($('#n-view'), S.type, S.body);
+      if (S.type.y === 'code') $('#n-view').appendChild(h('p.code-safe', NH.icon('shield'), NH.t('type.code_safe')));
       return;
     }
     var canCheck = S.mode === 'check' && !S.meta.frozen && !!S.keys;
@@ -458,13 +474,15 @@
     var t = currentTitle(), b = ed.value, vault = NHC.vault();
     if (!S.meta.encrypted && !S.keyWarned && NH.leaksKeys(t + '\n' + b)) { S.keyWarned = true; NH.toast(NH.t('warn.public_keys'), 'err'); }
     var ownerBlob = S.meta.owned && S.meta.admin && vault ? vault.seal({ t: t, k: K, a: A, p: S.password }) : null;
-    Promise.all([S.codec.encode({ t: t, b: b }), ownerBlob]).then(function (r) {
+    var typeNow = ed.fields();
+    Promise.all([S.codec.encode(Object.assign({ t: t, b: b }, typeNow)), ownerBlob]).then(function (r) {
       var body = { content: r[0], version: S.version };
       if (r[1]) body.owner_blob = r[1];
       return api('PUT', '', body);
     }).then(function (res) {
       S.version = res.version;
-      S.title = t; S.body = b; S.checks = {};
+      S.title = t; S.body = b; S.checks = {}; S.type = typeNow;
+      if (JSON.stringify(ed.fields()) === JSON.stringify(typeNow)) S.typeDirty = false;
       S.dirty = currentBody() !== b || currentTitle() !== t;
       S.meta.updated = Math.floor(Date.now() / 1000);
       setSave(NH.t(S.dirty ? 'save.unsaved' : 'save.saved'), S.dirty ? '' : 'ok');
@@ -676,6 +694,7 @@
     meta: function () { return S.meta; },
     hasKey: function () { return !!S.keys; },
     encrypted: function () { return !!(S.meta && S.meta.encrypted); },
+    type: function () { return noteType(); },
     view: function () { return $('#n-view'); },
     // for features.js
     token: token, key: function () { return K; }, admin: function () { return A; },
