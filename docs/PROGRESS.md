@@ -14,7 +14,7 @@ Status: ✅ selesai · 🔨 dikerjakan · ⏳ antre · ⛔ sengaja tidak dibuat 
 ✅ Partial Burn · ✅ Riwayat versi + diff · ✅ Diff checker · ✅ Saran edit (mode suggest) · ✅ Sign-off · ✅ Mini-poll · ✅ Read receipts · ✅ Claimable notes · ✅ Decoy password · ✅ IP allowlist · ✅ Cron reset checklist · ✅ Dead Man's Switch · ✅ Watermark zero-width · ✅ Auto-archive · ✅ Shadow margin · uji: `scripts/e2e-server-features.js`, `internal/app/extra_test.go`
 
 ## Batch C: lampiran
-⏳ Lampiran terenkripsi 24 jam · ⏳ Smart paste gambar → WebP terenkripsi · ⏳ Catatan media bertimestamp
+✅ Lampiran terenkripsi 24 jam · ✅ Smart paste gambar → WebP terenkripsi · ✅ Catatan media bertimestamp · uji: `scripts/e2e-files.js`, `internal/app/files_test.go`
 
 ## Batch D: real-time
 ⏳ Kolaborasi E2E (Yjs + WebSocket) · ⏳ Kursor + nama tamu · ⏳ Mini-chat · ⏳ Follow presenter · ⏳ Embed blok live · ⏳ Kanban · ⏳ Form-to-Note · ⏳ Same-WiFi pad · ⏳ P2P file drop (WebRTC)

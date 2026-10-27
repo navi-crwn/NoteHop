@@ -32,6 +32,8 @@ type Config struct {
 	SSOURL     string // "Masuk dengan SSO"; empty turns it off
 	SSOSecret  string // shared with SSO's NOTEHOP_SSO_SECRET
 	ShareURL      string // optional second domain for share links; needs BaseURL
+	FileMB        int    // largest attachment in MB; 0 turns attachments off
+	FilesTotalMB  int    // disk budget for all live attachments; 0 = no limit
 }
 
 // SSOEnabled reports whether sign-in with SSO is configured. It needs the
@@ -130,6 +132,8 @@ func (a *App) routes() {
 	m.HandleFunc("DELETE /api/n/{token}/decoy", a.apiDeleteDecoy)
 	m.HandleFunc("POST /api/n/{token}/burns", a.apiAddBurn)
 	m.HandleFunc("POST /api/n/{token}/burns/{id}/reveal", a.apiRevealBurn)
+	m.HandleFunc("POST /api/files", a.apiUpload)
+	m.HandleFunc("GET /api/files/{id}", a.apiFile)
 	m.HandleFunc("GET /api/margins/{ref}", a.apiMargin)
 	m.HandleFunc("PUT /api/margins/{ref}", a.apiMargin)
 	m.HandleFunc("POST /api/n/{token}/links", a.apiAddLink)

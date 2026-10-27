@@ -51,6 +51,8 @@ UI tersedia dalam 8 bahasa: English (default), 中文, Español, العربية 
 | `NOTEHOP_REGISTRATION` | `true` | Buka/tutup pendaftaran akun |
 | `NOTEHOP_SITE` | `NoteHop` | Nama situs |
 | `NOTEHOP_SHARE_URL` | kosong | Domain kedua untuk link yang dibagikan (misalnya `https://nhop.link`). Login, dashboard, editor, dan link admin tetap di `NOTEHOP_BASE_URL` |
+| `NOTEHOP_FILE_MB` | `10` | Ukuran maksimal satu lampiran (MB). `0` = lampiran mati. Di nginx naikkan `client_max_body_size` juga |
+| `NOTEHOP_FILES_TOTAL_MB` | `2048` | Batas total semua lampiran yang masih hidup (disimpan di SQLite, dihapus setelah 24 jam). `0` = tanpa batas |
 | `NOTEHOP_SSO_URL` | kosong | Alamat SSO untuk "Masuk dengan SSO", misalnya `https://accounts.example.com`. Kosong = fitur mati |
 | `NOTEHOP_SSO_SECRET` | kosong | Rahasia bersama (minimal 32 karakter), sama dengan `NOTEHOP_SSO_SECRET` di SSO. SSO juga butuh `NOTEHOP_BASE_URL` |
 
@@ -107,6 +109,8 @@ Semua JSON. Header: `X-Admin` (token admin), `X-Write` (bukti kunci).
 | `PUT` · `DELETE /api/n/{token}/decoy` | admin | Password umpan: ciphertext kedua, pembukaannya dicatat untuk pemilik |
 | `POST /api/n/{token}/claim` | pemilik akun + X-Admin | Pindahkan catatan tamu ke akun |
 | `GET` · `PUT /api/margins/{ref}` | akun | Coretan pribadi (terenkripsi vault) di samping catatan siapa pun |
+| `POST /api/files` | siapa saja (20/menit/IP) | Unggah lampiran: body = ciphertext mentah (`application/octet-stream`). Balas `{id, expires}`; kuncinya hanya ada di teks catatan (`nh-file:ID#KUNCI`) |
+| `GET /api/files/{id}` | siapa saja yang tahu ID | Ciphertext lampiran (404 setelah 24 jam) |
 | `GET /diff` | siapa saja | Halaman pembanding dua teks (diff di browser) |
 | `POST /api/n/{token}/links` · `DELETE …/links/{t}` | admin | Tambah/matikan link |
 | `DELETE /api/n/{token}` | admin atau pemilik akun | Hapus catatan |

@@ -41,7 +41,7 @@ Prinsip yang dipegang semua fitur:
 - ✅ Diff slider / mesin waktu riwayat (riwayat versi terenkripsi)
 - ✅ Side-by-side diff checker (bandingkan 2 teks, link baca saja)
 - 🔜 Split-screen dua catatan
-- 🔜 Smart paste gambar → WebP terkompresi (lampiran terenkripsi)
+- ✅ Smart paste gambar → WebP terkompresi (lampiran terenkripsi, EXIF ikut terbuang)
 - 🔜 Mermaid diagram & kanvas coretan
 - 🔜 Command palette `Ctrl+K` + floating bubble toolbar saat teks diseleksi
 - ✅ Sticky keyboard bar di HP (`/`, to-do, tempel, blok PIN, selesai), menempel di atas keyboard lewat `visualViewport`
@@ -70,12 +70,12 @@ Prinsip yang dipegang semua fitur:
 - 🔜 Kanban view dari sub-judul To-Do/Proses/Selesai (drag-and-drop untuk pemegang link edit)
 - 🔜 View switcher pill: Teks | Kanban | Form | Slide | Diff
 - 🔜 Slide mode (`---` jadi slide) & teleprompter
-- 🔜 Timestamped media note (`Ctrl+T` → `[04:12]` yang memutar YouTube/audio)
+- ✅ Timestamped media note: `Alt+T` atau `/` → `[04:12]` yang memutar lampiran audio/video (`Ctrl+T` milik browser; YouTube tidak, karena iframe pihak ketiga melanggar CSP dan membocorkan pembaca ke Google)
 - 🔜 One-click text utilities: hapus duplikat, urutkan A–Z, ekstrak link/email, ubah huruf, format JSON/CSV
 - 🔜 Live regex & mass find-replace studio
 - 🔜 Wiki-links `[[Judul]]` + graph view (di browser, dari vault akun)
 - 🔜 Live synced blocks antar catatan (blok master di-embed ke banyak catatan)
-- 🔜 Audio reader (Web Speech API, di browser)
+- ✅ Audio reader (Web Speech API, di browser)
 - 🔜 Zen mode + ambient sound + Pomodoro + target jumlah kata
 - 🔜 Export: PDF, Markdown, TXT, dan gambar PNG estetik (dibuat di browser)
 
@@ -92,7 +92,7 @@ Prinsip yang dipegang semua fitur:
 - 🔜 Fork / Clone ke ruang sendiri (di browser, kunci baru)
 - 🔜 Same-WiFi Instant Pad (pad sementara per IP publik, mirip PairDrop)
 - 🔜 P2P file drop via WebRTC (server hanya signaling)
-- 🔜 Lampiran file sementara terenkripsi, otomatis hilang dalam 24 jam
+- ✅ Lampiran file sementara terenkripsi, otomatis hilang dalam 24 jam (kunci per file hanya di teks catatan; pilih file, seret, atau tempel)
 - 🔜 Bring Your Own Storage: backup `.md` ke Google Drive / Dropbox / GitHub Gist
 - 💡 Steganografi: catatan disembunyikan di gambar PNG
 - 💡 Smart link unfurling / kartu pintar ⚠️ E2E: server mengambil URL (bocor link) → opt-in
@@ -126,5 +126,5 @@ Prinsip yang dipegang semua fitur:
 6. **Race condition.** ✅ hitung view atomik. 🔜 Saat real-time aktif: buffer perubahan di memori Go dan flush ke DB setiap 3–5 detik atau saat room kosong.
 7. **Mobile-first.** ✅ Sticky keyboard bar karena `/` sulit dijangkau di keyboard HP.
 8. **Pipeline hook di Go.** ✅ `internal/app/features.go`: `beforeRead`, `beforeWrite`, `afterUpdate`, `meta`, `every`. Fitur baru = satu field di `NoteConfig` + satu file `.go` (contoh: `lock.go`).
-9. **Background worker.** ✅ janitor per menit (kedaluwarsa, sesi) + job fitur lewat `every`. 🔜 Dipakai untuk scheduled lock, time-capsule, cron reset, lampiran 24 jam.
+9. **Background worker.** ✅ janitor per menit (kedaluwarsa, sesi) + job fitur lewat `every`. ✅ Dipakai untuk scheduled lock, time-capsule, cron reset, lampiran 24 jam.
 10. **UI 5 zona.** Command palette (`/`, `Ctrl+K`) · bubble toolbar seleksi · drawer "Share & Shield" kanan (tab: Hak akses / Keamanan & waktu / Ekstra & integrasi) · view switcher pill · status bar bawah 24px.

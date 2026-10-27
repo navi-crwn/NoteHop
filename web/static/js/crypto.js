@@ -117,6 +117,28 @@
       return aesKey(unb64u(k)).then(function (key) { return unseal(key, String(payload).replace(/\s+/g, '')); });
     },
 
+    // Attachments: [4-byte header length][JSON {n: name, t: type}][bytes],
+    // sealed with a fresh key that is written only into the note text.
+    fileSeal: function (bytes, name, type) {
+      var k = rand(32), head = enc.encode(JSON.stringify({ n: name, t: type })), iv = rand(12);
+      var plain = new Uint8Array(4 + head.length + bytes.length);
+      new DataView(plain.buffer).setUint32(0, head.length);
+      plain.set(head, 4);
+      plain.set(bytes, 4 + head.length);
+      return aesKey(k).then(function (key) {
+        return subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, plain);
+      }).then(function (ct) { return { key: b64u(k), data: concat(iv, new Uint8Array(ct)) }; });
+    },
+    fileOpen: function (k, data) {
+      var raw = new Uint8Array(data);
+      return aesKey(unb64u(k)).then(function (key) {
+        return subtle.decrypt({ name: 'AES-GCM', iv: raw.subarray(0, 12) }, key, raw.subarray(12));
+      }).then(function (pt) {
+        var p = new Uint8Array(pt), n = new DataView(pt).getUint32(0), head = JSON.parse(dec.decode(p.subarray(4, 4 + n)));
+        return { name: String(head.n || 'file'), type: String(head.t || 'application/octet-stream'), bytes: p.subarray(4 + n) };
+      });
+    },
+
     // Account: one PBKDF2 run, split into a local vault key and a login secret.
     account: function (username, password) {
       return pbkdf2(password, enc.encode('notehop/account/' + username.toLowerCase()), ACCOUNT_ITER, 512).then(function (b) {
