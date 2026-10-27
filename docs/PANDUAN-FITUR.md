@@ -330,6 +330,13 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 - **Fungsi.** Format teks dan menyisipkan blok.
 - **Cara pakai.** Ketik `/` di awal baris, atau tombol `/` di bar keyboard HP.
 
+### 27b. Tipe catatan dan menu klik kanan ✅
+- **Fungsi.** Pilih tipe dari tombol di kiri atas editor: **Biasa** (teks apa adanya), **Dokumen** (Markdown, bawaan) atau **Kode** (pilih bahasa, nomor baris, Tab/Shift+Tab untuk indentasi, Esc lalu Tab untuk keluar dari kotak). Di Dokumen, klik kanan pada teks membuka menu format; di HP tombol **Aa** di bilah keyboard membuka lembar yang sama.
+- **Batasan.** Warna, stabilo, ukuran, dan rata disimpan sebagai teks (`[teks]{.red}`, `:::center`), jadi tampil di Pratinjau dan di halaman catatan, bukan langsung di kotak ketik. Blok rata tidak bisa berisi blok `:::` lain. Ganti dari Dokumen ke Biasa/Kode melepas gaya itu (ditanya dulu; Ctrl+Z mengembalikan). Tombol Tempel di menu butuh izin papan klip browser; kalau ditolak, pakai Ctrl+V.
+- **Keamanan kode.** Kode tidak pernah dijalankan: tampil sebagai teks (highlight.js hanya mewarnai teks yang sudah di-escape), unduhan selalu `.txt`, `/raw` `text/plain` + `nosniff`. Isi catatan rahasia sampai di server sudah terenkripsi; catatan publik disimpan sebagai data dengan query berparameter.
+- **Kasus.** Bagikan potongan konfigurasi ke rekan tanpa takut terjalankan; catatan rapat polos dari HP; dokumen dengan bagian penting distabilo.
+- **Uji.** `scripts/e2e-types.js` (49 cek).
+
 ### 28. Tampilan Teks ⇄ Papan
 - **Fungsi.** Catatan dengan `## Kolom` + daftar tampil sebagai papan Kanban; kartu bisa digeser.
 - **Batasan.** Form, Slide, dan Diff ada di tempat lain (belum satu pill).

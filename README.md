@@ -14,6 +14,8 @@ Mau coba catatan online tanpa memasang apa pun? Coba di **[note.hel.ink](https:/
 - **Alamat kustom** `/n/rapat-senin` + **QR code** (dibuat di browser).
 - **`/raw/slug`** untuk catatan publik (`curl`).
 - **Editor**: Markdown, menu `/` (judul, to-do, tabel, kode, spoiler, blok PIN, tanggal…), lanjutan list otomatis, paste tabel dari Excel/Sheets jadi tabel Markdown, pratinjau berdampingan, highlight kode otomatis.
+- **Tipe catatan**: **Dokumen** (Markdown, semua fitur di atas), **Biasa** (teks apa adanya seperti Notepad) atau **Kode** (bahasa, nomor baris, Tab untuk indentasi). Kode tidak pernah dijalankan: tampil sebagai teks, unduhannya selalu `.txt` (`script.js` → `script-js.txt`), dan `/raw` tetap `text/plain`. Tipe disimpan di dalam isi terenkripsi (`y`, `l`), jadi server tidak tahu.
+- **Menu klik kanan** di kotak teks Dokumen: tebal/miring/garis bawah/coret/superskrip/subskrip, potong-salin-tempel, warna teks dan stabilo `[teks]{.red .hl-yellow}`, ukuran `{.small|.large|.huge}`, rata `:::center` / `:::right` / `:::justify`, huruf besar/kecil, tautan, hapus format. Shift + klik kanan membuka menu browser; di HP lewat tombol **Aa** di bilah keyboard. Gaya memakai class tetap (bukan atribut `style`), jadi CSP tidak perlu dilonggarkan.
 - **Spoiler** `:::spoiler` dan **blok terkunci PIN** `:::locked` (dienkripsi lagi dengan PIN).
 - **Akun opsional**: password tidak dikirim ke server; daftar catatan dienkripsi dengan kunci brankas lokal.
 - **Keamanan**: CSP ketat, tanpa inline script, `noindex`, `Referrer-Policy: no-referrer`, gambar pihak ketiga diblokir, tolak permintaan lintas situs, rate limit.

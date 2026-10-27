@@ -1,8 +1,12 @@
 // The NoteHop editor: a plain textarea with a live preview, a "/" command
-// menu, list continuation, table smart-paste and PIN-locked blocks.
+// menu, list continuation, table smart-paste and PIN-locked blocks. A note
+// is one of three types: Document (Markdown, all of the above), Plain (text
+// as typed) or Code (a language, line numbers, Tab indents; never run).
 //
-//   var ed = NHEditor(rootEl, {onChange, onSave});
+//   var ed = NHEditor(rootEl, {onChange, onSave, onType});
 //   ed.value / ed.value = '…' / ed.focus()
+//   ed.fields() → {} | {y: 'plain'} | {y: 'code', l: lang}, stored in the note
+//   ed.setType({y, l}, true) sets it without asking
 (function () {
   'use strict';
 
@@ -153,9 +157,30 @@
     NH.$('#burn-text', burnDlg).focus();
   }
 
+  // Languages offered for code notes (when the bundled highlight.js has them).
+  var LANGS = [['bash', 'Bash'], ['c', 'C'], ['cpp', 'C++'], ['csharp', 'C#'], ['css', 'CSS'], ['diff', 'Diff'], ['go', 'Go'], ['xml', 'HTML / XML'],
+    ['ini', 'INI / TOML'], ['java', 'Java'], ['javascript', 'JavaScript'], ['json', 'JSON'], ['kotlin', 'Kotlin'], ['lua', 'Lua'], ['markdown', 'Markdown'],
+    ['php', 'PHP'], ['python', 'Python'], ['r', 'R'], ['ruby', 'Ruby'], ['rust', 'Rust'], ['scss', 'SCSS'], ['shell', 'Shell'], ['sql', 'SQL'],
+    ['swift', 'Swift'], ['typescript', 'TypeScript'], ['yaml', 'YAML']];
+  // What Plain and Code can't show: [text]{.names} and :::center blocks.
+  var STYLED = /\[((?:\\.|[^[\]\\\n])+)\]\{(?:\s*\.[a-z][a-z-]*)+\s*\}|^:::(?:center|right|justify)\s*$/m;
+  function unstyle(src) {
+    var lines = src.replace(/\[((?:\\.|[^[\]\\\n])+)\]\{(?:\s*\.[a-z][a-z-]*)+\s*\}/g, '$1').split('\n'), out = [], open = false;
+    lines.forEach(function (l) {
+      if (/^:::(?:center|right|justify)\s*$/.test(l)) { open = true; return; }
+      if (open && /^:::\s*$/.test(l)) { open = false; return; }
+      out.push(l);
+    });
+    return out.join('\n');
+  }
+
   window.NHEditor = function (root, opts) {
     opts = opts || {};
     var ta = NH.$('.ed-src', root), preview = NH.$('.ed-preview', root), count = NH.$('.ed-count', root), body = NH.$('.ed-body', root);
+    var gutter = NH.$('.ed-gutter', root), langSel = NH.$('.ed-lang', root), typeMenu = NH.$('.ed-type', root);
+    var type = 'doc', escaped = false;
+    root.dataset.type = type;
+    LANGS.forEach(function (l) { if (window.hljs && hljs.getLanguage(l[0])) langSel.appendChild(NH.h('option', { value: l[0] }, l[1])); });
     var menu = NH.h('ul.slash', { role: 'listbox', 'aria-label': NH.t('kbar.commands') });
     body.appendChild(menu);
     var slash = null; // {start, items, active}
@@ -164,13 +189,46 @@
     // ---------- views ----------
     function setView(v) {
       if (v === 'split' && innerWidth < 900) v = 'write';
+      if (type !== 'doc') v = 'write'; // Plain and Code are what you type
       root.dataset.view = v;
       NH.$$('.seg [data-view]', root).forEach(function (b) { b.setAttribute('aria-selected', b.dataset.view === v); });
-      NH.store.set('nh_view', v);
+      if (type === 'doc') NH.store.set('nh_view', v);
       if (v !== 'write') renderPreview();
     }
     NH.$$('.seg [data-view]', root).forEach(function (b) { b.addEventListener('click', function () { setView(b.dataset.view); }); });
     setView(NH.store.get('nh_view', innerWidth >= 1100 ? 'split' : 'write'));
+
+    // ---------- note type ----------
+    function setType(t, quiet) {
+      var y = t && (t.y === 'plain' || t.y === 'code') ? t.y : 'doc';
+      if (y !== 'doc' && type === 'doc' && !quiet && STYLED.test(ta.value)) {
+        if (!confirm(NH.t('type.strip_confirm', { type: NH.t('type.' + y) }))) return;
+        ta.focus();
+        ta.select();
+        var plain = unstyle(ta.value);
+        if (!document.execCommand('insertText', false, plain)) ta.value = plain;
+        ta.setSelectionRange(0, 0);
+      }
+      var view = NH.store.get('nh_view', innerWidth >= 1100 ? 'split' : 'write');
+      type = y;
+      root.dataset.type = y;
+      if (t && t.l != null && y === 'code') langSel.value = langSel.querySelector('option[value="' + t.l + '"]') ? t.l : '';
+      ta.spellcheck = y !== 'code';
+      if (y === 'code') ta.setAttribute('wrap', 'off'); else ta.removeAttribute('wrap');
+      NH.$('.ed-type-ico use', root).setAttribute('href', '#i-' + (y === 'doc' ? 'doc' : y));
+      NH.$('.ed-type-name', root).textContent = NH.t('type.' + y);
+      NH.$$('[data-type]', typeMenu).forEach(function (b) { b.setAttribute('aria-checked', b.dataset.type === y); });
+      setView(y === 'doc' ? view : 'write');
+      closeSlash();
+      root.dispatchEvent(new CustomEvent('nh-type'));
+      refresh();
+      if (!quiet && opts.onType) opts.onType();
+    }
+    NH.$$('[data-type]', typeMenu).forEach(function (b) {
+      b.addEventListener('click', function () { setType({ y: b.dataset.type }); ta.focus(); });
+    });
+    langSel.addEventListener('change', function () { if (opts.onType) opts.onType(); });
+    function fields() { return type === 'doc' ? {} : type === 'plain' ? { y: 'plain' } : { y: 'code', l: langSel.value }; }
 
     function renderPreview() {
       if (root.dataset.view === 'write') return;
@@ -183,6 +241,16 @@
 
     function refresh() {
       count.textContent = NH.t('ed.chars', { n: ta.value.length.toLocaleString(NH.lang) });
+      if (type === 'code') {
+        var n = ta.value.split('\n').length;
+        if (gutter.dataset.n !== String(n)) {
+          var nums = [];
+          for (var i = 1; i <= n; i++) nums.push(i);
+          gutter.textContent = nums.join('\n');
+          gutter.dataset.n = n;
+        }
+        gutter.scrollTop = ta.scrollTop;
+      }
       clearTimeout(renderTimer);
       renderTimer = setTimeout(renderPreview, 150);
     }
@@ -231,7 +299,7 @@
     picker.addEventListener('change', function () { if (picker.files.length) attach(picker.files, false); picker.value = ''; });
     ta.addEventListener('dragover', function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') !== -1) e.preventDefault(); });
     ta.addEventListener('drop', function (e) {
-      if (!e.dataTransfer || !e.dataTransfer.files.length) return;
+      if (!e.dataTransfer || !e.dataTransfer.files.length || type !== 'doc') return;
       e.preventDefault();
       attach(e.dataTransfer.files, false);
     });
@@ -302,6 +370,7 @@
       if (act) act.scrollIntoView({ block: 'nearest' });
     }
     function checkSlash() {
+      if (type !== 'doc') return closeSlash();
       var pos = ta.selectionStart, before = ta.value.slice(lineStart(pos), pos);
       var m = before.match(/(^|\s)\/([\p{L}\d-]{0,24})$/u);
       if (!m || ta.selectionStart !== ta.selectionEnd) return closeSlash();
@@ -329,9 +398,10 @@
         if (e.key === 'Escape') { e.preventDefault(); return closeSlash(); }
       }
       var mod = e.ctrlKey || e.metaKey;
-      if (mod && e.key.toLowerCase() === 'b') { e.preventDefault(); return CMDS.bold(); }
+      if (type === 'code') return codeKeys(e, mod);
+      if (mod && e.key.toLowerCase() === 'b' && type === 'doc') { e.preventDefault(); return CMDS.bold(); }
       if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); return opts.onSave && opts.onSave(); }
-      if (e.key === 'Enter' && !e.shiftKey && !mod && ta.selectionStart === ta.selectionEnd) {
+      if (e.key === 'Enter' && !e.shiftKey && !mod && ta.selectionStart === ta.selectionEnd && type === 'doc') {
         // Continue lists and to-dos; an empty item ends the list.
         var pos = ta.selectionStart, ls = lineStart(pos), line = ta.value.slice(ls, pos);
         var m = line.match(/^(\s*)([-*+]|(\d+)[.)])(\s+)(\[[ xX]\]\s+)?(.*)$/);
@@ -343,6 +413,30 @@
         }
       }
     });
+    // Code: Tab and Shift+Tab indent the selected lines by two spaces, Enter
+    // keeps the indent. Esc first lets Tab leave the box as usual.
+    function codeKeys(e, mod) {
+      if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); return opts.onSave && opts.onSave(); }
+      if (e.key === 'Escape') { escaped = true; return; }
+      if (e.key === 'Tab' && !escaped && !mod && !e.altKey) {
+        e.preventDefault();
+        var v = ta.value, s = ta.selectionStart, en = ta.selectionEnd, ls = lineStart(s);
+        if (s === en && !e.shiftKey) return replace(s, en, '  ');
+        var le = v.indexOf('\n', en > s ? en - 1 : en); if (le < 0) le = v.length;
+        var block = v.slice(ls, le).split('\n').map(function (l) { return e.shiftKey ? l.replace(/^( {1,2}|\t)/, '') : '  ' + l; }).join('\n');
+        replace(ls, le, block);
+        ta.setSelectionRange(ls, ls + block.length);
+        return;
+      }
+      escaped = false;
+      if (e.key === 'Enter' && !e.shiftKey && !mod && ta.selectionStart === ta.selectionEnd) {
+        var pos = ta.selectionStart, ind = ta.value.slice(lineStart(pos), pos).match(/^[ \t]*/)[0];
+        if (ind) { e.preventDefault(); replace(pos, pos, '\n' + ind + CARET); }
+      }
+    }
+    ta.addEventListener('scroll', function () { if (type === 'code') gutter.scrollTop = ta.scrollTop; });
+    var fmt = window.NHFormat ? NHFormat(ta, { type: function () { return type; }, changed: changed }) : null;
+
     ta.addEventListener('input', function () { changed(); checkSlash(); });
     ta.addEventListener('click', checkSlash);
     ta.addEventListener('blur', function () { setTimeout(closeSlash, 100); });
@@ -351,6 +445,7 @@
       var cd = e.clipboardData;
       if (!cd) return;
       // Screenshots and copied images arrive as files with no text.
+      if (type !== 'doc') return; // Plain and Code take text only, as typed
       if (cd.files && cd.files.length && !cd.getData('text/plain')) {
         e.preventDefault();
         attach(cd.files, true);
@@ -440,7 +535,7 @@
       body.appendChild(bubble);
       var hideBubble = function () { bubble.classList.remove('open'); };
       var showBubble = function () {
-        if (ta.selectionStart === ta.selectionEnd || document.activeElement !== ta) return hideBubble();
+        if (type !== 'doc' || ta.selectionStart === ta.selectionEnd || document.activeElement !== ta) return hideBubble();
         var xy = caretXY(ta, ta.selectionStart);
         bubble.style.left = Math.max(0, Math.min(xy.x + ta.offsetLeft, body.clientWidth - 230)) + 'px';
         bubble.style.top = Math.max(0, xy.y + ta.offsetTop - ta.scrollTop - 62) + 'px';
@@ -482,9 +577,14 @@
         }),
         kbBtn('', 'lock', NH.t('ed.locked'), CMDS.locked),
         kbBtn('', 'attach', NH.t('cmd.file'), CMDS.file),
+        kbBtn('Aa', null, NH.t('fmt.sheet'), function () { if (fmt) fmt.sheet(); }),
         kbBtn(NH.t('kbar.done'), null, NH.t('kbar.close'), function () { ta.blur(); })
       );
       kb.lastChild.classList.add('kbar-done');
+      // "/", to-do, lock, attach and Aa only make sense in a Document.
+      [0, 1, 3, 4, 5].forEach(function (i) { kb.children[i].classList.add('kbar-doc'); });
+      kb.dataset.type = type;
+      root.addEventListener('nh-type', function () { kb.dataset.type = type; });
       document.body.appendChild(kb);
       var vv = window.visualViewport;
       var place = function () {
@@ -504,6 +604,10 @@
       set value(v) { ta.value = v; refresh(); }, // programmatic: not a user edit
       focus: function () { ta.focus(); },
       palette: function () { openPalette(); },
+      get type() { return type; },
+      setType: setType,
+      fields: fields,
+      format: fmt,
       textarea: ta
     };
     refresh();

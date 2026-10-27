@@ -53,7 +53,8 @@
               <details class="menu-sub">
                 <summary><svg width="16" height="16"><use href="#i-download"/></svg>{{.L.T "more.save"}}</summary>
                 <div class="menu-list sub">
-                  <button type="button" data-act="export-md"><svg width="16" height="16"><use href="#i-code"/></svg>{{.L.T "more.export_md"}}</button>
+                  <button type="button" data-act="export-md" id="act-export-md"><svg width="16" height="16"><use href="#i-code"/></svg>{{.L.T "more.export_md"}}</button>
+                  <button type="button" data-act="export-txt"><svg width="16" height="16"><use href="#i-plain"/></svg>{{.L.T "more.export_txt"}}</button>
                   <button type="button" data-act="print"><svg width="16" height="16"><use href="#i-print"/></svg>{{.L.T "more.print"}}</button>
                   <button type="button" data-act="redact" data-needs-key><svg width="16" height="16"><use href="#i-shield"/></svg>{{.L.T "more.redact"}}</button>
                   <a class="hide" id="act-raw" target="_blank" rel="noopener"><svg width="16" height="16"><use href="#i-code"/></svg>Raw</a>
@@ -207,6 +208,7 @@
 <script src="/static/js/files.js?v={{.Asset}}"></script>
 <script src="/static/js/md.js?v={{.Asset}}"></script>
 <script src="/static/js/blocks.js?v={{.Asset}}"></script>
+<script src="/static/js/format.js?v={{.Asset}}"></script>
 <script src="/static/js/editor.js?v={{.Asset}}"></script>
 <script src="/static/js/diff.js?v={{.Asset}}"></script>
 <script src="/static/js/note.js?v={{.Asset}}"></script>

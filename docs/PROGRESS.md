@@ -28,6 +28,9 @@ Status: ✅ selesai · 🔨 dikerjakan · ⏳ antre · ⛔ sengaja tidak dibuat 
 ## Batch G: aturan nama + mitigasi (permintaan pemilik)
 ✅ Nama link sendiri minimal 7 karakter (admin situs bebas) · ✅ Nama cadangan + awalan (`names/reserved.txt`, `NOTEHOP_RESERVED`) · ✅ Daftar kata kasar 9 bahasa · ✅ Masa tunggu nama 90 hari setelah catatan dihapus/kedaluwarsa (migrasi 6) · ✅ `notehop takedown` (nama dikunci 365 hari) · ✅ Halaman `/contact`, `/terms`, `/privacy`, `/help` · ✅ Polling: buku pemilih, satu suara per pemilih, 20 pemilih baru per jaringan (migrasi 7) · ✅ `/nearby` dengan kode pasangan 6 angka · ✅ Peringatan kunci di catatan publik · panduan lengkap: `docs/PANDUAN-FITUR.md` · uji: `internal/app/names_test.go`, `extra_test.go`, `scripts/e2e-nearby.js`
 
+## Batch H: tipe catatan + menu klik kanan (permintaan pemilik)
+✅ Tipe Biasa / Dokumen / Kode (disimpan di isi terenkripsi, ikut ke duplikat, embed, ekspor/impor dashboard) · ✅ Kode: bahasa, nomor baris, Tab indentasi, tampil sebagai teks, unduhan `.txt` · ✅ Menu klik kanan + lembar format di HP: warna, stabilo, ukuran, rata, huruf besar/kecil, tautan, hapus format · ✅ 51 teks baru di 9 bahasa · uji: `scripts/e2e-types.js`
+
 ## Tahap akhir
 ✅ Zip handoff (berisi sumber dari commit, binary linux amd64/arm64 + SHA256SUMS, HANDOFF.txt)
 
