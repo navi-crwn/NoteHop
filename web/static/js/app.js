@@ -142,6 +142,21 @@
   };
 
   var rtf = window.Intl && Intl.RelativeTimeFormat ? new Intl.RelativeTimeFormat(NH.lang, { numeric: 'auto' }) : null;
+  // Offline support (sw.js). Only on secure origins, where browsers allow it.
+  if ('serviceWorker' in navigator && window.isSecureContext) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); });
+  }
+
+  // Server-rendered times: <time data-unix="…"> gets the reader's locale and zone.
+  document.addEventListener('DOMContentLoaded', function () {
+    NH.$$('time[data-unix]').forEach(function (t) {
+      var u = +t.dataset.unix;
+      if (!u) return;
+      t.textContent = NH.date(u);
+      t.dateTime = new Date(u * 1000).toISOString();
+    });
+  });
+
   NH.ago = function (unix) {
     var diff = unix - Date.now() / 1000, a = Math.abs(diff);
     var units = [[60, 'second', 1], [3600, 'minute', 60], [86400, 'hour', 3600], [604800, 'day', 86400], [2629800, 'week', 604800], [31557600, 'month', 2629800], [Infinity, 'year', 31557600]];

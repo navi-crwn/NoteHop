@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/navi-crwn/NoteHop/internal/db"
@@ -32,6 +33,9 @@ type NoteConfig struct {
 	ResetAt   int64    `json:"reset_at,omitempty"`  // next reset
 	DMSDays   int      `json:"dms_days,omitempty"`  // dead man's switch: opens unless the admin checks in
 	Watermark bool     `json:"watermark,omitempty"` // copies carry an invisible mark of the link used
+	Watch     string   `json:"watch,omitempty"`     // webhook called (without content) when the note changes
+	WatchKey  string   `json:"watch_key,omitempty"` // HMAC key for the webhook's signature header
+	Profile   bool     `json:"profile,omitempty"`   // listed on the owner's public profile (public notes only)
 }
 
 func parseConfig(s string) NoteConfig {
@@ -58,10 +62,12 @@ type hookErr struct {
 }
 
 type hookCtx struct {
-	note *db.Note
-	cfg  NoteConfig
-	now  time.Time
-	ip   string
+	app   *App
+	event string // for afterUpdate: updated, entry, check, suggestion, signature
+	note  *db.Note
+	cfg   NoteConfig
+	now   time.Time
+	ip    string
 }
 
 type feature struct {
@@ -74,7 +80,7 @@ type feature struct {
 }
 
 // features is the registry; order matters only for which refusal wins.
-var features = []feature{ipAllow, timeCapsule, scheduledLock, recurringReset}
+var features = []feature{ipAllow, timeCapsule, scheduledLock, recurringReset, watchNote}
 
 func runBeforeRead(n *db.Note, now time.Time, ip string) *hookErr {
 	c := hookCtx{note: n, cfg: parseConfig(n.Config), now: now, ip: ip}
@@ -100,8 +106,8 @@ func runBeforeWrite(n *db.Note, now time.Time, ip string) *hookErr {
 	return nil
 }
 
-func runAfterUpdate(n *db.Note, now time.Time) {
-	c := hookCtx{note: n, cfg: parseConfig(n.Config), now: now}
+func (a *App) runAfterUpdate(n *db.Note, now time.Time, event string) {
+	c := hookCtx{app: a, event: event, note: n, cfg: parseConfig(n.Config), now: now}
 	for _, f := range features {
 		if f.afterUpdate != nil {
 			f.afterUpdate(c)
@@ -149,6 +155,8 @@ func (a *App) apiConfig(w http.ResponseWriter, r *http.Request) {
 		Reset     *string   `json:"reset"`
 		DMSDays   *int      `json:"dms_days"`
 		Watermark *bool     `json:"watermark"`
+		Watch     *string   `json:"watch"`
+		Profile   *bool     `json:"profile"`
 		CheckIn   bool      `json:"check_in"`
 	}
 	if !readJSON(w, r, &q, 8192) {
@@ -205,6 +213,26 @@ func (a *App) apiConfig(w http.ResponseWriter, r *http.Request) {
 	}
 	if cfg.DMSDays > 0 && (q.DMSDays != nil || q.CheckIn) {
 		cfg.OpenAt = now.Unix() + int64(cfg.DMSDays)*86400
+	}
+	if q.Watch != nil {
+		u := strings.TrimSpace(*q.Watch)
+		if u != "" && !a.hookURLOK(u) {
+			apiErr(w, http.StatusBadRequest, "err.bad_watch")
+			return
+		}
+		if u != cfg.Watch {
+			cfg.Watch, cfg.WatchKey = u, ""
+			if u != "" {
+				cfg.WatchKey = randToken(32) // new address, new key
+			}
+		}
+	}
+	if q.Profile != nil {
+		if *q.Profile && (x.note.Encrypted || !x.note.OwnerID.Valid) {
+			apiErr(w, http.StatusBadRequest, "err.profile_public")
+			return
+		}
+		cfg.Profile = *q.Profile
 	}
 	// Times already in effect (a lock that has passed) aren't re-validated
 	// as "must be in the future"; only the ones being set now are.

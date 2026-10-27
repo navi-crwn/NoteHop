@@ -4,6 +4,7 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -34,6 +35,8 @@ type Config struct {
 	ShareURL      string // optional second domain for share links; needs BaseURL
 	FileMB        int    // largest attachment in MB; 0 turns attachments off
 	FilesTotalMB  int    // disk budget for all live attachments; 0 = no limit
+	PrivateHooks  bool   // let Watch webhooks reach private/loopback addresses (and plain http)
+	TelegramToken string // bot token from @BotFather; empty turns the bot off
 }
 
 // SSOEnabled reports whether sign-in with SSO is configured. It needs the
@@ -53,6 +56,7 @@ type App struct {
 	used  usedTickets
 	live  liveHub
 	near  nearbyHub
+	watch watcher
 }
 
 func New(cfg Config, d *db.DB) (*App, error) {
@@ -73,6 +77,7 @@ func (a *App) Handler() http.Handler { return a.secure(a.shareGate(a.mux)) }
 // Janitor is the background worker: once a minute it deletes expired notes
 // and sessions and runs the jobs of note features, until ctx ends.
 func (a *App) Janitor(ctx context.Context) {
+	go a.runWatch(ctx)
 	t := time.NewTicker(time.Minute)
 	defer t.Stop()
 	for {
@@ -104,6 +109,9 @@ func (a *App) routes() {
 	m.HandleFunc("GET /register", a.page("register", "title.register", ""))
 	m.HandleFunc("GET /diff", a.page("diff", "diffpage.title", "diffpage.lead"))
 	m.HandleFunc("GET /nearby", a.page("nearby", "nearby.title", "nearby.lead"))
+	m.HandleFunc("GET /offline", a.page("offline", "offline.title", "offline.lead"))
+	m.HandleFunc("GET /sw.js", a.serviceWorker)
+	m.HandleFunc("GET /manifest.webmanifest", a.manifest)
 	m.HandleFunc("GET /api/nearby", a.apiNearby)
 	m.HandleFunc("GET /i18n/{lang}", a.catalogJS)
 	m.HandleFunc("GET /render/mermaid", mermaidFrame)
@@ -113,6 +121,10 @@ func (a *App) routes() {
 	m.HandleFunc("GET /auth/sso/callback", a.ssoCallback)
 	m.HandleFunc("GET /n/{token}", a.notePage)
 	m.HandleFunc("GET /raw/{token}", a.raw)
+	m.HandleFunc("GET /mock/{token}", a.mock)
+	m.HandleFunc("GET /mock/{token}/{path...}", a.mock)
+	m.HandleFunc("OPTIONS /mock/{token}/{path...}", a.mock)
+	m.HandleFunc("GET /{at}", a.profile)
 
 	m.HandleFunc("POST /api/notes", a.apiCreate)
 	m.HandleFunc("GET /api/n/{token}", a.apiMeta)
@@ -137,6 +149,10 @@ func (a *App) routes() {
 	m.HandleFunc("POST /api/n/{token}/burns", a.apiAddBurn)
 	m.HandleFunc("POST /api/n/{token}/burns/{id}/reveal", a.apiRevealBurn)
 	m.HandleFunc("GET /api/n/{token}/live", a.apiLive)
+	m.HandleFunc("POST /api/n/{token}/inbox", a.apiInboxOn)
+	m.HandleFunc("DELETE /api/n/{token}/inbox", a.apiInboxOff)
+	m.HandleFunc("POST /in/{inbox}", a.apiInbox)
+	m.HandleFunc("POST /api/telegram/{secret}", a.apiTelegram)
 	m.HandleFunc("POST /api/files", a.apiUpload)
 	m.HandleFunc("GET /api/files/{id}", a.apiFile)
 	m.HandleFunc("GET /api/margins/{ref}", a.apiMargin)
@@ -177,11 +193,12 @@ type pageData struct {
 	L       i18n.Locale
 	Langs   []i18n.Lang
 	Clipper template.URL // bookmarklet for the about page
+	Profile []profileNote
 }
 
 func (a *App) loadTemplates() error {
 	a.pages = map[string]*template.Template{}
-	for _, name := range []string{"new", "note", "about", "login", "register", "dashboard", "vault", "diff", "nearby", "error"} {
+	for _, name := range []string{"new", "note", "about", "login", "register", "dashboard", "vault", "diff", "nearby", "profile", "offline", "error"} {
 		t, err := template.New(name).ParseFS(web.Templates, "templates/base.html", "templates/icons.html", "templates/"+name+".html")
 		if err != nil {
 			return err
@@ -365,4 +382,28 @@ func mermaidFrame(w http.ResponseWriter, r *http.Request) {
 	h.Set("Cache-Control", "public, max-age=3600")
 	io.WriteString(w, `<!doctype html><meta charset="utf-8"><title>Mermaid</title>`+
 		`<script src="/static/vendor/mermaid.min.js"></script><script src="/static/js/mermaid-frame.js"></script>`)
+}
+
+// serviceWorker serves the worker from the site root (so it may control every
+// page) with this build's asset version, which renames its cache.
+func (a *App) serviceWorker(w http.ResponseWriter, r *http.Request) {
+	b, err := fs.ReadFile(web.Static, "static/js/sw.js")
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Write(bytes.ReplaceAll(b, []byte("__VERSION__"), []byte(a.asset)))
+}
+
+func (a *App) manifest(w http.ResponseWriter, r *http.Request) {
+	b, err := fs.ReadFile(web.Static, "static/manifest.webmanifest")
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	w.Header().Set("Content-Type", "application/manifest+json")
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	w.Write(b)
 }

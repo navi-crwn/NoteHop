@@ -1,4 +1,4 @@
-package client
+package client_test
 
 import (
 	"net/http/httptest"
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/navi-crwn/NoteHop/internal/app"
+	. "github.com/navi-crwn/NoteHop/internal/client"
 	"github.com/navi-crwn/NoteHop/internal/db"
 )
 

@@ -47,3 +47,88 @@ func (d *DB) GetFile(id string) (*File, error) {
 	}
 	return f, err
 }
+
+// Inbox lets outside services add entries to a note (webhook-to-note). Pub
+// is the note's P-256 public key; Priv is its private key sealed by the
+// browser with the note key, kept here only so every reader can fetch it.
+type Inbox struct {
+	Token  string
+	NoteID int64
+	Pub    string
+	Priv   string
+}
+
+func (d *DB) SetInbox(in Inbox) error {
+	_, err := d.Exec(`INSERT INTO inboxes (token, note_id, pub, priv, created) VALUES (?, ?, ?, ?, ?)
+		ON CONFLICT(note_id) DO UPDATE SET token = excluded.token, pub = excluded.pub, priv = excluded.priv, created = excluded.created`,
+		in.Token, in.NoteID, in.Pub, in.Priv, now())
+	return err
+}
+
+func (d *DB) DeleteInbox(noteID int64) error {
+	_, err := d.Exec(`DELETE FROM inboxes WHERE note_id = ?`, noteID)
+	return err
+}
+
+func (d *DB) InboxOf(noteID int64) (*Inbox, error) {
+	in := &Inbox{NoteID: noteID}
+	err := d.QueryRow(`SELECT token, pub, priv FROM inboxes WHERE note_id = ?`, noteID).Scan(&in.Token, &in.Pub, &in.Priv)
+	if err == sql.ErrNoRows {
+		return nil, ErrNotFound
+	}
+	return in, err
+}
+
+func (d *DB) InboxByToken(token string) (*Inbox, error) {
+	in := &Inbox{Token: token}
+	err := d.QueryRow(`SELECT note_id, pub, priv FROM inboxes WHERE token = ?`, token).Scan(&in.NoteID, &in.Pub, &in.Priv)
+	if err == sql.ErrNoRows {
+		return nil, ErrNotFound
+	}
+	return in, err
+}
+
+// Telegram chats send their messages to one inbox each.
+func (d *DB) LinkTelegram(chatID int64, inbox string) error {
+	_, err := d.Exec(`INSERT INTO telegram_chats (chat_id, inbox, created) VALUES (?, ?, ?)
+		ON CONFLICT(chat_id) DO UPDATE SET inbox = excluded.inbox`, chatID, inbox, now())
+	return err
+}
+
+func (d *DB) UnlinkTelegram(chatID int64) error {
+	_, err := d.Exec(`DELETE FROM telegram_chats WHERE chat_id = ?`, chatID)
+	return err
+}
+
+func (d *DB) TelegramInbox(chatID int64) (string, error) {
+	var t string
+	err := d.QueryRow(`SELECT inbox FROM telegram_chats WHERE chat_id = ?`, chatID).Scan(&t)
+	if err == sql.ErrNoRows {
+		return "", ErrNotFound
+	}
+	return t, err
+}
+
+// NoteByID is for server-side jobs that start from a note id.
+func (d *DB) NoteByID(id int64) (*Note, error) {
+	return scanNote(d.QueryRow(`SELECT `+noteCols+` FROM notes n WHERE n.id = ?`, id))
+}
+
+// ProfileNotes are a user's public notes marked "on my profile".
+func (d *DB) ProfileNotes(userID int64) ([]*Note, error) {
+	rows, err := d.Query(`SELECT `+noteCols+` FROM notes n WHERE n.owner_id = ? AND n.encrypted = 0
+		AND n.config LIKE '%"profile":true%' AND (n.expires = 0 OR n.expires > ?) ORDER BY n.updated DESC LIMIT 200`, userID, now())
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []*Note
+	for rows.Next() {
+		n, err := scanNote(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, n)
+	}
+	return out, rows.Err()
+}

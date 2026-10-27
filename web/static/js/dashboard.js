@@ -163,6 +163,51 @@
   });
   filter.addEventListener('input', draw);
 
+  // ---------- backup: export / import (keep the file in your own storage) ----------
+  // Decrypted here; the file holds the notes' text and links, so keep it safe.
+  $('#export-btn').addEventListener('click', function () {
+    var btn = this, list = rows.filter(function (r) { return r.k; });
+    if (!list.length) return NH.toast(NH.t('dash.export_none'));
+    btn.disabled = true;
+    NH.toast(NH.t('dash.analyzing'));
+    loadTexts(list).then(function () {
+      var notes = list.filter(function (r) { return r.text != null; }).map(function (r) {
+        return { title: r.title || '', body: r.text, created: r.n.created, updated: r.n.updated,
+          link: NH.noteURL(r.n.token, { k: r.k }), admin: r.a ? NH.noteURL(r.n.token, { k: r.k, a: r.a }) : '' };
+      });
+      var blob = new Blob([JSON.stringify({ format: 'notehop-export', version: 1, exported: Math.floor(Date.now() / 1000), notes: notes }, null, 1)], { type: 'application/json' });
+      var a = h('a', { href: URL.createObjectURL(blob), download: 'notehop-' + new Date().toISOString().slice(0, 10) + '.json' });
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      NH.toast(NH.t('dash.exported', { n: notes.length }), 'ok');
+    }).finally(function () { btn.disabled = false; });
+  });
+  $('#import-file').addEventListener('change', function () {
+    var file = this.files[0];
+    this.value = '';
+    if (!file) return;
+    file.text().then(function (txt) {
+      var data = JSON.parse(txt);
+      if (!data || data.format !== 'notehop-export' || !Array.isArray(data.notes)) throw new Error(NH.t('dash.import_bad'));
+      if (!confirm(NH.t('dash.import_confirm', { n: data.notes.length }))) return;
+      // One at a time: new notes, new keys, encrypted here like any new note.
+      return data.notes.slice(0, 500).reduce(function (p, n) {
+        return p.then(function (count) {
+          var k = NHC.newKey(), admin = NHC.newKey(), title = String(n.title || '').slice(0, 200);
+          return NHC.noteKeys(k, '', '').then(function (keys) {
+            return Promise.all([NHC.codec(true, keys.aes).encode({ t: title, b: String(n.body || '') }), vault ? vault.seal({ t: title, k: k, a: admin, p: '' }) : '']).then(function (r) {
+              return NH.api('POST', '/api/notes', { encrypted: true, password: false, salt: '', content: r[0], mode: 'read', admin: admin, write: keys.write, owner_blob: r[1] });
+            });
+          }).then(function () { return count + 1; }, function () { return count; });
+        });
+      }, Promise.resolve(0)).then(function (count) {
+        NH.toast(NH.t('dash.imported', { n: count }), 'ok');
+        setTimeout(function () { location.reload(); }, 900);
+      });
+    }).catch(function (x) { NH.toast(x.message || NH.t('dash.import_bad'), 'err'); });
+  });
+
   // ---------- claim notes made on this device before signing in ----------
   function offerClaim() {
     if (!vault) return;

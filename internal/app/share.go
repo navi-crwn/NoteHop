@@ -28,7 +28,7 @@ func (a *App) shareHost() string {
 }
 
 func onShareHost(path string) bool {
-	for _, p := range []string{"/n/", "/raw/", "/api/n/", "/static/"} {
+	for _, p := range []string{"/n/", "/raw/", "/mock/", "/api/n/", "/static/"} {
 		if strings.HasPrefix(path, p) {
 			return true
 		}

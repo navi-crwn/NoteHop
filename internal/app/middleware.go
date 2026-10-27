@@ -40,6 +40,8 @@ func (a *App) secure(next http.Handler) http.Handler {
 				bucket, rate = "c", 30
 			case r.URL.Path == "/api/files":
 				bucket, rate = "f", 20
+			case strings.HasPrefix(r.URL.Path, "/in/"):
+				bucket, rate = "i", 60
 			case r.URL.Path == "/api/login" || r.URL.Path == "/api/register" || r.URL.Path == "/api/vault":
 				bucket, rate = "a", 15
 			}

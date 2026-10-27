@@ -326,6 +326,11 @@ type metaResp struct {
 	LastOpen    int64      `json:"last_open,omitempty"`
 	Suggestions int        `json:"suggestions,omitempty"`
 	Decoy       *decoyInfo `json:"decoy,omitempty"`
+	Watch       string     `json:"watch,omitempty"`
+	WatchKey    string     `json:"watch_key,omitempty"`
+	Profile     bool       `json:"profile,omitempty"`
+	InboxKey    string     `json:"inbox_key,omitempty"` // sealed private key: any key holder can read inbox entries
+	Inbox       string     `json:"inbox,omitempty"`     // admin: the address that accepts posts
 }
 
 type decoyInfo struct {
@@ -345,7 +350,13 @@ func (a *App) meta(r *http.Request, x access) metaResp {
 	}
 	fillMeta(n, &m, time.Now())
 	cfg := parseConfig(n.Config)
-	m.SignOff, m.Watermark, m.DMSDays = cfg.SignOff, cfg.Watermark, cfg.DMSDays
+	m.SignOff, m.Watermark, m.DMSDays, m.Profile = cfg.SignOff, cfg.Watermark, cfg.DMSDays, cfg.Profile
+	if in, err := a.db.InboxOf(n.ID); err == nil {
+		m.InboxKey = in.Priv
+		if x.admin {
+			m.Inbox = a.origin(r) + "/in/" + in.Token
+		}
+	}
 	if x.admin {
 		m.IPAllow, m.LastOpen = cfg.IPAllow, n.LastOpen
 		m.Suggestions, _ = a.db.CountSuggestions(n.ID)
@@ -575,7 +586,7 @@ func (a *App) apiSave(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInternalServerError, "err.save_failed")
 		return
 	}
-	runAfterUpdate(x.note, time.Now())
+	a.runAfterUpdate(x.note, time.Now(), "updated")
 	writeJSON(w, http.StatusOK, map[string]any{"version": v})
 }
 
@@ -604,7 +615,7 @@ func (a *App) apiAddEntry(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInternalServerError, "err.append_failed")
 		return
 	}
-	runAfterUpdate(x.note, time.Now())
+	a.runAfterUpdate(x.note, time.Now(), "entry")
 	writeJSON(w, http.StatusCreated, e)
 }
 
@@ -643,7 +654,7 @@ func (a *App) apiCheck(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInternalServerError, "err.check_failed")
 		return
 	}
-	runAfterUpdate(x.note, time.Now())
+	a.runAfterUpdate(x.note, time.Now(), "check")
 	writeJSON(w, http.StatusOK, map[string]any{"checks": checks})
 }
 

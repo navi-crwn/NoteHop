@@ -127,11 +127,19 @@
   }
 
   // ---------- loading content ----------
+  var inboxKeys = {};
+  function inboxKey(sealed) {
+    if (!sealed) return Promise.reject(new Error('no inbox key'));
+    if (!inboxKeys[sealed]) inboxKeys[sealed] = S.codec.decode(sealed).then(function (o) { return o.jwk; });
+    return inboxKeys[sealed];
+  }
   function decode(data) {
     return Promise.all([
       S.codec.decode(data.content),
       Promise.all(data.entries.map(function (e) {
-        return S.codec.decode(e.content).then(function (v) { return { id: e.id, created: e.created, n: v.n || '', b: v.b || '' }; },
+        // Entries posted to the inbox are sealed to the note's inbox key.
+        var dec = /^x1\./.test(e.content) ? inboxKey(data.inbox_key).then(function (jwk) { return NHC.inboxOpen(jwk, e.content); }) : S.codec.decode(e.content);
+        return dec.then(function (v) { return { id: e.id, created: e.created, n: v.n || '', b: v.b || '' }; },
           function () { return { id: e.id, created: e.created, n: '', b: '', broken: true }; });
       }))
     ]).then(function (r) { return { note: r[0], entries: r[1] }; }, function () {
@@ -164,7 +172,13 @@
           S.title = d.note.t || '';
           S.body = d.note.b || '';
         }
-        if (fresh) { S.ready = true; setup(data.burned); return; }
+        if (fresh) {
+          S.ready = true;
+          setup(data.burned);
+          // Served by the service worker from an earlier visit.
+          if (data.offline) banner('clock', NH.t('note.offline_copy', { time: data.offline_saved }), 'info');
+          return;
+        }
         // The scheduled lock just passed: reload into read-only mode.
         if (S.meta.locked && !S.meta.admin && S.mode !== 'read' && !S.dirty) return location.reload();
         if ((bodyChanged || checksChanged || countsChanged) && !S.dirty) drawBody(!live);
@@ -625,7 +639,8 @@
       });
     },
     applyMeta: function (m) {
-      ['lock_at', 'locked', 'open_at', 'sign_off', 'watermark', 'dms_days', 'reset', 'reset_at', 'ip_allow', 'ip_limited', 'decoy', 'suggestions']
+      ['lock_at', 'locked', 'open_at', 'sign_off', 'watermark', 'dms_days', 'reset', 'reset_at', 'ip_allow', 'ip_limited', 'decoy', 'suggestions',
+        'watch', 'watch_key', 'inbox', 'inbox_key', 'profile']
         .forEach(function (f) { S.meta[f] = m[f]; });
       drawMeta();
     },
