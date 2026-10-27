@@ -21,6 +21,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/static/img/icon-192.png">
 <link rel="stylesheet" href="/static/css/app.css?v={{.Asset}}">
+{{block "head" .}}{{end}}
 <script src="/static/js/theme.js?v={{.Asset}}"></script>
 </head>
 <body data-page="{{block "page" .}}{{end}}"{{with .Token}} data-token="{{.}}"{{end}}{{with .Mode}} data-mode="{{.}}"{{end}}{{if .User}} data-user="{{.User.Username}}"{{end}}{{with .Main}} data-main="{{.}}"{{end}}{{with .Share}} data-share="{{.}}"{{end}}>
@@ -30,7 +31,7 @@
   <div class="wrap">
     <a class="brand" href="/"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="28" height="28">{{.Site}}</a>
     <nav class="nav-links" aria-label="{{.L.T "nav.main"}}">
-      <a href="/" {{if eq .Path "/"}}aria-current="page"{{end}}>{{.L.T "nav.new"}}</a>
+      <a href="/new" {{if eq .Path "/new"}}aria-current="page"{{end}}>{{.L.T "nav.new"}}</a>
       <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}>{{.L.T "nav.mine"}}</a>
       <a href="/about" {{if eq .Path "/about"}}aria-current="page"{{end}}>{{.L.T "nav.about"}}</a>
       <a href="/faq" {{if eq .Path "/faq"}}aria-current="page"{{end}}>{{.L.T "nav.faq"}}</a>

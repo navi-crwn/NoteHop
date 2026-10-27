@@ -18,7 +18,7 @@ async function page(b, opts) {
   return p;
 }
 async function create(p, { title = '', body = '', mode = 'read', pills = [], fill = {} } = {}) {
-  await p.goto(BASE + '/');
+  await p.goto(BASE + '/new');
   if (title) await p.fill('#title', title);
   if (body) await p.fill('.ed-src', body);
   await pickMode(p, mode);
@@ -56,7 +56,7 @@ const visitor = (adminURL) => { const u = new URL(adminURL); return BASE + u.pat
     await p.keyboard.press('Escape'); await p.waitForTimeout(1600);
 
     // --- sign-off + poll + self-destructing block (created via the editor dialog) ---
-    await p.goto(BASE + '/'); await p.fill('#title', 'Kontrak');
+    await p.goto(BASE + '/new'); await p.fill('#title', 'Kontrak');
     await p.fill('.ed-src', 'Setuju?\n\n:::poll Makan siang\n- Nasi\n- Mie\n:::\n\n');
     await p.click('.ed-src'); await p.keyboard.press('Control+End'); await p.keyboard.type('/burn'); await p.waitForSelector('.slash.open');
     await p.keyboard.press('Enter'); await p.waitForSelector('#burn-text');

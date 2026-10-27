@@ -184,6 +184,19 @@
     history.replaceState(null, '', location.pathname);
   }
 
+  // A draft handed over by the home page's quick note ("Full mode").
+  try {
+    var hand = JSON.parse(sessionStorage.getItem('nh_handoff') || 'null');
+    sessionStorage.removeItem('nh_handoff');
+    if (hand) {
+      $('#title').value = String(hand.t || '').slice(0, 200);
+      ed.value = String(hand.b || '');
+      var hm = document.querySelector('input[name=mode][value="' + hand.m + '"]');
+      if (hm) { hm.checked = true; hm.dispatchEvent(new Event('change', { bubbles: true })); }
+      if (hand.o) { var po = document.querySelector('input[name=privacy][value=once]'); if (po) { po.checked = true; po.dispatchEvent(new Event('change', { bubbles: true })); } }
+    }
+  } catch (x) {}
+
   // Times are checked together so they can't contradict each other.
   function timeProblem(openAt, lockAt, expiresIn) {
     var now = Math.floor(Date.now() / 1000);

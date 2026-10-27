@@ -29,7 +29,7 @@ const wait = (p, fn, arg, t) => p.waitForFunction(fn, arg, { timeout: t || 10000
     const a = await page(b);
     const frames = [];
     a.on('websocket', ws => ws.on('framesent', f => frames.push(String(f.payload))));
-    await a.goto(BASE + '/');
+    await a.goto(BASE + '/new');
     await a.fill('#title', 'Rapat');
     await a.fill('.ed-src', 'agenda rahasia');
     await pickMode(a, 'edit');
@@ -96,7 +96,7 @@ const wait = (p, fn, arg, t) => p.waitForFunction(fn, arg, { timeout: t || 10000
     // Opened blocks stay open for a reader while the author's tab is live:
     // the sync on joining and the author's edits redraw the reader's view.
     const w = await page(b);
-    await w.goto(BASE + '/');
+    await w.goto(BASE + '/new');
     await w.fill('#title', 'Blok');
     await w.click('.ed-src'); await w.keyboard.type('Awal\n/pin');
     await w.waitForSelector('.slash li'); await w.keyboard.press('Enter');

@@ -3,7 +3,7 @@
 <section class="wrap">
   <div class="page-head">
     <div><h1>{{.L.T "title.dashboard"}}</h1><p class="muted">{{.L.T "dash.lead"}}</p></div>
-    <a class="btn primary" href="/"><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a>
+    <a class="btn primary" href="/new"><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a>
   </div>
   <div class="alert info hide" id="vault-locked">{{if .User.SSOID}}{{.L.H "dash.locked_sso"}}{{else}}{{.L.H "dash.locked_password"}}{{end}}</div>
   <div class="alert info hide claim" id="claim"></div>

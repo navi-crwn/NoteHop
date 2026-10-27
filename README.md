@@ -151,6 +151,8 @@ Semua JSON. Header: `X-Admin` (token admin), `X-Write` (bukti kunci).
 | `GET /mock/{token}/{path…}` | siapa saja | JSON dari catatan publik, CORS `*` |
 | `GET /@{username}` | siapa saja | Profil publik (catatan publik yang dipilih pemilik) |
 | `GET /sw.js` · `/manifest.webmanifest` · `/offline` | | PWA |
+| `GET /` | siapa saja | Beranda: pengenalan + catatan cepat (terenkripsi di browser) |
+| `GET /new` | siapa saja | Halaman Buat lengkap (semua opsi) |
 | `GET /diff` | siapa saja | Halaman pembanding dua teks (diff di browser) |
 | `POST /api/n/{token}/links` · `DELETE …/links/{t}` | admin | Tambah/matikan link |
 | `DELETE /api/n/{token}` | admin atau pemilik akun | Hapus catatan |
