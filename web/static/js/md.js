@@ -106,7 +106,7 @@
         out.push(line);
         continue;
       }
-      var b = !fence && line.match(/^:::(spoiler|locked|poll|burn)\s*(.*)$/);
+      var b = !fence && line.match(/^:::(spoiler|locked|poll|burn|embed|form)\s*(.*)$/);
       if (!b) { out.push(!fence && window.NHFiles ? NHFiles.preprocess(line) : line); continue; }
       var inner = [], j = i + 1;
       while (j < lines.length && !/^:::\s*$/.test(lines[j])) inner.push(lines[j++]);
@@ -118,6 +118,15 @@
         // :::poll Question, then one "- option" per line
         var opts = inner.map(function (l) { return l.replace(/^\s*(?:[-*+]|\d+[.)])\s+/, '').trim(); }).filter(Boolean).slice(0, 20);
         out.push('', '<div class="poll" data-q="' + esc(title) + '" data-opts="' + esc(JSON.stringify(opts)) + '"></div>', '');
+      } else if (b[1] === 'embed') {
+        // :::embed, then a note link (with #k=...) on its own line
+        var link = (title || inner.join(' ')).trim().split(/\s+/)[0] || '';
+        out.push('', '<div class="embed" data-src="' + esc(link) + '"></div>', '');
+      } else if (b[1] === 'form') {
+        // :::form Title, then one "- Field" per line; "(long)", "(email)",
+        // "(number)", "(date)" or "[A|B|C]" after the label pick the input
+        var fields = inner.map(function (l) { return l.replace(/^\s*(?:[-*+]|\d+[.)])\s+/, '').trim(); }).filter(Boolean).slice(0, 30);
+        out.push('', '<div class="nhform" data-title="' + esc(title) + '" data-fields="' + esc(JSON.stringify(fields)) + '"></div>', '');
       } else if (b[1] === 'burn') {
         // :::burn <id> <views>, then the sealed text (see NHC.blockSeal)
         var parts = title.split(/\s+/);
@@ -421,8 +430,9 @@
     polls(el, opts);
     burnBlocks(el, opts);
     if (window.NHFiles) NHFiles.render(el);
+    if (window.NHBlocks) NHBlocks.render(el, opts);
     if (opts.copy) copyButtons(el);
-    if (!el.textContent.trim() && !el.querySelector('.locked, input, hr, .nhfile, .attach')) el.appendChild(NH.h('p.faint', NH.t('md.empty')));
+    if (!el.textContent.trim() && !el.querySelector('.locked, input, hr, .nhfile, .attach, .embed, .nhform')) el.appendChild(NH.h('p.faint', NH.t('md.empty')));
   }
 
   window.NHMD = { render: render, html: html, applyChecks: applyChecks, toggleTask: toggleTask,

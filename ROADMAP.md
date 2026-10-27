@@ -34,10 +34,10 @@ Prinsip yang dipegang semua fitur:
 
 ## Fase 2: Kolaborasi & editor
 
-- 🔜 Real-time: WebSocket di Go (nhooyr/coder `websocket`) + **Yjs (CRDT)**, isi update tetap terenkripsi (relay ciphertext)
-- 🔜 Anonymous guest cursors (nama samaran + warna)
-- 🔜 Ephemeral mini-chat (hanya di memori, hilang saat semua keluar)
-- 🔜 Follow Presenter Mode (scroll & highlight sinkron)
+- ✅ Real-time: WebSocket di Go (coder/websocket) + **Yjs (CRDT)**, isi update tetap terenkripsi (server hanya relay ciphertext); penulis tertua di room yang menyimpan ke DB
+- ✅ Anonymous guest cursors (nama samaran + warna, bisa diganti)
+- ✅ Ephemeral mini-chat (terenkripsi, tidak pernah disimpan di server)
+- ✅ Follow Presenter Mode (scroll dan slide sinkron)
 - ✅ Diff slider / mesin waktu riwayat (riwayat versi terenkripsi)
 - ✅ Side-by-side diff checker (bandingkan 2 teks, link baca saja)
 - 🔜 Split-screen dua catatan
@@ -66,15 +66,15 @@ Prinsip yang dipegang semua fitur:
 - 🔜 Template fill-in-the-blanks `{{variabel}}`: pengunjung isi kolom, teks langsung siap di-copy (berjalan di browser, aman E2E)
 - 🔜 Inline math / kalkulator teks gaya Numi/Soulver (`Konsumsi = 50 * 35.000` → `= 1.750.000`)
 - ✅ Mini-poll / voting di dalam catatan read-only (seperti checklist: server simpan hitungan, bukan teks)
-- 🔜 Form-to-Note: catatan tampil sebagai formulir, setiap submit menjadi baris baru (memakai mekanisme append terenkripsi)
-- 🔜 Kanban view dari sub-judul To-Do/Proses/Selesai (drag-and-drop untuk pemegang link edit)
-- 🔜 View switcher pill: Teks | Kanban | Form | Slide | Diff
+- ✅ Form-to-Note (`:::form`): catatan tampil sebagai formulir, setiap submit menjadi baris baru (memakai mekanisme append terenkripsi)
+- ✅ Kanban view dari sub-judul `## Kolom` (drag-and-drop atau menu pindah untuk pemegang link edit)
+- ✅ View switcher: Teks | Papan (Form ada di dalam teks, Slide di menu Lainnya, Diff di Riwayat)
 - 🔜 Slide mode (`---` jadi slide) & teleprompter
 - ✅ Timestamped media note: `Alt+T` atau `/` → `[04:12]` yang memutar lampiran audio/video (`Ctrl+T` milik browser; YouTube tidak, karena iframe pihak ketiga melanggar CSP dan membocorkan pembaca ke Google)
 - 🔜 One-click text utilities: hapus duplikat, urutkan A–Z, ekstrak link/email, ubah huruf, format JSON/CSV
 - 🔜 Live regex & mass find-replace studio
 - 🔜 Wiki-links `[[Judul]]` + graph view (di browser, dari vault akun)
-- 🔜 Live synced blocks antar catatan (blok master di-embed ke banyak catatan)
+- ✅ Live embed antar catatan (`:::embed <link>`, diperbarui tiap 10 detik; satu tingkat, tidak untuk catatan berpassword/burn)
 - ✅ Audio reader (Web Speech API, di browser)
 - 🔜 Zen mode + ambient sound + Pomodoro + target jumlah kata
 - 🔜 Export: PDF, Markdown, TXT, dan gambar PNG estetik (dibuat di browser)
@@ -90,8 +90,8 @@ Prinsip yang dipegang semua fitur:
 - 🔜 Email-to-Note ⚠️ E2E: isi diterima server sebelum dienkripsi (pakai kunci publik catatan)
 - 🔜 Web clipper / bookmarklet "Kirim ke catatan"
 - 🔜 Fork / Clone ke ruang sendiri (di browser, kunci baru)
-- 🔜 Same-WiFi Instant Pad (pad sementara per IP publik, mirip PairDrop)
-- 🔜 P2P file drop via WebRTC (server hanya signaling)
+- ✅ Same-WiFi Instant Pad (`/nearby`, room per IP publik, isi lewat WebRTC langsung antar perangkat)
+- ✅ P2P file drop via WebRTC (server hanya signaling, tanpa STUN/TURN: khusus satu jaringan)
 - ✅ Lampiran file sementara terenkripsi, otomatis hilang dalam 24 jam (kunci per file hanya di teks catatan; pilih file, seret, atau tempel)
 - 🔜 Bring Your Own Storage: backup `.md` ke Google Drive / Dropbox / GitHub Gist
 - 💡 Steganografi: catatan disembunyikan di gambar PNG
@@ -123,7 +123,7 @@ Prinsip yang dipegang semua fitur:
 3. **`noindex` default.** ✅ semua halaman catatan. 🔜 Opsi index hanya untuk profil publik akun terverifikasi.
 4. **Migrasi skema.** ✅ Berurutan dan bernomor (`PRAGMA user_version`). Hanya boleh menambah di akhir daftar; cabang paralel yang sama-sama menambah migrasi harus menomori ulang saat merge.
 5. **Skema DB tanpa 50 kolom.** ✅ Kolom `config TEXT` (JSON di SQLite / JSONB kalau pindah ke Postgres) yang di-map ke struct Go untuk fitur opsional (scheduled lock, decoy, webhook, sign-off, cron). Kolom yang diindeks tetap terpisah (`expires`, `owner_id`, link token).
-6. **Race condition.** ✅ hitung view atomik. 🔜 Saat real-time aktif: buffer perubahan di memori Go dan flush ke DB setiap 3–5 detik atau saat room kosong.
+6. **Race condition.** ✅ hitung view atomik. ✅ Saat real-time aktif: server tidak bisa membaca isi (E2E), jadi satu browser (penulis tertua) yang menyimpan; 409 diselesaikan otomatis karena dokumen Yjs sudah berisi semua edit.
 7. **Mobile-first.** ✅ Sticky keyboard bar karena `/` sulit dijangkau di keyboard HP.
 8. **Pipeline hook di Go.** ✅ `internal/app/features.go`: `beforeRead`, `beforeWrite`, `afterUpdate`, `meta`, `every`. Fitur baru = satu field di `NoteConfig` + satu file `.go` (contoh: `lock.go`).
 9. **Background worker.** ✅ janitor per menit (kedaluwarsa, sesi) + job fitur lewat `every`. ✅ Dipakai untuk scheduled lock, time-capsule, cron reset, lampiran 24 jam.

@@ -17,7 +17,7 @@ Status: ✅ selesai · 🔨 dikerjakan · ⏳ antre · ⛔ sengaja tidak dibuat 
 ✅ Lampiran terenkripsi 24 jam · ✅ Smart paste gambar → WebP terenkripsi · ✅ Catatan media bertimestamp · uji: `scripts/e2e-files.js`, `internal/app/files_test.go`
 
 ## Batch D: real-time
-⏳ Kolaborasi E2E (Yjs + WebSocket) · ⏳ Kursor + nama tamu · ⏳ Mini-chat · ⏳ Follow presenter · ⏳ Embed blok live · ⏳ Kanban · ⏳ Form-to-Note · ⏳ Same-WiFi pad · ⏳ P2P file drop (WebRTC)
+✅ Kolaborasi E2E (Yjs + WebSocket) · ✅ Kursor + nama tamu · ✅ Mini-chat · ✅ Follow presenter · ✅ Embed blok live · ✅ Kanban · ✅ Form-to-Note · ✅ Same-WiFi pad · ✅ P2P file drop (WebRTC) · uji: `scripts/e2e-live.js`, `scripts/e2e-blocks.js`, `scripts/e2e-nearby.js`, `internal/app/live_test.go`
 
 ## Batch E: integrasi
 ⏳ CLI `notehop` (enkripsi lokal) · ⏳ Watch Note (webhook) · ⏳ Webhook-to-Note · ⏳ Profil publik `/@user` · ⏳ Mock API JSON · ⏳ SSH (catatan publik) · ⏳ Bot Telegram ⚠️ · ⏳ PWA offline · ⏳ Backup/BYO storage

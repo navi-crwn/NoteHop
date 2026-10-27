@@ -157,7 +157,9 @@
         S.votes = data.votes || {};
         S.burnBlocks = data.burn_blocks || {};
         S.signatures = data.signatures || [];
-        if (fresh || !S.dirty) {
+        var live = window.NHLive && NHLive.active();
+        if (live) S.version = data.version;
+        if (!live && (fresh || !S.dirty)) {
           S.version = data.version;
           S.title = d.note.t || '';
           S.body = d.note.b || '';
@@ -165,7 +167,7 @@
         if (fresh) { S.ready = true; setup(data.burned); return; }
         // The scheduled lock just passed: reload into read-only mode.
         if (S.meta.locked && !S.meta.admin && S.mode !== 'read' && !S.dirty) return location.reload();
-        if ((bodyChanged || checksChanged || countsChanged) && !S.dirty) drawBody(true);
+        if ((bodyChanged || checksChanged || countsChanged) && !S.dirty) drawBody(!live);
         if (window.NHFeat) NHFeat.refresh();
         if (entriesChanged) drawEntries();
         drawMeta();
@@ -364,6 +366,13 @@
     s.className = 'save-state ' + (cls || '');
   }
   function edited() {
+    // Live: changes travel to the others; only the leader writes to the server.
+    if (window.NHLive && NHLive.edited() === 'follower') {
+      S.dirty = false;
+      clearTimeout(saveTimer);
+      setSave(NH.t('live.saved_by_leader'), 'ok');
+      return;
+    }
     S.dirty = true;
     setSave(NH.t('save.unsaved'));
     clearTimeout(saveTimer);
@@ -392,6 +401,11 @@
       if (A) NH.recent.update(token, { t: t });
       drawMeta();
     }).catch(function (x) {
+      // Live: the shared document already holds everyone's edits; just
+      // catch up with the version number and save it.
+      if (x.status === 409 && window.NHLive && NHLive.active()) {
+        return api('POST', '/open', { poll: true }).then(function (d) { S.version = d.version; S.dirty = true; S.pending = true; });
+      }
       if (x.status === 409) return conflict();
       setSave(NH.t('err.save_failed'), 'err');
       NH.toast(x.message, 'err');
@@ -599,6 +613,17 @@
     editor: function () { return ed; },
     redraw: function () { drawBody(false); drawMeta(); },
     setText: function (title, body) { $('#n-title-input').value = title; ed.value = body; edited(); },
+    // for live.js
+    edited: edited, mode: function () { return S.mode; }, keys: function () { return S.keys; },
+    showBody: function (title, body) { S.title = title; S.body = body; drawBody(false); },
+    // for blocks.js (forms): add an entry as this reader
+    canAppend: function () { return canAppend(); },
+    addEntry: function (n, b) {
+      return S.codec.encode({ n: n, b: b }).then(function (c) { return api('POST', '/entries', { content: c }); }).then(function (res) {
+        S.entries.push({ id: res.id, created: res.created, n: n, b: b });
+        drawEntries();
+      });
+    },
     applyMeta: function (m) {
       ['lock_at', 'locked', 'open_at', 'sign_off', 'watermark', 'dms_days', 'reset', 'reset_at', 'ip_allow', 'ip_limited', 'decoy', 'suggestions']
         .forEach(function (f) { S.meta[f] = m[f]; });

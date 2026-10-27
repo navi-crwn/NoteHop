@@ -39,6 +39,9 @@
     { label: NH.t('cmd.slide'), hint: '---', keys: 'slide present page break ' + NH.t('cmd.slide_keys'), text: '\n---\n\n' + CARET },
     { label: NH.t('cmd.burn'), hint: NH.t('cmd.burn_hint'), keys: 'burn destroy self secret once ' + NH.t('cmd.burn_keys'), action: 'burn' },
     { label: NH.t('cmd.poll'), hint: ':::poll', keys: 'poll vote survey choice ' + NH.t('cmd.poll_keys'), text: ':::poll ' + CARET + '\n- \n- \n:::\n' },
+    { label: NH.t('cmd.form'), hint: ':::form', keys: 'form survey rsvp signup question ' + NH.t('cmd.form_keys'),
+      text: function () { return ':::form ' + CARET + '\n- ' + NH.t('form.tpl_name') + ' *\n- ' + NH.t('form.tpl_email') + ' (email)\n- ' + NH.t('form.tpl_choice') + ' [' + NH.t('form.tpl_yes') + '|' + NH.t('form.tpl_no') + ']\n- ' + NH.t('form.tpl_note') + ' (long)\n:::\n'; } },
+    { label: NH.t('cmd.embed'), hint: ':::embed', keys: 'embed include transclude live note ' + NH.t('cmd.embed_keys'), text: ':::embed ' + CARET + '\n:::\n' },
     { label: NH.t('cmd.file'), hint: NH.t('cmd.file_hint'), keys: 'file attach upload image photo audio video pdf ' + NH.t('cmd.file_keys'), action: 'file' },
     { label: NH.t('cmd.stamp'), hint: '[1:23]', keys: 'timestamp media audio video seek ' + NH.t('cmd.stamp_keys'), action: 'stamp' }
   ];
@@ -506,4 +509,5 @@
     refresh();
     return api;
   };
+  window.NHEditor.caretXY = caretXY;
 })();

@@ -107,7 +107,7 @@
       i = Math.max(0, Math.min(list.length - 1, n));
       NHMD.render(view, list[i], {});
       count.textContent = (i + 1) + ' / ' + list.length;
-      NH.emit && NH.emit('present', { slide: i });
+      NH.emit('present', { slide: i });
     }
     function onKey(e) {
       if (e.key === 'Escape') return closeOverlay(o, onKey);
@@ -122,7 +122,9 @@
     document.addEventListener('keydown', onKey);
     go(0);
     NHNote.goSlide = go;
+    NHNote.closeSlides = function () { if (o.isConnected) closeOverlay(o, onKey); };
   }
+  NHNote.present = present;
 
   // ---------- teleprompter ----------
   function prompter() {

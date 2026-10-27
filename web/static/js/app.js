@@ -41,6 +41,11 @@
     return el;
   };
 
+  // Tiny event bus between page scripts (e.g. slides → live presenter).
+  var handlers = {};
+  NH.on = function (name, fn) { (handlers[name] = handlers[name] || []).push(fn); };
+  NH.emit = function (name, data) { (handlers[name] || []).forEach(function (fn) { fn(data); }); };
+
   NH.icon = function (name, cls) {
     var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     if (cls) s.setAttribute('class', cls);
