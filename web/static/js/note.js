@@ -90,7 +90,12 @@
     var btn = h('button.btn.primary.lg', { type: 'button' }, NH.icon('eye'), 'Buka catatan sekarang');
     btn.addEventListener('click', function () {
       btn.disabled = true;
-      open(false).catch(function (x) { gone(x.message); });
+      // A wrong password only shows up here: burn notes can't be test-opened
+      // first. The server refuses without counting a view, so ask again.
+      open(false).catch(function (x) {
+        if (x.status === 403 && S.meta.password) return askPassword('Password salah.');
+        gone(x.message);
+      });
     });
     showState('flame', left <= 1 ? 'Catatan ini hancur setelah dibuka' : 'Catatan ini punya jatah baca',
       left <= 1 ? 'Begitu dibuka, catatan langsung dihapus dari server dan link ini mati. Pastikan kamu siap membacanya sekarang.'
