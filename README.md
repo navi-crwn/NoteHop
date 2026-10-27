@@ -94,7 +94,7 @@ Semua JSON. Header: `X-Admin` (token admin), `X-Write` (bukti kunci).
 | `DELETE /api/n/{token}/entries/{id}` | admin | Hapus baris |
 | `POST /api/n/{token}/checks` | edit/check/admin + X-Write | `{index, checked}` |
 | `POST /api/n/{token}/freeze` | admin | Buat snapshot beku |
-| `POST /api/n/{token}/config` | admin | Fitur opsional: `{lock_at}` (unix, 0 = batal) mengunci link non-admin pada waktu itu |
+| `POST /api/n/{token}/config` | admin | Fitur opsional (unix, 0 = batal): `lock_at` mengunci link non-admin pada waktu itu, `open_at` menahan isi sampai waktu itu (425 sebelumnya) |
 | `POST /api/n/{token}/links` · `DELETE …/links/{t}` | admin | Tambah/matikan link |
 | `DELETE /api/n/{token}` | admin atau pemilik akun | Hapus catatan |
 | `GET /raw/{token}` | siapa saja | Teks murni (hanya catatan publik) |

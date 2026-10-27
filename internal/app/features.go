@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/navi-crwn/NoteHop/internal/db"
@@ -24,6 +25,7 @@ import (
 
 type NoteConfig struct {
 	LockAt int64 `json:"lock_at,omitempty"` // unix time; after it, only the admin can change the note
+	OpenAt int64 `json:"open_at,omitempty"` // unix time; before it, only the admin can read the note
 }
 
 func parseConfig(s string) NoteConfig {
@@ -63,7 +65,7 @@ type feature struct {
 }
 
 // features is the registry; order matters only for which refusal wins.
-var features = []feature{scheduledLock}
+var features = []feature{timeCapsule, scheduledLock}
 
 func runBeforeRead(n *db.Note, now time.Time) *hookErr {
 	c := hookCtx{note: n, cfg: parseConfig(n.Config), now: now}
@@ -117,4 +119,46 @@ func (a *App) runJobs(ctx context.Context, now time.Time) {
 			log.Printf("job %s: %v", f.name, err)
 		}
 	}
+}
+
+// apiConfig lets the admin change a note's optional features.
+func (a *App) apiConfig(w http.ResponseWriter, r *http.Request) {
+	x, ok := a.access(w, r)
+	if !ok || !a.requireAdmin(w, x) {
+		return
+	}
+	if x.note.Frozen {
+		apiErr(w, http.StatusForbidden, "Snapshot ini dibekukan dan tidak bisa diubah.")
+		return
+	}
+	var q struct {
+		LockAt *int64 `json:"lock_at"`
+		OpenAt *int64 `json:"open_at"`
+	}
+	if !readJSON(w, r, &q, 1024) {
+		return
+	}
+	cfg := parseConfig(x.note.Config)
+	now := time.Now().Unix()
+	future := func(t int64) bool { return t == 0 || (t > now && time.Duration(t-now)*time.Second <= maxExpiry) }
+	if q.LockAt != nil {
+		if !future(*q.LockAt) {
+			apiErr(w, http.StatusBadRequest, "Waktu kunci harus di masa depan, paling lama 1 tahun lagi.")
+			return
+		}
+		cfg.LockAt = *q.LockAt
+	}
+	if q.OpenAt != nil {
+		if !future(*q.OpenAt) {
+			apiErr(w, http.StatusBadRequest, "Waktu buka harus di masa depan, paling lama 1 tahun lagi.")
+			return
+		}
+		cfg.OpenAt = *q.OpenAt
+	}
+	x.note.Config = cfg.String()
+	if err := a.db.SetConfig(x.note.ID, x.note.Config); err != nil {
+		apiErr(w, http.StatusInternalServerError, "Gagal menyimpan pengaturan.")
+		return
+	}
+	writeJSON(w, http.StatusOK, a.meta(r, x))
 }

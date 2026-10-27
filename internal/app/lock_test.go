@@ -90,3 +90,49 @@ func TestParseConfig(t *testing.T) {
 		t.Fatalf("empty config = %s", s)
 	}
 }
+
+func TestTimeCapsule(t *testing.T) {
+	d, err := db.Open(":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := New(Config{Registration: true}, d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	srv := httptest.NewServer(a.Handler())
+	t.Cleanup(func() { srv.Close(); d.Close() })
+	c := newClient(t, srv)
+	n := c.create(map[string]any{"mode": "edit", "max_views": 1})
+	adm := map[string]string{"X-Admin": n.admin, "X-Write": n.write}
+	vis := map[string]string{"X-Write": n.write}
+	openAt := time.Now().Unix() + 3600
+	if code, m, _ := c.do("POST", "/api/n/"+n.token+"/config", map[string]any{"open_at": openAt}, adm); code != 200 || m["open_at"].(float64) != float64(openAt) {
+		t.Fatalf("set open_at: %d %v", code, m)
+	}
+	// Too early: refused without spending the single view, writes refused too.
+	for i := 0; i < 2; i++ {
+		if code, m, _ := c.do("POST", "/api/n/"+n.token+"/open", nil, vis); code != 425 || !strings.Contains(fmt.Sprint(m["error"]), "baru bisa dibuka") {
+			t.Fatalf("early open: %d %v", code, m)
+		}
+	}
+	if code, _, _ := c.do("PUT", "/api/n/"+n.token, map[string]any{"content": fakeCipher("x"), "version": 1}, vis); code != 425 {
+		t.Fatalf("early write: %d", code)
+	}
+	if _, m, _ := c.do("GET", "/api/n/"+n.token, nil, nil); m["views"].(float64) != 0 {
+		t.Fatalf("views spent: %v", m)
+	}
+	// The admin can look before the time.
+	if code, _, _ := c.do("POST", "/api/n/"+n.token+"/open", nil, adm); code != 200 {
+		t.Fatalf("admin early open: %d", code)
+	}
+	// Once the time has passed it opens (and here burns) normally.
+	note, _, _ := d.NoteByLink(n.token)
+	d.SetConfig(note.ID, fmt.Sprintf(`{"open_at":%d}`, time.Now().Unix()-1))
+	if _, m, _ := c.do("GET", "/api/n/"+n.token, nil, nil); m["open_at"] != nil {
+		t.Fatalf("open_at still shown after opening: %v", m)
+	}
+	if code, m, _ := c.do("POST", "/api/n/"+n.token+"/open", nil, vis); code != 200 || m["burned"] != true {
+		t.Fatalf("open after time: %d %v", code, m)
+	}
+}

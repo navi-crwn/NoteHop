@@ -48,9 +48,34 @@
       S.meta = meta;
       if (K && !/^[A-Za-z0-9_-]{43}$/.test(K)) return gone('Kunci di link rusak. Pastikan link tersalin utuh.');
       if (meta.encrypted && !K) return gone('Bagian kunci (#k=…) tidak ada di link. Minta link lengkap dari pengirimnya; kunci itu tidak pernah disimpan di server.');
+      if (meta.open_at && !meta.admin) return capsule(meta.open_at);
       if (meta.password) return askPassword();
       return unlock('');
     }, function (e) { gone(e.message); });
+  }
+
+  // Time capsule: the server won't hand out the content before open_at, so
+  // count down here and try again when the time comes.
+  var capsuleTimer = null;
+  function capsule(at) {
+    clearInterval(capsuleTimer);
+    var clock = h('p.countdown');
+    var tick = function () {
+      var left = at - Math.floor(Date.now() / 1000);
+      if (left <= 0) {
+        clearInterval(capsuleTimer);
+        clock.textContent = 'Membuka…';
+        // A few seconds of slack for clocks that disagree with the server.
+        setTimeout(start, 3000);
+        return;
+      }
+      var d = Math.floor(left / 86400), hh = Math.floor(left % 86400 / 3600), mm = Math.floor(left % 3600 / 60), ss = left % 60;
+      var p2 = function (n) { return String(n).padStart(2, '0'); };
+      clock.textContent = (d ? d + ' hari ' : '') + p2(hh) + ':' + p2(mm) + ':' + p2(ss);
+    };
+    tick();
+    capsuleTimer = setInterval(tick, 1000);
+    showState('clock', 'Belum waktunya dibuka', 'Catatan ini dikunci waktu sampai ' + NH.date(at) + '. Biarkan halaman ini terbuka; catatan akan terbuka sendiri.', clock);
   }
 
   function askPassword(errMsg) {
@@ -141,6 +166,7 @@
         drawMeta();
       });
     }, function (x) {
+      if (x.status === 425 && !poll) return start();
       if (x.status === 403 && S.meta.password && !poll) throw x;
       if (poll) { if (x.status === 404) gone('Catatan ini baru saja dihapus atau kedaluwarsa.'); return; }
       gone(x.message);
@@ -159,6 +185,7 @@
     if (burned) banner('flame', 'Catatan ini sudah dihancurkan dari server. Yang kamu lihat sekarang adalah satu-satunya salinan. Salin isinya sekarang jika perlu.', 'warn');
     else if (m.frozen) banner('snow', 'Snapshot beku, dibuat ' + NH.date(m.created) + '. Isinya tidak bisa diubah siapa pun.', 'info',
       m.admin && m.parent ? h('a', { href: NH.noteURL(m.parent, { k: K, a: A }) }, 'Buka catatan aslinya →') : null);
+    else if (m.open_at && m.admin) banner('clock', 'Kapsul waktu: pembaca baru bisa membuka catatan ini ' + NH.date(m.open_at) + '. Kamu bisa melihatnya karena memakai link admin.', 'info');
     else if (m.locked && !m.admin && m.mode !== 'read') banner('lock', 'Catatan ini dikunci sejak ' + NH.date(m.lock_at) + '. Sekarang hanya bisa dibaca.', 'info');
     else if (!S.keys && m.mode !== 'read') banner('key', 'Link ini tanpa kunci (#k), jadi hanya bisa membaca.', 'info');
 
@@ -239,6 +266,7 @@
     if (m.frozen) kids.push(pill('snow', 'Snapshot beku'));
     if (m.expires) kids.push(pill('clock', 'Hilang ' + NH.ago(m.expires), 'warn'));
     if (m.max_views) kids.push(pill('flame', 'Dibuka ' + m.views + '/' + m.max_views, 'bad'));
+    if (m.open_at) kids.push(pill('clock', 'Dibuka ' + NH.ago(m.open_at), 'warn'));
     if (m.lock_at) kids.push(m.locked ? pill('lock', 'Dikunci') : pill('clock', 'Dikunci ' + NH.ago(m.lock_at), 'warn'));
     kids.push(h('span.faint.small', 'Diubah ' + NH.ago(m.updated)));
     box.replaceChildren.apply(box, kids);
@@ -411,6 +439,7 @@
       }));
       NH.$$('#new-mode option').forEach(function (o) { o.disabled = S.meta.frozen && o.value !== 'read'; });
       drawLock(m);
+      drawCapsule(m);
       if (!dlg.open) dlg.showModal();
     }, function (x) { NH.toast(x.message, 'err'); });
   }
@@ -437,8 +466,7 @@
     return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
   }
   function drawLock(m) {
-    var box = $('.lock-box');
-    box.classList.toggle('hide', !!S.meta.frozen);
+    $('#lock-form').closest('.lock-box').classList.toggle('hide', !!S.meta.frozen);
     var input = $('#lock-at');
     input.min = localInput(Math.floor(Date.now() / 1000) + 60);
     if (m.lock_at) input.value = localInput(m.lock_at);
@@ -447,6 +475,29 @@
       : m.lock_at ? 'Dikunci ' + NH.date(m.lock_at) + ' (' + NH.ago(m.lock_at) + '). Setelah itu link edit, tambah, dan centang hanya bisa membaca.'
         : 'Pada waktu ini link edit, tambah, dan centang berubah jadi baca saja. Link admin tetap bisa mengubah.';
   }
+  function drawCapsule(m) {
+    var input = $('#open-at');
+    input.min = localInput(Math.floor(Date.now() / 1000) + 60);
+    if (m.open_at) input.value = localInput(m.open_at);
+    $('#open-clear').classList.toggle('hide', !m.open_at);
+    $('#open-state').textContent = m.open_at ? 'Pembaca baru bisa membuka ' + NH.date(m.open_at) + ' (' + NH.ago(m.open_at) + '). Sampai saat itu server menahan isinya.'
+      : 'Pembaca baru bisa membuka catatan mulai waktu ini; server menahan isinya sampai saat itu.';
+    $('#open-form').closest('.lock-box').classList.toggle('hide', !!S.meta.frozen);
+  }
+  function setCapsule(at) {
+    api('POST', '/config', { open_at: at }).then(function (m) {
+      S.meta.open_at = m.open_at;
+      drawCapsule(m); drawMeta();
+      NH.toast(at ? 'Kapsul waktu disimpan' : 'Kapsul waktu dibatalkan', 'ok');
+    }, function (x) { NH.toast(x.message, 'err'); });
+  }
+  $('#open-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var t = new Date($('#open-at').value).getTime();
+    if (t) setCapsule(Math.floor(t / 1000));
+  });
+  $('#open-clear').addEventListener('click', function () { setCapsule(0); });
+
   function setLock(at) {
     api('POST', '/config', { lock_at: at }).then(function (m) {
       S.meta.lock_at = m.lock_at; S.meta.locked = m.locked;
