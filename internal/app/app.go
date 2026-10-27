@@ -6,13 +6,15 @@ package app
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"encoding/hex"
 	"html/template"
+	"io"
 	"io/fs"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -97,6 +99,7 @@ func (a *App) routes() {
 	m.HandleFunc("GET /login", a.page("login", "title.login", ""))
 	m.HandleFunc("GET /register", a.page("register", "title.register", ""))
 	m.HandleFunc("GET /i18n/{lang}", a.catalogJS)
+	m.HandleFunc("GET /render/mermaid", mermaidFrame)
 	m.HandleFunc("GET /dashboard", a.dashboardPage)
 	m.HandleFunc("GET /vault", a.vaultPage)
 	m.HandleFunc("GET /auth/sso", a.ssoStart)
@@ -149,6 +152,7 @@ type pageData struct {
 	Share   string // share domain, for links handed to readers (may be empty)
 	L       i18n.Locale
 	Langs   []i18n.Lang
+	Clipper template.URL // bookmarklet for the about page
 }
 
 func (a *App) loadTemplates() error {
@@ -169,6 +173,7 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.SSO = a.cfg.SSOEnabled()
 	d.Origin = a.origin(r)
 	d.Main, d.Share = a.cfg.BaseURL, a.shareURL()
+	d.Clipper = clipper(d.Origin)
 	if d.Next == "" {
 		d.Next = safeNext(r.URL.Query().Get("next"))
 	}
@@ -313,4 +318,27 @@ func (a *App) catalogJS(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "public, max-age=300")
 	}
 	fmt.Fprintf(w, "window.NH_I18N=%s;window.NH_LANG=%q;\n", b, code)
+}
+
+// clipper is the web clipper bookmarklet: it opens a new note with the page
+// title, address and selected text in the #fragment, which browsers never
+// send to the server.
+func clipper(origin string) template.URL {
+	js := `javascript:(function(){var d={t:document.title,u:location.href,s:String(getSelection())};` +
+		`window.open(` + strconv.Quote(origin+"/#clip=") + `+encodeURIComponent(JSON.stringify(d)))})()`
+	return template.URL(js)
+}
+
+// mermaidFrame is the sandboxed page that draws diagrams. It gets its own
+// CSP: Mermaid needs inline styles, which the note page forbids. It's framed
+// with sandbox="allow-scripts" (an opaque origin), so it can't touch the note
+// page, cookies or storage, and it has no network access beyond our scripts.
+func mermaidFrame(w http.ResponseWriter, r *http.Request) {
+	h := w.Header()
+	h.Set("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src data:; font-src 'self'; frame-ancestors 'self'")
+	h.Set("X-Frame-Options", "SAMEORIGIN")
+	h.Set("Content-Type", "text/html; charset=utf-8")
+	h.Set("Cache-Control", "public, max-age=3600")
+	io.WriteString(w, `<!doctype html><meta charset="utf-8"><title>Mermaid</title>`+
+		`<script src="/static/vendor/mermaid.min.js"></script><script src="/static/js/mermaid-frame.js"></script>`)
 }

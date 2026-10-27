@@ -6,9 +6,25 @@
     <a class="btn primary" href="/"><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a>
   </div>
   <div class="alert info hide" id="vault-locked">{{if .User.SSOID}}{{.L.H "dash.locked_sso"}}{{else}}{{.L.H "dash.locked_password"}}{{end}}</div>
-  <input type="search" id="filter" class="filter" placeholder="{{.L.T "dash.search"}}" aria-label="{{.L.T "dash.search"}}">
+  <div class="dash-tools">
+    <input type="search" id="filter" class="filter" placeholder="{{.L.T "dash.search"}}" aria-label="{{.L.T "dash.search"}}">
+    <button type="button" class="btn sm" id="graph-btn"><svg><use href="#i-share"/></svg>{{.L.T "dash.graph"}}</button>
+  </div>
+  <div class="pills groups" id="groups" role="toolbar" aria-label="{{.L.T "dash.groups"}}">
+    <button type="button" class="chip" data-group="all" aria-pressed="true">{{.L.T "dash.g_all"}}</button>
+    <button type="button" class="chip" data-group="todo" aria-pressed="false">{{.L.T "dash.g_todo"}}</button>
+    <button type="button" class="chip" data-group="links" aria-pressed="false">{{.L.T "dash.g_links"}}</button>
+    <button type="button" class="chip" data-group="code" aria-pressed="false">{{.L.T "dash.g_code"}}</button>
+    <button type="button" class="chip" data-group="timed" aria-pressed="false">{{.L.T "dash.g_timed"}}</button>
+    <button type="button" class="chip" data-group="snapshots" aria-pressed="false">{{.L.T "dash.g_snapshots"}}</button>
+  </div>
   <ul class="note-list" id="mine"><li class="muted">{{.L.T "common.loading"}}</li></ul>
 </section>
+<dialog class="dlg wide" id="graph-dlg" aria-labelledby="graph-h">
+  <div class="dlg-head"><h2 id="graph-h">{{.L.T "dash.graph"}}</h2><button type="button" class="icon-btn" data-close aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
+  <p class="muted small">{{.L.T "dash.graph_lead"}}</p>
+  <div id="graph-box"></div>
+</dialog>
 {{end}}
 {{define "scripts"}}
 <script src="/static/js/crypto.js?v={{.Asset}}"></script>

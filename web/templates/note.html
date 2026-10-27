@@ -20,9 +20,28 @@
         <button type="button" class="btn sm hide" id="act-freeze" data-admin><svg><use href="#i-snow"/></svg>{{.L.T "note.freeze"}}</button>
         <button type="button" class="btn sm" id="act-copy"><svg><use href="#i-copy"/></svg>{{.L.T "note.copy_text"}}</button>
         <a class="btn sm hide" id="act-raw" target="_blank" rel="noopener"><svg><use href="#i-code"/></svg>Raw</a>
+        <div class="menu more-menu" id="more-menu">
+          <button type="button" class="btn sm" aria-haspopup="true"><svg><use href="#i-more"/></svg>{{.L.T "more.label"}}</button>
+          <div class="menu-list">
+            <button type="button" data-act="duplicate" data-needs-key><svg width="16" height="16"><use href="#i-copy"/></svg>{{.L.T "more.duplicate"}}</button>
+            <button type="button" data-act="export-md"><svg width="16" height="16"><use href="#i-code"/></svg>{{.L.T "more.export_md"}}</button>
+            <button type="button" data-act="print"><svg width="16" height="16"><use href="#i-print"/></svg>{{.L.T "more.print"}}</button>
+            <button type="button" data-act="present"><svg width="16" height="16"><use href="#i-play"/></svg>{{.L.T "more.present"}}</button>
+            <button type="button" data-act="prompter"><svg width="16" height="16"><use href="#i-scroll"/></svg>{{.L.T "more.prompter"}}</button>
+            <button type="button" data-act="listen"><svg width="16" height="16"><use href="#i-sound"/></svg>{{.L.T "more.listen"}}</button>
+            <button type="button" data-act="zen"><svg width="16" height="16"><use href="#i-zen"/></svg>{{.L.T "more.zen"}}</button>
+            <button type="button" data-act="redact" data-needs-key><svg width="16" height="16"><use href="#i-shield"/></svg>{{.L.T "more.redact"}}</button>
+          </div>
+        </div>
         <button type="button" class="btn sm danger hide" id="act-delete"><svg><use href="#i-trash"/></svg>{{.L.T "common.delete"}}</button>
       </div>
     </header>
+
+    <section class="card tpl hide" id="tpl" aria-labelledby="tpl-h">
+      <div class="tpl-head"><b id="tpl-h"><svg class="ico"><use href="#i-edit"/></svg> {{.L.T "tpl.title"}}</b><span class="hint">{{.L.T "tpl.hint"}}</span></div>
+      <div class="tpl-fields" id="tpl-fields"></div>
+      <div class="btn-row"><button type="button" class="btn sm primary" id="tpl-copy"><svg><use href="#i-copy"/></svg>{{.L.T "tpl.copy"}}</button><button type="button" class="btn sm ghost" id="tpl-clear">{{.L.T "tpl.clear"}}</button></div>
+    </section>
 
     <div class="card note-body">
       <div class="md" id="n-view" dir="auto"></div>
@@ -100,4 +119,5 @@
 <script src="/static/js/md.js?v={{.Asset}}"></script>
 <script src="/static/js/editor.js?v={{.Asset}}"></script>
 <script src="/static/js/note.js?v={{.Asset}}"></script>
+<script src="/static/js/extras.js?v={{.Asset}}"></script>
 {{end}}

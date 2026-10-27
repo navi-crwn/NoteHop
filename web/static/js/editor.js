@@ -31,7 +31,12 @@
     { label: NH.t('ed.spoiler'), hint: NH.t('cmd.spoiler_hint'), keys: 'spoiler toggle hide fold details ' + NH.t('cmd.spoiler_keys'), text: ':::spoiler ' + NH.t('md.spoiler_default') + '\n' + CARET + '\n:::\n' },
     { label: NH.t('ed.locked'), hint: NH.t('cmd.locked_hint'), keys: 'lock pin secret password ' + NH.t('cmd.locked_keys'), action: 'locked' },
     { label: NH.t('cmd.date'), hint: '', keys: 'date today ' + NH.t('cmd.date_keys'), text: function () { return today() + CARET; } },
-    { label: NH.t('cmd.time'), hint: '', keys: 'time now clock ' + NH.t('cmd.time_keys'), text: function () { return now() + CARET; } }
+    { label: NH.t('cmd.time'), hint: '', keys: 'time now clock ' + NH.t('cmd.time_keys'), text: function () { return now() + CARET; } },
+    { label: NH.t('cmd.var'), hint: '{{ }}', keys: 'variable template field placeholder ' + NH.t('cmd.var_keys'), text: '{{' + CARET + '}}' },
+    { label: NH.t('cmd.calc'), hint: '```calc', keys: 'calc calculator math sum total ' + NH.t('cmd.calc_keys'), text: '```calc\n' + CARET + '\n```\n' },
+    { label: NH.t('cmd.diagram'), hint: 'mermaid', keys: 'diagram mermaid chart flow graph ' + NH.t('cmd.diagram_keys'), text: '```mermaid\nflowchart LR\n  A[' + CARET + '] --> B\n```\n' },
+    { label: NH.t('cmd.wiki'), hint: '[[ ]]', keys: 'wiki link note page ' + NH.t('cmd.wiki_keys'), text: '[[' + CARET + ']]' },
+    { label: NH.t('cmd.slide'), hint: '---', keys: 'slide present page break ' + NH.t('cmd.slide_keys'), text: '\n---\n\n' + CARET }
   ];
 
   // Caret pixel position inside a textarea, via a mirrored div.
@@ -91,6 +96,26 @@
     NH.$('#lock-text', lockDlg).focus();
   }
 
+  // ---------- text utilities (command palette) ----------
+  // Each works on the selection, or the whole text when nothing is selected.
+  function lines(t) { return t.split('\n'); }
+  var collator = new Intl.Collator(NH.lang, { numeric: true, sensitivity: 'base' });
+  var UTILS = [
+    { id: 'sort_az', run: function (t) { return lines(t).sort(collator.compare).join('\n'); } },
+    { id: 'sort_za', run: function (t) { return lines(t).sort(collator.compare).reverse().join('\n'); } },
+    { id: 'dedupe', run: function (t) { var seen = {}; return lines(t).filter(function (l) { if (seen[l]) return false; seen[l] = 1; return true; }).join('\n'); } },
+    { id: 'trim', run: function (t) { return lines(t).map(function (l) { return l.trim(); }).join('\n'); } },
+    { id: 'no_empty', run: function (t) { return lines(t).filter(function (l) { return l.trim(); }).join('\n'); } },
+    { id: 'upper', run: function (t) { return t.toLocaleUpperCase(NH.lang); } },
+    { id: 'lower', run: function (t) { return t.toLocaleLowerCase(NH.lang); } },
+    { id: 'title', run: function (t) { return t.toLocaleLowerCase(NH.lang).replace(/(^|[\s(\-"'])(\p{L})/gu, function (m, a, c) { return a + c.toLocaleUpperCase(NH.lang); }); } },
+    { id: 'links', run: function (t) { return (t.match(/https?:\/\/[^\s<>()"']+/g) || []).filter(function (u, i, a) { return a.indexOf(u) === i; }).join('\n'); } },
+    { id: 'json', run: function (t) { return JSON.stringify(JSON.parse(t), null, 2); } },
+    { id: 'json_min', run: function (t) { return JSON.stringify(JSON.parse(t)); } },
+    { id: 'number', run: function (t) { return lines(t).map(function (l, i) { return (i + 1) + '. ' + l; }).join('\n'); } },
+    { id: 'count', run: null }
+  ];
+
   window.NHEditor = function (root, opts) {
     opts = opts || {};
     var ta = NH.$('.ed-src', root), preview = NH.$('.ed-preview', root), count = NH.$('.ed-count', root), body = NH.$('.ed-body', root);
@@ -113,6 +138,7 @@
     function renderPreview() {
       if (root.dataset.view === 'write') return;
       NHMD.render(preview, ta.value, {
+        vars: {},
         interactive: true,
         onCheck: function (i, checked) { ta.value = NHMD.toggleTask(ta.value, i, checked); changed(); }
       });
@@ -253,6 +279,93 @@
       }
     });
 
+    // ---------- command palette (Ctrl+K) ----------
+    function utilRun(u) {
+      var s = ta.selectionStart, e = ta.selectionEnd, all = s === e;
+      var text = all ? ta.value : ta.value.slice(s, e);
+      if (!u.run) {
+        var words = (text.match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || []).length;
+        return NH.toast(NH.t('util.count_result', { words: words, chars: text.length, lines: text ? lines(text).length : 0 }));
+      }
+      var out;
+      try { out = u.run(text); } catch (x) { return NH.toast(NH.t('util.json_error'), 'err'); }
+      if (all) replace(0, ta.value.length, out + CARET); else replace(s, e, out + CARET);
+      NH.toast(NH.t('util.done', { name: NH.t('util.' + u.id) }), 'ok');
+    }
+    var palette = null;
+    function openPalette() {
+      var items = COMMANDS.map(function (c) { return { label: c.label, hint: c.hint, keys: c.keys, run: function () {
+        var p = ta.selectionStart;
+        if (c.action) return CMDS[c.action]();
+        replace(p, ta.selectionEnd, typeof c.text === 'function' ? c.text() : c.text);
+      } }; }).concat(UTILS.map(function (u) {
+        return { label: NH.t('util.' + u.id), hint: NH.t('util.group'), keys: u.id + ' ' + NH.t('util.' + u.id), run: function () { utilRun(u); } };
+      }));
+      if (!palette) {
+        palette = NH.h('dialog.dlg.palette', { 'aria-label': NH.t('palette.title') });
+        palette.append(NH.h('input', { type: 'search', placeholder: NH.t('palette.placeholder'), 'aria-label': NH.t('palette.title') }), NH.h('ul.palette-list', { role: 'listbox' }));
+        document.body.appendChild(palette);
+      }
+      var input = palette.firstChild, list = palette.lastChild, shown = [], active = 0;
+      function draw() {
+        var q = input.value.trim().toLowerCase();
+        shown = items.filter(function (it) { return !q || (it.label + ' ' + it.keys).toLowerCase().indexOf(q) !== -1; });
+        active = Math.min(active, Math.max(0, shown.length - 1));
+        list.replaceChildren.apply(list, shown.map(function (it, i) {
+          var li = NH.h('li', { role: 'option', 'aria-selected': i === active }, NH.h('span', it.label), NH.h('small', it.hint));
+          li.addEventListener('mousedown', function (e) { e.preventDefault(); run(it); });
+          return li;
+        }));
+        var act = list.children[active];
+        if (act) act.scrollIntoView({ block: 'nearest' });
+      }
+      function run(it) { palette.close(); ta.focus(); it.run(); }
+      input.oninput = function () { active = 0; draw(); };
+      input.onkeydown = function (e) {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); active = (active + (e.key === 'ArrowDown' ? 1 : -1) + shown.length) % Math.max(1, shown.length); draw(); }
+        if (e.key === 'Enter' && shown[active]) { e.preventDefault(); run(shown[active]); }
+      };
+      input.value = '';
+      draw();
+      palette.showModal();
+      input.focus();
+    }
+    ta.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); }
+    });
+
+    // ---------- bubble toolbar on a selection (mouse/trackpad only) ----------
+    if (window.matchMedia && matchMedia('(pointer: fine)').matches) {
+      var bubble = NH.h('div.bubble', { role: 'toolbar', 'aria-label': NH.t('ed.insert') });
+      var bb = function (label, title, fn) {
+        var b = NH.h('button', { type: 'button', title: title, 'aria-label': title }, label);
+        b.addEventListener('mousedown', function (e) { e.preventDefault(); fn(); hideBubble(); });
+        return b;
+      };
+      bubble.append(
+        bb('B', NH.t('ed.bold'), CMDS.bold),
+        bb('I', NH.t('ed.italic'), function () { var s = ta.selectionStart, e = ta.selectionEnd; replace(s, e, '_' + ta.value.slice(s, e) + '_' + CARET); }),
+        bb('</>', NH.t('ed.code'), CMDS.code),
+        bb('🔗', NH.t('ed.link'), function () { var s = ta.selectionStart, e = ta.selectionEnd; replace(s, e, '[' + ta.value.slice(s, e) + '](' + CARET + ')'); }),
+        bb('{{ }}', NH.t('cmd.var'), function () { var s = ta.selectionStart, e = ta.selectionEnd; replace(s, e, '{{' + ta.value.slice(s, e) + '}}' + CARET); }),
+        bb('⌘K', NH.t('palette.title'), openPalette)
+      );
+      body.appendChild(bubble);
+      var hideBubble = function () { bubble.classList.remove('open'); };
+      var showBubble = function () {
+        if (ta.selectionStart === ta.selectionEnd || document.activeElement !== ta) return hideBubble();
+        var xy = caretXY(ta, ta.selectionStart);
+        bubble.style.left = Math.max(0, Math.min(xy.x + ta.offsetLeft, body.clientWidth - 230)) + 'px';
+        bubble.style.top = Math.max(0, xy.y + ta.offsetTop - ta.scrollTop - 62) + 'px';
+        bubble.classList.add('open');
+      };
+      ta.addEventListener('mouseup', function () { setTimeout(showBubble, 0); });
+      ta.addEventListener('keyup', function (e) { if (e.shiftKey) showBubble(); else hideBubble(); });
+      ta.addEventListener('blur', hideBubble);
+      ta.addEventListener('scroll', hideBubble);
+      ta.addEventListener('input', hideBubble);
+    }
+
     // ---------- phone keyboard bar ----------
     // "/" and the other insert buttons are hard to reach on a phone keyboard,
     // so while typing on a touch screen a bar sits right above the keyboard.
@@ -302,6 +415,7 @@
       get value() { return ta.value; },
       set value(v) { ta.value = v; refresh(); }, // programmatic: not a user edit
       focus: function () { ta.focus(); },
+      palette: function () { openPalette(); },
       textarea: ta
     };
     refresh();
