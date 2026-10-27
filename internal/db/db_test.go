@@ -77,3 +77,30 @@ func TestSSOUser(t *testing.T) {
 		t.Fatalf("by sso: %+v %v", got, err)
 	}
 }
+
+func TestBackup(t *testing.T) {
+	dir := t.TempDir()
+	d, err := Open(filepath.Join(dir, "live.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer d.Close()
+	if _, err := d.CreateUser("salin", "h"); err != nil {
+		t.Fatal(err)
+	}
+	out := filepath.Join(dir, "copy.db")
+	if err := d.Backup(out); err != nil {
+		t.Fatal(err)
+	}
+	c, err := Open(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	if _, err := c.UserByName("salin"); err != nil {
+		t.Fatalf("user missing from backup: %v", err)
+	}
+	if err := d.Backup(out); err == nil {
+		t.Fatal("backup over an existing file must fail")
+	}
+}

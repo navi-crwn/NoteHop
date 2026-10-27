@@ -14,6 +14,7 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 | `ROADMAP.md` | **Semua** ide fitur dari pemilik (Fase 1 sampai 6), status ✅/🔜/💡, catatan arsitektur |
 | `docs/INTEGRASI-SSO-IMAGEAPP.md` | Rencana login dengan akun SSO (SSO) dan kombinasi dengan ImageApp |
 | `design-reference/README.md` | Aset desain dari repo ImageApp, SSO, OtherApp, dan cara memakainya |
+| `docs/DEPLOY.md` | Deploy ke VPS: `deploy/install.sh`, systemd, Caddy/nginx, backup, update, restore |
 | `docs/PROMPT-LANJUTAN.md` | Prompt dan urutan kerja untuk sesi lanjutan |
 
 ## Status saat ini (Fase 1 selesai)
@@ -41,6 +42,8 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 go run ./cmd/notehop -addr 127.0.0.1:8090 -db data/dev.db   # dev
 go test -race ./...                                          # tes
 go build -o bin/notehop ./cmd/notehop                        # build
+make linux                                                   # binary statis amd64/arm64 untuk VPS
+notehop backup -db notehop.db salinan.db                     # backup saat berjalan
 ```
 
 `.claude/launch.json` sudah berisi konfigurasi `notehop` (port 8090) untuk preview.
@@ -49,5 +52,4 @@ go build -o bin/notehop ./cmd/notehop                        # build
 
 1. Uji manual alur yang belum dicek (daftar di atas), perbaiki bug.
 2. Sisi SSO untuk SSO: route `/sso/notehop` di repo `navi-crwn/accounts` (lihat `docs/INTEGRASI-SSO-IMAGEAPP.md`).
-3. Dockerfile + contoh deploy (Caddy/nginx), sama seperti ImageApp.
-4. Lanjut ke Fase 2 di ROADMAP (real-time, riwayat, sticky keyboard bar HP).
+3. Lanjut ke Fase 2 di ROADMAP (real-time, riwayat, sticky keyboard bar HP).

@@ -51,15 +51,15 @@ make build     # bin/notehop
 
 Skema database dimigrasi otomatis saat start (nomor versi di `PRAGMA user_version`, daftar di `migrations` pada `internal/db/db.go`). Binary yang lebih lama menolak membuka database dengan versi skema yang lebih baru.
 
-### Deploy singkat (reverse proxy)
+### Deploy ke VPS
+
+Panduan lengkap (systemd, Caddy/nginx, backup harian, update, restore): **[`docs/DEPLOY.md`](docs/DEPLOY.md)**. Ringkasnya:
 
 ```bash
-go build -o /usr/local/bin/notehop ./cmd/notehop
-NOTEHOP_ADDR=127.0.0.1:8090 NOTEHOP_DB=/var/lib/notehop/notehop.db \
-NOTEHOP_BASE_URL=https://note.example.com NOTEHOP_TRUST_PROXY=1 notehop
+sudo DOMAIN=note.example.com ./deploy/install.sh   # pasang/update sebagai service systemd
+make linux                                         # atau build binary statis untuk diunggah
+notehop backup -db notehop.db salinan.db           # backup aman saat berjalan
 ```
-
-Caddy: `note.example.com { reverse_proxy 127.0.0.1:8090 }`. Backup cukup salin file `.db` (pakai `sqlite3 notehop.db ".backup x.db"` saat berjalan).
 
 ## Cara kerja kriptografi
 

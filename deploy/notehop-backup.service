@@ -1,0 +1,17 @@
+# Daily SQLite backup, started by notehop-backup.timer.
+[Unit]
+Description=NoteHop database backup
+After=notehop.service
+
+[Service]
+Type=oneshot
+User=notehop
+Group=notehop
+EnvironmentFile=/etc/notehop/notehop.env
+ExecStart=/usr/local/lib/notehop/backup.sh
+StateDirectory=notehop
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true

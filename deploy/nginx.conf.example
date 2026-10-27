@@ -1,0 +1,31 @@
+# /etc/nginx/sites-available/notehop
+# Certificate: sudo certbot --nginx -d note.example.com
+server {
+    listen 80;
+    listen [::]:80;
+    server_name note.example.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name note.example.com;
+
+    ssl_certificate     /etc/letsencrypt/live/note.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/note.example.com/privkey.pem;
+
+    # Notes are up to 1 MB of ciphertext plus JSON overhead.
+    client_max_body_size 2m;
+
+    location / {
+        proxy_pass http://127.0.0.1:8090;
+        proxy_set_header Host $host;
+        # NoteHop reads the first X-Forwarded-For entry for rate limiting, so
+        # set it to the real client instead of appending to what the client sent.
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+    }
+}

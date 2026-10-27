@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -34,10 +35,22 @@ func envBool(key string, def bool) bool {
 	return def
 }
 
+// version is set at build time: -ldflags "-X main.version=v1.2.3".
+var version = "dev"
+
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "backup" {
+		backup(os.Args[2:])
+		return
+	}
+	showVersion := flag.Bool("version", false, "print version and exit")
 	addr := flag.String("addr", env("NOTEHOP_ADDR", ":8080"), "listen address")
 	dbPath := flag.String("db", env("NOTEHOP_DB", "notehop.db"), "SQLite database file")
 	flag.Parse()
+	if *showVersion {
+		fmt.Println("notehop", version)
+		return
+	}
 
 	base := strings.TrimRight(env("NOTEHOP_BASE_URL", ""), "/")
 	cfg := app.Config{
@@ -76,7 +89,7 @@ func main() {
 		IdleTimeout:       120 * time.Second,
 	}
 	go func() {
-		log.Printf("NoteHop listening on %s (db %s)", *addr, *dbPath)
+		log.Printf("NoteHop %s listening on %s (db %s)", version, *addr, *dbPath)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal(err)
 		}
@@ -85,4 +98,27 @@ func main() {
 	shut, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_ = srv.Shutdown(shut)
+}
+
+// backup copies the live database: notehop backup [-db file] out.db
+// Safe while the server runs, so it needs no sqlite3 tool on the server.
+func backup(args []string) {
+	fs := flag.NewFlagSet("backup", flag.ExitOnError)
+	dbPath := fs.String("db", env("NOTEHOP_DB", "notehop.db"), "SQLite database file")
+	fs.Parse(args)
+	if fs.NArg() != 1 {
+		fmt.Fprintln(os.Stderr, "usage: notehop backup [-db notehop.db] out.db")
+		os.Exit(2)
+	}
+	if _, err := os.Stat(*dbPath); err != nil {
+		log.Fatalf("backup: %v", err)
+	}
+	d, err := db.Open(*dbPath)
+	if err != nil {
+		log.Fatalf("database: %v", err)
+	}
+	defer d.Close()
+	if err := d.Backup(fs.Arg(0)); err != nil {
+		log.Fatalf("backup: %v", err)
+	}
 }
