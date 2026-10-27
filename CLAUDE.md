@@ -17,7 +17,8 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 | `docs/DEPLOY.md` | Deploy ke VPS: `deploy/install.sh`, systemd, Caddy/nginx, backup, update, restore |
 | `docs/PROMPT-LANJUTAN.md` | Prompt dan urutan kerja untuk sesi lanjutan |
 | `docs/GOALS-DAN-PERSIAPAN-LOKAL.md` | Goals produk dan cara menyiapkan, menjalankan, menguji di komputer sendiri |
-| `docs/DEPLOY.md` | Arahan untuk sesi Claude di VPS: pasang, uji, audit, update repo |
+| `docs/DEPLOY.md` | Arahan untuk sesi Claude di VPS (produksi: note.example.com): update, uji, audit, aturan kerja |
+| `docs/AUDIT-PRD.md` | Master Blueprint 54 fitur vs. yang sudah dibangun, cara cek tiap fitur di website, kandidat berikutnya |
 
 ## Status saat ini (semua fase roadmap yang direncanakan selesai)
 
@@ -56,5 +57,5 @@ notehop backup -db notehop.db salinan.db                     # backup saat berja
 ## Langkah berikutnya yang disarankan
 
 1. Sisi SSO untuk SSO: route `/sso/notehop` di repo `navi-crwn/accounts` (lihat `docs/INTEGRASI-SSO-IMAGEAPP.md`).
-2. Deploy dan audit di VPS mengikuti `docs/DEPLOY.md` (ada di paket zip handoff).
-3. Sisa "belum" di ROADMAP: edit offline + sinkron, ekspor PNG, notifikasi Telegram/email untuk Watch, bot WhatsApp/Discord.
+2. Produksi sudah jalan di https://note.example.com: update, uji, dan audit mengikuti `docs/DEPLOY.md` + `docs/AUDIT-PRD.md`.
+3. Celah terhadap Master Blueprint ada di `docs/AUDIT-PRD.md` bagian 4 (F1–F5). Kerjakan hanya yang disetujui pemilik.
