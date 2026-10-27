@@ -2,7 +2,7 @@
 
 Satu dokumen untuk dua hal: **apa yang ingin dicapai NoteHop** (goals) dan **cara menyiapkan, menjalankan, dan menguji NoteHop di komputer sendiri** sebelum dipasang di VPS.
 
-Dokumen terkait: `README.md` (fitur, API, konfigurasi), `ROADMAP.md` (semua ide dan statusnya), `docs/PROGRESS.md` (progres per batch), `docs/DEPLOY.md` dan `docs/DEPLOY.md` (VPS), `CLAUDE.md` (aturan kode).
+Dokumen terkait: `README.md` (fitur, API, konfigurasi), `ROADMAP.md` (semua ide dan statusnya), `docs/PROGRESS.md` (progres per batch), `docs/DEPLOY.md` (VPS), `CLAUDE.md` (aturan kode).
 
 ---
 
@@ -10,7 +10,7 @@ Dokumen terkait: `README.md` (fitur, API, konfigurasi), `ROADMAP.md` (semua ide 
 
 ### 1.1 Tujuan produk
 
-NoteHop adalah catatan online yang bisa dibagikan dengan link, untuk pasar internasional (UI 9 bahasa, default English, autodetect), sekeluarga dengan ImageApp, SSO, dan OtherApp.
+NoteHop adalah catatan online yang bisa dibagikan dengan link, untuk pasar internasional (UI 9 bahasa, default English, autodetect).
 
 | Prinsip | Artinya dalam praktik |
 | --- | --- |
@@ -25,7 +25,7 @@ NoteHop adalah catatan online yang bisa dibagikan dengan link, untuk pasar inter
 
 Semua fase yang direncanakan sudah dibangun dan diuji (rinciannya di `docs/PROGRESS.md`):
 
-- **Dasar**: catatan terenkripsi, banyak link per catatan, snapshot beku, burn after reading, kedaluwarsa, akun opsional dengan brankas lokal, login SSO (sisi NoteHop).
+- **Dasar**: catatan terenkripsi, banyak link per catatan, snapshot beku, burn after reading, kedaluwarsa, akun opsional dengan brankas lokal, single sign-on opsional.
 - **Batch A, di browser**: template `{{variabel}}`, fork, ekspor MD/PDF, slide, teleprompter, baca nyaring, zen, command palette, kalkulator, Mermaid, wiki-link + graf, web clipper, redaksi otomatis.
 - **Batch B, di server**: riwayat versi + diff, usul edit, tanda tangan, polling, blok hancur sendiri, password umpan, IP allowlist, checklist berulang, dead man's switch, watermark, klaim catatan tamu, coretan pribadi.
 - **Batch C, lampiran**: file terenkripsi 24 jam, tempel gambar jadi WebP, penanda waktu `[1:23]` untuk audio/video.
@@ -40,8 +40,8 @@ Urutan yang disarankan (dari yang paling berdampak ke peluncuran):
 | # | Goal | Ukuran selesai |
 | --- | --- | --- |
 | 1 | **Jalan di lokal** (Bagian 2 dokumen ini) | Server jalan, semua tes lulus di komputer Anda, uji manual 2.7 beres |
-| 2 | **Live di VPS** dengan domain dan HTTPS | `docs/DEPLOY.md` bagian 1–4 selesai, laporan audit tanpa temuan kritis |
-| 3 | **Login SSO (SSO)** | Route `/sso/notehop` dibuat di repo `navi-crwn/accounts`, login dua arah dicek di produksi |
+| 2 | **Live di VPS** dengan domain dan HTTPS | `docs/DEPLOY.md` selesai, audit tanpa temuan kritis |
+| 3 | **Single sign-on (opsional)** | Server akun mengeluarkan tiket ke `/auth/sso/callback`, login dua arah dicek di produksi |
 | 4 | **Merge PR #1** ke `main` | Review selesai, CI hijau (jika ditambahkan), tag versi pertama (misalnya `v1.0.0`) |
 | 5 | **Sisa ROADMAP yang "belum"** | Edit offline + sinkron, ekspor PNG, notifikasi Watch lewat Telegram/email, bot WhatsApp/Discord |
 | 6 | **Operasional** | Backup harian terbukti bisa di-restore, monitoring uptime, prosedur update tertulis |
@@ -112,7 +112,7 @@ NOTEHOP_SSH_ADDR=127.0.0.1:2222 go run ./cmd/notehop -addr 127.0.0.1:8090 -db da
 NOTEHOP_PRIVATE_HOOKS=1 go run ./cmd/notehop -addr 127.0.0.1:8090 -db data/dev.db
 ```
 
-Yang **tidak** bisa dicoba penuh di lokal tanpa alamat publik: bot Telegram (Telegram harus bisa memanggil server Anda) dan login SSO (butuh SSO yang sudah punya route SSO). Keduanya dicoba di VPS.
+Yang **tidak** bisa dicoba penuh di lokal tanpa alamat publik: bot Telegram (Telegram harus bisa memanggil server Anda) dan single sign-on (butuh server akun yang bisa dijangkau). Keduanya dicoba di VPS.
 
 ### 2.5 Coba CLI
 
@@ -196,5 +196,5 @@ Binary ini yang disalin ke VPS dan dipasang dengan `sudo ./deploy/install.sh ./b
 - [ ] Uji manual 2.7 beres
 - [ ] Binary `make linux` dibuat dari commit yang sudah di-push
 - [ ] Domain sudah mengarah ke IP VPS (record A/AAAA)
-- [ ] Sudah diputuskan: nginx atau Caddy, port SSH (jika dipakai), token bot Telegram (jika dipakai), rahasia SSO SSO (jika langsung disambung)
+- [ ] Sudah diputuskan: nginx atau Caddy, port SSH (jika dipakai), token bot Telegram (jika dipakai), rahasia single sign-on (jika dipakai)
 - [ ] Lanjut ke `docs/DEPLOY.md`

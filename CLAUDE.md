@@ -1,10 +1,10 @@
 # CLAUDE.md: konteks untuk sesi berikutnya
 
-Baca ini dulu sebelum menyentuh kode. Pemilik: **navi-crwn** (juga pemilik ImageApp, SSO, OtherApp). Bahasa percakapan dengan pemilik: **Bahasa Indonesia**. UI: **9 bahasa, default English, autodetect dari browser** (produk dijual internasional; jangan jadikan Indonesia default). Tampilan memakai **bahasa awam**; istilah teknis hanya di halaman FAQ (`/faq`) dan di mode "Tampilkan nama teknis".
+Baca ini dulu sebelum menyentuh kode. Pemilik: **navi-crwn**. Bahasa percakapan dengan pemilik: **Bahasa Indonesia**. UI: **9 bahasa, default English, autodetect dari browser** (produk dijual internasional; jangan jadikan Indonesia default). Tampilan memakai **bahasa awam**; istilah teknis hanya di halaman FAQ (`/faq`) dan di mode "Tampilkan nama teknis".
 
 ## Apa ini
 
-NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi di browser, server hanya menyimpan ciphertext). Satu binary Go + SQLite, aset di-embed. Desain sekeluarga dengan ImageApp / OtherApp / SSO (lihat `design-reference/`).
+NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi di browser, server hanya menyimpan ciphertext). Satu binary Go + SQLite, aset di-embed. Repo ini berdiri sendiri (standalone): jangan menyebut layanan atau deployment tertentu di kode, konfigurasi, atau dokumen teknis. Pengecualian: `README.md` dan situs GitHub Pages, yang boleh berisi promosi.
 
 ## Dokumen penting
 
@@ -12,14 +12,8 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 | --- | --- |
 | `README.md` | Fitur, cara jalan, konfigurasi, model kripto, API |
 | `ROADMAP.md` | **Semua** ide fitur dari pemilik (Fase 1 sampai 6), status ✅/🔜/💡, catatan arsitektur |
-| `docs/INTEGRASI-SSO-IMAGEAPP.md` | Rencana login dengan akun SSO (SSO) dan kombinasi dengan ImageApp |
-| `design-reference/README.md` | Aset desain dari repo ImageApp, SSO, OtherApp, dan cara memakainya |
 | `docs/DEPLOY.md` | Deploy ke VPS: `deploy/install.sh`, systemd, Caddy/nginx, backup, update, restore |
-| `docs/PROMPT-LANJUTAN.md` | Prompt dan urutan kerja untuk sesi lanjutan |
 | `docs/GOALS-DAN-PERSIAPAN-LOKAL.md` | Goals produk dan cara menyiapkan, menjalankan, menguji di komputer sendiri |
-| `docs/DEPLOY.md` | Arahan untuk sesi Claude di VPS (produksi: note.example.com): update, uji, audit, aturan kerja |
-| `docs/REKAP-STATUS.md` | Apa yang sudah/belum dibuat dan alasannya (seluruh percakapan) |
-| `docs/ARAHAN-PATCH.md` | Arahan memasang patch Batch F (tampilan ramah, 9 bahasa) di VPS |
 | `docs/PANDUAN-FITUR.md` | Semua fitur: fungsi, cara pakai, batasan, contoh kasus, mitigasi (✅ sudah / 💡 usulan) |
 | `docs/AUDIT-PRD.md` | Master Blueprint 54 fitur vs. yang sudah dibangun, cara cek tiap fitur di website, kandidat berikutnya |
 
@@ -61,6 +55,6 @@ notehop backup -db notehop.db salinan.db                     # backup saat berja
 
 ## Langkah berikutnya yang disarankan
 
-1. Sisi SSO untuk SSO: route `/sso/notehop` di repo `navi-crwn/accounts` (lihat `docs/INTEGRASI-SSO-IMAGEAPP.md`).
-2. Produksi sudah jalan di https://note.example.com: update, uji, dan audit mengikuti `docs/DEPLOY.md` + `docs/AUDIT-PRD.md`.
+1. Single sign-on: lihat `NOTEHOP_SSO_*` di README; server akun mengirim tiket ke `/auth/sso/callback`.
+2. Arahan deployment, audit produksi, dan aset desain milik pemilik ada di repo ops terpisah (private), bukan di sini.
 3. Celah terhadap Master Blueprint ada di `docs/AUDIT-PRD.md` bagian 4 (F1–F5). Kerjakan hanya yang disetujui pemilik.

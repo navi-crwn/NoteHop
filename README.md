@@ -2,7 +2,7 @@
 
 Catatan online yang bisa dibagikan dan **dienkripsi di browser**. Server hanya menyimpan acakan (ciphertext); kunci ada di bagian `#` link dan tidak pernah dikirim ke server. Satu binary Go + satu file SQLite, tanpa build step frontend.
 
-Satu keluarga dengan [ImageApp](https://github.com/navi-crwn/imageapp), [SSO](https://github.com/navi-crwn/accounts), dan [OtherApp](https://github.com/navi-crwn/otherapp).
+Mau coba catatan online tanpa memasang apa pun? Coba di **[note.example.com](https://note.example.com)**, satu keluarga dengan [SSO](https://accounts.example.com) (link pendek) dan [ImageApp](https://images.example.com) (hosting gambar).
 
 ## Fitur (Fase 1)
 
@@ -26,7 +26,7 @@ Satu keluarga dengan [ImageApp](https://github.com/navi-crwn/imageapp), [SSO](ht
 - **Pengaturan lanjutan per catatan**: kapsul waktu, kunci terjadwal, dead man's switch, checklist berulang, IP allowlist, tanda tangan (sign-off), watermark zero-width, password umpan, mode usul edit, riwayat versi + diff.
 - **Lainnya**: `/diff` (pembanding teks), `/nearby` (pad dan kirim file antar perangkat satu Wi-Fi lewat WebRTC), klaim catatan tamu ke akun, coretan pribadi (margin), web clipper.
 
-Rencana fitur lengkap ada di [ROADMAP.md](ROADMAP.md). Goals dan cara menyiapkan di komputer sendiri: [docs/GOALS-DAN-PERSIAPAN-LOKAL.md](docs/GOALS-DAN-PERSIAPAN-LOKAL.md). Integrasi login SSO dan ImageApp ada di [docs/INTEGRASI-SSO-IMAGEAPP.md](docs/INTEGRASI-SSO-IMAGEAPP.md).
+Rencana fitur lengkap ada di [ROADMAP.md](ROADMAP.md). Goals dan cara menyiapkan di komputer sendiri: [docs/GOALS-DAN-PERSIAPAN-LOKAL.md](docs/GOALS-DAN-PERSIAPAN-LOKAL.md).
 
 ## Menjalankan
 
@@ -68,8 +68,11 @@ UI tersedia dalam 9 bahasa (7 bahasa pengguna internet terbanyak + Русски�
 | `NOTEHOP_ADMINS` | kosong | Username admin situs (pisah koma): boleh nama link pendek (< 7) dan nama cadangan, dan boleh mendaftar username cadangan |
 | `NOTEHOP_RESERVED` | kosong | Nama cadangan tambahan (pisah koma), di luar `internal/app/names/reserved.txt` |
 | `NOTEHOP_CONTACT` | kosong | Email atau URL kontak/laporan penyalahgunaan di `/contact` |
-| `NOTEHOP_SSO_URL` | kosong | Alamat SSO untuk "Masuk dengan SSO", misalnya `https://accounts.example.com`. Kosong = fitur mati |
-| `NOTEHOP_SSO_SECRET` | kosong | Rahasia bersama (minimal 32 karakter), sama dengan `NOTEHOP_SSO_SECRET` di SSO. SSO juga butuh `NOTEHOP_BASE_URL` |
+| `NOTEHOP_SSO_URL` | kosong | Server akun untuk single sign-on (tombol "Lanjutkan dengan …"). Kosong = hanya akun NoteHop sendiri |
+| `NOTEHOP_SSO_SECRET` | kosong | Rahasia bersama dengan server akun (minimal 32 karakter). SSO juga butuh `NOTEHOP_BASE_URL` |
+| `NOTEHOP_SSO_NAME` | `SSO` | Nama server akun di tombol login |
+| `NOTEHOP_SSO_CLIENT` | `notehop` | Nama aplikasi ini di server akun: pengunjung dikirim ke `<SSO_URL>/sso/<client>`, tiket kembali ke `/auth/sso/callback` |
+| `NOTEHOP_LINKS` | kosong | Situs terkait di footer, `Nama=URL` dipisah koma |
 
 Skema database dimigrasi otomatis saat start (nomor versi di `PRAGMA user_version`, daftar di `migrations` pada `internal/db/db.go`). Binary yang lebih lama menolak membuka database dengan versi skema yang lebih baru.
 
@@ -109,7 +112,7 @@ admin  = 32 byte acak                      → link admin: #k=<K>&a=<admin>; ser
 - Setiap perubahan butuh `X-Write` (membuktikan pemegang kunci) **dan** mode link yang mengizinkan. Jadi slug yang mudah ditebak tetap tidak bisa dipakai menulis tanpa kunci.
 - Catatan berpassword: `POST /open` juga butuh `X-Write`, sehingga password salah ditolak server **tanpa** menghabiskan jatah baca.
 - Akun: `PBKDF2(password, "notehop/account/"+username, 600000)` → 64 byte: 32 pertama = kunci brankas (tetap di browser), 32 terakhir = secret login (di-hash argon2id di server).
-- Akun SSO (SSO): NoteHop tidak pernah melihat password-nya, jadi kunci brankas berasal dari frasa terpisah: `vault = PBKDF2(frasa, "notehop/vault/"+sso_id, 600000)`. Server hanya menerima `HMAC(vault, "notehop/vault-check")` (di-hash argon2id) untuk membedakan frasa benar dan salah ketik.
+- Akun single sign-on: NoteHop tidak pernah melihat password-nya, jadi kunci brankas berasal dari frasa terpisah: `vault = PBKDF2(frasa, "notehop/vault/"+sso_id, 600000)`. Server hanya menerima `HMAC(vault, "notehop/vault-check")` (di-hash argon2id) untuk membedakan frasa benar dan salah ketik.
 - Blok PIN: `salt.b64 + "." + AES-GCM(PBKDF2(PIN, salt, 250000))`.
 
 Yang terlihat oleh server: ukuran ciphertext, waktu, jumlah view, mode link, status centang (indeks + benar/salah), jumlah baris tambahan.
@@ -152,7 +155,7 @@ Semua JSON. Header: `X-Admin` (token admin), `X-Write` (bukti kunci).
 | `DELETE /api/n/{token}` | admin atau pemilik akun | Hapus catatan |
 | `GET /raw/{token}` | siapa saja | Teks murni (hanya catatan publik) |
 | `POST /api/register` · `/api/login` · `/api/logout`, `GET /api/me`, `GET /api/me/notes` | | Akun |
-| `GET /auth/sso` · `GET /auth/sso/callback` | | Masuk dengan SSO (tiket HMAC, `state` + cookie `nh_sso`, `jti` sekali pakai) |
+| `GET /auth/sso` · `GET /auth/sso/callback` | | Single sign-on (tiket HMAC, `aud`, `state` + cookie `nh_sso`, `jti` sekali pakai) |
 | `POST /api/vault` | akun SSO | `{check}`: simpan cek frasa brankas pertama kali (201), atau periksa (200 / 401) |
 
 ## Struktur
@@ -165,8 +168,7 @@ web/templates/        HTML (base, icons+editor partial, halaman)
 web/static/js/        app.js (util), crypto.js, md.js, editor.js, new.js, note.js, auth.js, dashboard.js
 web/static/css/       app.css
 web/static/vendor/    marked, DOMPurify, highlight.js, qrcode-generator, Mermaid (di-vendor)
-design-reference/     aset desain ImageApp / SSO / OtherApp (referensi, tidak di-build)
-docs/                 dokumen integrasi
+docs/                 deploy, panduan fitur, audit, progres
 ROADMAP.md            semua rencana fitur
 CLAUDE.md             konteks untuk sesi Claude berikutnya
 ```

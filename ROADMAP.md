@@ -12,7 +12,7 @@ Prinsip yang dipegang semua fitur:
 
 | Fitur | Status |
 | --- | --- |
-| Go + SQLite, satu binary, aset di-embed, desain keluarga ImageApp/OtherApp | ✅ |
+| Go + SQLite, satu binary, aset di-embed, desain pixel-grid gelap/terang | ✅ |
 | Enkripsi end-to-end AES-256-GCM, kunci di `#fragment` | ✅ |
 | Password tambahan (PBKDF2), juga syarat untuk membuka di server, jadi salah password tidak menghabiskan jatah baca | ✅ |
 | Multi-link per catatan dengan izin berbeda: Edit, Baca saja, Tambah saja (append-only), Centang checklist | ✅ |
@@ -108,8 +108,8 @@ Prinsip yang dipegang semua fitur:
 - ✅ Auto-archive catatan yang lama tidak dibuka (cold archive)
 - ✅ Read receipts (jumlah buka + terakhir dibuka untuk admin; tanpa lokasi)
 - ✅ Shadow margin: coretan pribadi di samping catatan orang lain (terenkripsi vault)
-- ✅ Login dengan akun SSO (SSO) + frasa brankas (sisi NoteHop; sisi SSO masih perlu `/sso/notehop`)
-- 🔜 Login dengan Google (lewat SSO, sudah tercakup SSO di atas)
+- ✅ Single sign-on dengan server akun sendiri (`NOTEHOP_SSO_*`) + frasa brankas
+- ✅ Login Google, TOTP, CAPTCHA: disediakan server akun lewat single sign-on
 - 💡 Micro-blog gaya Telegraph + custom domain (Pro)
 - 💡 Paywalled note (form email / saweran)
 - 💡 AI magic action & voice-to-structured-note ⚠️ E2E: dikirim ke AI hanya atas persetujuan eksplisit

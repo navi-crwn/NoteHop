@@ -1,11 +1,11 @@
 # Progres implementasi roadmap
 
-Permintaan pemilik: selesaikan **semua** fase (P1, P2 termasuk real-time), lalu buat zip + arahan untuk sesi Claude di VPS (install, testing, audit, update repo). Satu commit per batch; setiap batch: `go test -race ./...`, `node scripts/e2e.js`, katalog 8 bahasa lengkap.
+Permintaan pemilik: selesaikan **semua** fase (P1, P2 termasuk real-time), lalu buat zip untuk dipasang di VPS (install, testing, audit, update repo). Satu commit per batch; setiap batch: `go test -race ./...`, `node scripts/e2e.js`, katalog 8 bahasa lengkap.
 
 Status: ✅ selesai · 🔨 dikerjakan · ⏳ antre · ⛔ sengaja tidak dibuat (alasan ditulis)
 
 ## Sudah selesai sebelumnya
-✅ SSO SSO + frasa brankas · ✅ migrasi DB · ✅ deploy VPS · ✅ uji Fase 1 · ✅ sticky keyboard bar · ✅ salin per blok · ✅ OG/bot · ✅ domain share · ✅ config/hooks/worker · ✅ kunci otomatis · ✅ kapsul waktu · ✅ pill toggle + anti-bentrok · ✅ i18n 8 bahasa
+✅ single sign-on + frasa brankas · ✅ migrasi DB · ✅ deploy VPS · ✅ uji Fase 1 · ✅ sticky keyboard bar · ✅ salin per blok · ✅ OG/bot · ✅ domain share · ✅ config/hooks/worker · ✅ kunci otomatis · ✅ kapsul waktu · ✅ pill toggle + anti-bentrok · ✅ i18n 8 bahasa
 
 ## Batch A: fitur di browser
 ✅ Template `{{variabel}}` · ✅ Fork/duplikat · ✅ Export MD + PDF (print) · ✅ Mode slide + teleprompter · ✅ Baca nyaring (TTS) · ✅ Zen + pomodoro + suara latar · ✅ Command palette `Ctrl+K` + bubble toolbar · ✅ Utilitas teks · ✅ Kalkulator ```calc · ✅ Mermaid (iframe sandbox) · ✅ Auto-grouping dashboard · ✅ Wiki-links `[[Judul]]` + graf · ✅ Web clipper (bookmarklet) · ✅ Auto-redaction salinan · uji: `scripts/e2e-features.js`
@@ -29,13 +29,13 @@ Status: ✅ selesai · 🔨 dikerjakan · ⏳ antre · ⛔ sengaja tidak dibuat 
 ✅ Nama link sendiri minimal 7 karakter (admin situs bebas) · ✅ Nama cadangan + awalan (`names/reserved.txt`, `NOTEHOP_RESERVED`) · ✅ Daftar kata kasar 9 bahasa · ✅ Masa tunggu nama 90 hari setelah catatan dihapus/kedaluwarsa (migrasi 6) · ✅ `notehop takedown` (nama dikunci 365 hari) · ✅ Halaman `/contact`, `/terms`, `/privacy`, `/help` · ✅ Polling: buku pemilih, satu suara per pemilih, 20 pemilih baru per jaringan (migrasi 7) · ✅ `/nearby` dengan kode pasangan 6 angka · ✅ Peringatan kunci di catatan publik · panduan lengkap: `docs/PANDUAN-FITUR.md` · uji: `internal/app/names_test.go`, `extra_test.go`, `scripts/e2e-nearby.js`
 
 ## Tahap akhir
-✅ Zip + arahan sesi Claude VPS (`docs/DEPLOY.md`; zip berisi sumber dari commit, binary linux amd64/arm64 + SHA256SUMS, HANDOFF.txt)
+✅ Zip handoff (berisi sumber dari commit, binary linux amd64/arm64 + SHA256SUMS, HANDOFF.txt)
 
 ## Sengaja tidak dibuat
 - ⛔ Paywalled note (D di tabel prioritas: pembayaran & kepatuhan, bukan inti)
 - ⛔ Steganografi gambar (D: aplikasi chat mengompres ulang gambar)
 - ⛔ AI magic action / voice-to-note (C: isi dikirim ke layanan AI; butuh persetujuan eksplisit & API key, ditunda ke Pro)
-- ⛔ Micro-blog + custom domain (C+: tumpang tindih dengan SSO)
+- ⛔ Micro-blog + custom domain (C+: di luar inti catatan)
 - ⛔ Live link checker & smart unfurling (C: server melihat semua URL di catatan)
 - ⛔ Geo-fencing (butuh database GeoIP); diganti IP allowlist
 - ⛔ Email-to-Note (butuh infrastruktur mail); bisa lewat Webhook-to-Note dari layanan inbound email

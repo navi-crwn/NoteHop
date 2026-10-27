@@ -80,7 +80,7 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 | --- | --- |
 | Panjang | Minimal **7 karakter** untuk nama link sendiri. Admin situs (`NOTEHOP_ADMINS`) boleh 3–6 karakter, misalnya untuk link marketing `/n/promo`. |
 | Bentuk | Huruf kecil, angka, `-`, `_`. Tidak boleh diakhiri `-` atau berisi `--`. |
-| Nama cadangan | Nama situs/sistem/merek: `admin`, `api`, `faq`, `help`, `contact`, `terms`, `privacy`, `login`, `notehop`, `sso`, `imageapp`, dll.<br>Awalan `notehop-*`, `official-*`, `admin-*`, `support-*`.<br>Daftar di `internal/app/names/reserved.txt`; tambahan lewat env `NOTEHOP_RESERVED=promo,event2026`. |
+| Nama cadangan | Nama situs/sistem/merek: `admin`, `api`, `faq`, `help`, `contact`, `terms`, `privacy`, `login`, `notehop`, dll. (merek Anda sendiri lewat `NOTEHOP_RESERVED`).<br>Awalan `notehop-*`, `official-*`, `admin-*`, `support-*`.<br>Daftar di `internal/app/names/reserved.txt`; tambahan lewat env `NOTEHOP_RESERVED=promo,event2026`. |
 | Kata kasar | Daftar di `internal/app/names/blocked.txt` (9 bahasa, huruf Latin). Dicek per kata utuh, jadi `class-notes` tidak ikut tertolak karena berisi "ass". |
 | Masa tunggu (recycle) | Saat catatan dihapus atau kedaluwarsa, nama linknya **ditahan 90 hari**.<br>Pemilik akun yang sama boleh langsung memakainya lagi; orang lain menunggu.<br>Catatan yang di-takedown: ditahan **365 hari** untuk semua orang. |
 | Link acak | Tidak perlu ditahan karena tidak akan pernah sama (lihat 0.3). |
@@ -94,7 +94,7 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 | Nama pendek habis dipakai orang (`/n/a`, `/n/cv`). | ✅ Minimal 7 karakter.<br>Nama pendek untuk admin saja. |
 | Kata kasar di link publik. | ✅ Daftar blokir.<br>Batas: varian ejaan (`b4ngs4t`) dan huruf non-Latin tidak tertangkap. 💡 Tambahkan ke `blocked.txt` saat ditemukan. |
 | Nama tertahan padahal pemiliknya ingin memakai lagi tanpa login. | Tanpa akun, server tidak tahu siapa pemiliknya, jadi tetap menunggu 90 hari. Admin bisa melepas lewat DB (`DELETE FROM slug_holds WHERE slug=…`). |
-| Username dari login SSO kena aturan (misal `admin`). | ✅ Otomatis diganti `admin_xxxxx`. |
+| Username dari single sign-on kena aturan (misal `admin`). | ✅ Otomatis diganti `admin_xxxxx`. |
 
 ---
 
@@ -495,7 +495,7 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 - **Batasan.** Ekspor PNG belum ada. Clipper berupa bookmarklet, bukan ekstensi.
 
 ### 53. Akun dan dashboard
-- **Fungsi.** Brankas link (terenkripsi dengan sandi akun, PBKDF2 600.000), grup otomatis, wiki-link + graf, arsip setelah 90 hari tidak aktif, profil `/@user`, ekspor/impor, klaim catatan tamu, login SSO.
+- **Fungsi.** Brankas link (terenkripsi dengan sandi akun, PBKDF2 600.000), grup otomatis, wiki-link + graf, arsip setelah 90 hari tidak aktif, profil `/@user`, ekspor/impor, klaim catatan tamu, single sign-on (opsional).
 - **Batasan.**
   - Lupa sandi akun = brankas tidak bisa dibuka (zero-knowledge).
   - Backup otomatis ke Drive/Gist belum ada.
@@ -526,7 +526,7 @@ Status per fitur (✅/🟡/❌/⛔) dan cara cek di website ada di `docs/AUDIT-P
 | --- | --- | --- |
 | `NOTEHOP_ADMINS` | `navi,admin` | Username admin situs: boleh nama link pendek/cadangan dan username cadangan |
 | `NOTEHOP_RESERVED` | `promo,event2026` | Tambahan nama cadangan |
-| `NOTEHOP_CONTACT` | `abuse@accounts.example.com` | Kontak di `/contact` |
+| `NOTEHOP_CONTACT` | `abuse@example.com` | Kontak di `/contact` |
 
 **Perintah baru:**
 

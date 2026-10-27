@@ -128,7 +128,7 @@ func TestSSOAudience(t *testing.T) {
 	c := noRedirect(t, srv)
 	n := time.Now().Unix()
 	state := ssoStart(t, c, "/dashboard")
-	other := signTicket(ssoTicket{Sub: "9", Aud: "imageapp", Email: "a@example.com", State: state, Jti: randToken(16), Iat: n, Exp: n + 120}, testSecret)
+	other := signTicket(ssoTicket{Sub: "9", Aud: "otherapp", Email: "a@example.com", State: state, Jti: randToken(16), Iat: n, Exp: n + 120}, testSecret)
 	if code, _ := ssoCallback(t, c, other); code != http.StatusBadRequest {
 		t.Fatalf("ticket for another app: %d", code)
 	}
