@@ -65,6 +65,9 @@ UI tersedia dalam 9 bahasa (7 bahasa pengguna internet terbanyak + Русски�
 | `NOTEHOP_SSH_KEY` | `ssh_host_ed25519_key` di folder DB | Kunci host SSH (dibuat otomatis saat pertama jalan) |
 | `NOTEHOP_PRIVATE_HOOKS` | `false` | Izinkan webhook Watch ke alamat privat/loopback dan `http://` (hanya untuk jaringan sendiri) |
 | `TELEGRAM_BOT_TOKEN` | kosong | Token bot dari @BotFather; butuh `NOTEHOP_BASE_URL` (webhook didaftarkan saat start) |
+| `NOTEHOP_ADMINS` | kosong | Username admin situs (pisah koma): boleh nama link pendek (< 7) dan nama cadangan, dan boleh mendaftar username cadangan |
+| `NOTEHOP_RESERVED` | kosong | Nama cadangan tambahan (pisah koma), di luar `internal/app/names/reserved.txt` |
+| `NOTEHOP_CONTACT` | kosong | Email atau URL kontak/laporan penyalahgunaan di `/contact` |
 | `NOTEHOP_SSO_URL` | kosong | Alamat SSO untuk "Masuk dengan SSO", misalnya `https://accounts.example.com`. Kosong = fitur mati |
 | `NOTEHOP_SSO_SECRET` | kosong | Rahasia bersama (minimal 32 karakter), sama dengan `NOTEHOP_SSO_SECRET` di SSO. SSO juga butuh `NOTEHOP_BASE_URL` |
 
@@ -77,7 +80,11 @@ notehop new -server https://note.domainanda.com < catatan.md        # terenkrips
 notehop new -server https://… -password rahasia -expires 24h -burn 1 file.md
 notehop get 'https://note.domainanda.com/n/TOKEN#k=…'               # unduh dan dekripsi di terminal
 ssh -p 2222 note.domainanda.com < catatan.md                       # ⚠️ catatan publik (jika NOTEHOP_SSH_ADDR aktif)
+notehop takedown -db notehop.db https://note.domainanda.com/n/xxxx  # moderasi: hapus + kunci nama link 365 hari
+notehop takedown -db notehop.db -file FILE_ID                      # moderasi: hapus satu lampiran
 ```
+
+Aturan nama link sendiri dan username (minimal 7 karakter, nama cadangan, kata kasar, masa tunggu 90 hari setelah catatan dihapus) ada di `internal/app/names.go`; penjelasan lengkap di `docs/PANDUAN-FITUR.md` bagian 1.
 
 ### Deploy ke VPS
 
@@ -125,13 +132,13 @@ Semua JSON. Header: `X-Admin` (token admin), `X-Write` (bukti kunci).
 | `GET /api/n/{token}/versions` · `…/versions/{v}` | admin / mode edit + X-Write | Riwayat versi (ciphertext lama, maks 100, minimal 5 menit antar versi) |
 | `POST /api/n/{token}/suggestions` · `GET` · `DELETE …/{id}` | mode suggest + X-Write / admin | Usul edit terenkripsi; admin meninjau |
 | `POST /api/n/{token}/signatures` | X-Write, catatan dengan `sign_off` | Tanda tangan `{name}`; tanda tangan pertama membuat snapshot beku |
-| `POST /api/n/{token}/votes` | X-Write | `{poll, option, prev}` untuk blok `:::poll` (server hanya menyimpan hitungan) |
+| `POST /api/n/{token}/votes` | X-Write | `{poll, option, voter}` untuk blok `:::poll`; `voter` = ID acak dari browser, satu suara per pemilih (bisa diganti), maksimal 20 pemilih baru per jaringan |
 | `POST /api/n/{token}/burns` · `…/burns/{id}/reveal` | admin / X-Write | Blok `:::burn`: kunci blok disimpan terpisah, dibuka 1× lalu dihapus |
 | `PUT` · `DELETE /api/n/{token}/decoy` | admin | Password umpan: ciphertext kedua, pembukaannya dicatat untuk pemilik |
 | `POST /api/n/{token}/claim` | pemilik akun + X-Admin | Pindahkan catatan tamu ke akun |
 | `GET` · `PUT /api/margins/{ref}` | akun | Coretan pribadi (terenkripsi vault) di samping catatan siapa pun |
 | `GET /api/n/{token}/live` (WebSocket) | pemegang kunci | Kolaborasi langsung. Pesan pertama `{t:"auth", write, admin}`; sesudahnya `{t, to, d}` dengan `d` terenkripsi. Tipe: `y` (update Yjs, hanya penulis), `need`/`sync`/`nosync` (state awal), `aw` (kehadiran/kursor), `chat`, `follow`. Tidak untuk catatan beku/burn |
-| `GET /api/nearby` (WebSocket) | siapa saja, per IP publik | Signaling WebRTC untuk `/nearby` (`hi`, `sig`); pad dan file lewat koneksi langsung antar browser |
+| `GET /api/nearby` (WebSocket) | siapa saja, per IP publik + `?code=` 6 angka | Signaling WebRTC untuk `/nearby` (`hi`, `sig`); pad dan file lewat koneksi langsung antar browser |
 | `POST /api/files` | siapa saja (20/menit/IP) | Unggah lampiran: body = ciphertext mentah (`application/octet-stream`). Balas `{id, expires}`; kuncinya hanya ada di teks catatan (`nh-file:ID#KUNCI`) |
 | `GET /api/files/{id}` | siapa saja yang tahu ID | Ciphertext lampiran (404 setelah 24 jam) |
 | `POST /api/n/{token}/inbox` · `DELETE` | admin | Aktifkan kotak masuk `{pub, priv}` (kunci publik P-256 + kunci privat yang disegel browser) / matikan |

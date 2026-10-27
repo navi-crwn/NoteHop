@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net"
 	"net/http"
+	"regexp"
 	"sync"
 	"time"
 
@@ -103,7 +104,19 @@ type nearbyInfo struct {
 	Device string `json:"device"`
 }
 
+var pairCodeRe = regexp.MustCompile(`^[0-9]{6}$`)
+
 func (a *App) apiNearby(w http.ResponseWriter, r *http.Request) {
+	code := r.URL.Query().Get("code")
+	if !pairCodeRe.MatchString(code) {
+		apiErr(w, http.StatusBadRequest, "err.bad_request")
+		return
+	}
+	// Guessing someone's code means many tries from their network: slow them down.
+	if !a.limit.allow("nb"+a.clientIP(r), 30) {
+		apiErr(w, http.StatusTooManyRequests, "err.rate_limited")
+		return
+	}
 	rc := http.NewResponseController(w)
 	rc.SetReadDeadline(time.Time{})
 	rc.SetWriteDeadline(time.Time{})
@@ -116,7 +129,9 @@ func (a *App) apiNearby(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	defer c.CloseNow()
 
-	room := nearbyRoom(a.clientIP(r))
+	// The pairing code splits one address into separate rooms: on mobile
+	// networks thousands of strangers can share a public IP.
+	room := nearbyRoom(a.clientIP(r)) + "|" + code
 	p := &nearbyPeer{id: randToken(12), send: make(chan []byte, 128), cancel: cancel}
 	others, ok := a.near.join(room, p)
 	if !ok {

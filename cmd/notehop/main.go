@@ -36,6 +36,17 @@ func envInt(key string, def int) int {
 	return def
 }
 
+// envList reads "a, b,c" as lowercase names.
+func envList(key string) []string {
+	var out []string
+	for _, v := range strings.Split(os.Getenv(key), ",") {
+		if v = strings.ToLower(strings.TrimSpace(v)); v != "" {
+			out = append(out, v)
+		}
+	}
+	return out
+}
+
 func envBool(key string, def bool) bool {
 	switch strings.ToLower(os.Getenv(key)) {
 	case "1", "true", "yes", "on":
@@ -60,6 +71,9 @@ func main() {
 			return
 		case "get":
 			cliGet(os.Args[2:])
+			return
+		case "takedown":
+			takedown(os.Args[2:])
 			return
 		}
 	}
@@ -86,6 +100,9 @@ func main() {
 		FilesTotalMB:  envInt("NOTEHOP_FILES_TOTAL_MB", 2048),
 		PrivateHooks:  envBool("NOTEHOP_PRIVATE_HOOKS", false),
 		TelegramToken: env("TELEGRAM_BOT_TOKEN", ""),
+		Admins:        envList("NOTEHOP_ADMINS"),
+		Reserved:      envList("NOTEHOP_RESERVED"),
+		Contact:       env("NOTEHOP_CONTACT", ""),
 	}
 	if cfg.ShareURL != "" && base == "" {
 		log.Printf("NOTEHOP_SHARE_URL is ignored: it needs NOTEHOP_BASE_URL for the main site")
@@ -235,4 +252,47 @@ func cliGet(args []string) {
 	if !strings.HasSuffix(n.Body, "\n") {
 		fmt.Println()
 	}
+}
+
+// takedown removes a reported note (by its link, with or without the #key)
+// or an attachment, straight from the database, for the site operator.
+func takedown(args []string) {
+	fs := flag.NewFlagSet("takedown", flag.ExitOnError)
+	dbPath := fs.String("db", env("NOTEHOP_DB", "notehop.db"), "SQLite database file")
+	file := fs.Bool("file", false, "the argument is an attachment id (nh-file:ID) instead of a note link")
+	fs.Usage = func() {
+		fmt.Fprintln(os.Stderr, "usage: notehop takedown [-db notehop.db] https://…/n/TOKEN   (or a bare TOKEN)")
+		fmt.Fprintln(os.Stderr, "       notehop takedown [-db notehop.db] -file FILE_ID")
+	}
+	fs.Parse(args)
+	if fs.NArg() != 1 {
+		fs.Usage()
+		os.Exit(2)
+	}
+	d, err := db.Open(*dbPath)
+	if err != nil {
+		log.Fatalf("database: %v", err)
+	}
+	defer d.Close()
+	ref := fs.Arg(0)
+	if *file {
+		id := strings.TrimPrefix(strings.SplitN(ref, "#", 2)[0], "nh-file:")
+		if ok, err := d.DeleteFile(id); err != nil || !ok {
+			log.Fatalf("takedown: attachment %q not found (%v)", id, err)
+		}
+		fmt.Println("attachment deleted:", id)
+		return
+	}
+	token := strings.SplitN(ref, "#", 2)[0]
+	if i := strings.Index(token, "/n/"); i >= 0 {
+		token = token[i+3:]
+	}
+	n, _, err := d.NoteByLink(strings.Trim(token, "/"))
+	if err != nil {
+		log.Fatalf("takedown: no note for %q", token)
+	}
+	if err := d.Takedown(n.ID); err != nil {
+		log.Fatalf("takedown: %v", err)
+	}
+	fmt.Printf("note deleted (all its links); its link names are held for a year\n")
 }

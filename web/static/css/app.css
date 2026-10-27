@@ -727,3 +727,5 @@ body.expert .seg-choice [data-tech]::after { display: none; }
 .faq details:target { border-color: var(--accent); }
 .adv-group h3 svg, .adv-sub > summary svg { width: 14px; height: 14px; flex: none; }
 .faq details { scroll-margin-top: 80px; }
+.contact-card { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.nearby-pair { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; } .nearby-pair > div { flex: 1 1 220px; } .nearby-pair p { margin: 2px 0 0; } #nb-code { width: 9ch; font: 700 1.2rem ui-monospace, monospace; letter-spacing: .15em; text-align: center; }

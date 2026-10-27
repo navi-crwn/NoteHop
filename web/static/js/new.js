@@ -217,6 +217,7 @@
     if (burns.length && !encrypted) return fail(NH.t('rule.burn_block_e2e'));
     var decoyPw = on('decoy') ? $('#decoy-password').value : '';
     if (on('decoy') && (!decoyPw || decoyPw === password)) return fail(NH.t('new.need_decoy'));
+    if (!encrypted && NH.leaksKeys(title + '\n' + body) && !confirm(NH.t('warn.public_keys'))) return;
     var mode = form.querySelector('[name=mode]:checked').value;
     var k = NHC.newKey(), admin = NHC.newKey(), salt = password ? NHC.newSalt() : '';
     var decoy = null;

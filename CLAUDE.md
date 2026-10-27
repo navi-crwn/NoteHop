@@ -20,11 +20,13 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 | `docs/DEPLOY.md` | Arahan untuk sesi Claude di VPS (produksi: note.example.com): update, uji, audit, aturan kerja |
 | `docs/REKAP-STATUS.md` | Apa yang sudah/belum dibuat dan alasannya (seluruh percakapan) |
 | `docs/ARAHAN-PATCH.md` | Arahan memasang patch Batch F (tampilan ramah, 9 bahasa) di VPS |
+| `docs/PANDUAN-FITUR.md` | Semua fitur: fungsi, cara pakai, batasan, contoh kasus, mitigasi (✅ sudah / 💡 usulan) |
 | `docs/AUDIT-PRD.md` | Master Blueprint 54 fitur vs. yang sudah dibangun, cara cek tiap fitur di website, kandidat berikutnya |
 
 ## Status saat ini (semua fase roadmap yang direncanakan selesai)
 
-- Backend: `internal/db` (skema + migrasi 1–5), `internal/app` (handler, fitur, live relay, nearby, inbox, watch, SSH, Telegram), `internal/client` (CLI, kripto sama dengan browser), `cmd/notehop` (server + `backup`/`new`/`get`).
+- Backend: `internal/db` (skema + migrasi 1–7: 6 = `slug_holds`, 7 = `poll_voters`), `internal/app` (handler, fitur, live relay, nearby, inbox, watch, SSH, Telegram), `internal/client` (CLI, kripto sama dengan browser), `cmd/notehop` (server + `backup`/`new`/`get`/`takedown`).
+- Aturan nama (`internal/app/names.go` + `names/*.txt`): nama link sendiri minimal 7 karakter, nama cadangan + awalan, kata kasar, masa tunggu 90 hari (`slug_holds`; takedown 365 hari). Env `NOTEHOP_ADMINS`, `NOTEHOP_RESERVED`, `NOTEHOP_CONTACT`. Panduan fitur + risiko + mitigasi: `docs/PANDUAN-FITUR.md`.
 - Frontend tanpa build step: `web/templates/*.html` + `web/static/js/*.js` + `web/static/css/app.css`. Vendor di `web/static/vendor/`: marked 15.0.12, DOMPurify 3.2.6, highlight.js 11.11.1, qrcode-generator 1.4.4, Mermaid 11.12.0 (di iframe sandbox), Yjs 13.6.27 (bundle IIFE `window.Y`).
 - Progres per batch ada di `docs/PROGRESS.md` (A browser, B server, C lampiran, D real-time, E integrasi). Fitur yang sengaja tidak dibuat juga dicatat di sana beserta alasannya.
 - Tes: `go test -race ./...` (Go) dan 8 skrip Playwright di `scripts/` (lihat Perintah). Jalankan semua setelah mengubah UI.

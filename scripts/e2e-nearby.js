@@ -18,10 +18,12 @@ async function page(b) {
     const x = await page(b), y = await page(b);
     let viaServer = '';
     x.on('websocket', ws => ws.on('framesent', f => { viaServer += String(f.payload); }));
-    await x.goto(BASE + '/nearby'); await y.goto(BASE + '/nearby');
+    await x.goto(BASE + '/nearby#428613'); await y.goto(BASE + '/nearby#428613');
+    const z = await page(b); await z.goto(BASE + '/nearby#999111'); // another code: must stay apart
     await x.waitForSelector('#nb-list .nearby-peer button:not([disabled])', { timeout: 20000 });
     await y.waitForSelector('#nb-list .nearby-peer button:not([disabled])', { timeout: 20000 });
     ok('peers connected directly', true);
+    ok('other code stays separate', (await z.$$('#nb-list .nearby-peer')).length === 0 && (await x.$$('#nb-list .nearby-peer')).length === 1);
     await x.fill('#nb-pad', 'kode wifi: rahasia123');
     await y.waitForFunction(() => document.querySelector('#nb-pad').value === 'kode wifi: rahasia123', null, { timeout: 10000 });
     ok('pad: shared', true);

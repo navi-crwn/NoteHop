@@ -1,0 +1,22 @@
+# Names nobody can take as a link name (/n/…) or username (/@…), except the
+# site admins in NOTEHOP_ADMINS. One per line; "prefix-*" blocks a prefix.
+# More can be added without a rebuild: NOTEHOP_RESERVED=promo,launch,...
+
+# site pages and routes
+about faq help contact support terms tos privacy legal imprint cookies security status
+blog news press pricing price plans pro premium business enterprise jobs careers
+docs doc documentation guide guides tutorial changelog roadmap download downloads app apps
+api raw mock in n u static assets i18n diff nearby offline sw manifest robots sitemap favicon
+well-known healthz health metrics debug feed rss atom
+new create edit delete share link links note notes my mine dashboard home index
+login logout signin signout signup register auth oauth sso vault account accounts settings profile user users
+admin admins administrator root system sysadmin superuser moderator mod mods staff team official owner
+mail email smtp www web ftp ssh cdn assets img images media files upload uploads
+telegram bot bots webhook webhooks hook hooks inbox
+null undefined none nil void test tests example examples demo sample
+billing invoice payment pay checkout cart shop store order orders refund
+abuse report spam dmca copyright verify verification confirm reset password
+
+# brand
+notehop note-hop sso sso-app hel imageapp pixel-hop otherapp navi navi-crwn
+notehop-* sso-* imageapp-* otherapp-* official-* admin-* support-* staff-* team-* security-* verify-*

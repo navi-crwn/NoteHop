@@ -134,7 +134,7 @@ func TestNearby(t *testing.T) {
 	dial := func() *wsPeer {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		conn, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(c.srv.URL, "http")+"/api/nearby", nil)
+		conn, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(c.srv.URL, "http")+"/api/nearby?code=123456", nil)
 		if err != nil {
 			t.Fatal(err)
 		}

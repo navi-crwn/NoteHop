@@ -104,19 +104,37 @@ func TestVotes(t *testing.T) {
 	_, _, c := newAppDB(t)
 	n := c.create(nil)
 	vis := map[string]string{"X-Write": n.write}
-	c.do("POST", "/api/n/"+n.token+"/votes", map[string]any{"poll": 0, "option": 1}, vis)
-	c.do("POST", "/api/n/"+n.token+"/votes", map[string]any{"poll": 0, "option": 1}, vis)
-	_, m, _ := c.do("POST", "/api/n/"+n.token+"/votes", map[string]any{"poll": 0, "option": 0, "prev": 1}, vis)
+	vote := func(voter string, option int) (int, map[string]any) {
+		code, m, _ := c.do("POST", "/api/n/"+n.token+"/votes", map[string]any{"poll": 0, "option": option, "voter": voter}, vis)
+		return code, m
+	}
+	alice, bob := "alice-0123456789abcdef", "bob-0123456789abcdefgh"
+	vote(alice, 1)
+	vote(alice, 1) // same choice again: still one vote
+	vote(bob, 1)
+	_, m := vote(alice, 0) // alice moves; the server knows she was on 1
 	v := m["votes"].(map[string]any)["0"].(map[string]any)
 	if v["0"].(float64) != 1 || v["1"].(float64) != 1 {
 		t.Fatalf("votes: %v", v)
 	}
-	for _, bad := range []map[string]any{{"poll": -1, "option": 0}, {"poll": 0, "option": 99}, {"poll": 0, "option": -1}} {
+	// Taking a vote back only touches the voter's own vote.
+	_, m = vote("mallory-0123456789abcd", -1)
+	if v := m["votes"].(map[string]any)["0"].(map[string]any); v["1"].(float64) != 1 {
+		t.Fatalf("someone else's vote was removed: %v", v)
+	}
+	// One network: at most votersPerNet different voters per poll.
+	for i := 0; i < votersPerNet; i++ {
+		vote(fmt.Sprintf("voter-%016d", i), 2)
+	}
+	if code, m := vote("one-too-many-0123456789", 2); code != 429 || m["code"] != "err.vote_limit" {
+		t.Fatalf("limit: %d %v", code, m)
+	}
+	for _, bad := range []map[string]any{{"poll": -1, "option": 0, "voter": alice}, {"poll": 0, "option": 99, "voter": alice}, {"poll": 0, "option": 0, "voter": "short"}} {
 		if code, _, _ := c.do("POST", "/api/n/"+n.token+"/votes", bad, vis); code != 400 {
 			t.Errorf("bad vote %v: %d", bad, code)
 		}
 	}
-	if code, _, _ := c.do("POST", "/api/n/"+n.token+"/votes", map[string]any{"poll": 0, "option": 0}, nil); code != 403 {
+	if code, _, _ := c.do("POST", "/api/n/"+n.token+"/votes", map[string]any{"poll": 0, "option": 0, "voter": alice}, nil); code != 403 {
 		t.Fatalf("vote without key: %d", code)
 	}
 }

@@ -1,6 +1,8 @@
 package app
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"log"
@@ -19,6 +21,7 @@ import (
 
 const (
 	maxSuggestions = 200
+	votersPerNet   = 20 // different voters per poll from one address (a family, an office)
 	maxSignatures  = 1000
 	maxPolls       = 50
 	maxPollOptions = 20
@@ -301,22 +304,22 @@ func (a *App) apiVote(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	var q struct {
-		Poll   int  `json:"poll"`
-		Option int  `json:"option"`
-		Prev   *int `json:"prev"`
+		Poll   int    `json:"poll"`
+		Option int    `json:"option"`
+		Voter  string `json:"voter"` // random id this browser keeps
 	}
 	if !readJSON(w, r, &q, 256) {
 		return
 	}
-	prev := -1
-	if q.Prev != nil {
-		prev = *q.Prev
-	}
-	if q.Poll < 0 || q.Poll >= maxPolls || q.Option < -1 || q.Option >= maxPollOptions || prev < -1 || prev >= maxPollOptions || (q.Option < 0 && prev < 0) {
+	if q.Poll < 0 || q.Poll >= maxPolls || q.Option < -1 || q.Option >= maxPollOptions || !voterRe.MatchString(q.Voter) {
 		apiErr(w, http.StatusBadRequest, "err.bad_vote")
 		return
 	}
-	votes, err := a.db.Vote(n.ID, q.Poll, q.Option, prev)
+	votes, err := a.db.Vote(n.ID, q.Poll, q.Option, q.Voter, netHash(x.ip, n.ID), votersPerNet)
+	if errors.Is(err, db.ErrVoteLimit) {
+		apiErr(w, http.StatusTooManyRequests, "err.vote_limit")
+		return
+	}
 	if err != nil {
 		apiErr(w, http.StatusInternalServerError, "err.save_failed")
 		return
@@ -453,4 +456,12 @@ func (a *App) apiMargin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+}
+
+var voterRe = regexp.MustCompile(`^[A-Za-z0-9_-]{16,64}$`)
+
+// netHash identifies an address per note without storing the address.
+func netHash(ip string, note int64) string {
+	h := sha256.Sum256([]byte(ip + "/" + strconv.FormatInt(note, 10)))
+	return hex.EncodeToString(h[:8])
 }

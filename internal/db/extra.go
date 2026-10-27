@@ -174,20 +174,49 @@ func (d *DB) SnapshotOfVersion(noteID, version int64) string {
 
 // Vote moves one vote: adds to option, and takes it back from prev (>= 0)
 // when the voter changes their mind.
-func (d *DB) Vote(noteID int64, poll, option, prev int) (map[string]map[string]int64, error) {
+// ErrVoteLimit: too many different voters from one network on this poll.
+var ErrVoteLimit = errors.New("vote limit")
+
+// Vote records voter's choice in a poll (option -1 takes the vote back).
+// The previous choice comes from the server's own record, so nobody can
+// remove other people's votes, and at most perNet voters may come from one
+// network (net is a hash of the address, never the address itself).
+func (d *DB) Vote(noteID int64, poll, option int, voter, net string, perNet int) (map[string]map[string]int64, error) {
 	tx, err := d.Begin()
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	if option >= 0 {
-		if _, err := tx.Exec(`INSERT INTO votes (note_id, poll, option, count) VALUES (?, ?, ?, 1)
-			ON CONFLICT (note_id, poll, option) DO UPDATE SET count = count + 1`, noteID, poll, option); err != nil {
-			return nil, err
+	prev := -1
+	err = tx.QueryRow(`SELECT option FROM poll_voters WHERE note_id = ? AND poll = ? AND voter = ?`, noteID, poll, voter).Scan(&prev)
+	if errors.Is(err, sql.ErrNoRows) {
+		var n int
+		tx.QueryRow(`SELECT COUNT(*) FROM poll_voters WHERE note_id = ? AND poll = ? AND net = ?`, noteID, poll, net).Scan(&n)
+		if option >= 0 && n >= perNet {
+			return nil, ErrVoteLimit
 		}
+	} else if err != nil {
+		return nil, err
 	}
-	if prev >= 0 && prev != option {
-		if _, err := tx.Exec(`UPDATE votes SET count = MAX(count - 1, 0) WHERE note_id = ? AND poll = ? AND option = ?`, noteID, poll, prev); err != nil {
+	if option != prev {
+		if option >= 0 {
+			if _, err := tx.Exec(`INSERT INTO votes (note_id, poll, option, count) VALUES (?, ?, ?, 1)
+				ON CONFLICT (note_id, poll, option) DO UPDATE SET count = count + 1`, noteID, poll, option); err != nil {
+				return nil, err
+			}
+		}
+		if prev >= 0 {
+			if _, err := tx.Exec(`UPDATE votes SET count = MAX(count - 1, 0) WHERE note_id = ? AND poll = ? AND option = ?`, noteID, poll, prev); err != nil {
+				return nil, err
+			}
+		}
+		if option >= 0 {
+			_, err = tx.Exec(`INSERT INTO poll_voters (note_id, poll, voter, option, net) VALUES (?, ?, ?, ?, ?)
+				ON CONFLICT (note_id, poll, voter) DO UPDATE SET option = excluded.option`, noteID, poll, voter, option, net)
+		} else {
+			_, err = tx.Exec(`DELETE FROM poll_voters WHERE note_id = ? AND poll = ? AND voter = ?`, noteID, poll, voter)
+		}
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -197,7 +226,6 @@ func (d *DB) Vote(noteID int64, poll, option, prev int) (map[string]map[string]i
 	return d.Votes(noteID)
 }
 
-// Votes is {poll: {option: count}}.
 func (d *DB) Votes(noteID int64) (map[string]map[string]int64, error) {
 	rows, err := d.Query(`SELECT poll, option, count FROM votes WHERE note_id = ?`, noteID)
 	if err != nil {
