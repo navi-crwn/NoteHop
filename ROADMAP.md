@@ -98,7 +98,7 @@ Prinsip yang dipegang semua fitur:
 - 💡 Smart link unfurling / kartu pintar ⚠️ E2E: server mengambil URL (bocor link) → opt-in
 - 💡 Live link checker (🟢/🔴/🟡) ⚠️ E2E: opt-in, server melihat URL-nya
 - 💡 Auto-redaction data sensitif di tampilan publik (di browser saat membuat link publik: buat salinan tersensor)
-- 💡 Dynamic OpenGraph preview: judul/status saja secara default; cuplikan isi hanya untuk catatan publik
+- ✅ Dynamic OpenGraph preview: status untuk catatan terenkripsi, judul untuk catatan publik (cuplikan isi belum)
 
 ## Fase 6: Akun & monetisasi
 
@@ -118,13 +118,13 @@ Prinsip yang dipegang semua fitur:
 
 ## Catatan arsitektur & operasional
 
-1. **Bot preview vs burn after reading.** Sudah ditangani di Fase 1: halaman `/n/…` hanya kerangka, isi diambil lewat `POST` setelah tombol diklik. 🔜 Tambahan: middleware yang mengenali User-Agent bot (`WhatsApp`, `TelegramBot`, `Discordbot`, `Slackbot`) dan menyajikan metadata OpenGraph saja.
+1. **Bot preview vs burn after reading.** Sudah ditangani di Fase 1: halaman `/n/…` hanya kerangka, isi diambil lewat `POST` setelah tombol diklik. ✅ User-Agent bot preview (`WhatsApp`, `TelegramBot`, `Discordbot`, `Slackbot`, dll.) mendapat halaman OpenGraph saja; kartu menampilkan status (terenkripsi, password, burn, batas waktu), judul hanya untuk catatan publik.
 2. **Isolasi domain.** Domain utama untuk login/dashboard/editor, domain pendek terpisah untuk link publik/tamu. Kalau domain share dilaporkan (phishing/spam), aplikasi utama aman dan mirror bisa disiapkan. 🔜 Butuh konfigurasi `NOTEHOP_SHARE_URL` + cookie hanya di domain utama.
 3. **`noindex` default.** ✅ semua halaman catatan. 🔜 Opsi index hanya untuk profil publik akun terverifikasi.
 4. **Migrasi skema.** ✅ Berurutan dan bernomor (`PRAGMA user_version`). Hanya boleh menambah di akhir daftar; cabang paralel yang sama-sama menambah migrasi harus menomori ulang saat merge.
 5. **Skema DB tanpa 50 kolom.** 🔜 Tambah kolom `config TEXT` (JSON di SQLite / JSONB kalau pindah ke Postgres) yang di-map ke struct Go untuk fitur opsional (scheduled lock, decoy, webhook, sign-off, cron). Kolom yang diindeks tetap terpisah (`expires`, `owner_id`, link token).
 6. **Race condition.** ✅ hitung view atomik. 🔜 Saat real-time aktif: buffer perubahan di memori Go dan flush ke DB setiap 3–5 detik atau saat room kosong.
-7. **Mobile-first.** 🔜 Sticky keyboard bar karena `/` sulit dijangkau di keyboard HP.
+7. **Mobile-first.** ✅ Sticky keyboard bar karena `/` sulit dijangkau di keyboard HP.
 8. **Pipeline hook di Go.** 🔜 Interface `BeforeNoteRead` (password, time-capsule, burn, redact, scheduled lock) dan `AfterNoteUpdate` (webhook, riwayat, notifikasi), supaya fitur baru cukup satu file `.go`.
 9. **Background worker.** ✅ janitor per menit (kedaluwarsa, sesi). 🔜 Diperluas untuk scheduled lock, time-capsule, cron reset, lampiran 24 jam.
 10. **UI 5 zona.** Command palette (`/`, `Ctrl+K`) · bubble toolbar seleksi · drawer "Share & Shield" kanan (tab: Hak akses / Keamanan & waktu / Ekstra & integrasi) · view switcher pill · status bar bawah 24px.
