@@ -136,6 +136,7 @@ type pageData struct {
 	SSO     bool   // show "Masuk dengan SSO"
 	Next    string // where to go after signing in
 	Msg     string // error page text; empty means "note not found"
+	Origin  string // scheme://host for absolute OpenGraph URLs
 }
 
 func (a *App) loadTemplates() error {
@@ -153,6 +154,7 @@ func (a *App) loadTemplates() error {
 func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name string, d pageData) {
 	d.Site, d.Path, d.Asset, d.Reg = a.cfg.Site, r.URL.Path, a.asset, a.cfg.Registration
 	d.SSO = a.cfg.SSOEnabled()
+	d.Origin = a.origin(r)
 	if d.Next == "" {
 		d.Next = safeNext(r.URL.Query().Get("next"))
 	}
@@ -184,15 +186,33 @@ func (a *App) dashboardPage(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) notePage(w http.ResponseWriter, r *http.Request) {
 	tok := r.PathValue("token")
-	_, l, err := a.db.NoteByLink(tok)
+	n, l, err := a.db.NoteByLink(tok)
 	if err != nil {
 		a.notFound(w, r)
+		return
+	}
+	title, desc := previewText(n)
+	// Chat apps only want the preview card; they get it without the app.
+	if isPreviewBot(r.UserAgent()) {
+		a.preview(w, r, title, desc)
 		return
 	}
 	// The page is only a shell: content is fetched (and, for burn notes,
 	// counted) by script after the reader confirms, so link previews from
 	// chat apps never use up a view.
-	a.render(w, r, http.StatusOK, "note", pageData{Title: "Catatan", Token: tok, Mode: l.Mode, NoIndex: true})
+	a.render(w, r, http.StatusOK, "note", pageData{Title: title, Desc: desc, Token: tok, Mode: l.Mode, NoIndex: true})
+}
+
+// origin is the public scheme://host, for absolute URLs in OpenGraph tags.
+func (a *App) origin(r *http.Request) string {
+	if a.cfg.BaseURL != "" {
+		return a.cfg.BaseURL
+	}
+	scheme := "http"
+	if r.TLS != nil || (a.cfg.TrustProxy && r.Header.Get("X-Forwarded-Proto") == "https") {
+		scheme = "https"
+	}
+	return scheme + "://" + r.Host
 }
 
 func (a *App) notFound(w http.ResponseWriter, r *http.Request) {
