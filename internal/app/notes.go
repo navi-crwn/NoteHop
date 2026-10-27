@@ -138,6 +138,12 @@ func (a *App) writable(w http.ResponseWriter, x access, modes ...string) bool {
 	case !x.write:
 		apiErr(w, http.StatusForbidden, "Kunci catatan tidak cocok.")
 	default:
+		if !x.admin {
+			if e := runBeforeWrite(x.note, time.Now()); e != nil {
+				apiErr(w, e.status, e.msg)
+				return false
+			}
+		}
 		return true
 	}
 	return false
@@ -251,6 +257,8 @@ type metaResp struct {
 	Links     []db.Link     `json:"links,omitempty"`
 	Snapshots []db.Snapshot `json:"snapshots,omitempty"`
 	Parent    string        `json:"parent,omitempty"`
+	LockAt    int64         `json:"lock_at,omitempty"`
+	Locked    bool          `json:"locked,omitempty"`
 }
 
 func (a *App) meta(r *http.Request, x access) metaResp {
@@ -263,6 +271,7 @@ func (a *App) meta(r *http.Request, x access) metaResp {
 	if u := a.currentUser(r); u != nil && n.OwnerID.Valid && n.OwnerID.Int64 == u.ID {
 		m.Owned = true
 	}
+	fillMeta(n, &m, time.Now())
 	if x.admin {
 		m.Links, _ = a.db.Links(n.ID)
 		m.Snapshots, _ = a.db.Snapshots(n.ID)
@@ -310,6 +319,12 @@ func (a *App) apiOpen(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusForbidden, "Password salah.")
 		return
 	}
+	if !x.admin {
+		if e := runBeforeRead(n, time.Now()); e != nil {
+			apiErr(w, e.status, e.msg)
+			return
+		}
+	}
 	burnable := n.MaxViews > 0 && !x.admin
 	if q.Poll && burnable {
 		apiErr(w, http.StatusForbidden, "Catatan sekali baca tidak bisa diperbarui otomatis.")
@@ -354,6 +369,11 @@ func (a *App) raw(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
 		w.Write([]byte("This note is end-to-end encrypted; the server cannot read it.\n" +
 			"Open it in a browser with the full link (including the #key part).\n"))
+		return
+	}
+	if e := runBeforeRead(n, time.Now()); e != nil {
+		w.WriteHeader(e.status)
+		w.Write([]byte(e.msg + "\n"))
 		return
 	}
 	views, err := a.db.TakeView(n)
@@ -458,6 +478,7 @@ func (a *App) apiSave(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInternalServerError, "Gagal menyimpan.")
 		return
 	}
+	runAfterUpdate(x.note, time.Now())
 	writeJSON(w, http.StatusOK, map[string]any{"version": v})
 }
 
@@ -486,6 +507,7 @@ func (a *App) apiAddEntry(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInternalServerError, "Gagal menambahkan.")
 		return
 	}
+	runAfterUpdate(x.note, time.Now())
 	writeJSON(w, http.StatusCreated, e)
 }
 
@@ -524,6 +546,7 @@ func (a *App) apiCheck(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInternalServerError, "Gagal menyimpan centang.")
 		return
 	}
+	runAfterUpdate(x.note, time.Now())
 	writeJSON(w, http.StatusOK, map[string]any{"checks": checks})
 }
 

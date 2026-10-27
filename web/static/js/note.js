@@ -134,6 +134,8 @@
           S.body = d.note.b || '';
         }
         if (fresh) { S.ready = true; setup(data.burned); return; }
+        // The scheduled lock just passed: reload into read-only mode.
+        if (S.meta.locked && !S.meta.admin && S.mode !== 'read' && !S.dirty) return location.reload();
         if ((bodyChanged || checksChanged) && !S.dirty) drawBody(true);
         if (entriesChanged) drawEntries();
         drawMeta();
@@ -149,6 +151,7 @@
   function setup(burned) {
     var m = S.meta;
     S.mode = m.frozen ? 'read' : m.admin ? 'edit' : m.mode;
+    if (m.locked && !m.admin) S.mode = 'read';
     if (!S.keys && S.mode !== 'read') S.mode = 'read';
     $('#state').classList.add('hide');
     $('#note').classList.remove('hide');
@@ -156,6 +159,7 @@
     if (burned) banner('flame', 'Catatan ini sudah dihancurkan dari server. Yang kamu lihat sekarang adalah satu-satunya salinan. Salin isinya sekarang jika perlu.', 'warn');
     else if (m.frozen) banner('snow', 'Snapshot beku, dibuat ' + NH.date(m.created) + '. Isinya tidak bisa diubah siapa pun.', 'info',
       m.admin && m.parent ? h('a', { href: NH.noteURL(m.parent, { k: K, a: A }) }, 'Buka catatan aslinya →') : null);
+    else if (m.locked && !m.admin && m.mode !== 'read') banner('lock', 'Catatan ini dikunci sejak ' + NH.date(m.lock_at) + '. Sekarang hanya bisa dibaca.', 'info');
     else if (!S.keys && m.mode !== 'read') banner('key', 'Link ini tanpa kunci (#k), jadi hanya bisa membaca.', 'info');
 
     NH.$$('[data-admin]').forEach(function (b) { b.classList.toggle('hide', !m.admin); });
@@ -235,6 +239,7 @@
     if (m.frozen) kids.push(pill('snow', 'Snapshot beku'));
     if (m.expires) kids.push(pill('clock', 'Hilang ' + NH.ago(m.expires), 'warn'));
     if (m.max_views) kids.push(pill('flame', 'Dibuka ' + m.views + '/' + m.max_views, 'bad'));
+    if (m.lock_at) kids.push(m.locked ? pill('lock', 'Dikunci') : pill('clock', 'Dikunci ' + NH.ago(m.lock_at), 'warn'));
     kids.push(h('span.faint.small', 'Diubah ' + NH.ago(m.updated)));
     box.replaceChildren.apply(box, kids);
   }
@@ -405,6 +410,7 @@
           h('a.link-url', { href: NH.noteURL(s.token, { k: K, a: A }) }, '/n/' + s.token), h('span.btn-row', copy));
       }));
       NH.$$('#new-mode option').forEach(function (o) { o.disabled = S.meta.frozen && o.value !== 'read'; });
+      drawLock(m);
       if (!dlg.open) dlg.showModal();
     }, function (x) { NH.toast(x.message, 'err'); });
   }
@@ -424,6 +430,37 @@
   $('#copy-admin').addEventListener('click', function () {
     NH.copy(NH.noteURL(token, { k: K, a: A }), 'Link admin disalin. Simpan baik-baik');
   });
+
+  // ---------- scheduled lock (admin) ----------
+  function localInput(unix) {
+    var d = new Date(unix * 1000), p = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  function drawLock(m) {
+    var box = $('.lock-box');
+    box.classList.toggle('hide', !!S.meta.frozen);
+    var input = $('#lock-at');
+    input.min = localInput(Math.floor(Date.now() / 1000) + 60);
+    if (m.lock_at) input.value = localInput(m.lock_at);
+    $('#lock-clear').classList.toggle('hide', !m.lock_at);
+    $('#lock-state').textContent = m.locked ? 'Sudah dikunci sejak ' + NH.date(m.lock_at) + '. Pengunjung hanya bisa membaca; link admin tetap bisa mengubah.'
+      : m.lock_at ? 'Dikunci ' + NH.date(m.lock_at) + ' (' + NH.ago(m.lock_at) + '). Setelah itu link edit, tambah, dan centang hanya bisa membaca.'
+        : 'Pada waktu ini link edit, tambah, dan centang berubah jadi baca saja. Link admin tetap bisa mengubah.';
+  }
+  function setLock(at) {
+    api('POST', '/config', { lock_at: at }).then(function (m) {
+      S.meta.lock_at = m.lock_at; S.meta.locked = m.locked;
+      drawLock(m); drawMeta();
+      NH.toast(at ? 'Kunci otomatis disimpan' : 'Kunci otomatis dibatalkan', 'ok');
+    }, function (x) { NH.toast(x.message, 'err'); });
+  }
+  $('#lock-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var t = new Date($('#lock-at').value).getTime();
+    if (!t) return;
+    setLock(Math.floor(t / 1000));
+  });
+  $('#lock-clear').addEventListener('click', function () { setLock(0); });
 
   function showQR(url, label) {
     var qr = qrcode(0, 'M');

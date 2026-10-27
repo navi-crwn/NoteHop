@@ -112,6 +112,9 @@ var migrations = []string{
 	ALTER TABLE users ADD COLUMN avatar TEXT NOT NULL DEFAULT '';
 	ALTER TABLE users ADD COLUMN vault_check TEXT NOT NULL DEFAULT '';
 	CREATE UNIQUE INDEX users_sso ON users(sso_id) WHERE sso_id IS NOT NULL;`,
+	// 2: optional per-note features as JSON (scheduled lock, ...), so each
+	// feature doesn't need its own column. See NoteConfig in internal/app.
+	`ALTER TABLE notes ADD COLUMN config TEXT NOT NULL DEFAULT '{}';`,
 }
 
 // migrate applies pending migrations, each in its own transaction together
@@ -171,6 +174,7 @@ type Note struct {
 	Expires   int64
 	Created   int64
 	Updated   int64
+	Config    string // JSON, decoded by the app layer
 }
 
 type Link struct {
@@ -187,12 +191,12 @@ type Entry struct {
 }
 
 const noteCols = `n.id, n.owner_id, n.owner_blob, n.encrypted, n.password, n.salt, n.content, n.version, n.checks,
-	n.admin_hash, n.write_hash, n.parent_id, n.frozen, n.max_views, n.views, n.expires, n.created, n.updated`
+	n.admin_hash, n.write_hash, n.parent_id, n.frozen, n.max_views, n.views, n.expires, n.created, n.updated, n.config`
 
 func scanNote(row interface{ Scan(...any) error }, extra ...any) (*Note, error) {
 	n := &Note{}
 	dest := append([]any{&n.ID, &n.OwnerID, &n.OwnerBlob, &n.Encrypted, &n.Password, &n.Salt, &n.Content, &n.Version, &n.Checks,
-		&n.AdminHash, &n.WriteHash, &n.ParentID, &n.Frozen, &n.MaxViews, &n.Views, &n.Expires, &n.Created, &n.Updated}, extra...)
+		&n.AdminHash, &n.WriteHash, &n.ParentID, &n.Frozen, &n.MaxViews, &n.Views, &n.Expires, &n.Created, &n.Updated, &n.Config}, extra...)
 	if err := row.Scan(dest...); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotFound
@@ -214,11 +218,14 @@ func (d *DB) CreateNote(n *Note, link *Link) error {
 	if n.Checks == "" {
 		n.Checks = "{}"
 	}
+	if n.Config == "" {
+		n.Config = "{}"
+	}
 	res, err := tx.Exec(`INSERT INTO notes (owner_id, owner_blob, encrypted, password, salt, content, version, checks,
-		admin_hash, write_hash, parent_id, frozen, max_views, views, expires, created, updated)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
+		admin_hash, write_hash, parent_id, frozen, max_views, views, expires, created, updated, config)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
 		n.OwnerID, n.OwnerBlob, n.Encrypted, n.Password, n.Salt, n.Content, n.Version, n.Checks,
-		n.AdminHash, n.WriteHash, n.ParentID, n.Frozen, n.MaxViews, n.Expires, n.Created, n.Updated)
+		n.AdminHash, n.WriteHash, n.ParentID, n.Frozen, n.MaxViews, n.Expires, n.Created, n.Updated, n.Config)
 	if err != nil {
 		return err
 	}
@@ -608,6 +615,18 @@ func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
 func (d *DB) Backup(path string) error {
 	_, err := d.Exec(`VACUUM INTO ?`, path)
 	return err
+}
+
+// SetConfig replaces a note's feature settings (JSON).
+func (d *DB) SetConfig(id int64, config string) error {
+	res, err := d.Exec(`UPDATE notes SET config = ? WHERE id = ?`, config, id)
+	if err != nil {
+		return err
+	}
+	if k, _ := res.RowsAffected(); k == 0 {
+		return ErrNotFound
+	}
+	return nil
 }
 
 // Sweep removes expired notes and sessions.
