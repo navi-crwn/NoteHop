@@ -51,7 +51,7 @@ Prinsip yang dipegang semua fitur:
 
 ## Fase 3: Kontrol waktu & akses lanjutan
 
-- 🔜 **Scheduled Lock**: link edit otomatis jadi read-only pada jam tertentu (server-side, aman E2E)
+- ✅ **Scheduled Lock**: link edit/tambah/centang otomatis jadi read-only pada jam tertentu (server-side, aman E2E); link admin tetap bisa mengubah
 - 🔜 **Time-Capsule / Embargo**: isi baru bisa dibuka setelah waktu tertentu, dengan countdown (server menahan ciphertext sampai waktunya)
 - 🔜 **Partial Burn**: satu blok di dalam catatan hancur setelah dilihat 1× (blok disimpan terpisah dengan penghitung sendiri)
 - 🔜 **Decoy Password**: password kedua membuka catatan palsu + peringatan diam-diam ke pemilik (dua ciphertext, server tidak tahu mana yang asli)
@@ -122,9 +122,9 @@ Prinsip yang dipegang semua fitur:
 2. **Isolasi domain.** Domain utama untuk login/dashboard/editor, domain pendek terpisah untuk link publik/tamu. Kalau domain share dilaporkan (phishing/spam), aplikasi utama aman dan mirror bisa disiapkan. ✅ `NOTEHOP_SHARE_URL`: link untuk pembaca memakai domain share, link admin/login/dashboard di domain utama, cookie sesi hanya di domain utama.
 3. **`noindex` default.** ✅ semua halaman catatan. 🔜 Opsi index hanya untuk profil publik akun terverifikasi.
 4. **Migrasi skema.** ✅ Berurutan dan bernomor (`PRAGMA user_version`). Hanya boleh menambah di akhir daftar; cabang paralel yang sama-sama menambah migrasi harus menomori ulang saat merge.
-5. **Skema DB tanpa 50 kolom.** 🔜 Tambah kolom `config TEXT` (JSON di SQLite / JSONB kalau pindah ke Postgres) yang di-map ke struct Go untuk fitur opsional (scheduled lock, decoy, webhook, sign-off, cron). Kolom yang diindeks tetap terpisah (`expires`, `owner_id`, link token).
+5. **Skema DB tanpa 50 kolom.** ✅ Kolom `config TEXT` (JSON di SQLite / JSONB kalau pindah ke Postgres) yang di-map ke struct Go untuk fitur opsional (scheduled lock, decoy, webhook, sign-off, cron). Kolom yang diindeks tetap terpisah (`expires`, `owner_id`, link token).
 6. **Race condition.** ✅ hitung view atomik. 🔜 Saat real-time aktif: buffer perubahan di memori Go dan flush ke DB setiap 3–5 detik atau saat room kosong.
 7. **Mobile-first.** ✅ Sticky keyboard bar karena `/` sulit dijangkau di keyboard HP.
-8. **Pipeline hook di Go.** 🔜 Interface `BeforeNoteRead` (password, time-capsule, burn, redact, scheduled lock) dan `AfterNoteUpdate` (webhook, riwayat, notifikasi), supaya fitur baru cukup satu file `.go`.
-9. **Background worker.** ✅ janitor per menit (kedaluwarsa, sesi). 🔜 Diperluas untuk scheduled lock, time-capsule, cron reset, lampiran 24 jam.
+8. **Pipeline hook di Go.** ✅ `internal/app/features.go`: `beforeRead`, `beforeWrite`, `afterUpdate`, `meta`, `every`. Fitur baru = satu field di `NoteConfig` + satu file `.go` (contoh: `lock.go`).
+9. **Background worker.** ✅ janitor per menit (kedaluwarsa, sesi) + job fitur lewat `every`. 🔜 Dipakai untuk scheduled lock, time-capsule, cron reset, lampiran 24 jam.
 10. **UI 5 zona.** Command palette (`/`, `Ctrl+K`) · bubble toolbar seleksi · drawer "Share & Shield" kanan (tab: Hak akses / Keamanan & waktu / Ekstra & integrasi) · view switcher pill · status bar bawah 24px.

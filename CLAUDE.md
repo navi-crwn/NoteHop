@@ -34,7 +34,8 @@ NoteHop: catatan online yang bisa dibagikan, **zero-knowledge** (isi dienkripsi 
 4. CSP ketat: `script-src 'self'`, `style-src 'self'`, jadi **tidak boleh ada inline script/style** di template. Pakai class CSS.
 5. Penomoran checkbox: urutan dokumen, di luar fenced code. Implementasinya ada di dua tempat dan harus identik: `applyChecks` (Go, `notes.go`) dan `eachTask` (JS, `md.js`).
 6. Skema DB hanya berubah lewat migrasi baru di **akhir** daftar `migrations` (`internal/db/db.go`). Jangan ubah migrasi yang sudah ada.
-7. Gaya kode: komentar singkat yang menjelaskan *kenapa*, pesan error untuk pengguna dalam Bahasa Indonesia, tanpa framework frontend.
+7. Fitur opsional per catatan: tambah field di `NoteConfig` dan satu nilai `feature` di file sendiri (lihat `internal/app/features.go`, contoh `lock.go`), bukan kolom baru atau `if` di `notes.go`.
+8. Gaya kode: komentar singkat yang menjelaskan *kenapa*, pesan error untuk pengguna dalam Bahasa Indonesia, tanpa framework frontend.
 
 ## Perintah
 

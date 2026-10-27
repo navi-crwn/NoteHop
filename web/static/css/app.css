@@ -172,7 +172,7 @@ label { font-weight: 600; font-size: .88rem; }
 .field { display: grid; gap: 6px; margin-bottom: 14px; }
 .hint { font-weight: 400; color: var(--muted); font-size: .82rem; }
 .hint.warn { color: var(--amber); }
-input[type=text], input[type=email], input[type=password], input[type=search], select, textarea {
+input[type=text], input[type=email], input[type=password], input[type=search], input[type=datetime-local], select, textarea {
   width: 100%; height: 42px; padding: 0 12px; border-radius: 11px; border: 1px solid var(--line-2); background: var(--bg-2);
   color: var(--text); font: inherit; transition: border-color .15s, box-shadow .15s; }
 textarea { height: auto; min-height: 90px; padding: 10px 12px; resize: vertical; }
@@ -386,6 +386,9 @@ details.spoiler[open] { padding-bottom: 4px; }
   border: 1px solid color-mix(in srgb, var(--violet) 40%, transparent); background: color-mix(in srgb, var(--violet) 8%, transparent); }
 .admin-box p { margin: 2px 0 0; }
 @media (max-width: 560px) { .admin-box { flex-direction: column; align-items: stretch; } }
+.lock-box { margin-top: 10px; border-color: var(--line-2); background: var(--panel-2); }
+.lock-form { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.lock-form input { width: auto; min-width: 0; flex: 1 1 190px; }
 .qr { display: grid; justify-items: center; gap: 12px; margin: 10px 0; }
 .qr img { width: 240px; height: 240px; image-rendering: pixelated; border-radius: 12px; background: #fff; padding: 6px; }
 

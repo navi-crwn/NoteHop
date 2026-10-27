@@ -61,7 +61,8 @@ func New(cfg Config, d *db.DB) (*App, error) {
 
 func (a *App) Handler() http.Handler { return a.secure(a.shareGate(a.mux)) }
 
-// Janitor deletes expired notes and sessions until ctx ends.
+// Janitor is the background worker: once a minute it deletes expired notes
+// and sessions and runs the jobs of note features, until ctx ends.
 func (a *App) Janitor(ctx context.Context) {
 	t := time.NewTicker(time.Minute)
 	defer t.Stop()
@@ -72,6 +73,7 @@ func (a *App) Janitor(ctx context.Context) {
 			log.Printf("janitor: removed %d expired note(s)", n)
 		}
 		a.limit.gc()
+		a.runJobs(ctx, time.Now())
 		select {
 		case <-ctx.Done():
 			return
@@ -107,6 +109,7 @@ func (a *App) routes() {
 	m.HandleFunc("DELETE /api/n/{token}/entries/{id}", a.apiDeleteEntry)
 	m.HandleFunc("POST /api/n/{token}/checks", a.apiCheck)
 	m.HandleFunc("POST /api/n/{token}/freeze", a.apiFreeze)
+	m.HandleFunc("POST /api/n/{token}/config", a.apiConfig)
 	m.HandleFunc("POST /api/n/{token}/links", a.apiAddLink)
 	m.HandleFunc("DELETE /api/n/{token}/links/{link}", a.apiDeleteLink)
 
