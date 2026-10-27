@@ -38,6 +38,7 @@ type Config struct {
 	ShareURL      string   // optional second domain for share links; needs BaseURL
 	FileMB        int      // largest attachment in MB; 0 turns attachments off
 	FilesTotalMB  int      // disk budget for all live attachments; 0 = no limit
+	FilesPerIPMB  int      // attachments one address may upload per 24 hours; 0 = no limit
 	PrivateHooks  bool     // let Watch webhooks reach private/loopback addresses (and plain http)
 	TelegramToken string   // bot token from @BotFather; empty turns the bot off
 	Admins        []string // usernames that may use short and reserved link names
@@ -61,6 +62,7 @@ type App struct {
 	pages map[string]*template.Template
 	asset string
 	limit *limiter
+	quota *dayQuota // attachment bytes per address
 	mux   *http.ServeMux
 	used  usedTickets
 	live  liveHub
@@ -72,7 +74,7 @@ func New(cfg Config, d *db.DB) (*App, error) {
 	if cfg.Site == "" {
 		cfg.Site = "NoteHop"
 	}
-	a := &App{cfg: cfg, db: d, limit: newLimiter(), used: usedTickets{m: map[string]int64{}}}
+	a := &App{cfg: cfg, db: d, limit: newLimiter(), quota: &dayQuota{m: map[string]*dayUse{}}, used: usedTickets{m: map[string]int64{}}}
 	if err := a.loadTemplates(); err != nil {
 		return nil, err
 	}
