@@ -24,7 +24,8 @@
     btn.querySelector('span').textContent = NH.t('js.deriving');
     NHC.account(username, password).then(function (k) {
       return NH.api('POST', '/api/' + kind, { username: username, auth: k.auth }).then(function (res) {
-        NH.store.set('nh_vault', { u: res.username, k: k.vault });
+        return NHC.vaultKey(k.vault, res.vault_wrap).then(function (v) { NHC.remember(res.username, v); });
+      }).then(function () {
         var next = new URLSearchParams(location.search).get('next') || '/dashboard';
         location.href = /^\/(?!\/)/.test(next) ? next : '/dashboard';
       });
