@@ -13,6 +13,7 @@
     {{if not .User.VaultCheck}}<div class="field"><label for="phrase2">{{.L.T "vault.again"}}</label><input type="password" id="phrase2" autocomplete="new-password" minlength="8" required></div>{{end}}
     <div class="alert err hide" id="vault-err" role="alert"></div>
     <button class="btn primary lg block" type="submit"><span>{{if .User.VaultCheck}}{{.L.T "vault.open_btn"}}{{else}}{{.L.T "common.save"}}{{end}}</span></button>
+    {{if .User.VaultCheck}}<p class="small center"><a href="/recover">{{.L.T "rec.forgot_phrase"}}</a></p>{{end}}
     <p class="small muted center"><a href="{{.Next}}">{{.L.T "vault.skip"}}</a></p>
   </form>
 </section>

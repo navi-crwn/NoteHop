@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -57,6 +58,20 @@ func envLinks(key string) []app.Link {
 		name, u = strings.TrimSpace(name), strings.TrimSpace(u)
 		if ok && name != "" && (strings.HasPrefix(u, "https://") || strings.HasPrefix(u, "http://")) {
 			out = append(out, app.Link{Name: name, URL: u})
+		}
+	}
+	return out
+}
+
+// envOrigins reads "https://ai.example.com,https://proxy.example.org": bare
+// origins only (scheme://host[:port]), so they are safe inside a CSP.
+func envOrigins(key string) []string {
+	var out []string
+	for _, v := range strings.Split(os.Getenv(key), ",") {
+		u, err := url.Parse(strings.TrimSpace(v))
+		if err == nil && (u.Scheme == "https" || u.Scheme == "http") && u.Host != "" && u.Path == "" && u.RawQuery == "" && u.User == nil &&
+			!strings.ContainsAny(u.Host, " ;,'*") {
+			out = append(out, u.Scheme+"://"+u.Host)
 		}
 	}
 	return out
@@ -134,6 +149,8 @@ func main() {
 		FileMB:        envInt("NOTEHOP_FILE_MB", 10),
 		FilesTotalMB:  envInt("NOTEHOP_FILES_TOTAL_MB", 2048),
 		FilesPerIPMB:  envInt("NOTEHOP_FILES_IP_MB", 100),
+		AI:            strings.ToLower(env("NOTEHOP_AI", "on")),
+		AIOrigins:     envOrigins("NOTEHOP_AI_ORIGINS"),
 		PrivateHooks:  envBool("NOTEHOP_PRIVATE_HOOKS", false),
 		TelegramToken: env("TELEGRAM_BOT_TOKEN", ""),
 		Admins:        envList("NOTEHOP_ADMINS"),

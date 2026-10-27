@@ -285,5 +285,5 @@ func (a *App) apiVault(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusUnauthorized, "err.vault_wrong")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]bool{"created": false})
+	writeJSON(w, http.StatusOK, map[string]any{"created": false, "vault_wrap": u.VaultWrap})
 }

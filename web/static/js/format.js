@@ -235,6 +235,8 @@
           sub('align', NH.t('fmt.align'), aligns),
           sub('case', NH.t('fmt.case'), cases),
           line('link', NH.t('ed.link'), '', ACT.link), line('note', NH.t('cmd.wiki'), '', ACT.wiki), line('eraser', NH.t('fmt.clear'), '', ACT.clear));
+        if (opts.ai) menu.append(h('hr'), line('spark', NH.t('ai.ctx_rewrite'), '', function () { opts.ai('rewrite'); }),
+          line('spark', NH.t('ai.ctx_summarize'), '', function () { opts.ai('summarize'); }));
       } else {
         menu.append(sub('case', NH.t('fmt.case'), cases));
       }

@@ -132,7 +132,9 @@ func (a *App) apiLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a.startSession(w, u)
-	writeJSON(w, http.StatusOK, map[string]string{"username": u.Username})
+	// vault_wrap: the vault key sealed with the key from the password, once
+	// the password has been changed or reset (empty before; see recovery.go).
+	writeJSON(w, http.StatusOK, map[string]string{"username": u.Username, "vault_wrap": u.VaultWrap})
 }
 
 func (a *App) startSession(w http.ResponseWriter, u *db.User) {
@@ -174,7 +176,8 @@ func (a *App) apiMe(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusUnauthorized, "err.not_signed_in")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]string{"username": u.Username})
+	writeJSON(w, http.StatusOK, map[string]any{"username": u.Username, "sso": u.SSOID != "", "vault_wrap": u.VaultWrap,
+		"recovery": a.recoveryStatus(u)})
 }
 
 func (a *App) apiMyNotes(w http.ResponseWriter, r *http.Request) {
