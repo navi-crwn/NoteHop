@@ -511,6 +511,7 @@
   function renderAs(el, type, src, opts) {
     if (type && type.y === 'plain') return renderPlain(el, src || '');
     if (type && type.y === 'code') return renderCode(el, src || '', type.l);
+    if (type && type.y === 'web' && window.NHWeb) return NHWeb.view(el, src || '');
     render(el, src, opts);
   }
 

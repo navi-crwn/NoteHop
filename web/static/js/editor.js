@@ -178,7 +178,7 @@
     opts = opts || {};
     var ta = NH.$('.ed-src', root), preview = NH.$('.ed-preview', root), count = NH.$('.ed-count', root), body = NH.$('.ed-body', root);
     var gutter = NH.$('.ed-gutter', root), langSel = NH.$('.ed-lang', root), typeMenu = NH.$('.ed-type', root);
-    var type = 'doc', escaped = false;
+    var type = 'doc', escaped = false, web = null; // web: files of a Web note (web.js)
     root.dataset.type = type;
     LANGS.forEach(function (l) { if (window.hljs && hljs.getLanguage(l[0])) langSel.appendChild(NH.h('option', { value: l[0] }, l[1])); });
     var menu = NH.h('ul.slash', { role: 'listbox', 'aria-label': NH.t('kbar.commands') });
@@ -200,7 +200,7 @@
 
     // ---------- note type ----------
     function setType(t, quiet) {
-      var y = t && (t.y === 'plain' || t.y === 'code') ? t.y : 'doc';
+      var y = t && (t.y === 'plain' || t.y === 'code' || t.y === 'web') ? t.y : 'doc';
       if (y !== 'doc' && type === 'doc' && !quiet && STYLED.test(ta.value)) {
         if (!confirm(NH.t('type.strip_confirm', { type: NH.t('type.' + y) }))) return;
         ta.focus();
@@ -210,12 +210,19 @@
         ta.setSelectionRange(0, 0);
       }
       var view = NH.store.get('nh_view', innerWidth >= 1100 ? 'split' : 'write');
+      // Web: the text becomes files (and back to one text when leaving).
+      if (y === 'web' && type !== 'web' && window.NHWeb) {
+        if (!web) web = NHWeb.editor(root, ta, { changed: function () { opts.onChange && opts.onChange(); }, refresh: refresh });
+        web.load(ta.value);
+      } else if (type === 'web' && y !== 'web' && web) {
+        ta.value = web.value();
+      }
       type = y;
       root.dataset.type = y;
       if (t && t.l != null && y === 'code') langSel.value = langSel.querySelector('option[value="' + t.l + '"]') ? t.l : '';
-      ta.spellcheck = y !== 'code';
-      if (y === 'code') ta.setAttribute('wrap', 'off'); else ta.removeAttribute('wrap');
-      NH.$('.ed-type-ico use', root).setAttribute('href', '#i-' + (y === 'doc' ? 'doc' : y));
+      ta.spellcheck = y !== 'code' && y !== 'web';
+      if (y === 'code' || y === 'web') ta.setAttribute('wrap', 'off'); else ta.removeAttribute('wrap');
+      NH.$('.ed-type-ico use', root).setAttribute('href', '#i-' + (y === 'doc' ? 'doc' : y === 'web' ? 'play' : y));
       NH.$('.ed-type-name', root).textContent = NH.t('type.' + y);
       NH.$$('[data-type]', typeMenu).forEach(function (b) { b.setAttribute('aria-checked', b.dataset.type === y); });
       setView(y === 'doc' ? view : 'write');
@@ -228,7 +235,7 @@
       b.addEventListener('click', function () { setType({ y: b.dataset.type }); ta.focus(); });
     });
     langSel.addEventListener('change', function () { if (opts.onType) opts.onType(); });
-    function fields() { return type === 'doc' ? {} : type === 'plain' ? { y: 'plain' } : { y: 'code', l: langSel.value }; }
+    function fields() { return type === 'doc' ? {} : type === 'plain' ? { y: 'plain' } : type === 'web' ? { y: 'web' } : { y: 'code', l: langSel.value }; }
 
     function renderPreview() {
       if (root.dataset.view === 'write') return;
@@ -241,7 +248,7 @@
 
     function refresh() {
       count.textContent = NH.t('ed.chars', { n: ta.value.length.toLocaleString(NH.lang) });
-      if (type === 'code') {
+      if (type === 'code' || type === 'web') {
         var n = ta.value.split('\n').length;
         if (gutter.dataset.n !== String(n)) {
           var nums = [];
@@ -256,6 +263,7 @@
     }
     function changed() {
       refresh();
+      if (type === 'web' && web) web.changed();
       opts.onChange && opts.onChange();
     }
 
@@ -398,7 +406,7 @@
         if (e.key === 'Escape') { e.preventDefault(); return closeSlash(); }
       }
       var mod = e.ctrlKey || e.metaKey;
-      if (type === 'code') return codeKeys(e, mod);
+      if (type === 'code' || type === 'web') return codeKeys(e, mod);
       if (mod && e.key.toLowerCase() === 'b' && type === 'doc') { e.preventDefault(); return CMDS.bold(); }
       if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); return opts.onSave && opts.onSave(); }
       if (e.key === 'Enter' && !e.shiftKey && !mod && ta.selectionStart === ta.selectionEnd && type === 'doc') {
@@ -417,6 +425,7 @@
     // keeps the indent. Esc first lets Tab leave the box as usual.
     function codeKeys(e, mod) {
       if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); return opts.onSave && opts.onSave(); }
+      if (mod && e.key === 'Enter' && type === 'web' && web) { e.preventDefault(); return web.run(); }
       if (e.key === 'Escape') { escaped = true; return; }
       if (e.key === 'Tab' && !escaped && !mod && !e.altKey) {
         e.preventDefault();
@@ -434,7 +443,7 @@
         if (ind) { e.preventDefault(); replace(pos, pos, '\n' + ind + CARET); }
       }
     }
-    ta.addEventListener('scroll', function () { if (type === 'code') gutter.scrollTop = ta.scrollTop; });
+    ta.addEventListener('scroll', function () { if (type === 'code' || type === 'web') gutter.scrollTop = ta.scrollTop; });
     // Writing help (ai.js), when the site allows it: a button, and two items in the format menu.
     var aiBtn = NH.$('.ed-ai', root), ai = null;
     function aiOpen(task) {
@@ -607,8 +616,8 @@
     }
 
     var api = {
-      get value() { return ta.value; },
-      set value(v) { ta.value = v; refresh(); }, // programmatic: not a user edit
+      get value() { return type === 'web' && web ? web.value() : ta.value; },
+      set value(v) { if (type === 'web' && web) web.load(v); else ta.value = v; refresh(); }, // programmatic: not a user edit
       focus: function () { ta.focus(); },
       palette: function () { openPalette(); },
       get type() { return type; },
