@@ -9,22 +9,25 @@
   function today() { return new Date().toLocaleDateString('id', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
   function now() { return new Date().toLocaleTimeString('id', { hour: '2-digit', minute: '2-digit' }); }
 
-  // "|" in text marks where the caret lands.
+  // CARET in inserted text marks where the caret lands. It is a control
+  // character, not "|", so pasted or selected text containing "|" (tables!)
+  // comes through intact.
+  var CARET = '\u0001';
   var COMMANDS = [
-    { label: 'Judul besar', hint: '#', keys: 'h1 judul heading besar', text: '# |' },
-    { label: 'Judul', hint: '##', keys: 'h2 judul heading', text: '## |' },
-    { label: 'Subjudul', hint: '###', keys: 'h3 subjudul heading kecil', text: '### |' },
-    { label: 'To-do', hint: '- [ ]', keys: 'todo tugas checklist centang task', text: '- [ ] |' },
-    { label: 'Daftar', hint: '-', keys: 'list daftar bullet poin', text: '- |' },
-    { label: 'Daftar bernomor', hint: '1.', keys: 'nomor angka urut ol numbered', text: '1. |' },
-    { label: 'Kutipan', hint: '>', keys: 'quote kutipan', text: '> |' },
-    { label: 'Blok kode', hint: '```', keys: 'code kode program script', text: '```\n|\n```\n' },
-    { label: 'Tabel', hint: '3 kolom', keys: 'table tabel grid', text: '| Kolom 1 | Kolom 2 | Kolom 3 |\n| --- | --- | --- |\n| | | |\n' },
-    { label: 'Pemisah', hint: '---', keys: 'garis divider hr pemisah', text: '---\n|' },
-    { label: 'Spoiler / toggle', hint: 'klik untuk buka', keys: 'spoiler toggle sembunyi lipat details', text: ':::spoiler Klik untuk membuka\n|\n:::\n' },
+    { label: 'Judul besar', hint: '#', keys: 'h1 judul heading besar', text: '# ' + CARET },
+    { label: 'Judul', hint: '##', keys: 'h2 judul heading', text: '## ' + CARET },
+    { label: 'Subjudul', hint: '###', keys: 'h3 subjudul heading kecil', text: '### ' + CARET },
+    { label: 'To-do', hint: '- [ ]', keys: 'todo tugas checklist centang task', text: '- [ ] ' + CARET },
+    { label: 'Daftar', hint: '-', keys: 'list daftar bullet poin', text: '- ' + CARET },
+    { label: 'Daftar bernomor', hint: '1.', keys: 'nomor angka urut ol numbered', text: '1. ' + CARET },
+    { label: 'Kutipan', hint: '>', keys: 'quote kutipan', text: '> ' + CARET },
+    { label: 'Blok kode', hint: '```', keys: 'code kode program script', text: '```\n' + CARET + '\n```\n' },
+    { label: 'Tabel', hint: '3 kolom', keys: 'table tabel grid', text: '| Kolom 1 | Kolom 2 | Kolom 3 |\n| --- | --- | --- |\n| ' + CARET + ' | | |\n' },
+    { label: 'Pemisah', hint: '---', keys: 'garis divider hr pemisah', text: '---\n' + CARET },
+    { label: 'Spoiler / toggle', hint: 'klik untuk buka', keys: 'spoiler toggle sembunyi lipat details', text: ':::spoiler Klik untuk membuka\n' + CARET + '\n:::\n' },
     { label: 'Blok terkunci PIN', hint: 'dienkripsi lagi', keys: 'kunci lock pin rahasia secret password', action: 'locked' },
-    { label: 'Tanggal hari ini', hint: '', keys: 'tanggal date hari ini', text: function () { return today() + '|'; } },
-    { label: 'Jam sekarang', hint: '', keys: 'jam waktu time sekarang', text: function () { return now() + '|'; } }
+    { label: 'Tanggal hari ini', hint: '', keys: 'tanggal date hari ini', text: function () { return today() + CARET; } },
+    { label: 'Jam sekarang', hint: '', keys: 'jam waktu time sekarang', text: function () { return now() + CARET; } }
   ];
 
   // Caret pixel position inside a textarea, via a mirrored div.
@@ -123,8 +126,8 @@
     // ---------- inserting ----------
     // Replaces [from, to) with text, using execCommand so Ctrl+Z still works.
     function replace(from, to, text) {
-      var caret = text.indexOf('|');
-      text = text.replace('|', '');
+      var caret = text.indexOf(CARET);
+      text = text.replace(CARET, '');
       ta.focus();
       ta.setSelectionRange(from, to);
       if (!document.execCommand('insertText', false, text)) ta.setRangeText(text, from, to, 'end');
@@ -143,19 +146,19 @@
     var CMDS = {
       bold: function () {
         var s = ta.selectionStart, e = ta.selectionEnd, sel = ta.value.slice(s, e);
-        replace(s, e, sel ? '**' + sel + '**|' : '**|**');
+        replace(s, e, sel ? '**' + sel + '**' + CARET : '**' + CARET + '**');
       },
-      h2: function () { var ls = lineStart(ta.selectionStart); replace(ls, ls, '## |'); },
-      todo: function () { var ls = lineStart(ta.selectionStart); replace(ls, ls, '- [ ] |'); },
+      h2: function () { var ls = lineStart(ta.selectionStart); replace(ls, ls, '## ' + CARET); },
+      todo: function () { var ls = lineStart(ta.selectionStart); replace(ls, ls, '- [ ] ' + CARET); },
       code: function () {
         var s = ta.selectionStart, e = ta.selectionEnd, sel = ta.value.slice(s, e);
-        if (sel && sel.indexOf('\n') === -1) replace(s, e, '`' + sel + '`|');
-        else insertBlock('```\n' + (sel || '|') + '\n```\n');
+        if (sel && sel.indexOf('\n') === -1) replace(s, e, '`' + sel + '`' + CARET);
+        else insertBlock('```\n' + (sel || CARET) + '\n```\n');
       },
       table: function () { insertBlock(COMMANDS[8].text); },
       spoiler: function () {
         var s = ta.selectionStart, e = ta.selectionEnd, sel = ta.value.slice(s, e);
-        insertBlock(':::spoiler Klik untuk membuka\n' + (sel || '|') + '\n:::\n');
+        insertBlock(':::spoiler Klik untuk membuka\n' + (sel || CARET) + '\n:::\n');
       },
       locked: function () {
         var s = ta.selectionStart, e = ta.selectionEnd;
@@ -226,7 +229,7 @@
           e.preventDefault();
           if (!m[6].trim()) return replace(ls, pos, '');
           var marker = m[3] ? (parseInt(m[3], 10) + 1) + m[2].slice(-1) : m[2];
-          replace(pos, pos, '\n' + m[1] + marker + m[4] + (m[5] ? '[ ] ' : '') + '|');
+          replace(pos, pos, '\n' + m[1] + marker + m[4] + (m[5] ? '[ ] ' : '') + CARET);
         }
       }
     });
@@ -244,6 +247,51 @@
         NH.toast('Tabel dari spreadsheet diubah ke Markdown', 'ok');
       }
     });
+
+    // ---------- phone keyboard bar ----------
+    // "/" and the other insert buttons are hard to reach on a phone keyboard,
+    // so while typing on a touch screen a bar sits right above the keyboard.
+    // The keyboard doesn't shrink the layout viewport, hence visualViewport.
+    if (window.matchMedia && matchMedia('(pointer: coarse)').matches) {
+      var kb = NH.h('div.kbar', { role: 'toolbar', 'aria-label': 'Sisipkan' });
+      var kbBtn = function (label, icon, title, fn) {
+        var b = NH.h('button', { type: 'button', title: title, 'aria-label': title }, icon ? NH.icon(icon) : null, label);
+        b.addEventListener('pointerdown', function (e) { e.preventDefault(); }); // keep the keyboard open
+        b.addEventListener('click', fn);
+        return b;
+      };
+      kb.append(
+        kbBtn('/', null, 'Menu perintah', function () {
+          var s = ta.selectionStart, before = ta.value.slice(lineStart(s), s);
+          replace(s, ta.selectionEnd, (before && !/\s$/.test(before) ? ' ' : '') + '/' + CARET);
+          checkSlash();
+        }),
+        kbBtn('', 'check', 'To-do', CMDS.todo),
+        kbBtn('', 'paste', 'Tempel', function () {
+          if (!navigator.clipboard || !navigator.clipboard.readText) return NH.toast('Tekan lama di kolom teks untuk menempel.');
+          navigator.clipboard.readText().then(function (t) {
+            if (!t) return;
+            var table = tsvToTable(t);
+            if (table) insertBlock(table); else replace(ta.selectionStart, ta.selectionEnd, t + CARET);
+          }, function () { NH.toast('Izin clipboard ditolak. Tekan lama di kolom teks untuk menempel.'); });
+        }),
+        kbBtn('', 'lock', 'Blok terkunci PIN', CMDS.locked),
+        kbBtn('Selesai', null, 'Tutup keyboard', function () { ta.blur(); })
+      );
+      kb.lastChild.classList.add('kbar-done');
+      document.body.appendChild(kb);
+      var vv = window.visualViewport;
+      var place = function () {
+        if (!vv) return;
+        var hidden = Math.max(0, innerHeight - vv.height - vv.offsetTop);
+        kb.style.transform = 'translateY(' + (-hidden) + 'px)';
+      };
+      if (vv) { vv.addEventListener('resize', place); vv.addEventListener('scroll', place); }
+      ta.addEventListener('focus', function () { place(); kb.classList.add('show'); document.body.classList.add('kbar-on'); });
+      ta.addEventListener('blur', function () {
+        setTimeout(function () { if (document.activeElement !== ta) { kb.classList.remove('show'); document.body.classList.remove('kbar-on'); } }, 150);
+      });
+    }
 
     var api = {
       get value() { return ta.value; },
