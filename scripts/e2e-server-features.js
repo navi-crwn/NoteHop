@@ -7,8 +7,9 @@ const { chromium } = require('playwright');
 const BASE = (process.env.NOTEHOP_URL || 'http://127.0.0.1:8090').replace(/\/$/, '');
 const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n + ' | ' + (i || ''));
 const errs = [];
+async function pickMode(p, m) { await p.evaluate(() => { const d = document.getElementById('more-modes'); if (d) d.open = true; }); await p.check(`input[name=mode][value=${m}]`, { force: true }); }
 async function page(b, opts) {
-  const ctx = await b.newContext(Object.assign({ permissions: ['clipboard-read', 'clipboard-write'] }, opts || {}));
+  const ctx = (await b.newContext(Object.assign({ permissions: ['clipboard-read', 'clipboard-write'] }, opts || {})).then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }));
   const p = await ctx.newPage();
   p.on('pageerror', e => errs.push(e.message)); p.on('dialog', d => d.accept());
   p.on('console', m => { if (m.type() === 'error' && !/status of 4\d\d/.test(m.text())) errs.push(m.text()); });
@@ -18,8 +19,8 @@ async function create(p, { title = '', body = '', mode = 'read', pills = [], fil
   await p.goto(BASE + '/');
   if (title) await p.fill('#title', title);
   if (body) await p.fill('.ed-src', body);
-  await p.click(`label:has([name=mode][value=${mode}])`);
-  if (pills.some(x => ['signoff', 'decoy', 'capsule', 'lock'].includes(x))) await p.click('#adv summary');
+  await pickMode(p, mode);
+  if (pills.length) await p.click('#adv summary');
   for (const x of pills) await p.click(`label:has([data-feature=${x}])`);
   for (const [sel, v] of Object.entries(fill)) await p.fill(sel, v);
   await p.click('#create'); await p.waitForURL(/\/n\//, { timeout: 30000 }); await p.waitForSelector('#note:not(.hide)');
@@ -35,7 +36,7 @@ const visitor = (adminURL) => { const u = new URL(adminURL); return BASE + u.pat
     const p = await page(b);
     const edit = await create(p, { title: 'Doc', body: 'baris satu\nbaris dua', mode: 'edit' });
     await p.fill('.ed-src', 'baris satu\nbaris DUA\nbaris tiga'); await p.waitForTimeout(2200);
-    await p.click('#act-history'); await p.waitForSelector('#history-dlg[open]');
+    await p.click('#more-menu > button'); await p.click('#act-history'); await p.waitForSelector('#history-dlg[open]');
     ok('history: diff shown', (await p.$$('#history-diff .diff-del, #history-diff .diff-add')).length >= 2);
     await p.click('#history-restore'); await p.waitForTimeout(400);
     ok('history: restore', (await p.inputValue('.ed-src')) === 'baris satu\nbaris dua', JSON.stringify(await p.inputValue('.ed-src')));
@@ -89,15 +90,15 @@ const visitor = (adminURL) => { const u = new URL(adminURL); return BASE + u.pat
     // --- advanced share settings + watermark trace ---
     const adv = await create(p, { title: 'Rutin', body: '- [ ] minum air', mode: 'check' });
     await p.click('#act-share'); await p.waitForSelector('#share-dlg[open]'); await p.click('#share-adv summary');
-    const pill = n => p.locator('#adv-pills .pill-opt').nth(n);
-    await pill(3).click(); await p.click('#adv-forms form:nth-child(4) button[type=submit]'); await p.waitForTimeout(500);
-    const rh = await p.textContent('#adv-forms form:nth-child(4) .hint'); ok('reset: saved', rh.toLowerCase().includes('daily'), rh);
-    await pill(6).click(); await p.waitForTimeout(500);
+    const pill = id => p.locator(`[data-adv=${id}]`), form = id => `[data-adv-form=${id}]`;
+    await pill('reset').click(); await p.click(form('reset') + ' button[type=submit]'); await p.waitForTimeout(500);
+    const rh = await p.textContent(form('reset') + ' .hint'); ok('reset: saved', rh.toLowerCase().includes('daily'), rh);
+    await pill('watermark').click(); await p.waitForTimeout(500);
     ok('watermark: on', await p.isVisible('#trace-box'));
-    await pill(2).click(); await p.fill('#adv-forms form:nth-child(3) input', '7'); await p.click('#adv-forms form:nth-child(3) button[type=submit]'); await p.waitForTimeout(500);
-    ok('dms: on blocks manual capsule', await pill(0).evaluate(e => e.classList.contains('blocked')));
-    await pill(2).click(); await p.waitForTimeout(500);
-    ok('dms: off', !(await pill(2).locator('input').isChecked()));
+    await pill('dms').click(); await p.fill(form('dms') + ' input', '7'); await p.click(form('dms') + ' button[type=submit]'); await p.waitForTimeout(500);
+    ok('dms: on blocks manual capsule', await pill('open').evaluate(e => e.classList.contains('blocked')));
+    await pill('dms').click(); await p.waitForTimeout(500);
+    ok('dms: off', !(await pill('dms').locator('input').isChecked()));
     await p.keyboard.press('Escape');
     const w = await page(b); await w.goto(visitor(adv)); await w.waitForSelector('#note:not(.hide)');
     await w.click('#act-copy'); const leaked = await w.evaluate(() => navigator.clipboard.readText());

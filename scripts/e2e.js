@@ -11,8 +11,9 @@ const results = [];
 const ok = (name, cond, info) => { results.push([cond ? 'PASS' : 'FAIL', name, info || '']); };
 let errs = [];
 
+async function pickMode(p, m) { await p.evaluate(() => { const d = document.getElementById('more-modes'); if (d) d.open = true; }); await p.check(`input[name=mode][value=${m}]`, { force: true }); }
 async function newPage(b, opts) {
-  const ctx = await b.newContext(Object.assign({ permissions: ['clipboard-read', 'clipboard-write'] }, opts || {}));
+  const ctx = (await b.newContext(Object.assign({ permissions: ['clipboard-read', 'clipboard-write'] }, opts || {})).then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }));
   const p = await ctx.newPage();
   p.on('console', m => { if (m.type() === 'error') errs.push(p.url() + ' :: ' + m.text()); });
   p.on('pageerror', e => errs.push(p.url() + ' :: ' + e.message));
@@ -23,14 +24,15 @@ function visitorURL(adminURL) {
   const u = new URL(adminURL); const f = new URLSearchParams(u.hash.slice(1));
   return BASE + u.pathname + '#k=' + f.get('k');
 }
+async function openAdv(p) { if (!(await p.$eval('#adv', d => d.open))) await p.click('#adv summary'); }
 async function create(p, { title = '', body = '', mode = 'read', pw = '', burn = '0', encrypt = true } = {}) {
   await p.goto(BASE + '/');
   if (title) await p.fill('#title', title);
   if (body) await p.fill('.ed-src', body);
-  await p.check(`input[name=mode][value=${mode}]`, { force: true });
-  if (!encrypt) await p.click('label:has(#encrypt)');
-  if (pw) { await p.click('label:has([data-feature=password])'); await p.fill('#password', pw); }
-  if (burn !== '0') { await p.click('label:has([data-feature=burn])'); await p.selectOption('#burn', burn); }
+  await pickMode(p, mode);
+  if (!encrypt) { await openAdv(p); await p.click('#expert-box summary'); await p.click('label:has(#encrypt)'); }
+  if (pw) { await p.click('label:has([name=privacy][value=password])'); await p.fill('#password', pw); }
+  if (burn !== '0') { await openAdv(p); if (!(await p.isChecked('[data-feature=burn]'))) await p.click('label:has([data-feature=burn])'); await p.selectOption('#burn', burn); }
   await p.click('#create');
   await p.waitForURL(/\/n\//, { timeout: 20000 });
   await p.waitForSelector('#note:not(.hide)', { timeout: 20000 });
@@ -173,7 +175,7 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     ok('QR: image rendered', w > 100, 'width ' + w);
     await p.screenshot({ path: OUT + '/qr.png' });
     await p.keyboard.press('Escape'); await p.keyboard.press('Escape');
-    await p.click('#act-freeze');
+    await p.click('#more-menu > button'); await p.click('#act-freeze');
     await p.waitForSelector('#snap-list li', { timeout: 10000 });
     const snapHref = await p.$eval('#snap-list a.link-url', a => a.href);
     await p.keyboard.press('Escape');

@@ -1,0 +1,52 @@
+{{define "page"}}faq{{end}}
+{{define "content"}}
+<section class="wrap narrow prose faq">
+  <h1>{{.L.T "faq.title"}}</h1>
+  <p class="lead muted">{{.L.T "faq.lead"}}</p>
+  <input type="search" id="faq-search" class="filter" placeholder="{{.L.T "faq.search"}}" aria-label="{{.L.T "faq.search"}}">
+  <p class="muted hide" id="faq-none">{{.L.T "faq.none"}}</p>
+
+  <h2 id="basics">{{.L.T "faq.g_basics"}}</h2>
+  <details id="what"><summary>{{.L.T "faq.what_q"}}</summary><p>{{.L.H "faq.what_a"}}</p></details>
+  <details id="account"><summary>{{.L.T "faq.account_q"}}</summary><p>{{.L.H "faq.account_a"}}</p></details>
+  <details id="devices"><summary>{{.L.T "faq.devices_q"}}</summary><p>{{.L.H "faq.devices_a"}}</p></details>
+  <details id="owner"><summary>{{.L.T "faq.owner_q"}}</summary><p>{{.L.H "faq.owner_a"}}</p></details>
+  <details id="lost"><summary>{{.L.T "faq.lost_q"}}</summary><p>{{.L.H "faq.lost_a"}}</p></details>
+
+  <h2 id="sharing">{{.L.T "faq.g_share"}}</h2>
+  <details id="links"><summary>{{.L.T "faq.links_q"}}</summary><p>{{.L.H "faq.links_a"}}</p></details>
+  <details id="together"><summary>{{.L.T "faq.together_q"}}</summary><p>{{.L.H "faq.together_a"}}</p></details>
+  <details id="replies"><summary>{{.L.T "faq.replies_q"}}</summary><p>{{.L.H "faq.replies_a"}}</p></details>
+  <details id="leak"><summary>{{.L.T "faq.leak_q"}}</summary><p>{{.L.H "faq.leak_a"}}</p></details>
+  <details id="fixed"><summary>{{.L.T "faq.fixed_q"}}</summary><p>{{.L.H "faq.fixed_a"}}</p></details>
+
+  <h2 id="privacy">{{.L.T "faq.g_privacy"}}</h2>
+  <details id="encrypt"><summary>{{.L.T "faq.encrypt_q"}}</summary><p>{{.L.H "faq.encrypt_a"}}</p></details>
+  <details id="server"><summary>{{.L.T "faq.sees_q"}}</summary><p>{{.L.H "faq.sees_a"}}</p></details>
+  <details id="password"><summary>{{.L.T "faq.password_q"}}</summary><p>{{.L.H "faq.password_a"}}</p></details>
+  <details id="once"><summary>{{.L.T "faq.once_q"}}</summary><p>{{.L.H "faq.once_a"}}</p></details>
+  <details id="public"><summary>{{.L.T "faq.public_q"}}</summary><p>{{.L.H "faq.public_a"}}</p></details>
+  <details id="accounts"><summary>{{.L.T "faq.accounts_q"}}</summary><p>{{.L.H "faq.accounts_a"}}</p></details>
+  <details id="offline"><summary>{{.L.T "faq.offline_q"}}</summary><p>{{.L.H "faq.offline_a"}}</p></details>
+  <details id="files"><summary>{{.L.T "faq.files_q"}}</summary><p>{{.L.H "faq.files_a"}}</p></details>
+  <details id="limits"><summary>{{.L.T "faq.limits_q"}}</summary><p>{{.L.H "faq.limits_a"}}</p></details>
+
+  <h2 id="extra">{{.L.T "faq.g_extra"}}</h2>
+  <details id="later"><summary>{{.L.T "faq.later_q"}}</summary><p>{{.L.H "faq.later_a"}}</p></details>
+  <details id="away"><summary>{{.L.T "faq.away_q"}}</summary><p>{{.L.H "faq.away_a"}}</p></details>
+  <details id="decoy"><summary>{{.L.T "faq.decoy_q"}}</summary><p>{{.L.H "faq.decoy_a"}}</p></details>
+  <details id="trace"><summary>{{.L.T "faq.trace_q"}}</summary><p>{{.L.H "faq.trace_a"}}</p></details>
+  <details id="networks"><summary>{{.L.T "faq.networks_q"}}</summary><p>{{.L.H "faq.networks_a"}}</p></details>
+  <details id="sign"><summary>{{.L.T "faq.sign_q"}}</summary><p>{{.L.H "faq.sign_a"}}</p></details>
+
+  <h2 id="dev">{{.L.T "faq.g_dev"}}</h2>
+  <details id="raw"><summary>{{.L.T "faq.raw_q"}}</summary><p>{{.L.H "faq.raw_a"}}</p></details>
+  <details id="cli"><summary>{{.L.T "faq.cli_q"}}</summary><p>{{.L.H "faq.cli_a"}}</p></details>
+  <details id="ssh"><summary>{{.L.T "faq.ssh_q"}}</summary><p>{{.L.H "faq.ssh_a"}}</p></details>
+  <details id="watch"><summary>{{.L.T "faq.watch_q"}}</summary><p>{{.L.H "faq.watch_a"}}</p></details>
+  <details id="inbox"><summary>{{.L.T "faq.inbox_q"}}</summary><p>{{.L.H "faq.inbox_a"}}</p></details>
+  <details id="mock"><summary>{{.L.T "faq.mock_q"}}</summary><p>{{.L.H "faq.mock_a"}}</p></details>
+  <details id="page"><summary>{{.L.T "faq.page_q"}}</summary><p>{{.L.H "faq.page_a"}}</p></details>
+</section>
+{{end}}
+{{define "scripts"}}<script src="/static/js/faq.js?v={{.Asset}}"></script>{{end}}

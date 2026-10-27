@@ -22,57 +22,57 @@
   // that would clash with what's set are dimmed and say why.
   function allRead(m) { return (m.links || []).every(function (l) { return l.mode === 'read'; }); }
   var ADV = [
-    { id: 'open', icon: 'clock', label: 'feat.capsule', kind: 'time', field: 'open_at', def: 86400,
+    { id: 'open', group: 'time', ex: 'ex.capsule', tech: 'time capsule', icon: 'clock', label: 'feat.capsule', kind: 'time', field: 'open_at', def: 86400,
       active: function (m) { return !!m.open_at && !m.dms_days; },
       blocked: function (m) { return m.dms_days ? NH.t('rule.capsule_dms') : ''; },
       state: function (m) { return m.open_at && !m.dms_days ? NH.t('timed.open_on', { time: m.open_at, ago: NH.ago(m.open_at) }) : NH.t('timed.open_off'); },
       clear: { open_at: 0 }, saved: 'timed.open_saved', cleared: 'timed.open_cleared' },
-    { id: 'lock', icon: 'lock', label: 'feat.lock', kind: 'time', field: 'lock_at', def: 7 * 86400,
+    { id: 'lock', group: 'time', ex: 'ex.lock', tech: 'scheduled lock', icon: 'lock', label: 'feat.lock', kind: 'time', field: 'lock_at', def: 7 * 86400,
       active: function (m) { return !!m.lock_at; },
       blocked: function (m) { return allRead(m) ? NH.t('timed.lock_blocked') : ''; },
       state: function (m) {
         return m.locked ? NH.t('timed.lock_done', { time: m.lock_at }) : m.lock_at ? NH.t('timed.lock_on', { time: m.lock_at, ago: NH.ago(m.lock_at) }) : NH.t('timed.lock_off');
       },
       clear: { lock_at: 0 }, saved: 'timed.lock_saved', cleared: 'timed.lock_cleared' },
-    { id: 'dms', icon: 'clock', label: 'feat.dms', kind: 'number', field: 'dms_days', def: 30, min: 1, max: 365, unit: 'dms.days',
+    { id: 'dms', group: 'time', ex: 'ex.dms', tech: 'dead man\'s switch', icon: 'clock', label: 'feat.dms', kind: 'number', field: 'dms_days', def: 30, min: 1, max: 365, unit: 'dms.days',
       active: function (m) { return m.dms_days > 0; },
       blocked: function (m) { return m.open_at && !m.dms_days ? NH.t('rule.dms_capsule') : ''; },
       state: function (m) { return m.dms_days ? NH.t('dms.on', { n: m.dms_days, time: m.open_at }) : NH.t('dms.off'); },
       clear: { dms_days: 0 }, saved: 'dms.saved', cleared: 'dms.cleared' },
-    { id: 'reset', icon: 'history', label: 'feat.reset', kind: 'select', field: 'reset', options: ['daily', 'weekly', 'monthly'],
+    { id: 'reset', group: 'time', ex: 'ex.reset', tech: 'cron reset', icon: 'history', label: 'feat.reset', kind: 'select', field: 'reset', options: ['daily', 'weekly', 'monthly'],
       active: function (m) { return !!m.reset; },
       blocked: function () { return ''; },
       state: function (m) { return m.reset ? NH.t('reset.on', { every: NH.t('reset.' + m.reset), time: m.reset_at }) : NH.t('reset.off'); },
       clear: { reset: '' }, saved: 'reset.saved', cleared: 'reset.cleared' },
-    { id: 'ip', icon: 'shield', label: 'feat.ip', kind: 'list', field: 'ip_allow',
+    { id: 'ip', group: 'privacy', ex: 'ex.ip', tech: 'IP allowlist', icon: 'shield', label: 'feat.ip', kind: 'list', field: 'ip_allow',
       active: function (m) { return (m.ip_allow || []).length > 0; },
       blocked: function () { return ''; },
       state: function (m) { return (m.ip_allow || []).length ? NH.t('ip.on', { n: m.ip_allow.length }) : NH.t('ip.off'); },
       clear: { ip_allow: [] }, saved: 'ip.saved', cleared: 'ip.cleared' },
-    { id: 'signoff', icon: 'check', label: 'feat.signoff', kind: 'bool', field: 'sign_off',
+    { id: 'signoff', group: 'together', ex: 'ex.signoff', tech: 'sign-off', icon: 'check', label: 'feat.signoff', kind: 'bool', field: 'sign_off',
       active: function (m) { return !!m.sign_off; }, blocked: function () { return ''; },
       state: function (m) { return NH.t(m.sign_off ? 'signoff.on' : 'signoff.off'); },
       clear: { sign_off: false }, saved: 'signoff.saved', cleared: 'signoff.cleared' },
-    { id: 'watermark', icon: 'eye', label: 'feat.watermark', kind: 'bool', field: 'watermark',
+    { id: 'watermark', group: 'privacy', ex: 'ex.watermark', tech: 'zero-width watermark', icon: 'eye', label: 'feat.watermark', kind: 'bool', field: 'watermark',
       active: function (m) { return !!m.watermark; }, blocked: function () { return ''; },
       state: function (m) { return NH.t(m.watermark ? 'watermark.on' : 'watermark.off'); },
       clear: { watermark: false }, saved: 'watermark.saved', cleared: 'watermark.cleared' },
-    { id: 'decoy', icon: 'key', label: 'feat.decoy', kind: 'decoy',
+    { id: 'decoy', group: 'privacy', ex: 'ex.decoy', tech: 'decoy password', icon: 'key', label: 'feat.decoy', kind: 'decoy',
       active: function (m) { return !!m.decoy; },
       blocked: function (m) { return m.password ? '' : NH.t('rule.decoy_password'); },
       state: function (m) {
         return !m.decoy ? NH.t('decoy.off') : m.decoy.opened ? NH.t('decoy.used', { n: m.decoy.opened, time: m.decoy.last_opened }) : NH.t('decoy.on');
       },
       saved: 'decoy.saved', cleared: 'decoy.cleared' },
-    { id: 'watch', icon: 'link', label: 'feat.watch', kind: 'url', field: 'watch',
+    { id: 'watch', group: 'expert', ex: 'ex.watch', tech: 'webhook · HMAC', icon: 'link', label: 'feat.watch', kind: 'url', field: 'watch',
       active: function (m) { return !!m.watch; }, blocked: function () { return ''; },
       state: function (m) { return m.watch ? NH.t('watch.on', { url: m.watch, key: m.watch_key }) : NH.t('watch.off'); },
       clear: { watch: '' }, saved: 'watch.saved', cleared: 'watch.cleared' },
-    { id: 'inbox', icon: 'append', label: 'feat.inbox', kind: 'inbox',
+    { id: 'inbox', group: 'expert', ex: 'ex.inbox', tech: 'webhook in · ECIES', icon: 'append', label: 'feat.inbox', kind: 'inbox',
       active: function (m) { return !!m.inbox; }, blocked: function () { return ''; },
       state: function (m) { return m.inbox ? NH.t('inbox.on', { url: m.inbox }) : NH.t('inbox.off'); },
       saved: 'inbox.saved', cleared: 'inbox.cleared' },
-    { id: 'profile', icon: 'globe', label: 'feat.profile', kind: 'bool', field: 'profile',
+    { id: 'profile', group: 'expert', ex: 'ex.profile', tech: '/@user', icon: 'globe', label: 'feat.profile', kind: 'bool', field: 'profile',
       active: function (m) { return !!m.profile; },
       blocked: function (m) { return m.encrypted || !m.owned ? NH.t('rule.profile_public') : ''; },
       state: function (m) { return NH.t(m.profile ? 'profile.on' : 'profile.off', { name: document.body.dataset.user || '' }); },
@@ -80,13 +80,23 @@
   ];
 
   var built = false;
+  // Settings are grouped by what people want (timing, privacy, working
+  // together); the developer ones sit in their own folded group.
+  var GROUPS = [['time', 'clock'], ['privacy', 'shield'], ['together', 'users'], ['expert', 'code']];
   function build() {
-    var pills = $('#adv-pills'), forms = $('#adv-forms');
+    var box = $('#adv-pills'), where = {};
+    GROUPS.forEach(function (g) {
+      var head = [NH.icon(g[1]), ' ' + NH.t('grp.' + g[0])];
+      var el = g[0] === 'expert' ? h('details.adv-group.adv-sub', h('summary', head)) : h('div.adv-group', h('h3', head));
+      box.appendChild(el);
+      where[g[0]] = el;
+    });
     ADV.forEach(function (f) {
       f.input = h('input', { type: 'checkbox' });
-      f.pill = h('label.pill-opt', f.input, h('span', NH.icon(f.icon), NH.t(f.label)));
-      pills.appendChild(f.pill);
-      f.form = h('form.feat.timed-form.hide');
+      f.pill = h('label.toggle', { 'data-adv': f.id, 'data-tech': f.tech }, f.input, h('span', h('b', NH.t(f.label)), h('small', NH.t(f.ex))));
+      var forms = where[f.group];
+      forms.appendChild(f.pill);
+      f.form = h('form.feat.timed-form.hide', { 'data-adv-form': f.id });
       f.hint = h('span.hint');
       var row = h('div.timed-row');
       if (f.kind === 'time') f.field_el = h('input', { type: 'datetime-local', required: true });
@@ -156,6 +166,7 @@
       if (f.kind === 'list' && on && document.activeElement !== f.field_el) f.field_el.value = (m.ip_allow || []).join('\n');
     });
     if (ADV.some(function (f) { return f.active(m); })) $('#share-adv').open = true;
+    if (ADV.some(function (f) { return f.group === 'expert' && f.active(m); })) $('#adv-pills details').open = true;
     $('#trace-box').classList.toggle('hide', !m.watermark);
   }
   function applied(f, m, set) {

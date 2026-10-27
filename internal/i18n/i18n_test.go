@@ -89,3 +89,23 @@ func TestT(t *testing.T) {
 		t.Fatal("dir")
 	}
 }
+
+func TestFromHeader(t *testing.T) {
+	for h, want := range map[string]string{
+		"":                           "en",
+		"fr-CA,fr;q=0.9,en;q=0.8":    "fr",
+		"pt-BR":                      "pt",
+		"de-DE,de;q=0.9":             "en",
+		"de;q=0.9,id;q=0.8,en;q=0.7": "id",
+		"zh-TW,zh;q=0.9":             "zh",
+		"ja;q=0.5,ar;q=0.6":          "ar",
+		"es,fr":                      "es",
+		"en-US,en;q=0.9,id;q=0.8":    "en",
+		"xx;q=1,ru;q=0.1":            "ru",
+		"id-ID;q=bogus,ja":           "ja",
+	} {
+		if got := FromHeader(h); got != want {
+			t.Errorf("FromHeader(%q) = %q, want %q", h, got, want)
+		}
+	}
+}

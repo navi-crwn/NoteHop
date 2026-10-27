@@ -45,7 +45,7 @@ make build     # bin/notehop
 
 ### Bahasa
 
-UI tersedia dalam 8 bahasa: English (default), 中文, Español, العربية (kanan-ke-kiri), Português, 日本語, Русский, Bahasa Indonesia. Pengunjung memilih lewat menu bola dunia di navbar (disimpan di cookie `nh_lang`), atau lewat `?lang=xx`. Teks ada di `web/i18n/*.json`; error API dikirim sebagai `{error, code, vars}` dan diterjemahkan di browser.
+UI tersedia dalam 9 bahasa (7 bahasa pengguna internet terbanyak + Русский + Indonesia): English (default), 中文, Español, العربية (kanan-ke-kiri), Português, Français, 日本語, Русский, Bahasa Indonesia. Bahasa dipilih otomatis dari browser (`Accept-Language`), dengan English sebagai cadangan; pilihan lewat menu bola dunia di navbar disimpan di cookie `nh_lang` dan selalu menang, atau lewat `?lang=xx`. Teks ada di `web/i18n/*.json`; error API dikirim sebagai `{error, code, vars}` dan diterjemahkan di browser.
 
 ### Konfigurasi (env)
 

@@ -29,6 +29,7 @@ var Langs = []Lang{
 	{"es", "Español", false},
 	{"ar", "العربية", true},
 	{"pt", "Português", false},
+	{"fr", "Français", false},
 	{"ja", "日本語", false},
 	{"ru", "Русский", false},
 	{"id", "Bahasa Indonesia", false},
@@ -69,6 +70,29 @@ func load(code string) map[string]string {
 }
 
 // Supported reports whether code is one of Langs.
+// FromHeader picks the best supported language from an Accept-Language
+// header ("fr-CA,fr;q=0.9,en;q=0.8"), by quality then order; English when
+// nothing matches. Regional tags count as their language (pt-BR → pt).
+func FromHeader(h string) string {
+	best, bestQ := Default, 0.0
+	for i, part := range strings.Split(h, ",") {
+		tag, params, _ := strings.Cut(strings.TrimSpace(part), ";")
+		q := 1.0
+		if v, ok := strings.CutPrefix(strings.TrimSpace(params), "q="); ok {
+			if _, err := fmt.Sscanf(v, "%g", &q); err != nil {
+				continue
+			}
+		}
+		code := strings.ToLower(strings.SplitN(strings.SplitN(tag, "-", 2)[0], "_", 2)[0])
+		// Later entries break ties in favour of earlier ones.
+		q -= float64(i) * 1e-6
+		if Supported(code) && q > bestQ {
+			best, bestQ = code, q
+		}
+	}
+	return best
+}
+
 func Supported(code string) bool {
 	_, ok := catalogs[code]
 	return ok

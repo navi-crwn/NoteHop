@@ -20,7 +20,7 @@ async function page(ctx) {
 async function create(p, title, body, opts = {}) {
   await p.goto(BASE + '/');
   await p.fill('#title', title); await p.fill('.ed-src', body);
-  if (opts.public) await p.click('label:has([data-feature=encrypt])');
+  if (opts.public) { await p.click('#adv summary'); await p.click('#expert-box summary'); await p.click('label:has([data-feature=encrypt])'); }
   await p.click('#create'); await p.waitForURL(/\/n\//); await p.waitForSelector('#note:not(.hide)');
   await p.keyboard.press('Escape');
   return p.url();
@@ -29,7 +29,7 @@ async function create(p, title, body, opts = {}) {
 (async () => {
   const b = await chromium.launch();
   try {
-    const ctx = await b.newContext({ acceptDownloads: true });
+    const ctx = (await b.newContext({ acceptDownloads: true }).then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }));
     const p = await page(ctx);
 
     // --- CLI ↔ browser ---
@@ -46,18 +46,19 @@ async function create(p, title, body, opts = {}) {
     // --- inbox + watch (advanced settings) ---
     await p.goto(made); await p.waitForSelector('#note:not(.hide)'); await p.keyboard.press('Escape');
     await p.click('#act-share'); await p.waitForSelector('#share-dlg[open]'); await p.click('#share-adv summary');
-    const pill = n => p.locator('#adv-pills .pill-opt').nth(n);
-    await pill(9).click(); await p.click('#adv-forms form:nth-child(10) button[type=submit]');
-    await p.waitForFunction(() => /\/in\//.test(document.querySelector('#adv-forms form:nth-child(10) .hint').textContent));
-    const hint = await p.textContent('#adv-forms form:nth-child(10) .hint');
+    const pill = id => p.locator(`[data-adv=${id}]`), form = id => `[data-adv-form=${id}]`;
+    await p.click('#adv-pills details summary');
+    await pill('inbox').click(); await p.click(form('inbox') + ' button[type=submit]');
+    await p.waitForFunction(() => /\/in\//.test(document.querySelector('[data-adv-form=inbox] .hint').textContent));
+    const hint = await p.textContent(form('inbox') + ' .hint');
     const inbox = hint.match(/https?:\/\/\S+\/in\/[A-Za-z0-9]+/)[0];
     ok('inbox: address shown', !!inbox, inbox);
-    await pill(8).click(); await p.fill('#adv-forms form:nth-child(9) input', 'http://example.com/x');
-    await p.click('#adv-forms form:nth-child(9) button[type=submit]'); await p.waitForTimeout(400);
-    ok('watch: http refused', (await p.textContent('#adv-forms form:nth-child(9) .hint')).startsWith('Off'));
-    await p.fill('#adv-forms form:nth-child(9) input', 'https://example.com/hook');
-    await p.click('#adv-forms form:nth-child(9) button[type=submit]'); await p.waitForTimeout(400);
-    ok('watch: https saved with key', /key: [A-Za-z0-9]{32}/.test(await p.textContent('#adv-forms form:nth-child(9) .hint')));
+    await pill('watch').click(); await p.fill(form('watch') + ' input', 'http://example.com/x');
+    await p.click(form('watch') + ' button[type=submit]'); await p.waitForTimeout(400);
+    ok('watch: http refused', (await p.textContent(form('watch') + ' .hint')).startsWith('Off'));
+    await p.fill(form('watch') + ' input', 'https://example.com/hook');
+    await p.click(form('watch') + ' button[type=submit]'); await p.waitForTimeout(400);
+    ok('watch: https saved with key', /key: [A-Za-z0-9]{32}/.test(await p.textContent(form('watch') + ' .hint')));
     await p.keyboard.press('Escape');
     const res = await fetch(inbox, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: 'build gagal di main', from: 'CI' }) });
     ok('inbox: post accepted', res.status === 201, String(res.status));
@@ -72,7 +73,7 @@ async function create(p, title, body, opts = {}) {
     await create(p, 'Rahasia akun', 'isi untuk ekspor');
     const pub = await create(p, 'Menu', '```json\n{"menu":["kopi","teh"]}\n```', { public: true });
     await p.click('#act-share'); await p.waitForSelector('#share-dlg[open]'); await p.click('#share-adv summary');
-    await pill(10).click(); await p.waitForTimeout(500); await p.keyboard.press('Escape');
+    if (!(await p.$eval('#adv-pills details', d => d.open))) await p.click('#adv-pills details summary'); await pill('profile').click(); await p.waitForTimeout(500); await p.keyboard.press('Escape');
     const prof = await (await ctx.newPage()).goto(BASE + '/@' + user);
     ok('profile: lists the public note', prof.status() === 200 && (await prof.text()).includes('Menu'));
     const token = new URL(pub).pathname.split('/')[2];

@@ -19,7 +19,7 @@ function wav(seconds) {
 (async () => {
   const b = await chromium.launch();
   try {
-    const ctx = await b.newContext();
+    const ctx = (await b.newContext().then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }));
     const p = await ctx.newPage();
     p.on('pageerror', e => errs.push(e.message));
     const bodies = [];
@@ -47,7 +47,7 @@ function wav(seconds) {
     await p.click('#create'); await p.waitForURL(/\/n\//, { timeout: 30000 }); await p.waitForSelector('#note:not(.hide)');
     const u = new URL(p.url()), visitor = BASE + u.pathname + '#k=' + new URLSearchParams(u.hash.slice(1)).get('k');
 
-    const v = await (await b.newContext()).newPage();
+    const v = await ((await b.newContext().then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }))).newPage();
     v.on('pageerror', e => errs.push(e.message));
     await v.goto(visitor); await v.waitForSelector('#n-view .attach-image img');
     ok('reader: image decrypted', await v.$eval('#n-view .attach-image img', i => i.src.startsWith('blob:') && i.naturalWidth > 0));

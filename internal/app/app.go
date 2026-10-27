@@ -109,6 +109,7 @@ func (a *App) routes() {
 	m.HandleFunc("GET /register", a.page("register", "title.register", ""))
 	m.HandleFunc("GET /diff", a.page("diff", "diffpage.title", "diffpage.lead"))
 	m.HandleFunc("GET /nearby", a.page("nearby", "nearby.title", "nearby.lead"))
+	m.HandleFunc("GET /faq", a.page("faq", "faq.title", "faq.lead"))
 	m.HandleFunc("GET /offline", a.page("offline", "offline.title", "offline.lead"))
 	m.HandleFunc("GET /sw.js", a.serviceWorker)
 	m.HandleFunc("GET /manifest.webmanifest", a.manifest)
@@ -198,7 +199,7 @@ type pageData struct {
 
 func (a *App) loadTemplates() error {
 	a.pages = map[string]*template.Template{}
-	for _, name := range []string{"new", "note", "about", "login", "register", "dashboard", "vault", "diff", "nearby", "profile", "offline", "error"} {
+	for _, name := range []string{"new", "note", "about", "login", "register", "dashboard", "vault", "diff", "nearby", "profile", "offline", "faq", "error"} {
 		t, err := template.New(name).ParseFS(web.Templates, "templates/base.html", "templates/icons.html", "templates/"+name+".html")
 		if err != nil {
 			return err
@@ -336,10 +337,13 @@ func (a *App) locale(w http.ResponseWriter, r *http.Request) i18n.Locale {
 			Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode})
 		return i18n.Locale{Lang: i18n.Get(q)}
 	}
-	code := i18n.Default
+	// A language the visitor picked wins; otherwise follow the browser's
+	// preference, falling back to English.
+	code := i18n.FromHeader(r.Header.Get("Accept-Language"))
 	if c, err := r.Cookie(langCookie); err == nil && i18n.Supported(c.Value) {
 		code = c.Value
 	}
+	w.Header().Add("Vary", "Accept-Language, Cookie")
 	return i18n.Locale{Lang: i18n.Get(code)}
 }
 

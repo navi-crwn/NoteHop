@@ -7,8 +7,9 @@ const { chromium } = require('playwright');
 const BASE = (process.env.NOTEHOP_URL || 'http://127.0.0.1:8090').replace(/\/$/, '');
 const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n + ' | ' + (i || ''));
 const errs = [];
+async function pickMode(p, m) { await p.evaluate(() => { const d = document.getElementById('more-modes'); if (d) d.open = true; }); await p.check(`input[name=mode][value=${m}]`, { force: true }); }
 async function page(b) {
-  const p = await (await b.newContext()).newPage();
+  const p = await ((await b.newContext().then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }))).newPage();
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (m.type() === 'error' && !/status of 4\d\d/.test(m.text())) errs.push(m.text()); });
   return p;
@@ -24,7 +25,7 @@ const wait = (p, fn, arg, t) => p.waitForFunction(fn, arg, { timeout: t || 10000
     await a.goto(BASE + '/');
     await a.fill('#title', 'Rapat');
     await a.fill('.ed-src', 'agenda rahasia');
-    await a.click('label:has([name=mode][value=edit])');
+    await pickMode(a, 'edit');
     await a.click('#create'); await a.waitForURL(/\/n\//); await a.waitForSelector('#note:not(.hide)');
     await a.keyboard.press('Escape');
     await a.waitForSelector('#live-bar:not(.hide)');
