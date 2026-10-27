@@ -46,6 +46,11 @@ func main() {
 		SecureCookies: envBool("NOTEHOP_SECURE_COOKIES", strings.HasPrefix(base, "https://")),
 		TrustProxy:    envBool("NOTEHOP_TRUST_PROXY", false),
 		Registration:  envBool("NOTEHOP_REGISTRATION", true),
+		SSOURL:     strings.TrimRight(env("NOTEHOP_SSO_URL", ""), "/"),
+		SSOSecret:  env("NOTEHOP_SSO_SECRET", ""),
+	}
+	if cfg.SSOURL != "" && !cfg.SSOEnabled() {
+		log.Printf("SSO sign-in is off: it needs NOTEHOP_SSO_SECRET (32+ chars) and NOTEHOP_BASE_URL")
 	}
 
 	d, err := db.Open(*dbPath)

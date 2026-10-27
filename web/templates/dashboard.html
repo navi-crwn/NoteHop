@@ -5,7 +5,7 @@
     <div><h1>Catatanku</h1><p class="muted">Judul dan kunci dibuka di browser ini dengan kunci akunmu.</p></div>
     <a class="btn primary" href="/"><svg><use href="#i-plus"/></svg>Catatan baru</a>
   </div>
-  <div class="alert info hide" id="vault-locked">Kunci akun tidak ada di browser ini. <a href="/login?next=/dashboard">Masuk ulang</a> untuk membuka judul dan link catatanmu.</div>
+  <div class="alert info hide" id="vault-locked">Kunci akun tidak ada di browser ini. {{if .User.SSOID}}<a href="/vault?next=/dashboard">Masukkan kunci brankas</a>{{else}}<a href="/login?next=/dashboard">Masuk ulang</a>{{end}} untuk membuka judul dan link catatanmu.</div>
   <input type="search" id="filter" class="filter" placeholder="Cari judul…" aria-label="Cari judul">
   <ul class="note-list" id="mine"><li class="muted">Memuat…</li></ul>
 </section>

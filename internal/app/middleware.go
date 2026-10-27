@@ -36,7 +36,7 @@ func (a *App) secure(next http.Handler) http.Handler {
 			switch {
 			case r.URL.Path == "/api/notes":
 				bucket, rate = "c", 30
-			case r.URL.Path == "/api/login" || r.URL.Path == "/api/register":
+			case r.URL.Path == "/api/login" || r.URL.Path == "/api/register" || r.URL.Path == "/api/vault":
 				bucket, rate = "a", 15
 			}
 			if !a.limit.allow(bucket+a.clientIP(r), rate) {

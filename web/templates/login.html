@@ -4,6 +4,11 @@
   <form class="card auth" id="auth-form" data-kind="login">
     <h1>Masuk</h1>
     <p class="muted">Password-mu tidak pernah dikirim ke server. Browser menurunkan kunci dari password itu untuk membuka catatanmu.</p>
+    {{if .SSO}}
+    <a class="btn lg block sso" href="/auth/sso?next={{.Next}}"><svg><use href="#i-link"/></svg><span>Masuk dengan SSO</span></a>
+    <p class="small muted center">Satu akun untuk SSO, ImageApp, dan NoteHop.</p>
+    <div class="or"><span>atau pakai akun NoteHop</span></div>
+    {{end}}
     <div class="field"><label for="username">Username</label><input type="text" id="username" autocomplete="username" autocapitalize="off" spellcheck="false" required></div>
     <div class="field"><label for="password">Password</label><input type="password" id="password" autocomplete="current-password" required></div>
     <div class="alert err hide" id="auth-err" role="alert"></div>

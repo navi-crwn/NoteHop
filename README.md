@@ -46,6 +46,10 @@ make build     # bin/notehop
 | `NOTEHOP_TRUST_PROXY` | `false` | Pakai `X-Forwarded-For` untuk rate limit (aktifkan di belakang reverse proxy) |
 | `NOTEHOP_REGISTRATION` | `true` | Buka/tutup pendaftaran akun |
 | `NOTEHOP_SITE` | `NoteHop` | Nama situs |
+| `NOTEHOP_SSO_URL` | kosong | Alamat SSO untuk "Masuk dengan SSO", misalnya `https://accounts.example.com`. Kosong = fitur mati |
+| `NOTEHOP_SSO_SECRET` | kosong | Rahasia bersama (minimal 32 karakter), sama dengan `NOTEHOP_SSO_SECRET` di SSO. SSO juga butuh `NOTEHOP_BASE_URL` |
+
+Skema database dimigrasi otomatis saat start (nomor versi di `PRAGMA user_version`, daftar di `migrations` pada `internal/db/db.go`). Binary yang lebih lama menolak membuka database dengan versi skema yang lebih baru.
 
 ### Deploy singkat (reverse proxy)
 
@@ -70,6 +74,7 @@ admin  = 32 byte acak                      → link admin: #k=<K>&a=<admin>; ser
 - Setiap perubahan butuh `X-Write` (membuktikan pemegang kunci) **dan** mode link yang mengizinkan. Jadi slug yang mudah ditebak tetap tidak bisa dipakai menulis tanpa kunci.
 - Catatan berpassword: `POST /open` juga butuh `X-Write`, sehingga password salah ditolak server **tanpa** menghabiskan jatah baca.
 - Akun: `PBKDF2(password, "notehop/account/"+username, 600000)` → 64 byte: 32 pertama = kunci brankas (tetap di browser), 32 terakhir = secret login (di-hash argon2id di server).
+- Akun SSO (SSO): NoteHop tidak pernah melihat password-nya, jadi kunci brankas berasal dari frasa terpisah: `vault = PBKDF2(frasa, "notehop/vault/"+sso_id, 600000)`. Server hanya menerima `HMAC(vault, "notehop/vault-check")` (di-hash argon2id) untuk membedakan frasa benar dan salah ketik.
 - Blok PIN: `salt.b64 + "." + AES-GCM(PBKDF2(PIN, salt, 250000))`.
 
 Yang terlihat oleh server: ukuran ciphertext, waktu, jumlah view, mode link, status centang (indeks + benar/salah), jumlah baris tambahan.
@@ -92,6 +97,8 @@ Semua JSON. Header: `X-Admin` (token admin), `X-Write` (bukti kunci).
 | `DELETE /api/n/{token}` | admin atau pemilik akun | Hapus catatan |
 | `GET /raw/{token}` | siapa saja | Teks murni (hanya catatan publik) |
 | `POST /api/register` · `/api/login` · `/api/logout`, `GET /api/me`, `GET /api/me/notes` | | Akun |
+| `GET /auth/sso` · `GET /auth/sso/callback` | | Masuk dengan SSO (tiket HMAC, `state` + cookie `nh_sso`, `jti` sekali pakai) |
+| `POST /api/vault` | akun SSO | `{check}`: simpan cek frasa brankas pertama kali (201), atau periksa (200 / 401) |
 
 ## Struktur
 
