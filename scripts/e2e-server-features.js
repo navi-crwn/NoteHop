@@ -9,7 +9,7 @@ const BASE = (process.env.NOTEHOP_URL || 'http://127.0.0.1:8090').replace(/\/$/,
 const tab = (p, name) => p.click(`#share-tabs [data-tab=${name}]`);
 const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n + ' | ' + (i || ''));
 const errs = [];
-async function pickMode(p, m) { await p.evaluate(() => { const d = document.getElementById('more-modes'); if (d) d.open = true; }); await p.check(`input[name=mode][value=${m}]`, { force: true }); }
+async function pickMode(p, m) { await p.evaluate(() => { ['opt-who', 'more-modes'].forEach(id => { const d = document.getElementById(id); if (d) d.open = true; }); }); await p.check(`input[name=mode][value=${m}]`, { force: true }); }
 async function page(b, opts) {
   const ctx = (await b.newContext(Object.assign({ permissions: ['clipboard-read', 'clipboard-write'] }, opts || {})).then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }));
   const p = await ctx.newPage();
@@ -17,20 +17,23 @@ async function page(b, opts) {
   p.on('console', m => { if (m.type() === 'error' && !/status of 4\d\d/.test(m.text())) errs.push(m.text()); });
   return p;
 }
-async function create(p, { title = '', body = '', mode = 'read', pills = [], fill = {} } = {}) {
+async function create(p, { title = '', body = '', mode = 'read', pw = '', pills = [], fill = {} } = {}) {
   await p.goto(BASE + '/new');
   if (title) await p.fill('#title', title);
   if (body) await p.fill('.ed-src', body);
   await pickMode(p, mode);
+  if (pw) { await p.click('#opt-private > summary'); await p.click('label:has([name=privacy][value=password])'); await p.fill('#password', pw); }
   if (pills.length) await p.click('#adv summary');
   for (const x of pills) await p.click(`label:has([data-feature=${x}])`);
   for (const [sel, v] of Object.entries(fill)) await p.fill(sel, v);
-  await p.click('#create'); await p.waitForURL(/\/n\//, { timeout: 30000 }); await p.waitForSelector('#note:not(.hide)');
+  await closeMenus(p); await p.click('#create'); await p.waitForURL(/\/n\//, { timeout: 30000 }); await p.waitForSelector('#note:not(.hide)');
   await p.keyboard.press('Escape');
   return p.url();
 }
 const visitor = (adminURL) => { const u = new URL(adminURL); return BASE + u.pathname + '#k=' + new URLSearchParams(u.hash.slice(1)).get('k'); };
 
+// The More drawer covers the bar's right end; people close it before Create link.
+const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }));
 (async () => {
   const b = await chromium.launch();
   try {
@@ -63,7 +66,7 @@ const visitor = (adminURL) => { const u = new URL(adminURL); return BASE + u.pat
     await p.fill('#burn-text', 'PIN brankas 9911'); await p.selectOption('#burn-views', '1'); await p.click('dialog[open] button[type=submit]');
     await p.waitForFunction(() => document.querySelector('.ed-src').value.includes(':::burn '));
     await p.click('#adv summary'); await p.click('label:has([data-feature=signoff])');
-    await p.click('#create'); await p.waitForURL(/\/n\//); await p.waitForSelector('#note:not(.hide)'); await p.keyboard.press('Escape');
+    await closeMenus(p); await p.click('#create'); await p.waitForURL(/\/n\//); await p.waitForSelector('#note:not(.hide)'); await p.keyboard.press('Escape');
     const k = p.url();
     const r1 = await page(b); await r1.goto(visitor(k)); await r1.waitForSelector('.poll-opt');
     await r1.click('.poll-opt >> nth=1'); await r1.waitForTimeout(500);
@@ -78,8 +81,8 @@ const visitor = (adminURL) => { const u = new URL(adminURL); return BASE + u.pat
     ok('sign-off: signature listed', (await r2.textContent('#sign-list')).includes('Budi'));
 
     // --- decoy ---
-    const dec = await create(p, { title: 'Rahasia', body: 'isi asli', pills: ['password', 'decoy'],
-      fill: { '#password': 'asli123', '#decoy-password': 'palsu123', '#decoy-text': 'daftar belanja biasa' } });
+    const dec = await create(p, { title: 'Rahasia', body: 'isi asli', pw: 'asli123', pills: ['decoy'],
+      fill: { '#decoy-password': 'palsu123', '#decoy-text': 'daftar belanja biasa' } });
     const d1 = await page(b); await d1.goto(visitor(dec)); await d1.waitForSelector('.pw-form');
     await d1.fill('.pw-form input', 'palsu123'); await d1.click('.pw-form button');
     await d1.waitForSelector('#note:not(.hide)', { timeout: 20000 });

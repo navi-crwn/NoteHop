@@ -200,14 +200,14 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); width: 16
 .eyebrow b { background: var(--grad); color: #061016; padding: 1px 8px; border-radius: 999px; font-size: .74rem; }
 
 /* ---------- compose ---------- */
-.compose-head { text-align: center; margin: 4px 0 26px; }
-.compose-head h1 { margin: 0; }
-.compose-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
-@media (max-width: 980px) { .compose-grid { grid-template-columns: 1fr; } }
+/* One column: a row of starters, the editor at full width (web notes get
+   their result beside the code), and one bar of settings under it. */
+.compose-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 4px 0 6px; }
+.compose-head h1 { margin: 0; font-size: 1.5rem; letter-spacing: -.02em; }
+.start-desc { margin: 0 2px 14px; }
 .editor-card { padding: 14px; }
 .title-input { height: auto !important; border: 0 !important; background: transparent !important; box-shadow: none !important;
   font-size: 1.5rem !important; font-weight: 750; letter-spacing: -.02em; padding: 6px 8px !important; margin-bottom: 6px; }
-.options { position: sticky; top: 76px; padding: 18px; }
 .opt { border: 0; padding: 0; margin: 0 0 18px; min-width: 0; }
 .opt legend { font-size: .74rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; padding: 0; }
 /* pill toggles: every optional feature is switched on with one of these */
@@ -655,16 +655,12 @@ button.live-av { cursor: pointer; }
 .profile-list a { font-weight: 650; }
 
 /* ---------- friendly compose: starters, choice cards, presets ---------- */
-.starters { margin: 0 0 18px; }
-.starters .h-sub { margin-top: 0; }
-.starter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-.starter { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 10px; row-gap: 2px; align-items: start; text-align: start;
-  padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--line-2); background: var(--panel); color: var(--text); font: inherit; cursor: pointer; }
-.starter svg { grid-row: span 2; width: 20px; height: 20px; color: var(--accent); margin-top: 2px; }
-.starter b { font-size: .92rem; }
-.starter span { font-size: .78rem; color: var(--muted); line-height: 1.35; }
-.starter:hover { border-color: var(--accent); }
-.starter[aria-pressed=true] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--panel)); }
+.starters { display: flex; flex-wrap: wrap; gap: 8px; }
+.starter { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 13px; border-radius: 999px; border: 1px solid var(--line-2);
+  background: var(--panel); color: var(--muted); font: 600 .85rem var(--sans); white-space: nowrap; cursor: pointer; }
+.starter svg { width: 16px; height: 16px; color: var(--accent); }
+.starter:hover { border-color: var(--accent); color: var(--text); }
+.starter[aria-pressed=true] { border-color: var(--accent); color: var(--text); background: color-mix(in srgb, var(--accent) 12%, var(--panel)); }
 .choice-grid { display: grid; gap: 8px; }
 .choice { position: relative; display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--line-2); cursor: pointer; }
 .choice input, .toggle input, .seg-choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
@@ -710,10 +706,67 @@ body.expert .seg-choice [data-tech]::after { display: none; }
 .seg-choice { border-radius: 12px; }
 .seg-choice label { flex: 1 1 0; }
 .seg-choice span { white-space: normal; line-height: 1.25; padding: 7px 6px; border-radius: 9px; font-size: .82rem; }
+
+/* ---------- compose: the settings bar under the editor ----------
+   Each setting is a <details>: the button shows what is chosen, the menu
+   opens upwards with the choices and what they mean. "More" opens a drawer
+   at the side. On phones the buttons are icons and every menu is a sheet. */
+.share-bar { position: sticky; bottom: 0; z-index: 25; display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  margin: 12px -14px 0; padding: 10px 14px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--panel-2) 55%, var(--panel)); }
+.share-bar #create { margin-inline-start: auto; height: 44px; }
+.pick { position: relative; }
+.pick > summary { list-style: none; gap: 7px; height: 40px; padding: 0 12px; }
+.pick > summary::-webkit-details-marker { display: none; }
+.pick > summary .pick-ico { width: 17px; height: 17px; color: var(--accent); }
+.pick > summary .dd { width: 13px; height: 13px; color: var(--faint); }
+.pick[open] > summary { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.pick .count { min-width: 19px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: 750 .72rem/19px var(--sans); text-align: center; }
+.pick-pop { position: absolute; bottom: calc(100% + 8px); inset-inline-start: 0; z-index: 41; width: 340px; max-height: min(520px, calc(100vh - 120px)); overflow: auto;
+  margin: 0; padding: 8px; border: 1px solid var(--line-2); border-radius: 14px; background: var(--panel); box-shadow: var(--shadow); min-width: 0; }
+.pick-pop legend { float: left; width: 100%; padding: 4px 6px 8px; font-size: .78rem; font-weight: 650; color: var(--faint); }
+.pick-pop .choice-grid { clear: both; gap: 2px; }
+.pick-pop .choice { border-color: transparent; padding: 9px 10px; }
+.pick-pop .choice:hover { background: var(--panel-2); }
+.pick-pop .choice:has(input:checked) { border-color: transparent; background: color-mix(in srgb, var(--accent) 11%, var(--panel)); }
+.pick-pop .choice:has(input:checked)::after { content: ""; flex: none; width: 9px; height: 15px; margin: 2px 4px 0 auto; border: solid var(--accent); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.pick-pop .more-modes { margin: 4px 0 0; padding-top: 6px; border-top: 1px solid var(--line); }
+.pick-pop .more-modes > summary { padding: 4px 10px; margin: 0; }
+.pick-pop .feat { margin: 8px 4px 4px; }
+.pick-pop small, .drawer small { font-weight: 400; }
+.share-foot { padding: 0 2px; }
+.share-foot .summary { margin: 10px 0 0; padding: 0; border: 0; background: none; color: var(--muted); }
+.share-foot .warn-text, .share-foot .alert { margin: 8px 0 0; }
+/* "More": a drawer from the side */
+.drawer { position: fixed; top: 0; bottom: 0; inset-inline-end: 0; z-index: 61; width: min(420px, 100vw); overflow: auto;
+  padding: 18px 22px 28px; background: var(--panel); border-inline-start: 1px solid var(--line-2); box-shadow: var(--shadow); }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.drawer-head h2 { margin: 0; font-size: 1.15rem; }
+.drawer > .hint { display: block; margin: 4px 0 6px; }
+.drawer .adv-group:first-of-type { border-top: 0; }
+/* the menus live inside the bar, so the bar rises above the dimmed page (and the site header) */
+.share-bar:has(.pick[open]) { z-index: 70; }
+.scrim { position: fixed; inset: 0; z-index: 65; background: rgba(10, 12, 20, .28); }
+body.sheet-open { overflow: hidden; }
+.scrim[hidden] { display: none; }
 @media (max-width: 640px) {
-  /* Starters scroll sideways on phones, so the editor stays near the top. */
-  .starter-grid { grid-auto-flow: column; grid-auto-columns: 62%; grid-template-columns: none; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px; }
-  .starter { scroll-snap-align: start; }
+  .compose-head h1 { font-size: 1.25rem; }
+  /* the starters scroll sideways, so the editor stays near the top */
+  .starters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -14px; padding: 0 14px 2px; width: calc(100% + 28px); }
+  .share-bar { position: fixed; left: 0; right: 0; bottom: 0; margin: 0; gap: 6px; padding: 8px 10px calc(10px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line-2); background: var(--panel); box-shadow: 0 -8px 24px rgba(30, 30, 80, .08); }
+  body[data-page=new] main { padding-bottom: 84px; }
+  .pick > summary { width: 44px; height: 44px; padding: 0; position: relative; }
+  .pick > summary .pick-ico { width: 20px; height: 20px; }
+  .pick > summary .dd { display: none; }
+  .pick > summary .pick-val { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .pick .count { position: absolute; top: -6px; inset-inline-end: -6px; }
+  .share-bar #create { flex: 1; height: 44px; padding: 0 12px; }
+  /* every menu is a sheet from the bottom */
+  .pick-pop, .drawer { position: fixed; top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 82vh; z-index: 61;
+    padding: 16px 16px calc(20px + env(safe-area-inset-bottom)); border: 0; border-radius: 20px 20px 0 0; box-shadow: 0 -20px 50px rgba(10, 12, 20, .22); }
+  .pick-pop::before, .drawer::before { content: ""; display: block; width: 40px; height: 5px; margin: -6px auto 10px; border-radius: 3px; background: var(--line-2); }
+  .pick-pop legend { font-size: 1.05rem; font-weight: 700; color: var(--text); padding: 0 4px 8px; }
+  .pick-pop .choice { padding: 12px 10px; }
 }
 
 /* ---------- note page and share dialog ---------- */
