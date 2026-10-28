@@ -27,16 +27,32 @@ import (
 const ssoCookie = "nh_sso"
 
 type ssoTicket struct {
-	Sub    string `json:"sub"`
-	Aud    string `json:"aud"` // the client the ticket is for; checked when set
-	Email  string `json:"email"`
-	Name   string `json:"name"`
-	Avatar string `json:"avatar"`
-	Admin  bool   `json:"admin"`
-	State  string `json:"state"`
-	Iat    int64  `json:"iat"`
-	Exp    int64  `json:"exp"`
-	Jti    string `json:"jti"`
+	Sub      string   `json:"sub"`
+	Aud      string   `json:"aud"` // the client the ticket is for; checked when set
+	Email    string   `json:"email"`
+	Name     string   `json:"name"`
+	Username string   `json:"username"` // v2: the account server's username, used for a new account when free
+	Avatar   string   `json:"avatar"`
+	Admin    bool     `json:"admin"`
+	Roles    []string `json:"roles"` // v2: nil when absent; present means promote or demote the local role
+	Status   string   `json:"status"`
+	State    string   `json:"state"`
+	Iat      int64    `json:"iat"`
+	Exp      int64    `json:"exp"`
+	Jti      string   `json:"jti"`
+	V        int      `json:"v"`
+}
+
+// roleFromRoles maps the account server's roles to the local role: the
+// owner, a global admin or an admin of this app is an admin here, anyone
+// else a user. Called only when the ticket or profile carries roles.
+func (a *App) roleFromRoles(roles []string) string {
+	for _, r := range roles {
+		if r == "owner" || r == "admin" || r == "admin:"+a.cfg.SSOClient {
+			return db.RoleAdmin
+		}
+	}
+	return db.RoleUser
 }
 
 var errBadTicket = errors.New("bad ticket")
@@ -148,6 +164,10 @@ func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
 		a.authFail(w, r, http.StatusInternalServerError, "err.sso_failed")
 		return
 	}
+	if u.Status == db.StatusSuspended {
+		a.authFail(w, r, http.StatusForbidden, "err.account_suspended")
+		return
+	}
 	a.startSession(w, u)
 	http.SetCookie(w, &http.Cookie{Name: ssoCookie, Path: "/auth/", MaxAge: -1})
 	// The vault page opens straight to next when this browser already holds
@@ -162,20 +182,35 @@ var errRegClosed = errors.New("registration closed")
 // them is a later feature.
 func (a *App) linkSSOUser(t *ssoTicket) (*db.User, error) {
 	prof := db.User{SSOID: t.Sub, Email: clip(t.Email, 254), DisplayName: clip(t.Name, 60), Avatar: clip(t.Avatar, 500)}
+	if t.Roles != nil {
+		prof.Role = a.roleFromRoles(t.Roles)
+	}
 	for try := 0; try < 6; try++ {
 		u, err := a.db.UserBySSO(t.Sub)
 		if err == nil {
 			u.Email, u.DisplayName, u.Avatar = prof.Email, prof.DisplayName, prof.Avatar
-			return u, a.db.UpdateSSOProfile(u)
+			if err := a.db.UpdateSSOProfile(u); err != nil {
+				return nil, err
+			}
+			// A v2 ticket carries roles: it promotes and demotes alike.
+			if t.Roles != nil && prof.Role != u.Role {
+				u.Role = prof.Role
+				return u, a.db.SetRole(u.ID, u.Role)
+			}
+			return u, nil
 		}
 		if !errors.Is(err, db.ErrNotFound) {
 			return nil, err
 		}
-		if !a.cfg.Registration {
+		if !a.registration() {
 			return nil, errRegClosed
 		}
 		u = &prof
 		u.Username = ssoUsername(t.Email, try)
+		// The account server's own username is preferred the first time.
+		if try == 0 && userRe.MatchString(t.Username) {
+			u.Username = t.Username
+		}
 		if a.usernameProblem(u.Username) != "" {
 			u.Username = ssoUsername("user@", try+1) // e-mail named after a reserved word
 		}

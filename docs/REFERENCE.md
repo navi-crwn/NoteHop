@@ -26,7 +26,8 @@ Every setting is an environment variable. On a VPS they live in `/etc/notehop/no
 | `NOTEHOP_SSH_KEY` | `ssh_host_ed25519_key` next to the DB | SSH host key (made on first start) |
 | `NOTEHOP_PRIVATE_HOOKS` | `false` | Allow Watch webhooks to private/loopback addresses and `http://` (own network only) |
 | `TELEGRAM_BOT_TOKEN` | empty | Bot token from @BotFather; needs `NOTEHOP_BASE_URL` (the webhook is registered at start) |
-| `NOTEHOP_ADMINS` | empty | Site admin usernames (comma-separated): may use short (< 7) and reserved link names, and reserved usernames |
+| `NOTEHOP_ADMINS` | empty | Usernames given the **admin** role at start, if those accounts already exist (comma-separated). Admins may use short (< 7) and reserved link names, and reserved usernames. The list grants nothing by itself: the role lives in the `users.role` column, and is also set from the account server's roles (`owner`, `admin`, `admin:<client>`) at sign-on and through `/hop/profile`, so registering a listed name later makes nobody an admin |
+| `NOTEHOP_HOP_CLIENTS` | `imperium,helink` | Apps that may call the signed `/hop/*` API with `NOTEHOP_SSO_SECRET`: the control center and the account server. See [Control center](#control-center-hop-app-protocol) |
 | `NOTEHOP_RESERVED` | empty | Extra reserved names (comma-separated), besides `internal/app/names/reserved.txt` |
 | `NOTEHOP_CONTACT` | empty | Email or URL for contact and abuse reports, shown on `/contact` |
 | `NOTEHOP_SSO_URL` | empty | Account server for single sign-on ("Continue with …"). Empty = NoteHop's own accounts only |
@@ -121,7 +122,30 @@ Everything is JSON. Headers: `X-Admin` (owner token), `X-Write` (proof of the ke
 | `POST /api/recover/finish` | public | `{ticket, next, vault_wrap}`: new password, the code is used up, every session ends and a new one starts |
 | `GET /` · `/new` · `/diff` · `/nearby` · `/faq` | anyone | Home page, full create page, text compare, nearby devices, FAQ |
 | `GET /sw.js` · `/manifest.webmanifest` · `/offline` | | Installable app (PWA) |
+| `POST /api/n/{token}/report` | anyone (5 per hour per IP) | **Report this note** `{reason: illegal\|abuse\|spam\|copyright\|other, note (≤ 500)}`: queued for the operator, never includes the note's content |
 | `GET /healthz` | anyone | Health check |
+| `/hop/*` | control center / account server (signed) | See below |
+
+## Control center (HOP App Protocol)
+
+With single sign-on configured, NoteHop also speaks the HOP App Protocol v1 under `/hop/*`, so a control center can read and act on it and the account server can push account events. Every call is signed with `NOTEHOP_SSO_SECRET` by one of the apps in `NOTEHOP_HOP_CLIENTS` (`X-HOP-App`, `X-HOP-Timestamp`, `X-HOP-Nonce`, `X-HOP-Actor`, `X-HOP-Signature` = base64url HMAC-SHA256 of `hop1|app|ts|nonce|METHOD|path-with-query|sha256hex(body)`; 120 s max age, nonces work once). There are no cookies and no CSRF check here. Replies are `{ok:true, data, page?}` or `{ok:false, error, message}` (401 `bad_signature` / `stale_request` / `replay`, 404 `not_configured` while SSO is off). Times are ISO-8601 UTC; users are identified by their account-server id (`sub`) and `local_id` (password accounts: `local:<id>`). Everything that changes data lands in the `hop_audit` table.
+
+**Zero-knowledge still holds:** an encrypted note is listed with its metadata and `encrypted: true`, never its content; `title` and `preview` are filled only for public notes.
+
+| Endpoint | What it does |
+| --- | --- |
+| `GET /hop/health` · `/hop/manifest` · `/hop/stats` · `/hop/metrics` | Health, self-description (content types, actions, extensions, settings), KPIs with a 14-day series, Prometheus text |
+| `GET /hop/users?q&cursor&limit` · `GET /hop/users/{sub}` | Accounts (username or email contains `q`): role, status, vault set, notes, sessions |
+| `POST /hop/users/{sub}/actions` | `{action, reason, params}`: `revoke_sessions`, `delete_notes`, `purge`, `set_role` (`params.role` admin/user), `reset_vault` |
+| `POST /hop/profile` | Profile push from the account server: email, name, avatar, `username` (only when free per the name rules, else `username_kept: true`), `roles` (promotes **and** demotes), `status` |
+| `POST /hop/events` | `{id, type, at, data}`, idempotent by `id`: `profile.updated`, `account.status` (`suspended` signs out and blocks sign-in), `account.deleted` (purge), `session.revoked` |
+| `GET /hop/content?type=note\|file&q&owner&status&cursor&limit` · `GET /hop/content/note/{id}` · `GET /hop/content/file/{id}` | Notes by link-name prefix or public title; `status` = encrypted, public, expiring, frozen, burn. Attachments: id, size, created, expires |
+| `POST /hop/content/note/{id}/actions` · `…/file/{id}/actions` | Notes: `delete`, `takedown` (name held 365 days, like the CLI), `freeze` (read-only for everyone), `set_expiry` (`params.expires` ISO or null), `release_slug`, `disable_inbox`, `disable_watch`. Files: `delete` |
+| `GET /hop/reports?status&cursor` · `POST /hop/reports/{id}/actions` | Reader reports; `dismiss`, `resolve`, `takedown` |
+| `GET /hop/settings` · `PUT /hop/settings` | Environment values, read-only, plus `registration`, the one setting the control center may change (stored in the `settings` table, overriding `NOTEHOP_REGISTRATION`) |
+| `GET /hop/search?q` · `GET /hop/audit?cursor` | Exact link name, public titles, usernames and emails; the audit log |
+| `GET /hop/x/names` · `POST /hop/x/names/holds/{slug}/actions` | Reserved names, blocked-word count, holds and takedown holds; `release` |
+| `GET /hop/x/files` · `/hop/x/realtime` · `/hop/x/integrations` | Attachment usage and budget; live rooms and nearby networks; Telegram, SSH and webhook status |
 
 ## Third-party code
 

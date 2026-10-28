@@ -70,6 +70,13 @@ func (h *nearbyHub) join(room string, p *nearbyPeer) ([]*nearbyPeer, bool) {
 	return others, true
 }
 
+// count is how many networks have devices looking for each other, for stats.
+func (h *nearbyHub) count() int {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return len(h.rooms)
+}
+
 func (h *nearbyHub) leave(room string, p *nearbyPeer) {
 	h.mu.Lock()
 	defer h.mu.Unlock()

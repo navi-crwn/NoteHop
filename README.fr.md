@@ -142,6 +142,9 @@ Les notes de code ne sont jamais exécutées : elles s'affichent en texte et se 
 **Puis-je utiliser mon propre serveur de connexion ?**
 Oui. NoteHop a ses propres comptes et peut aussi connecter les gens via un serveur de comptes que vous gérez (authentification unique). Voir `NOTEHOP_SSO_*` dans [docs/REFERENCE.md](docs/REFERENCE.md).
 
+**Que se passe-t-il si quelqu'un partage quelque chose de nuisible ?**
+Chaque note a **Signaler cette note** dans son menu. Le signalement (un motif et un court message, jamais le contenu de la note) arrive aux responsables du site. Ils ne peuvent pas lire une note chiffrée, mais ils peuvent la retirer, et le nom du lien est alors réservé pendant un an. Les opérateurs traitent les signalements avec la commande `notehop takedown` ou depuis un centre de contrôle via le [HOP App Protocol](docs/REFERENCE.md#control-center-hop-app-protocol).
+
 **Comment faire une sauvegarde ?**
 `notehop backup -db notehop.db copie.db` fonctionne pendant que le serveur tourne. L'installateur pour VPS met aussi en place une sauvegarde quotidienne. Les notes restent verrouillées dans la sauvegarde.
 

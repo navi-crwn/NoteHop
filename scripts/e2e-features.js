@@ -78,6 +78,15 @@ async function pickMode(p, m) { await p.evaluate(() => { const d = document.getE
   const red = await p.inputValue('.redact-out'); ok('redact masks', !red.includes('budi@') && !red.includes('7890') && !red.includes('rahasia123'), red);
   await p.click('dialog[open] .btn.primary'); await p.waitForTimeout(1500); const rl = await p.evaluate(() => navigator.clipboard.readText()); ok('redact copy link', /\/n\/\w+#k=/.test(rl), rl.slice(0, 30));
   await p.keyboard.press('Escape');
+  // report this note (from the menu; a thank-you toast, no reload)
+  await act(p, 'report'); await p.waitForSelector('#report-dlg[open]');
+  await p.selectOption('#report-reason', 'spam'); await p.fill('#report-note', 'uji laporan');
+  await p.click('#report-send');
+  // An earlier "copied" toast may still be fading: wait for this one by its text.
+  await p.waitForSelector('.toast.ok:has-text("Thank you")', { timeout: 5000 });
+  ok('report thanks', true);
+  await p.waitForSelector('#report-dlg', { state: 'detached', timeout: 3000 });
+  ok('report dialog closed', !(await p.$('#report-dlg[open]')));
   // dashboard groups + graph
   await p.goto(BASE + '/dashboard'); await p.waitForSelector('#mine .note-row');
   await p.click('[data-group=todo]'); await p.waitForTimeout(2500);

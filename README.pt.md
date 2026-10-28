@@ -142,6 +142,9 @@ Notas de código nunca são executadas: aparecem como texto e baixam como `.txt`
 **Posso usar meu próprio servidor de login?**
 Pode. O NoteHop tem contas próprias e também pode fazer login por um servidor de contas seu (login único). Veja `NOTEHOP_SSO_*` em [docs/REFERENCE.md](docs/REFERENCE.md).
 
+**O que acontece se alguém compartilhar algo nocivo?**
+Toda nota tem **Denunciar esta nota** no menu. A denúncia (um motivo e uma mensagem curta, nunca o conteúdo da nota) vai para quem administra o site. Eles não conseguem ler uma nota cifrada, mas podem retirá-la, e o nome do link fica reservado por um ano. Os operadores revisam denúncias com o comando `notehop takedown` ou por um centro de controle via [HOP App Protocol](docs/REFERENCE.md#control-center-hop-app-protocol).
+
 **Como faço backup?**
 `notehop backup -db notehop.db copia.db` funciona com o servidor rodando. O instalador para VPS também agenda um backup diário. No backup, as notas continuam trancadas.
 

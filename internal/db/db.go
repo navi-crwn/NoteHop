@@ -163,6 +163,24 @@ var migrations = []string{
 	CREATE TABLE recovery_codes (user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, slot INTEGER NOT NULL,
 		proof_hash TEXT NOT NULL, wrap TEXT NOT NULL, used INTEGER NOT NULL DEFAULT 0, created INTEGER NOT NULL,
 		PRIMARY KEY (user_id, slot));`,
+	// 9: the control center's view of this app (HOP App Protocol). A site
+	// role per account (admin or user, set from the account server's roles or
+	// seeded from NOTEHOP_ADMINS), an account status (suspended accounts can't
+	// sign in), an audit log of what the control center did, the ids of the
+	// account server's events already handled (so retries are harmless), and
+	// settings the control center may change at run time.
+	`ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user';
+	ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active';
+	CREATE TABLE hop_audit (id INTEGER PRIMARY KEY, at INTEGER NOT NULL, actor TEXT NOT NULL, app TEXT NOT NULL,
+		action TEXT NOT NULL, target TEXT NOT NULL, detail TEXT NOT NULL DEFAULT '{}');
+	CREATE TABLE hop_events_seen (id TEXT PRIMARY KEY, at INTEGER NOT NULL);
+	CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated INTEGER NOT NULL);`,
+	// 10: reports from readers ("Report this note"). No foreign key: a report
+	// outlives the note it was about, so the record of a takedown stays.
+	`CREATE TABLE reports (id INTEGER PRIMARY KEY, note_id INTEGER NOT NULL, token TEXT NOT NULL, reason TEXT NOT NULL,
+		note TEXT NOT NULL DEFAULT '', ip_hash TEXT NOT NULL, created INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'open');
+	CREATE INDEX reports_status ON reports(status, id);
+	CREATE INDEX reports_ip ON reports(ip_hash, created);`,
 }
 
 // migrate applies pending migrations, each in its own transaction together
@@ -574,13 +592,23 @@ type User struct {
 	Avatar      string
 	VaultCheck  string
 	VaultWrap   string // see migration 8
+	Role        string // "admin" or "user" (migration 9)
+	Status      string // "active" or "suspended"
 }
 
-const userCols = `u.id, u.username, u.auth_hash, u.created, COALESCE(u.sso_id, ''), u.email, u.display_name, u.avatar, u.vault_check, u.vault_wrap`
+// Account roles and statuses.
+const (
+	RoleAdmin       = "admin"
+	RoleUser        = "user"
+	StatusActive    = "active"
+	StatusSuspended = "suspended"
+)
 
-func scanUser(row *sql.Row) (*User, error) {
+const userCols = `u.id, u.username, u.auth_hash, u.created, COALESCE(u.sso_id, ''), u.email, u.display_name, u.avatar, u.vault_check, u.vault_wrap, u.role, u.status`
+
+func scanUser(row interface{ Scan(...any) error }) (*User, error) {
 	u := &User{}
-	err := row.Scan(&u.ID, &u.Username, &u.AuthHash, &u.Created, &u.SSOID, &u.Email, &u.DisplayName, &u.Avatar, &u.VaultCheck, &u.VaultWrap)
+	err := row.Scan(&u.ID, &u.Username, &u.AuthHash, &u.Created, &u.SSOID, &u.Email, &u.DisplayName, &u.Avatar, &u.VaultCheck, &u.VaultWrap, &u.Role, &u.Status)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -591,7 +619,7 @@ func scanUser(row *sql.Row) (*User, error) {
 }
 
 func (d *DB) CreateUser(username, authHash string) (*User, error) {
-	u := &User{Username: username, AuthHash: authHash, Created: now()}
+	u := &User{Username: username, AuthHash: authHash, Created: now(), Role: RoleUser, Status: StatusActive}
 	res, err := d.Exec(`INSERT INTO users (username, auth_hash, created) VALUES (?, ?, ?)`, u.Username, u.AuthHash, u.Created)
 	if isUnique(err) {
 		return nil, ErrTaken
@@ -608,8 +636,12 @@ func (d *DB) CreateUser(username, authHash string) (*User, error) {
 // sign-on id is already in use.
 func (d *DB) CreateSSOUser(u *User) error {
 	u.Created = now()
-	res, err := d.Exec(`INSERT INTO users (username, auth_hash, created, sso_id, email, display_name, avatar)
-		VALUES (?, '', ?, ?, ?, ?, ?)`, u.Username, u.Created, u.SSOID, u.Email, u.DisplayName, u.Avatar)
+	if u.Role == "" {
+		u.Role = RoleUser
+	}
+	u.Status = StatusActive
+	res, err := d.Exec(`INSERT INTO users (username, auth_hash, created, sso_id, email, display_name, avatar, role)
+		VALUES (?, '', ?, ?, ?, ?, ?, ?)`, u.Username, u.Created, u.SSOID, u.Email, u.DisplayName, u.Avatar, u.Role)
 	if isUnique(err) {
 		return ErrTaken
 	}
