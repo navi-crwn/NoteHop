@@ -136,13 +136,14 @@
   };
 
   // Admin links stay on the main site (sessions, dashboard); links for
-  // readers use the share domain when one is configured.
+  // readers use the share domain when one is configured, in its short form
+  // share.example/TOKEN.
   NH.noteURL = function (token, frag) {
     var q = new URLSearchParams();
     Object.keys(frag || {}).forEach(function (k) { if (frag[k]) q.set(k, frag[k]); });
-    var s = q.toString(), d = document.body.dataset;
-    var base = (frag && frag.a) ? (d.main || location.origin) : (d.share || d.main || location.origin);
-    return base + '/n/' + encodeURIComponent(token) + (s ? '#' + s : '');
+    var s = q.toString(), d = document.body.dataset, owner = frag && frag.a;
+    var base = owner || !d.share ? (d.main || location.origin) + '/n/' : d.share + '/';
+    return base + encodeURIComponent(token) + (s ? '#' + s : '');
   };
 
   var rtf = window.Intl && Intl.RelativeTimeFormat ? new Intl.RelativeTimeFormat(NH.lang, { numeric: 'auto' }) : null;

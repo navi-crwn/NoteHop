@@ -15,7 +15,7 @@ Every setting is an environment variable. On a VPS they live in `/etc/notehop/no
 | `NOTEHOP_TRUST_PROXY` | `false` | Use `X-Forwarded-For` for rate limits (turn on behind a reverse proxy) |
 | `NOTEHOP_REGISTRATION` | `true` | Open or close sign-ups |
 | `NOTEHOP_SITE` | `NoteHop` | Site name |
-| `NOTEHOP_SHARE_URL` | empty | A second domain for shared links (for example `https://nhop.link`). Sign-in, dashboard, editor and owner links stay on `NOTEHOP_BASE_URL` |
+| `NOTEHOP_SHARE_URL` | empty | A second domain for shared links (for example `https://nhop.link`). Reader links become `https://nhop.link/TOKEN`; old `/n/` links of any kind are moved to the right domain. Sign-in, dashboard, editor and owner links stay on `NOTEHOP_BASE_URL` |
 | `NOTEHOP_FILE_MB` | `10` | Largest attachment (MB). `0` turns attachments off. Raise `client_max_body_size` in nginx too |
 | `NOTEHOP_FILES_IP_MB` | `100` | Attachments one IP address may upload per 24 hours (MB). `0` = no limit |
 | `NOTEHOP_FILES_TOTAL_MB` | `2048` | Total size of all live attachments (kept in SQLite, deleted after 24 hours). `0` = no limit |

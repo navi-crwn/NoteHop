@@ -8,6 +8,17 @@
   var token = document.body.dataset.token;
   var frag = new URLSearchParams(location.hash.slice(1));
   var K = frag.get('k'), A = frag.get('a'), isNew = frag.get('new') === '1';
+  // Readers belong on the share domain, owners on the main site. Only the
+  // #fragment says which, and it never reaches the server, so the move
+  // happens here; the fragment goes along untouched.
+  var site = document.body.dataset;
+  if (site.share && site.main) {
+    var onMain = location.origin === new URL(site.main).origin, onShare = location.origin === new URL(site.share).origin;
+    if ((!A && onMain) || (A && onShare)) {
+      location.replace((A ? site.main + '/n/' : site.share + '/') + encodeURIComponent(token) + location.search + location.hash);
+      return;
+    }
+  }
   if (isNew) {
     frag.delete('new');
     history.replaceState(null, '', location.pathname + location.search + '#' + frag.toString());
