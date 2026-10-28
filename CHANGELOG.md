@@ -4,6 +4,12 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## 2026-10-28
 
+### Short share links ([short-share-links](https://github.com/navi-crwn/NoteHop/tree/short-share-links))
+- With `NOTEHOP_SHARE_URL`, reader links are short: `share.example/TOKEN` or `share.example/link-name`. Owner links stay on the main site.
+- Old links of any kind land in the right place: reader links opened on the main site move to the share domain, owner links opened on the share domain move back, with the `#…` part (key and rights) unchanged. `share.example/n/TOKEN` redirects to the short form.
+- The share domain now also serves what a note page needs (translations, attachments, diagram and web-note frames).
+- `notehop new` prints the short reader link; `notehop get` and `takedown` accept it.
+
 ### A simpler create page ([new-compose](https://github.com/navi-crwn/NoteHop/tree/new-compose))
 - The editor uses the full width; the side panel of settings is gone. Web notes show the result beside the code.
 - "What do you want to make?" is one row of small buttons, with a one-line description of the chosen one.

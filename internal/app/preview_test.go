@@ -81,13 +81,42 @@ func TestShareDomain(t *testing.T) {
 	if res := req("nh.test", "/"); res.StatusCode != http.StatusFound {
 		t.Fatalf("share host root: %d", res.StatusCode)
 	}
-	for _, p := range []string{"/n/nope-nope", "/api/n/nope-nope", "/healthz"} {
-		if res := req("nh.test", p); res.StatusCode == http.StatusFound {
-			t.Fatalf("share host %s redirected", p)
+	// What a note page loads is served here too: a redirect to the main site
+	// would be blocked by the page's own CSP.
+	for _, p := range []string{"/api/n/nope-nope", "/healthz", "/i18n/en.js", "/run", "/render/mermaid", "/sw.js", "/static/js/app.js", "/api/files/abc"} {
+		if res := req("nh.test", p); res.StatusCode == http.StatusFound || res.StatusCode == http.StatusMovedPermanently {
+			t.Fatalf("share host %s redirected to %s", p, res.Header.Get("Location"))
 		}
 	}
-	res := req("note.test", "/")
+	// Short links: nh.test/TOKEN is the note page; the long form moves there.
+	share, admin, err := a.createPublic("Rapat", "isi")
+	if err != nil || !strings.HasPrefix(share, "https://nh.test/") || strings.Contains(share, "/n/") || !strings.HasPrefix(admin, "https://note.test/n/") {
+		t.Fatalf("links: %v %s %s", err, share, admin)
+	}
+	tok, _, _ := strings.Cut(strings.TrimPrefix(share, "https://nh.test/"), "#")
+	res := req("nh.test", "/"+tok)
 	body, _ := io.ReadAll(res.Body)
+	if res.StatusCode != http.StatusOK || !strings.Contains(string(body), `data-token="`+tok+`"`) {
+		t.Fatalf("share host short link: %d", res.StatusCode)
+	}
+	if res := req("nh.test", "/n/rapat-senin?x=1"); res.StatusCode != http.StatusMovedPermanently || res.Header.Get("Location") != "/rapat-senin?x=1" {
+		t.Fatalf("share host long link: %d %s", res.StatusCode, res.Header.Get("Location"))
+	}
+	// Site pages are reserved names, so they still go to the main site.
+	for _, p := range []string{"/new", "/faq", "/login", "/dashboard", "/@someone", "/recover"} {
+		if res := req("nh.test", p); res.StatusCode != http.StatusFound || res.Header.Get("Location") != "https://note.test"+p {
+			t.Fatalf("share host %s: %d %s", p, res.StatusCode, res.Header.Get("Location"))
+		}
+	}
+	// The main site keeps the long form (owners, and old links).
+	if res := req("note.test", "/n/"+tok); res.StatusCode != http.StatusOK {
+		t.Fatalf("main site note page: %d", res.StatusCode)
+	}
+	if got := a.readerLink("rapat-senin"); got != "https://nh.test/rapat-senin" {
+		t.Fatalf("reader link: %s", got)
+	}
+	res = req("note.test", "/")
+	body, _ = io.ReadAll(res.Body)
 	if res.StatusCode != 200 || !strings.Contains(string(body), `data-share="https://nh.test"`) || !strings.Contains(string(body), `data-main="https://note.test"`) {
 		t.Fatalf("main site page: %d", res.StatusCode)
 	}

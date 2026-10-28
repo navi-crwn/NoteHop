@@ -12,13 +12,16 @@ BIN="$TMP/notehop"
 trap 'kill "$PID" 2>/dev/null; rm -rf "$TMP"' EXIT
 
 go build -o "$BIN" ./cmd/notehop || exit 1
-SUITES="${*:-e2e e2e-features e2e-server-features e2e-files e2e-live e2e-blocks e2e-nearby e2e-integrations e2e-types e2e-recovery e2e-ai e2e-web e2e-home e2e-compose}"
+SUITES="${*:-e2e e2e-features e2e-server-features e2e-files e2e-live e2e-blocks e2e-nearby e2e-integrations e2e-types e2e-recovery e2e-ai e2e-web e2e-home e2e-compose e2e-share}"
 FAILED=""
 PID=""
 for s in $SUITES; do
 	[ -n "$PID" ] && kill "$PID" 2>/dev/null && wait "$PID" 2>/dev/null
 	rm -f "$TMP"/test.db*
-	"$BIN" -addr "127.0.0.1:$PORT" -db "$TMP/test.db" >"$TMP/server.log" 2>&1 &
+	# e2e-share needs a share domain: localhost and 127.0.0.1 are two names for one server.
+	EXTRA=""
+	[ "$s" = e2e-share ] && EXTRA="NOTEHOP_BASE_URL=http://127.0.0.1:$PORT NOTEHOP_SHARE_URL=http://localhost:$PORT"
+	env $EXTRA "$BIN" -addr "127.0.0.1:$PORT" -db "$TMP/test.db" >"$TMP/server.log" 2>&1 &
 	PID=$!
 	sleep 1
 	if NOTEHOP_URL="http://127.0.0.1:$PORT" NOTEHOP_BIN="$BIN" node "scripts/$s.js" >"$TMP/out.txt" 2>&1; then
