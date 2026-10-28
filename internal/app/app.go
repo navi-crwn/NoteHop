@@ -176,6 +176,7 @@ func (a *App) routes() {
 	m.HandleFunc("GET /recover", a.page("recover", "rec.title", ""))
 	m.HandleFunc("GET /auth/sso", a.ssoStart)
 	m.HandleFunc("GET /auth/sso/callback", a.ssoCallback)
+	m.HandleFunc("GET /auth/sso/logout", a.ssoLogout)
 	m.HandleFunc("GET /n/{token}", a.oldNoteLink)
 	m.HandleFunc("GET /raw/{token}", a.raw)
 	m.HandleFunc("GET /mock/{token}", a.mock)
