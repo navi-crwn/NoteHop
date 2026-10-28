@@ -65,10 +65,19 @@ func TestSlugRules(t *testing.T) {
 	if code, _ := try(c, "rapat-senin"); code != 201 {
 		t.Fatalf("owner couldn't take the name back: %d", code)
 	}
-	// Short and reserved names are fine for a site admin.
+	// Short and reserved names are fine for a site admin. Being listed in
+	// NOTEHOP_ADMINS grants nothing by itself: the role is seeded at a start
+	// (SeedAdmins) once the account exists, so a squatter who registers the
+	// name first gets no privileges.
 	adm := newClient(t, srv)
 	if code, _, _ := adm.do("POST", "/api/register", map[string]any{"username": "navi", "auth": key()}, nil); code != 201 {
 		t.Fatalf("admin register: %d", code)
+	}
+	if code, got := try(adm, "eid"); code != 400 || got != "err.slug_short" {
+		t.Fatalf("listed name before seeding should be an ordinary user: %d %s", code, got)
+	}
+	if err := a.SeedAdmins(); err != nil {
+		t.Fatal(err)
 	}
 	if code, got := try(adm, "eid"); code != 201 {
 		t.Fatalf("admin short name: %d %s", code, got)

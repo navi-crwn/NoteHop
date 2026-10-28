@@ -74,6 +74,13 @@ func (w *watcher) add(note int64, u, key, event string, version int64) {
 	j.events = append(j.events, event)
 }
 
+// pending is how many webhooks wait to be sent, for stats.
+func (w *watcher) pending() int {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return len(w.jobs)
+}
+
 func (w *watcher) due(now time.Time) map[int64]*watchJob {
 	w.mu.Lock()
 	defer w.mu.Unlock()

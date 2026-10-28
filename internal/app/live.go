@@ -93,6 +93,37 @@ func (h *liveHub) leave(note int64, r *liveRoom, p *livePeer) {
 	}
 }
 
+// count is how many rooms are open, for stats.
+func (h *liveHub) count() int {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return len(h.rooms)
+}
+
+type liveRoomInfo struct {
+	note  int64
+	peers int
+}
+
+// snapshot lists the open rooms and how many people are in each, for the
+// control center. Note ids only: it can't see who or what.
+func (h *liveHub) snapshot() []liveRoomInfo {
+	h.mu.Lock()
+	rooms := make(map[int64]*liveRoom, len(h.rooms))
+	for k, v := range h.rooms {
+		rooms[k] = v
+	}
+	h.mu.Unlock()
+	out := make([]liveRoomInfo, 0, len(rooms))
+	for note, r := range rooms {
+		r.mu.Lock()
+		out = append(out, liveRoomInfo{note: note, peers: len(r.peers)})
+		r.mu.Unlock()
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].note < out[j].note })
+	return out
+}
+
 // list returns the peers in join order. Callers hold r.mu.
 func (r *liveRoom) list() []*livePeer {
 	out := make([]*livePeer, 0, len(r.peers))

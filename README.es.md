@@ -142,6 +142,9 @@ Las notas de código nunca se ejecutan: se muestran como texto y se descargan co
 **¿Puedo usar mi propio servidor de inicio de sesión?**
 Sí. NoteHop tiene sus propias cuentas y también puede iniciar sesión a través de un servidor de cuentas tuyo (inicio de sesión único). Mira `NOTEHOP_SSO_*` en [docs/REFERENCE.md](docs/REFERENCE.md).
 
+**¿Qué pasa si alguien comparte algo dañino?**
+Cada nota tiene **Denunciar esta nota** en su menú. La denuncia (un motivo y un mensaje corto, nunca el contenido de la nota) llega a quienes gestionan el sitio. No pueden leer una nota cifrada, pero sí retirarla, y el nombre del enlace queda reservado un año. Los operadores revisan las denuncias con el comando `notehop takedown` o desde un centro de control mediante el [HOP App Protocol](docs/REFERENCE.md#control-center-hop-app-protocol).
+
 **¿Cómo hago copias de seguridad?**
 `notehop backup -db notehop.db copia.db` funciona con el servidor en marcha. El instalador para VPS también programa una copia diaria. En la copia, las notas siguen cerradas.
 

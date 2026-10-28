@@ -142,6 +142,9 @@ Code notes are never run: they're shown as text and download as `.txt`. Web note
 **Can I use my own login server?**
 Yes. NoteHop has its own accounts, and can also sign people in through an account server you run (single sign-on). See `NOTEHOP_SSO_*` in [docs/REFERENCE.md](docs/REFERENCE.md).
 
+**What happens if someone shares something harmful?**
+Every note has **Report this note** in its menu. The report (a reason and a short message, never the note's content) goes to the people who run the site. They can't read a locked note, but they can take it down, and the link name is then kept back for a year. Operators review reports from the `notehop takedown` command or from a control center over the [HOP App Protocol](docs/REFERENCE.md#control-center-hop-app-protocol).
+
 **How do I back up?**
 `notehop backup -db notehop.db copy.db` works while the server runs. The VPS installer also sets up a daily backup. Notes stay locked in the backup too.
 

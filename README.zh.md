@@ -142,6 +142,9 @@ docker run -d -p 127.0.0.1:8090:8080 -v notehop:/data -e NOTEHOP_BASE_URL=https:
 **能用自己的登录服务器吗？**
 可以。NoteHop 有自己的账号，也可以通过你运营的账号服务器登录（单点登录）。见 [docs/REFERENCE.md](docs/REFERENCE.md) 里的 `NOTEHOP_SSO_*`。
 
+**如果有人分享了有害内容怎么办？**
+每条笔记的菜单里都有 **举报此笔记**。举报（一个原因和一句简短留言，绝不包含笔记内容）会送到网站管理者那里。他们读不了加密的笔记，但可以将其下架，下架后链接名会被保留一年。管理者通过 `notehop takedown` 命令或经由 [HOP App Protocol](docs/REFERENCE.md#control-center-hop-app-protocol) 的控制中心处理举报。
+
 **怎么备份？**
 `notehop backup -db notehop.db copy.db` 可以在服务器运行时执行。VPS 安装脚本也会设置每日备份。备份里的笔记同样是加密的。
 

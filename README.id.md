@@ -142,6 +142,9 @@ Catatan Kode tidak pernah dijalankan: tampil sebagai teks dan diunduh sebagai `.
 **Bisakah memakai server login sendiri?**
 Bisa. NoteHop punya akun sendiri, dan juga bisa memasukkan orang lewat server akun milikmu (single sign-on). Lihat `NOTEHOP_SSO_*` di [docs/REFERENCE.md](docs/REFERENCE.md).
 
+**Bagaimana kalau ada yang membagikan sesuatu yang berbahaya?**
+Setiap catatan punya **Laporkan catatan ini** di menunya. Laporan (alasan dan pesan singkat, tidak pernah isi catatannya) sampai ke pengelola situs. Mereka tidak bisa membaca catatan terkunci, tetapi bisa menurunkannya, dan nama link-nya lalu ditahan setahun. Pengelola memeriksa laporan lewat perintah `notehop takedown` atau dari pusat kendali melalui [HOP App Protocol](docs/REFERENCE.md#control-center-hop-app-protocol).
+
 **Bagaimana cara backup?**
 `notehop backup -db notehop.db salinan.db` aman dijalankan saat server hidup. Installer VPS juga memasang backup harian. Di backup pun catatan tetap terkunci.
 

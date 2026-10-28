@@ -13,8 +13,9 @@ import (
 // Rules for names people choose: custom link names (/n/…) and usernames
 // (/@…). Short names, site and brand words and offensive words are kept
 // back, and a name that belonged to a deleted note is held for a while, so
-// an old link never opens someone else's note. Site admins (NOTEHOP_ADMINS)
-// may use short and reserved names, e.g. for marketing links.
+// an old link never opens someone else's note. Site admins (the admin role,
+// from the account server's roles or seeded from NOTEHOP_ADMINS) may use
+// short and reserved names, e.g. for marketing links.
 
 // minSlug is the shortest custom link name for everyone but site admins.
 const minSlug = 7
@@ -92,8 +93,10 @@ func blockedName(name string) bool {
 	return false
 }
 
+// siteAdmin reads the account's role column, never the NOTEHOP_ADMINS list:
+// a name on that list grants nothing until the account exists at a start.
 func (a *App) siteAdmin(u *db.User) bool {
-	return u != nil && slices.Contains(a.cfg.Admins, u.Username)
+	return u != nil && u.Role == db.RoleAdmin
 }
 
 // slugProblem returns the catalog key (and its values) explaining why a
