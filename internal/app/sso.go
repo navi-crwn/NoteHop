@@ -322,3 +322,40 @@ func (a *App) apiVault(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"created": false, "vault_wrap": u.VaultWrap})
 }
+
+// ssoLogout is a step of the account server's chained logout: signing out
+// there (or in another app of the family) sends the browser through every
+// app's logout address in turn, so a session here does not outlive the others.
+// It ends this session and goes on to ?next=, but only to an https address on
+// the account server's own domain (hub.hel.ink -> hel.ink and its subdomains).
+func (a *App) ssoLogout(w http.ResponseWriter, r *http.Request) {
+	if c, err := r.Cookie(sessionCookie); err == nil {
+		_ = a.db.DeleteSession(hashHex(c.Value))
+	}
+	http.SetCookie(w, &http.Cookie{Name: sessionCookie, Value: "", Path: "/", MaxAge: -1, HttpOnly: true,
+		Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode})
+	next := "/"
+	if n := r.URL.Query().Get("next"); familyURL(n, a.cfg.SSOURL) {
+		next = n
+	}
+	http.Redirect(w, r, next, http.StatusSeeOther)
+}
+
+// familyURL reports whether u is an https address on the domain of the
+// account server at sso (the parent domain of its host).
+func familyURL(u, sso string) bool {
+	if u == "" || sso == "" {
+		return false
+	}
+	t, err := url.Parse(u)
+	h, err2 := url.Parse(sso)
+	if err != nil || err2 != nil || t.Scheme != "https" || t.Host == "" || t.User != nil {
+		return false
+	}
+	base := h.Hostname()
+	if parts := strings.Split(base, "."); len(parts) > 2 {
+		base = strings.Join(parts[len(parts)-2:], ".")
+	}
+	host := t.Hostname()
+	return host == base || strings.HasSuffix(host, "."+base)
+}
