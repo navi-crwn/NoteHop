@@ -5,6 +5,7 @@ package app
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -175,12 +176,12 @@ func (a *App) routes() {
 	m.HandleFunc("GET /recover", a.page("recover", "rec.title", ""))
 	m.HandleFunc("GET /auth/sso", a.ssoStart)
 	m.HandleFunc("GET /auth/sso/callback", a.ssoCallback)
-	m.HandleFunc("GET /n/{token}", a.notePage)
+	m.HandleFunc("GET /n/{token}", a.oldNoteLink)
 	m.HandleFunc("GET /raw/{token}", a.raw)
 	m.HandleFunc("GET /mock/{token}", a.mock)
 	m.HandleFunc("GET /mock/{token}/{path...}", a.mock)
 	m.HandleFunc("OPTIONS /mock/{token}/{path...}", a.mock)
-	m.HandleFunc("GET /{at}", a.profile)
+	m.HandleFunc("GET /{at}", a.profileOrNote) // /@name, or a note at /TOKEN
 
 	m.HandleFunc("POST /api/notes", a.apiCreate)
 	m.HandleFunc("GET /api/n/{token}", a.apiMeta)
@@ -260,6 +261,7 @@ type pageData struct {
 	Origin      string // scheme://host for absolute OpenGraph URLs
 	Main        string // main site, for admin links
 	Share       string // share domain, for links handed to readers (may be empty)
+	LinkHost    string // host of reader links, shown before a link name
 	L           i18n.Locale
 	Langs       []i18n.Lang
 	Clipper     template.URL // bookmarklet for the about page
@@ -293,6 +295,7 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	}
 	d.Origin = a.origin(r)
 	d.Main, d.Share = a.cfg.BaseURL, a.shareURL()
+	d.LinkHost = strings.TrimPrefix(strings.TrimPrefix(cmp.Or(d.Share, d.Origin), "https://"), "http://")
 	d.Contact = a.cfg.Contact
 	if d.Contact != "" {
 		d.ContactHref = d.Contact
@@ -339,8 +342,18 @@ func (a *App) dashboardPage(w http.ResponseWriter, r *http.Request) {
 	a.render(w, r, http.StatusOK, "dashboard", pageData{Title: a.locale(w, r).T("title.dashboard"), User: u, NoIndex: true})
 }
 
-func (a *App) notePage(w http.ResponseWriter, r *http.Request) {
-	tok := r.PathValue("token")
+// profileOrNote serves /@name as a profile and /TOKEN as a note page. Site
+// pages (/new, /faq…) have their own routes, which win.
+func (a *App) profileOrNote(w http.ResponseWriter, r *http.Request) {
+	at := r.PathValue("at")
+	if strings.HasPrefix(at, "@") || !shortName(at) {
+		a.profile(w, r)
+		return
+	}
+	a.notePage(w, r, at)
+}
+
+func (a *App) notePage(w http.ResponseWriter, r *http.Request, tok string) {
 	n, l, err := a.db.NoteByLink(tok)
 	if err != nil {
 		a.notFound(w, r)

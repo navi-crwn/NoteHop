@@ -47,7 +47,7 @@ func TestSSH(t *testing.T) {
 	}
 
 	out := run("new", "# Belanja\n\n- susu\n")
-	if !strings.HasPrefix(out, "https://note.test/n/") || !strings.Contains(out, "admin (keep private): ") {
+	if !strings.HasPrefix(out, "https://note.test/") && !strings.Contains(out, "/n/") || !strings.Contains(out, "admin (keep private): ") {
 		t.Fatalf("new: %q", out)
 	}
 	link := strings.SplitN(out, "\n", 2)[0]

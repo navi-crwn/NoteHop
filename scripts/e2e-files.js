@@ -44,7 +44,7 @@ function wav(seconds) {
     await p.waitForFunction(() => /\.webp\]\(nh-file:/.test(document.querySelector('.ed-src').value), null, { timeout: 15000 });
     ok('paste: image converted to WebP', true);
     ok('upload: server got ciphertext only', bodies.length === 2 && bodies.every(x => !x.includes(Buffer.from('RIFF')) && !x.includes(Buffer.from('WEBP'))));
-    await p.click('#create'); await p.waitForURL(/\/n\//, { timeout: 30000 }); await p.waitForSelector('#note:not(.hide)');
+    await p.click('#create'); await p.waitForURL(/#k=/, { timeout: 30000 }); await p.waitForSelector('#note:not(.hide)');
     const u = new URL(p.url()), visitor = BASE + u.pathname + '#k=' + new URLSearchParams(u.hash.slice(1)).get('k');
 
     const v = await ((await b.newContext().then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }))).newPage();

@@ -24,7 +24,7 @@ var aiOrigins = []string{"https://api.anthropic.com", "https://api.openai.com", 
 // cspFor opens connect-src to the AI providers on the pages with an editor
 // only, and only when the operator allows API keys (NOTEHOP_AI=on).
 func (a *App) cspFor(path string) string {
-	if a.cfg.aiMode() != "on" || !(path == "/new" || strings.HasPrefix(path, "/n/")) {
+	if a.cfg.aiMode() != "on" || !(path == "/new" || strings.HasPrefix(path, "/n/") || shortName(strings.TrimPrefix(path, "/"))) {
 		return csp
 	}
 	extra := strings.Join(append(append([]string{}, aiOrigins...), a.cfg.AIOrigins...), " ")

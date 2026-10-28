@@ -92,8 +92,8 @@ const val = (p, id) => p.$eval('#' + id + ' .pick-val', e => e.textContent.trim(
   await p.click('[data-starter=note]');
   await p.fill('#title', 'Bar test'); await p.fill('.ed-src', 'hello from the bar');
   await p.click('#opt-who > summary'); await p.click('label:has(input[name=mode][value=append])');
-  await p.click('#create'); await p.waitForURL(/\/n\//, { timeout: 20000 }); await p.waitForSelector('#note:not(.hide)');
-  ok('creates the note with the chosen options', /\/n\/bar-test-/.test(p.url()), p.url().split('#')[0]);
+  await p.click('#create'); await p.waitForURL(/#k=/, { timeout: 20000 }); await p.waitForSelector('#note:not(.hide)');
+  ok('creates the note with the chosen options', /\/bar-test-/.test(p.url()), p.url().split('#')[0]);
   await p.context().close();
 
   // ---------- phone ----------

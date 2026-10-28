@@ -24,7 +24,7 @@ func TestProfileAndMock(t *testing.T) {
 		t.Fatalf("profile on: %d %v", code, m)
 	}
 	code, _, page := c.do("GET", "/@budi", nil, nil)
-	if code != 200 || !strings.Contains(page, "Menu API") || !strings.Contains(page, "/n/"+pub.token) {
+	if code != 200 || !strings.Contains(page, "Menu API") || !strings.Contains(page, `href="/`+pub.token+`"`) {
 		t.Fatalf("profile page: %d", code)
 	}
 	if code, _, _ := c.do("GET", "/@nobody", nil, nil); code != 404 {

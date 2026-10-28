@@ -98,7 +98,7 @@ const visiblePanel = p => p.evaluate(() => [...document.querySelectorAll('.h-pan
   // Create sends the previewed ciphertext
   await p.evaluate(() => scrollTo(0, 0));
   await p.click('#quick-create');
-  await p.waitForURL(/\/n\//, { timeout: 20000 });
+  await p.waitForURL(/#k=/, { timeout: 20000 });
   ok('Create sends exactly the ciphertext shown', sent.length === 1 && sent[0].content.startsWith(shown.replace(/…$/, '')) && sent[0].content.length >= shown.length - 1);
   ok('nothing readable sent', sent.length === 1 && !JSON.stringify(sent[0]).includes('sandi'));
   await p.context().close();

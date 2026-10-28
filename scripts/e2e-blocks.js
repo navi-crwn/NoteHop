@@ -16,7 +16,7 @@ async function create(p, title, body, mode) {
   await p.goto(BASE + '/new');
   await p.fill('#title', title); await p.fill('.ed-src', body);
   await pickMode(p, mode || 'read');
-  await p.click('#create'); await p.waitForURL(/\/n\//); await p.waitForSelector('#note:not(.hide)');
+  await p.click('#create'); await p.waitForURL(/#k=/); await p.waitForSelector('#note:not(.hide)');
   await p.keyboard.press('Escape');
   const u = new URL(p.url());
   return { admin: p.url(), visitor: BASE + u.pathname + '#k=' + new URLSearchParams(u.hash.slice(1)).get('k') };

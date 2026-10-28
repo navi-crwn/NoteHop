@@ -42,7 +42,7 @@ func (a *App) profile(w http.ResponseWriter, r *http.Request) {
 			if l.Mode == modeRead {
 				var c struct{ T string }
 				json.Unmarshal([]byte(n.Content), &c)
-				list = append(list, profileNote{Title: c.T, URL: "/n/" + l.Token, Updated: n.Updated})
+				list = append(list, profileNote{Title: c.T, URL: notePath(l.Token), Updated: n.Updated})
 				break
 			}
 		}

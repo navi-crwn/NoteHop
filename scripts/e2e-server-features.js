@@ -26,7 +26,7 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', pills 
   if (pills.length) await p.click('#adv summary');
   for (const x of pills) await p.click(`label:has([data-feature=${x}])`);
   for (const [sel, v] of Object.entries(fill)) await p.fill(sel, v);
-  await closeMenus(p); await p.click('#create'); await p.waitForURL(/\/n\//, { timeout: 30000 }); await p.waitForSelector('#note:not(.hide)');
+  await closeMenus(p); await p.click('#create'); await p.waitForURL(/#k=/, { timeout: 30000 }); await p.waitForSelector('#note:not(.hide)');
   await p.keyboard.press('Escape');
   return p.url();
 }
@@ -66,7 +66,7 @@ const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]'
     await p.fill('#burn-text', 'PIN brankas 9911'); await p.selectOption('#burn-views', '1'); await p.click('dialog[open] button[type=submit]');
     await p.waitForFunction(() => document.querySelector('.ed-src').value.includes(':::burn '));
     await p.click('#adv summary'); await p.click('label:has([data-feature=signoff])');
-    await closeMenus(p); await p.click('#create'); await p.waitForURL(/\/n\//); await p.waitForSelector('#note:not(.hide)'); await p.keyboard.press('Escape');
+    await closeMenus(p); await p.click('#create'); await p.waitForURL(/#k=/); await p.waitForSelector('#note:not(.hide)'); await p.keyboard.press('Escape');
     const k = p.url();
     const r1 = await page(b); await r1.goto(visitor(k)); await r1.waitForSelector('.poll-opt');
     await r1.click('.poll-opt >> nth=1'); await r1.waitForTimeout(500);
@@ -109,7 +109,7 @@ const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]'
     await w.click('#act-copy'); const leaked = await w.evaluate(() => navigator.clipboard.readText());
     await p.click('#act-share'); await p.waitForSelector('#share-dlg[open]'); await tab(p, 'privacy'); await p.click('#trace-box summary');
     await p.fill('#trace-input', 'saya cuma salin: ' + leaked); await p.waitForTimeout(200);
-    ok('watermark: traced to link', (await p.textContent('#trace-result')).includes('/n/'), await p.textContent('#trace-result'));
+    ok('watermark: traced to link', /\/\w{8,}/.test(await p.textContent('#trace-result')), await p.textContent('#trace-result'));
     await p.keyboard.press('Escape');
 
     // --- claim + margin ---
@@ -130,7 +130,7 @@ const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]'
     await c.goto(BASE + '/diff'); await c.fill('#diff-a', 'a\nb\nc'); await c.fill('#diff-b', 'a\nB\nc'); await c.waitForTimeout(300);
     ok('diff page: stats', (await c.textContent('#diff-stats')).includes('+1'));
     await c.click('#diff-share'); await c.waitForTimeout(1200);
-    ok('diff page: shared', /\/n\/\w+#k=/.test(await c.evaluate(() => navigator.clipboard.readText())));
+    ok('diff page: shared', /\/\w{8,}#k=/.test(await c.evaluate(() => navigator.clipboard.readText())));
   } catch (e) {
     ok('FATAL', false, e.message.split('\n').slice(0, 4).join(' | '));
   }

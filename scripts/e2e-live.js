@@ -33,7 +33,7 @@ const wait = (p, fn, arg, t) => p.waitForFunction(fn, arg, { timeout: t || 10000
     await a.fill('#title', 'Rapat');
     await a.fill('.ed-src', 'agenda rahasia');
     await pickMode(a, 'edit');
-    await a.click('#create'); await a.waitForURL(/\/n\//); await a.waitForSelector('#note:not(.hide)');
+    await a.click('#create'); await a.waitForURL(/#k=/); await a.waitForSelector('#note:not(.hide)');
     await a.keyboard.press('Escape');
     await a.waitForSelector('#live-bar:not(.hide)');
     const u = new URL(a.url()), k = new URLSearchParams(u.hash.slice(1)).get('k');
@@ -109,7 +109,7 @@ const wait = (p, fn, arg, t) => p.waitForFunction(fn, arg, { timeout: t || 10000
     await w.click('dialog[open] button[type=submit]');
     await wait(w, () => document.querySelector('.ed-src').value.includes(':::burn '));
     await pickMode(w, 'read');
-    await w.click('#create'); await w.waitForURL(/\/n\//); await w.waitForSelector('#note:not(.hide)');
+    await w.click('#create'); await w.waitForURL(/#k=/); await w.waitForSelector('#note:not(.hide)');
     await w.keyboard.press('Escape');
     const wu = new URL(w.url());
     const rd = await page(b); rd.on('dialog', d => d.accept());

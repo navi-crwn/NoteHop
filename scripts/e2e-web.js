@@ -18,8 +18,8 @@ document.body.insertAdjacentHTML('beforeend', '<p id="x">from app.js</p>');
 noSuchFn();`;
 const logs = p => p.$$eval('.wr-log li', xs => xs.map(x => x.textContent));
 async function readLink(p) {
-  await p.waitForSelector('dialog[open] :text("/n/")');
-  const tok = (await p.locator('dialog[open]').innerText()).match(/\/n\/(\w{8,})/)[1];
+  await p.waitForSelector('dialog[open] .link-url');
+  const tok = (await p.locator('dialog[open] .link-url').first().innerText()).trim().replace(/^\//, '');
   const k = new URL(p.url()).hash.match(/k=([^&]+)/)[1];
   await p.keyboard.press('Escape');
   return BASE + '/n/' + tok + '#k=' + k;
@@ -98,7 +98,7 @@ async function readLink(p) {
   ok('Ctrl+Enter runs; Tab indents', (await p.inputValue('.ed-src')).startsWith("  console.log('again');\n"));
 
   // ---------- saved, then opened by a reader ----------
-  await p.click('#create'); await p.waitForURL(/\/n\//);
+  await p.click('#create'); await p.waitForURL(/#k=/);
   const read = await readLink(p);
   ok('owner editor keeps the files', (await p.getAttribute('[data-editor]', 'data-type')) === 'web' && (await p.$$('.wr-file')).length === 3);
   const r = await ctx.newPage(); r.on('pageerror', e => errs.push('reader: ' + e.message));
