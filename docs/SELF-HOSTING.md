@@ -70,20 +70,16 @@ sudo nginx -t && sudo systemctl reload nginx
 
 Both examples make rate limits use the visitor's real IP (`NOTEHOP_TRUST_PROXY=1`). In nginx, `X-Forwarded-For` is *set* to `$remote_addr` (not appended), so visitors can't fake it.
 
-### A separate domain for shared links (optional)
+### A short domain for shared links (optional)
 
-To give the links people share a short domain of their own (for example `nhop.link`), while sign-in and the dashboard stay on `note.example.com`:
+Notes live at `note.example.com/link-name` (or `/TOKEN`). To make the links people share shorter, for example `nhop.link/link-name`:
 
-1. Point the second domain's DNS at the same VPS and add its block in Caddy or nginx (there's an example in `deploy/Caddyfile.example`).
+1. Point the second domain's DNS at the same VPS and add its block in Caddy or nginx (there's an example in `deploy/Caddyfile.example`). It can proxy to NoteHop like the main domain, or simply redirect: `return 301 https://note.example.com$request_uri;`.
 2. Set `NOTEHOP_SHARE_URL=https://nhop.link` in `/etc/notehop/notehop.env` and restart.
 
-Reader links then look like `https://nhop.link/rapat-senin#k=…`: the link name (or token) right after the domain. Owner links stay on `note.example.com/n/…`.
+Links for readers then look like `https://nhop.link/rapat-senin#k=…`. Opening one redirects to `https://note.example.com/rapat-senin#k=…`, where the note opens; the browser keeps the `#…` part (key and rights). Owner links stay `note.example.com/…`. The short domain serves no pages and holds no sessions: everything on it goes to the same path on the main site.
 
-On the share domain NoteHop only serves notes, `/raw/…`, `/mock/…`, the note API, attachments and what a note page loads (static files, translations, the sealed frames for diagrams and web notes). Other pages redirect to the main domain, and session cookies are never sent there. If the share domain gets blocked because of what someone posted, the main site stays up.
-
-Links made before you added the share domain keep working. Which rights a link carries is in its `#…` part, which never reaches the server, so the page sorts it out in the browser: a reader link opened on the main site moves to the share domain, and an owner link opened on the share domain moves back to the main site, with the `#…` part unchanged. `nhop.link/n/TOKEN` redirects to `nhop.link/TOKEN`.
-
-Proxy the share domain exactly like the main one, including the WebSocket paths for live editing (`/api/n/…/live`).
+Older links keep working: `note.example.com/n/TOKEN` redirects to `note.example.com/TOKEN`, whatever rights the link carries. Link names are the same on both domains, so removing or reusing a name affects its short link too.
 
 ## 4. Check
 

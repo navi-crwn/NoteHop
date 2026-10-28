@@ -66,7 +66,7 @@ Selain itu, satu catatan bisa jauh lebih dari notepad: link dengan izin berbeda 
 - **🔑 Link pemilik.** Link terpisah untuk mengubah, membagikan, membekukan, atau menghapus catatan.
 - **🔥 Hapus setelah dibaca.** Dibuka 1, 3, atau 10 kali, lalu hancur. Bot pratinjau link di aplikasi chat tidak menghabiskan jatah.
 - **⏳ Kedaluwarsa dan kapsul waktu.** Hilang setelah 10 menit sampai 30 hari, atau terkunci sampai tanggal yang kamu pilih.
-- **🏷️ Alamat sendiri + QR.** `/n/rapat-senin`, dan kode QR yang dibuat di browsermu.
+- **🏷️ Alamat sendiri + QR.** `/rapat-senin`, dan kode QR yang dibuat di browsermu.
 - **📌 Salinan tetap dan tanda tangan.** Bekukan versi yang tidak bisa diubah siapa pun, dan biarkan pembaca menyetujuinya dengan nama mereka.
 - **🧑‍🤝‍🧑 Tulis bareng.** Kursor dan nama tiap orang secara langsung, obrolan di samping, dan "ikuti presenter". Server hanya meneruskan data terkunci.
 - **✅ Blok pintar.** Daftar centang, polling (satu suara per orang), formulir, kalkulator, diagram Mermaid, papan Kanban dari judul, dan blok rahasia ber-PIN atau yang hancur sendiri.

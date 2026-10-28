@@ -26,7 +26,7 @@
       title.value = NH.t('home.l_note_t');
       body.value = $('#h-paper-text') ? $('#h-paper-text').dataset.text : '';
     }
-    url.textContent = location.host + '/n/…';
+    url.textContent = (document.body.dataset.share ? new URL(document.body.dataset.share).host : location.host) + '/…';
     if (k) frag.textContent = '#k=' + k.slice(0, 18) + '…';
 
     // The preview: real AES-GCM with this note's key, letters shuffling into place.

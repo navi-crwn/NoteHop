@@ -8,17 +8,6 @@
   var token = document.body.dataset.token;
   var frag = new URLSearchParams(location.hash.slice(1));
   var K = frag.get('k'), A = frag.get('a'), isNew = frag.get('new') === '1';
-  // Readers belong on the share domain, owners on the main site. Only the
-  // #fragment says which, and it never reaches the server, so the move
-  // happens here; the fragment goes along untouched.
-  var site = document.body.dataset;
-  if (site.share && site.main) {
-    var onMain = location.origin === new URL(site.main).origin, onShare = location.origin === new URL(site.share).origin;
-    if ((!A && onMain) || (A && onShare)) {
-      location.replace((A ? site.main + '/n/' : site.share + '/') + encodeURIComponent(token) + location.search + location.hash);
-      return;
-    }
-  }
   if (isNew) {
     frag.delete('new');
     history.replaceState(null, '', location.pathname + location.search + '#' + frag.toString());
@@ -604,11 +593,11 @@
     var qr = h('button.icon-btn.sm', { type: 'button', title: NH.t('share.qr'), 'aria-label': NH.t('share.qr') }, NH.icon('qr'));
     qr.addEventListener('click', function () { showQR(url, info.label); });
     var row = h('li.link-row', h('span.link-mode', NH.icon(info.icon), info.label),
-      h('code.link-url', { title: url }, '/n/' + l.token), h('span.btn-row', copy, qr));
+      h('code.link-url', { title: url }, '/' + l.token), h('span.btn-row', copy, qr));
     if (deletable) {
       var del = h('button.icon-btn.sm', { type: 'button', title: NH.t('share.delete_link'), 'aria-label': NH.t('share.delete_link') }, NH.icon('trash'));
       del.addEventListener('click', function () {
-        if (!confirm(NH.t('share.confirm_delete', { link: '/n/' + l.token }))) return;
+        if (!confirm(NH.t('share.confirm_delete', { link: '/' + l.token }))) return;
         api('DELETE', '/links/' + encodeURIComponent(l.token)).then(openShare, function (x) { NH.toast(x.message, 'err'); });
       });
       row.lastChild.appendChild(del);
@@ -634,7 +623,7 @@
         var copy = h('button.btn.sm', { type: 'button' }, NH.icon('copy'), NH.t('share.copy'));
         copy.addEventListener('click', function () { NH.copy(url, NH.t('share.snapshot_copied')); });
         return h('li.link-row', h('span.link-mode', NH.icon('snow'), NH.date(s.created)),
-          h('a.link-url', { href: NH.noteURL(s.token, { k: K, a: A }) }, '/n/' + s.token), h('span.btn-row', copy));
+          h('a.link-url', { href: NH.noteURL(s.token, { k: K, a: A }) }, '/' + s.token), h('span.btn-row', copy));
       }));
       NH.$$('#new-mode option').forEach(function (o) { o.disabled = S.meta.frozen && o.value !== 'read'; });
       if (window.NHAdv) NHAdv.draw(Object.assign({}, S.meta, m));

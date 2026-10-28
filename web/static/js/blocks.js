@@ -8,12 +8,13 @@
   // ---------- live embeds ----------
   // The link carries the other note's key (#k=); this note's text is
   // encrypted, so the key stays as private as the link itself. Only the
-  // path is used: the same server answers on the share domain too.
+  // path is used (/TOKEN, or the old /n/TOKEN): the short domain is the
+  // same server's notes.
   var embeds = {}; // token → {keys, codec, version, title, body, els: Set}
 
   function parse(src) {
     try {
-      var u = new URL(src, location.href), m = u.pathname.match(/^\/n\/([A-Za-z0-9_-]{3,64})$/);
+      var u = new URL(src, location.href), m = u.pathname.match(/^\/(?:n\/)?([A-Za-z0-9_-]{3,64})$/);
       var k = new URLSearchParams(u.hash.slice(1)).get('k');
       return m && k ? { token: m[1], k: k } : null;
     } catch (x) { return null; }

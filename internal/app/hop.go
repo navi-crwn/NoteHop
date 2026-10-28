@@ -449,7 +449,7 @@ func (a *App) noteURL(token string) string {
 	if token == "" {
 		return ""
 	}
-	return a.cfg.BaseURL + "/n/" + token
+	return a.cfg.BaseURL + notePath(token)
 }
 
 // publicTitle is a public note's title; "" for an encrypted note, whose
@@ -481,7 +481,7 @@ func (a *App) noteLabel(n *db.Note, token string) string {
 	if t := publicTitle(n); t != "" {
 		return t
 	}
-	return "/n/" + token
+	return notePath(token)
 }
 
 var errHopUnknownAction = errors.New("unknown action")

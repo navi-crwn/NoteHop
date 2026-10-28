@@ -385,7 +385,7 @@
     if (!this.value.trim()) return (out.textContent = '');
     if (!tok) return (out.textContent = NH.t('trace.none'));
     var l = (S.meta.links || []).filter(function (x) { return x.token === tok; })[0];
-    out.textContent = NH.t('trace.found', { link: '/n/' + tok, mode: l ? NH.modeInfo[l.mode].label : '?' });
+    out.textContent = NH.t('trace.found', { link: '/' + tok, mode: l ? NH.modeInfo[l.mode].label : '?' });
   });
 
   // ---------- private margin ----------
