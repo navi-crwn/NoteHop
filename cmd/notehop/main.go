@@ -340,11 +340,8 @@ func takedown(args []string) {
 		fmt.Println("attachment deleted:", id)
 		return
 	}
-	token := strings.SplitN(ref, "#", 2)[0]
-	if i := strings.Index(token, "/n/"); i >= 0 {
-		token = token[i+3:]
-	}
-	n, _, err := d.NoteByLink(strings.Trim(token, "/"))
+	token := client.Token(ref)
+	n, _, err := d.NoteByLink(token)
 	if err != nil {
 		log.Fatalf("takedown: no note for %q", token)
 	}
