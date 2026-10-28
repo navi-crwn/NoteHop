@@ -291,7 +291,7 @@ func cliGet(args []string) {
 	password := fs.String("password", "", "the note's password (or NOTEHOP_PASSWORD)")
 	fs.Parse(args)
 	if fs.NArg() != 1 {
-		fmt.Fprintln(os.Stderr, "usage: notehop get [-password p] 'https://…/n/TOKEN#k=…'")
+		fmt.Fprintln(os.Stderr, "usage: notehop get [-password p] 'https://…/TOKEN#k=…'")
 		os.Exit(2)
 	}
 	pw := *password

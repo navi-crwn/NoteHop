@@ -23,7 +23,7 @@ const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n +
   await p.goto(BASE + '/register'); await p.fill('#username', USER); await p.fill('#password', 'password-pertama'); await p.fill('#password2', 'password-pertama');
   await p.click('#auth-form button[type=submit]'); await p.waitForURL(/dashboard/, { timeout: 30000 });
   await p.goto(BASE + '/new'); await p.fill('#title', 'Rahasia lama'); await p.fill('.ed-src', 'isi lama');
-  await p.click('#create'); await p.waitForURL(/\/n\//); await p.keyboard.press('Escape');
+  await p.click('#create'); await p.waitForURL(/#k=/); await p.keyboard.press('Escape');
   const vaultBefore = await p.evaluate(() => JSON.parse(localStorage.getItem('nh_vault')).k);
 
   // ---------- security page: make codes ----------

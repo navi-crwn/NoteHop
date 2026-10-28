@@ -66,7 +66,7 @@ Além disso, uma nota faz muito mais que um bloco de notas: links com permissõe
 - **🔑 Link de dono.** Um link separado para mudar, compartilhar, congelar ou apagar a nota.
 - **🔥 Apagar depois de ler.** Aberta 1, 3 ou 10 vezes e destruída. Os robôs de pré-visualização dos apps de chat não gastam aberturas.
 - **⏳ Validade e cápsulas do tempo.** Some depois de 10 minutos a 30 dias, ou fica trancada até a data que você escolher.
-- **🏷️ Endereço próprio + QR.** `/n/reuniao-segunda` e um QR code feito no seu navegador.
+- **🏷️ Endereço próprio + QR.** `/reuniao-segunda` e um QR code feito no seu navegador.
 - **📌 Cópias fixas e assinatura.** Congele uma versão que ninguém pode mudar e deixe os leitores aprovarem com o nome deles.
 - **🧑‍🤝‍🧑 Escrever junto.** O cursor e o nome de cada um ao vivo, um chat ao lado e "seguir o apresentador". O servidor só repassa dados trancados.
 - **✅ Blocos inteligentes.** Listas de tarefas, enquetes (um voto por pessoa), formulários, calculadora, diagramas Mermaid, um quadro Kanban a partir dos seus títulos e blocos secretos com PIN ou que se autodestroem.

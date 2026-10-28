@@ -128,7 +128,7 @@
       if (n.max_views) meta.push(NH.t('meta.opened', { n: n.views, max: n.max_views }));
       var href = r.k ? NH.noteURL(n.token, { k: r.k, a: r.a }) : null;
       var link = h(href ? 'a.note-link' : 'div.note-link', href ? { href: href } : null,
-        h('b', r.locked ? NH.t('dash.locked') : (r.title || NH.t('common.untitled'))), h('small.muted', '/n/' + n.token + ' · ' + meta.join(' · ')));
+        h('b', r.locked ? NH.t('dash.locked') : (r.title || NH.t('common.untitled'))), h('small.muted', '/' + n.token + ' · ' + meta.join(' · ')));
       if (href && r.p) link.addEventListener('click', function () {
         try { sessionStorage.setItem('nh_pw_' + n.token, r.p); } catch (x) {}
       });

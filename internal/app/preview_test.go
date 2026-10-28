@@ -4,6 +4,8 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -68,56 +70,75 @@ func TestShareDomain(t *testing.T) {
 		t.Fatal(err)
 	}
 	h := a.Handler()
-	req := func(host, path string) *http.Response {
-		r, _ := http.NewRequest("GET", "http://"+host+path, nil)
+	req := func(method, host, path string) *http.Response {
+		r, _ := http.NewRequest(method, "http://"+host+path, nil)
 		r.Host = host
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, r)
 		return w.Result()
 	}
-	if res := req("nh.test", "/dashboard?x=1"); res.StatusCode != http.StatusFound || res.Header.Get("Location") != "https://note.test/dashboard?x=1" {
-		t.Fatalf("share host dashboard: %d %s", res.StatusCode, res.Header.Get("Location"))
-	}
-	if res := req("nh.test", "/"); res.StatusCode != http.StatusFound {
-		t.Fatalf("share host root: %d", res.StatusCode)
-	}
-	// What a note page loads is served here too: a redirect to the main site
-	// would be blocked by the page's own CSP.
-	for _, p := range []string{"/api/n/nope-nope", "/healthz", "/i18n/en.js", "/run", "/render/mermaid", "/sw.js", "/static/js/app.js", "/api/files/abc"} {
-		if res := req("nh.test", p); res.StatusCode == http.StatusFound || res.StatusCode == http.StatusMovedPermanently {
-			t.Fatalf("share host %s redirected to %s", p, res.Header.Get("Location"))
-		}
-	}
-	// Short links: nh.test/TOKEN is the note page; the long form moves there.
 	share, admin, err := a.createPublic("Rapat", "isi")
-	if err != nil || !strings.HasPrefix(share, "https://nh.test/") || strings.Contains(share, "/n/") || !strings.HasPrefix(admin, "https://note.test/n/") {
+	if err != nil || !strings.HasPrefix(share, "https://nh.test/") || strings.Contains(share, "/n/") || !strings.HasPrefix(admin, "https://note.test/") || strings.Contains(admin, "/n/") {
 		t.Fatalf("links: %v %s %s", err, share, admin)
 	}
 	tok, _, _ := strings.Cut(strings.TrimPrefix(share, "https://nh.test/"), "#")
-	res := req("nh.test", "/"+tok)
-	body, _ := io.ReadAll(res.Body)
-	if res.StatusCode != http.StatusOK || !strings.Contains(string(body), `data-token="`+tok+`"`) {
-		t.Fatalf("share host short link: %d", res.StatusCode)
-	}
-	if res := req("nh.test", "/n/rapat-senin?x=1"); res.StatusCode != http.StatusMovedPermanently || res.Header.Get("Location") != "/rapat-senin?x=1" {
-		t.Fatalf("share host long link: %d %s", res.StatusCode, res.Header.Get("Location"))
-	}
-	// Site pages are reserved names, so they still go to the main site.
-	for _, p := range []string{"/new", "/faq", "/login", "/dashboard", "/@someone", "/recover"} {
-		if res := req("nh.test", p); res.StatusCode != http.StatusFound || res.Header.Get("Location") != "https://note.test"+p {
-			t.Fatalf("share host %s: %d %s", p, res.StatusCode, res.Header.Get("Location"))
+
+	// The short domain serves nothing: every path goes to the same one on the main site.
+	for path, want := range map[string]string{
+		"/" + tok:          "https://note.test/" + tok,
+		"/n/" + tok + "?x": "https://note.test/" + tok + "?x",
+		"/new":             "https://note.test/new",
+		"/":                "https://note.test/",
+		"/@someone":        "https://note.test/@someone",
+	} {
+		if res := req("GET", "nh.test", path); res.StatusCode != http.StatusMovedPermanently || res.Header.Get("Location") != want {
+			t.Fatalf("short domain %s: %d %s", path, res.StatusCode, res.Header.Get("Location"))
 		}
 	}
-	// The main site keeps the long form (owners, and old links).
-	if res := req("note.test", "/n/"+tok); res.StatusCode != http.StatusOK {
+	if res := req("POST", "nh.test", "/api/n/"+tok+"/open"); res.StatusCode != http.StatusPermanentRedirect {
+		t.Fatalf("short domain POST keeps its method: %d", res.StatusCode)
+	}
+	if res := req("GET", "nh.test", "/healthz"); res.StatusCode != http.StatusOK {
+		t.Fatalf("short domain healthz: %d", res.StatusCode)
+	}
+
+	// The main site: the note at /TOKEN, the old /n/TOKEN moves there.
+	res := req("GET", "note.test", "/"+tok)
+	body, _ := io.ReadAll(res.Body)
+	if res.StatusCode != http.StatusOK || !strings.Contains(string(body), `data-token="`+tok+`"`) {
 		t.Fatalf("main site note page: %d", res.StatusCode)
 	}
-	if got := a.readerLink("rapat-senin"); got != "https://nh.test/rapat-senin" {
-		t.Fatalf("reader link: %s", got)
+	if res := req("GET", "note.test", "/n/"+tok+"?x=1"); res.StatusCode != http.StatusMovedPermanently || res.Header.Get("Location") != "/"+tok+"?x=1" {
+		t.Fatalf("old note link: %d %s", res.StatusCode, res.Header.Get("Location"))
 	}
-	res = req("note.test", "/")
+	if res := req("GET", "note.test", "/link-that-does-not-exist"); res.StatusCode != http.StatusNotFound {
+		t.Fatalf("missing note: %d", res.StatusCode)
+	}
+	for _, p := range []string{"/new", "/faq", "/login"} {
+		if res := req("GET", "note.test", p); res.StatusCode != http.StatusOK {
+			t.Fatalf("site page %s: %d", p, res.StatusCode)
+		}
+	}
+	if a.readerLink("rapat-senin") != "https://nh.test/rapat-senin" || a.ownerLink("rapat-senin") != "https://note.test/rapat-senin" || a.readerLink("faq") != "https://note.test/n/faq" {
+		t.Fatalf("links: %s %s %s", a.readerLink("rapat-senin"), a.ownerLink("rapat-senin"), a.readerLink("faq"))
+	}
+	res = req("GET", "note.test", "/")
 	body, _ = io.ReadAll(res.Body)
 	if res.StatusCode != 200 || !strings.Contains(string(body), `data-share="https://nh.test"`) || !strings.Contains(string(body), `data-main="https://note.test"`) {
 		t.Fatalf("main site page: %d", res.StatusCode)
+	}
+}
+
+// Notes live at /NAME, so every site page must be a reserved name: otherwise
+// someone could take /faq as a link name. A new page needs a line in names/reserved.txt.
+func TestSitePagesAreReserved(t *testing.T) {
+	src, err := os.ReadFile("app.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, m := range regexp.MustCompile(`"(?:GET|POST) /([a-z0-9-]+)"`).FindAllStringSubmatch(string(src), -1) {
+		if shortName(m[1]) {
+			t.Errorf("/%s is a site page but not a reserved name", m[1])
+		}
 	}
 }

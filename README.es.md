@@ -66,7 +66,7 @@ Además, una nota hace mucho más que un bloc de notas: enlaces con permisos dis
 - **🔑 Enlace de propietario.** Un enlace aparte para cambiar, compartir, congelar o borrar la nota.
 - **🔥 Borrar al leer.** Se abre 1, 3 o 10 veces y se destruye. Los bots de vista previa de las apps de chat no gastan lecturas.
 - **⏳ Caducidad y cápsulas del tiempo.** Desaparece entre 10 minutos y 30 días después, o queda cerrada hasta la fecha que elijas.
-- **🏷️ Dirección propia + QR.** `/n/reunion-lunes` y un código QR hecho en tu navegador.
+- **🏷️ Dirección propia + QR.** `/reunion-lunes` y un código QR hecho en tu navegador.
 - **📌 Copias fijas y firma.** Congela una versión que nadie puede cambiar y deja que los lectores la aprueben con su nombre.
 - **🧑‍🤝‍🧑 Escribir juntos.** El cursor y el nombre de cada uno en vivo, un chat al lado y "seguir al presentador". El servidor solo pasa datos cerrados.
 - **✅ Bloques inteligentes.** Listas de tareas, encuestas (un voto por persona), formularios, calculadora, diagramas Mermaid, un tablero Kanban desde tus títulos y bloques secretos con PIN o que se destruyen solos.

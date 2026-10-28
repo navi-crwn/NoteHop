@@ -201,7 +201,7 @@ func (a *App) createPublic(title, body string) (share, admin string, err error) 
 	if err := a.db.CreateNote(n, link); err != nil {
 		return "", "", err
 	}
-	return a.readerLink(link.Token) + "#k=" + k, a.siteURL() + "/n/" + link.Token + "#k=" + k + "&a=" + adm, nil
+	return a.readerLink(link.Token) + "#k=" + k, a.ownerLink(link.Token) + "#k=" + k + "&a=" + adm, nil
 }
 
 func (a *App) sshGet(ref string) string {

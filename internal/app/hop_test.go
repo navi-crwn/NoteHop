@@ -399,10 +399,10 @@ func TestHopContentZeroKnowledge(t *testing.T) {
 	var encRow, pubRow map[string]any
 	for _, r := range rows {
 		m := r.(map[string]any)
-		if m["url"] == "https://note.test/n/"+enc.token {
+		if m["url"] == "https://note.test/"+enc.token {
 			encRow = m
 		}
-		if m["url"] == "https://note.test/n/"+open.token {
+		if m["url"] == "https://note.test/"+open.token {
 			pubRow = m
 		}
 	}
@@ -732,7 +732,7 @@ func TestHopSettingsAndSearch(t *testing.T) {
 	pub, _ := json.Marshal(map[string]string{"t": "Daftar Belanja", "b": "nama-unik-sekali"})
 	u.create(map[string]any{"encrypted": false, "content": string(pub)})
 	_, env = call(t, srv, "imperium", "GET", "/hop/search?q=nama-unik-sekali", nil)
-	if l := list(env); len(l) != 1 || l[0].(map[string]any)["kind"] != "content" || l[0].(map[string]any)["url"] != "https://note.test/n/"+enc.token || l[0].(map[string]any)["label"] != "/n/nama-unik-sekali" {
+	if l := list(env); len(l) != 1 || l[0].(map[string]any)["kind"] != "content" || l[0].(map[string]any)["url"] != "https://note.test/"+enc.token || l[0].(map[string]any)["label"] != "/nama-unik-sekali" {
 		t.Fatalf("search token: %v", env)
 	}
 	_, env = call(t, srv, "imperium", "GET", "/hop/search?q=belanja", nil)

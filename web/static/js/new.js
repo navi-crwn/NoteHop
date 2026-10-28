@@ -313,7 +313,7 @@
       rm.addEventListener('click', function () { NH.recent.remove(n.token); drawRecent(); });
       return NH.h('li.note-row' + (gone ? '.gone' : ''),
         NH.h('a.note-link', { href: NH.noteURL(n.token, { k: n.k, a: n.a }) }, NH.h('b', n.t || NH.t('common.untitled')),
-          NH.h('small.muted', '/n/' + n.token + ' · ' + NH.ago(n.created) + (gone ? ' · ' + NH.t('new.expired') : '') + (n.p ? ' · ' + NH.t('new.has_password') : ''))),
+          NH.h('small.muted', '/' + n.token + ' · ' + NH.ago(n.created) + (gone ? ' · ' + NH.t('new.expired') : '') + (n.p ? ' · ' + NH.t('new.has_password') : ''))),
         rm);
     }));
   }

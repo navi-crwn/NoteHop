@@ -15,7 +15,7 @@ Every setting is an environment variable. On a VPS they live in `/etc/notehop/no
 | `NOTEHOP_TRUST_PROXY` | `false` | Use `X-Forwarded-For` for rate limits (turn on behind a reverse proxy) |
 | `NOTEHOP_REGISTRATION` | `true` | Open or close sign-ups |
 | `NOTEHOP_SITE` | `NoteHop` | Site name |
-| `NOTEHOP_SHARE_URL` | empty | A second domain for shared links (for example `https://nhop.link`). Reader links become `https://nhop.link/TOKEN`; old `/n/` links of any kind are moved to the right domain. Sign-in, dashboard, editor and owner links stay on `NOTEHOP_BASE_URL` |
+| `NOTEHOP_SHARE_URL` | empty | A short domain for shared links (for example `https://nhop.link`). Reader links become `https://nhop.link/TOKEN`, which redirects to `NOTEHOP_BASE_URL/TOKEN`; nothing is served on it. Owner links stay on `NOTEHOP_BASE_URL` |
 | `NOTEHOP_FILE_MB` | `10` | Largest attachment (MB). `0` turns attachments off. Raise `client_max_body_size` in nginx too |
 | `NOTEHOP_FILES_IP_MB` | `100` | Attachments one IP address may upload per 24 hours (MB). `0` = no limit |
 | `NOTEHOP_FILES_TOTAL_MB` | `2048` | Total size of all live attachments (kept in SQLite, deleted after 24 hours). `0` = no limit |
@@ -50,9 +50,9 @@ notehop -addr 127.0.0.1:8090 -db notehop.db                         # run the se
 notehop backup -db notehop.db copy.db                               # safe copy while it runs
 notehop new -server https://note.example.com < note.md              # encrypted in the terminal, prints the link
 notehop new -server https://… -password secret -expires 24h -burn 1 file.md
-notehop get 'https://note.example.com/n/TOKEN#k=…'                  # download and decrypt in the terminal
+notehop get 'https://note.example.com/TOKEN#k=…'                    # download and decrypt in the terminal
 ssh -p 2222 note.example.com < note.md                              # ⚠️ public note (when NOTEHOP_SSH_ADDR is set)
-notehop takedown -db notehop.db https://note.example.com/n/xxxx     # moderation: delete + hold the link name for 365 days
+notehop takedown -db notehop.db https://note.example.com/xxxx       # moderation: delete + hold the link name for 365 days
 notehop takedown -db notehop.db -file FILE_ID                       # moderation: delete one attachment
 ```
 
@@ -61,7 +61,7 @@ Link names and usernames (at least 7 characters, reserved names, a word filter i
 ## How the encryption works
 
 ```
-K      = 32 random bytes                       → in the link: /n/<token>#k=<K>
+K      = 32 random bytes                       → in the link: /<token>#k=<K>
 secret = K, or PBKDF2(password, K‖salt, 310000) with a password
 enc    = HMAC-SHA256(secret, "notehop/enc")    → AES-256-GCM key for the note and its replies
 write  = HMAC-SHA256(secret, "notehop/write")  → sent as X-Write; the server keeps its SHA-256

@@ -39,7 +39,7 @@
           </div>
           <label class="h-tog"><input type="checkbox" id="quick-once"><span class="h-sw"></span>{{.L.T "priv.once"}}</label>
         </div>
-        <p class="h-url" dir="ltr"><span id="quick-url">{{.Origin}}/n/…</span><mark id="quick-frag">#k=…</mark></p>
+        <p class="h-url" dir="ltr"><span id="quick-url">{{.LinkHost}}/…</span><mark id="quick-frag">#k=…</mark></p>
         <p class="h-small">{{.L.T "home.d_url_p"}}</p>
         <div class="h-q-foot">
           <a class="h-link" href="/new" id="quick-full"><svg><use href="#i-plus"/></svg>{{.L.T "home.quick_full"}}</a>
@@ -75,7 +75,7 @@
         </div>
         <div class="h-scene" aria-hidden="true">
           <div class="h-paper" id="h-paper"><span class="h-lock"><svg><use href="#i-lock"/></svg></span><b>{{.L.T "home.l_note_t"}}</b><p id="h-paper-text" data-text="{{.L.T "home.l_note_b"}}"></p></div>
-          <div class="h-chiplink" id="h-chiplink" dir="ltr"><svg><use href="#i-link"/></svg>/n/RFbN3uTvAH#k=…</div>
+          <div class="h-chiplink" id="h-chiplink" dir="ltr"><svg><use href="#i-link"/></svg>{{.LinkHost}}/RFbN3uTvAH#k=…</div>
           <div class="h-phone" id="h-phone"><div class="h-screen"><span class="h-from">{{.L.T "home.l_from"}}</span>
             <div id="h-phone-body"><p class="h-wait">{{.L.T "home.l_wait"}}</p></div>
             <div class="h-fire" id="h-fire"></div><div class="h-gone" id="h-gone"><b>{{.L.T "home.l_gone_h"}}</b>{{.L.T "home.l_gone_p"}}</div></div></div>

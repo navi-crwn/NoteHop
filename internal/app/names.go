@@ -10,7 +10,7 @@ import (
 	"github.com/navi-crwn/NoteHop/internal/db"
 )
 
-// Rules for names people choose: custom link names (/n/…) and usernames
+// Rules for names people choose: custom link names (/…) and usernames
 // (/@…). Short names, site and brand words and offensive words are kept
 // back, and a name that belonged to a deleted note is held for a while, so
 // an old link never opens someone else's note. Site admins (the admin role,
@@ -62,7 +62,7 @@ func parseReserved(s string) (map[string]bool, []string) {
 	return names, prefixes
 }
 
-// normName treats "_" like "-", so @help_desk and /n/help-desk are checked alike.
+// normName treats "_" like "-", so @help_desk and /help-desk are checked alike.
 func normName(name string) string { return strings.ReplaceAll(strings.ToLower(name), "_", "-") }
 
 func (a *App) reservedName(name string) bool {
