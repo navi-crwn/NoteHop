@@ -28,7 +28,6 @@
     { feature: 'lock', when: function () { return mode() === 'read'; }, why: NH.t('rule.lock_write') },
     { feature: 'decoy', when: function () { return !on('password'); }, why: NH.t('rule.decoy_password') }
   ];
-  var PRIV_DESC = { normal: NH.t('priv.normal_d'), password: NH.t('priv.password_d'), once: NH.t('priv.once_d') };
   function toggle(name) { return form.querySelector('[data-feature="' + name + '"]'); }
   function on(name) { return toggle(name).checked; }
   function set(name, v) { toggle(name).checked = v; }
@@ -86,11 +85,13 @@
     syncPresets();
     NH.$$('[data-panel]', form).forEach(function (p) { p.classList.toggle('hide', !on(p.dataset.panel)); });
     $('#until-other').classList.toggle('hide', radio('until') !== 'other');
-    $('#priv-desc').textContent = PRIV_DESC[radio('privacy')];
     $('[data-for="encrypt-off"]').classList.toggle('hide', on('encrypt'));
-    // Extra settings that are on keep the section open, so nothing is hidden.
-    if (['capsule', 'lock', 'decoy', 'slug', 'signoff'].some(on) || !on('encrypt')) $('#adv').open = true;
+    // "More" stays closed; its button counts the extra settings that are on.
+    var extra = ['capsule', 'lock', 'decoy', 'slug', 'signoff'].filter(on).length + (on('encrypt') ? 0 : 1);
+    $('#adv-count').textContent = extra;
+    $('#adv-count').classList.toggle('hide', !extra);
     if (['check', 'suggest'].indexOf(mode()) !== -1) $('#more-modes').open = true;
+    showPicks();
     btn.querySelector('span').textContent = NH.t(on('encrypt') ? 'new.create' : 'new.create_public');
     summary();
     slugAdvice();
@@ -105,6 +106,41 @@
     if (e.target.name === 'privacy') applyPrivacy();
     if (e.target.name === 'until' || e.target.id === 'expires') applyUntil();
     applyOptions();
+    // A choice closes its menu, unless it needs more input (a password, a duration).
+    var menu = e.target.type === 'radio' && e.target.closest('.pick');
+    if (menu && !menu.querySelector('.feat:not(.hide)')) menu.open = false;
+  });
+
+  // ---------- the settings bar: one menu open at a time ----------
+  // Each button shows the chosen option's name and icon.
+  function showPicks() {
+    [['#opt-who', 'mode'], ['#opt-private', 'privacy'], ['#opt-until', 'until']].forEach(function (x) {
+      var box = $(x[0]), label = form.querySelector('[name=' + x[1] + ']:checked').closest('label');
+      var text = x[1] === 'until' && radio('until') === 'other' ? $('#expires').selectedOptions[0].textContent : label.querySelector('b').textContent;
+      box.querySelector('.pick-val').textContent = text;
+      box.querySelector('.pick-ico use').setAttribute('href', label.querySelector('svg use').getAttribute('href'));
+    });
+  }
+  var picks = NH.$$('.pick', form), scrim = $('#scrim');
+  function phone() { return matchMedia('(max-width: 640px)').matches; }
+  picks.forEach(function (d) {
+    d.addEventListener('toggle', function () {
+      if (d.open) picks.forEach(function (o) { if (o !== d) o.open = false; });
+      var any = picks.filter(function (o) { return o.open; })[0];
+      // The drawer and the phone sheets dim the page; the small menus don't.
+      scrim.hidden = !any || (any.id !== 'adv' && !phone());
+      document.body.classList.toggle('sheet-open', !!any && !scrim.hidden);
+    });
+  });
+  function closePicks() { picks.forEach(function (d) { d.open = false; }); }
+  scrim.addEventListener('click', closePicks);
+  $('#adv [data-close]').addEventListener('click', function () { $('#adv').open = false; $('#adv > summary').focus(); });
+  document.addEventListener('keydown', function (e) {
+    var open = picks.filter(function (d) { return d.open; })[0];
+    if (e.key === 'Escape' && open) { open.open = false; open.querySelector('summary').focus(); }
+  });
+  document.addEventListener('pointerdown', function (e) {
+    picks.forEach(function (d) { if (d.open && d.id !== 'adv' && !d.contains(e.target)) d.open = false; });
   });
   form.addEventListener('input', function (e) { if (e.target.type === 'datetime-local') summary(); });
 
@@ -127,6 +163,7 @@
     b.addEventListener('click', function () {
       var kind = b.dataset.starter, st = STARTERS[kind];
       NH.$$('[data-starter]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      $('#start-desc').textContent = b.title;
       pick('mode', st.mode);
       pick('privacy', st.privacy);
       applyPrivacy();

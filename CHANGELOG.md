@@ -4,6 +4,12 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## 2026-10-28
 
+### A simpler create page ([new-compose](https://github.com/navi-crwn/NoteHop/tree/new-compose))
+- The editor uses the full width; the side panel of settings is gone. Web notes show the result beside the code.
+- "What do you want to make?" is one row of small buttons, with a one-line description of the chosen one.
+- One bar under the editor: who can do what, how private, how long, **More**, and **Create link**. Each button opens a short menu that explains every choice; **More** opens the extra settings in a drawer and counts the ones that are on.
+- On phones the bar stays at the bottom as icons, and every menu opens as a sheet.
+
 ### Control center API and reports ([hop-admin-api](https://github.com/navi-crwn/NoteHop/tree/hop-admin-api))
 - **Report this note** in every note's menu: a reason and a short message go to the site team, never the note's content. 5 reports per hour per address.
 - A signed `/hop/*` API (HOP App Protocol v1) so a control center can see health, numbers, accounts, notes, attachments, reports, link-name holds and settings, and act on them; and so the account server can push profile changes, suspensions and deletions. Encrypted notes stay metadata only. Every change is written to an audit log. `NOTEHOP_HOP_CLIENTS` names the callers.
