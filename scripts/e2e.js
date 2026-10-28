@@ -11,7 +11,7 @@ const results = [];
 const ok = (name, cond, info) => { results.push([cond ? 'PASS' : 'FAIL', name, info || '']); };
 let errs = [];
 
-async function pickMode(p, m) { await p.evaluate(() => { const d = document.getElementById('more-modes'); if (d) d.open = true; }); await p.check(`input[name=mode][value=${m}]`, { force: true }); }
+async function pickMode(p, m) { await p.evaluate(() => { ['opt-who', 'more-modes'].forEach(id => { const d = document.getElementById(id); if (d) d.open = true; }); }); await p.check(`input[name=mode][value=${m}]`, { force: true }); }
 async function newPage(b, opts) {
   const ctx = (await b.newContext(Object.assign({ permissions: ['clipboard-read', 'clipboard-write'] }, opts || {})).then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }));
   const p = await ctx.newPage();
@@ -31,14 +31,16 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
   if (body) await p.fill('.ed-src', body);
   await pickMode(p, mode);
   if (!encrypt) { await openAdv(p); await p.click('#expert-box summary'); await p.click('label:has(#encrypt)'); }
-  if (pw) { await p.click('label:has([name=privacy][value=password])'); await p.fill('#password', pw); }
+  if (pw) { await p.click('#opt-private > summary'); await p.click('label:has([name=privacy][value=password])'); await p.fill('#password', pw); }
   if (burn !== '0') { await openAdv(p); if (!(await p.isChecked('[data-feature=burn]'))) await p.click('label:has([data-feature=burn])'); await p.selectOption('#burn', burn); }
-  await p.click('#create');
+  await closeMenus(p); await p.click('#create');
   await p.waitForURL(/\/n\//, { timeout: 20000 });
   await p.waitForSelector('#note:not(.hide)', { timeout: 20000 });
   return p.url();
 }
 
+// The More drawer covers the bar's right end; people close it before Create link.
+const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }));
 (async () => {
   const b = await chromium.launch();
 
@@ -54,7 +56,7 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     await p.fill('#lock-text', 'kode brankas 4321'); await p.fill('#lock-pin', '2468');
     await p.click('#lock-form button[type=submit]');
     await p.waitForFunction(() => document.querySelector('.ed-src').value.includes(':::locked'));
-    await p.click('#create'); await p.waitForURL(/\/n\//);
+    await closeMenus(p); await p.click('#create'); await p.waitForURL(/\/n\//);
     await p.waitForSelector('#note:not(.hide)');
     const v = await newPage(b); await v.goto(visitorURL(p.url()));
     await v.waitForSelector('.locked-form');
@@ -236,11 +238,10 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
     over = await m.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     ok('Mobile: no horizontal scroll on note (visitor)', over <= 0, 'overflow ' + over + 'px');
     await m.screenshot({ path: OUT + '/m-note-visitor.png', fullPage: true });
-    // Smallest common phone: option words ("With a password", "Always") must
-    // not spill into the next option.
+    // Smallest common phone: the settings bar and Create link fit on one line.
     await m.setViewportSize({ width: 320, height: 700 }); await m.goto(BASE + '/new'); await m.waitForTimeout(300);
-    const spill = await m.$$eval('.seg-choice span', xs => xs.filter(s => s.scrollWidth > s.clientWidth + 1).map(s => s.textContent));
-    ok('Mobile: 320px options fit their text', spill.length === 0, JSON.stringify(spill));
+    const spill = await m.$$eval('.pick > summary, .share-bar #create', xs => xs.filter(s => s.getBoundingClientRect().right > innerWidth || s.scrollWidth > s.clientWidth + 1).map(s => s.textContent.trim()));
+    ok('Mobile: 320px settings bar fits', spill.length === 0, JSON.stringify(spill));
   } catch (e) { ok('Mobile flow', false, e.message.split('\n')[0]); }
 
   await b.close();

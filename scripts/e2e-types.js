@@ -35,6 +35,8 @@ async function readLink(p) {
   return BASE + '/n/' + tok + '#k=' + k;
 }
 
+// The More drawer covers the bar's right end; people close it before Create link.
+const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }));
 (async () => {
   const b = await chromium.launch(); const errs = [];
   const ctx = await b.newContext({ acceptDownloads: true, viewport: { width: 1280, height: 900 } });
@@ -106,7 +108,7 @@ async function readLink(p) {
   // ---------- Plain note ----------
   await p.fill('#title', 'Polos');
   await p.fill('.ed-src', '**bukan tebal**\n- [ ] bukan kotak\n<b>bukan html</b>');
-  await p.click('#create'); await p.waitForURL(/\/n\//);
+  await closeMenus(p); await p.click('#create'); await p.waitForURL(/\/n\//);
   const plainRead = await readLink(p);
   ok('owner editor keeps Plain', (await p.getAttribute('[data-editor]', 'data-type')) === 'plain');
   await p.goto(plainRead); await p.waitForSelector('.plain-view');
@@ -130,7 +132,7 @@ async function readLink(p) {
   await p.keyboard.press('Escape'); await p.keyboard.press('Tab');
   ok('Esc then Tab leaves the box', await p.evaluate(() => !document.activeElement.classList.contains('ed-src')));
   const codeBody = await val(p);
-  await p.click('#create'); await p.waitForURL(/\/n\//);
+  await closeMenus(p); await p.click('#create'); await p.waitForURL(/\/n\//);
   const owner = p.url(), codeRead = await readLink(p);
   ok('owner editor keeps Code + language', (await p.getAttribute('[data-editor]', 'data-type')) === 'code' && (await p.inputValue('.ed-lang')) === 'javascript');
   await p.goto(codeRead); await p.waitForSelector('.code-note');
@@ -163,7 +165,7 @@ async function readLink(p) {
   await p.fill('.ed-src', '<script>alert(1)</script>');
   await p.evaluate(() => { const d = document.getElementById('adv'); if (d) d.open = true; });
   await p.evaluate(() => { const c = document.getElementById('encrypt'); c.checked = false; c.dispatchEvent(new Event('change', { bubbles: true })); });
-  await p.click('#create'); await p.waitForURL(/\/n\//);
+  await closeMenus(p); await p.click('#create'); await p.waitForURL(/\/n\//);
   const tok = (await p.locator('dialog[open]').innerText()).match(/\/n\/(\w{8,})/)[1];
   const raw = await fetch(BASE + '/raw/' + tok);
   ok('/raw is text/plain + nosniff', raw.headers.get('content-type').startsWith('text/plain') && raw.headers.get('x-content-type-options') === 'nosniff' &&

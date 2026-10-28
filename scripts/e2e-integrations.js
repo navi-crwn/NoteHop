@@ -23,11 +23,13 @@ async function create(p, title, body, opts = {}) {
   await p.goto(BASE + '/new');
   await p.fill('#title', title); await p.fill('.ed-src', body);
   if (opts.public) { await p.click('#adv summary'); await p.click('#expert-box summary'); await p.click('label:has([data-feature=encrypt])'); }
-  await p.click('#create'); await p.waitForURL(/\/n\//); await p.waitForSelector('#note:not(.hide)');
+  await closeMenus(p); await p.click('#create'); await p.waitForURL(/\/n\//); await p.waitForSelector('#note:not(.hide)');
   await p.keyboard.press('Escape');
   return p.url();
 }
 
+// The More drawer covers the bar's right end; people close it before Create link.
+const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }));
 (async () => {
   const b = await chromium.launch();
   try {
