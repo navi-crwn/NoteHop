@@ -299,7 +299,12 @@ func (a *App) apiCreate(w http.ResponseWriter, r *http.Request) {
 			log.Printf("decoy: %v", err)
 		}
 	}
-	writeJSON(w, http.StatusCreated, map[string]any{"token": link.Token, "expires": n.Expires})
+	res := map[string]any{"token": link.Token, "expires": n.Expires}
+	if a.shareURL() != "" {
+		// The short reader link, for clients that can't tell (the CLI).
+		res["link"] = a.readerLink(link.Token)
+	}
+	writeJSON(w, http.StatusCreated, res)
 }
 
 // ---------- read ----------

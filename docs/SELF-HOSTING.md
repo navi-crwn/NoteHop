@@ -77,7 +77,13 @@ To give the links people share a short domain of their own (for example `nhop.li
 1. Point the second domain's DNS at the same VPS and add its block in Caddy or nginx (there's an example in `deploy/Caddyfile.example`).
 2. Set `NOTEHOP_SHARE_URL=https://nhop.link` in `/etc/notehop/notehop.env` and restart.
 
-On the share domain NoteHop only serves `/n/…`, `/raw/…`, the note API and static files. Other pages redirect to the main domain, and session cookies are never sent there. If the share domain gets blocked because of what someone posted, the main site stays up.
+Reader links then look like `https://nhop.link/rapat-senin#k=…`: the link name (or token) right after the domain. Owner links stay on `note.example.com/n/…`.
+
+On the share domain NoteHop only serves notes, `/raw/…`, `/mock/…`, the note API, attachments and what a note page loads (static files, translations, the sealed frames for diagrams and web notes). Other pages redirect to the main domain, and session cookies are never sent there. If the share domain gets blocked because of what someone posted, the main site stays up.
+
+Links made before you added the share domain keep working. Which rights a link carries is in its `#…` part, which never reaches the server, so the page sorts it out in the browser: a reader link opened on the main site moves to the share domain, and an owner link opened on the share domain moves back to the main site, with the `#…` part unchanged. `nhop.link/n/TOKEN` redirects to `nhop.link/TOKEN`.
+
+Proxy the share domain exactly like the main one, including the WebSocket paths for live editing (`/api/n/…/live`).
 
 ## 4. Check
 

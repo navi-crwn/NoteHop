@@ -201,20 +201,11 @@ func (a *App) createPublic(title, body string) (share, admin string, err error) 
 	if err := a.db.CreateNote(n, link); err != nil {
 		return "", "", err
 	}
-	base := a.cfg.BaseURL
-	if base == "" {
-		base = "http://localhost"
-	}
-	return base + "/n/" + link.Token + "#k=" + k, base + "/n/" + link.Token + "#k=" + k + "&a=" + adm, nil
+	return a.readerLink(link.Token) + "#k=" + k, a.siteURL() + "/n/" + link.Token + "#k=" + k + "&a=" + adm, nil
 }
 
 func (a *App) sshGet(ref string) string {
-	token := ref
-	if i := strings.Index(ref, "/n/"); i >= 0 {
-		token = ref[i+3:]
-	}
-	token, _, _ = strings.Cut(token, "#")
-	n, _, err := a.db.NoteByLink(token)
+	n, _, err := a.db.NoteByLink(nhclient.Token(ref))
 	if err != nil {
 		return "error: not found\n"
 	}

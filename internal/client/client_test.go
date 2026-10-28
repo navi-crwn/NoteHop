@@ -61,3 +61,17 @@ func TestCreateGet(t *testing.T) {
 		t.Fatalf("public: %+v %v %s", n, err, p.Token)
 	}
 }
+
+func TestToken(t *testing.T) {
+	for in, want := range map[string]string{
+		"https://note.example/n/rapat-senin#k=abc&a=def": "rapat-senin",
+		"https://n.example/Ab3dE6gH9k#k=abc":             "Ab3dE6gH9k",
+		"https://n.example/Ab3dE6gH9k?x=1":               "Ab3dE6gH9k",
+		"/n/Ab3dE6gH9k":                                  "Ab3dE6gH9k",
+		"Ab3dE6gH9k":                                     "Ab3dE6gH9k",
+	} {
+		if got := Token(in); got != want {
+			t.Errorf("Token(%q) = %q, want %q", in, got, want)
+		}
+	}
+}

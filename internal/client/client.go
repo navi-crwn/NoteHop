@@ -190,6 +190,7 @@ func Create(base string, n Note, o Options) (Created, error) {
 	}
 	var res struct {
 		Token string `json:"token"`
+		Link  string `json:"link"` // the reader link, short on a share domain
 	}
 	err = call("POST", base+"/api/notes", map[string]any{
 		"encrypted": !o.Public, "password": o.Password != "", "salt": salt, "content": content, "mode": o.Mode,
@@ -199,7 +200,11 @@ func Create(base string, n Note, o Options) (Created, error) {
 		return Created{}, err
 	}
 	link := base + "/n/" + url.PathEscape(res.Token)
-	return Created{Token: res.Token, Share: link + "#k=" + k, Admin: link + "#k=" + k + "&a=" + admin}, nil
+	share := res.Link
+	if share == "" {
+		share = link
+	}
+	return Created{Token: res.Token, Share: share + "#k=" + k, Admin: link + "#k=" + k + "&a=" + admin}, nil
 }
 
 // Get opens a note link (counting a view, like a browser would) and
@@ -210,9 +215,9 @@ func Get(link, password string) (Note, error) {
 		return Note{}, err
 	}
 	frag, _ := url.ParseQuery(u.Fragment)
-	token := strings.TrimPrefix(u.Path, "/n/")
-	if token == u.Path || token == "" {
-		return Note{}, errors.New("not a note link (…/n/TOKEN#k=…)")
+	token := Token(link)
+	if u.Host == "" || token == "" || strings.Contains(token, "/") {
+		return Note{}, errors.New("not a note link (…/n/TOKEN#k=… or share.example/TOKEN#k=…)")
 	}
 	base := u.Scheme + "://" + u.Host
 	api := base + "/api/n/" + url.PathEscape(token)
@@ -254,4 +259,17 @@ func Get(link, password string) (Note, error) {
 		return Note{}, err
 	}
 	return n, nil
+}
+
+// Token takes a note link in any form (…/n/TOKEN, share.example/TOKEN, with
+// or without #fragment) or a bare token, and returns the token.
+func Token(ref string) string {
+	ref, _, _ = strings.Cut(ref, "#")
+	ref, _, _ = strings.Cut(ref, "?")
+	if i := strings.Index(ref, "/n/"); i >= 0 {
+		ref = ref[i+3:]
+	} else if u, err := url.Parse(ref); err == nil && u.Host != "" {
+		ref = u.Path
+	}
+	return strings.Trim(ref, "/")
 }
