@@ -275,3 +275,31 @@ func TestSSOProvider(t *testing.T) {
 		}
 	}
 }
+
+func TestSSOChainedLogout(t *testing.T) {
+	srv := newSSOApp(t, true)
+	c := noRedirect(t, srv)
+	state := ssoStart(t, c, "/")
+	if code, _ := ssoCallback(t, c, ticketFor("42", state)); code != http.StatusSeeOther {
+		t.Fatalf("login: %d", code)
+	}
+	for _, tc := range []struct{ next, want string }{
+		{"https://bio.accounts.test/x", "https://bio.accounts.test/x"},
+		{"https://accounts.test/", "https://accounts.test/"},
+		{"https://test/", "/"},
+		{"https://evil.example/", "/"},
+		{"http://test/", "/"},
+	} {
+		res, err := c.hc.Get(srv.URL + "/auth/sso/logout?next=" + url.QueryEscape(tc.next))
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		if res.StatusCode != http.StatusSeeOther || res.Header.Get("Location") != tc.want {
+			t.Fatalf("next=%q: %d %q, want %q", tc.next, res.StatusCode, res.Header.Get("Location"), tc.want)
+		}
+	}
+	if code, _, _ := c.do("GET", "/api/me", nil, nil); code != 401 {
+		t.Fatalf("still signed in after logout: %d", code)
+	}
+}
