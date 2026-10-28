@@ -23,7 +23,7 @@ async function create(p, title, body, opts = {}) {
   await p.goto(BASE + '/new');
   await p.fill('#title', title); await p.fill('.ed-src', body);
   if (opts.public) { await p.click('#adv summary'); await p.click('#expert-box summary'); await p.click('label:has([data-feature=encrypt])'); }
-  await closeMenus(p); await p.click('#create'); await p.waitForURL(/\/n\//); await p.waitForSelector('#note:not(.hide)');
+  await closeMenus(p); await p.click('#create'); await p.waitForURL(/#k=/); await p.waitForSelector('#note:not(.hide)');
   await p.keyboard.press('Escape');
   return p.url();
 }
@@ -78,7 +78,7 @@ const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]'
     await p.click('#act-share'); await p.waitForSelector('#share-dlg[open]'); await tab(p, 'expert'); await pill('profile').click(); await p.waitForTimeout(500); await p.keyboard.press('Escape');
     const prof = await (await ctx.newPage()).goto(BASE + '/@' + user);
     ok('profile: lists the public note', prof.status() === 200 && (await prof.text()).includes('Menu'));
-    const token = new URL(pub).pathname.split('/')[2];
+    const token = new URL(pub).pathname.split('/').pop();
     const mock = await fetch(BASE + '/mock/' + token + '/menu/1');
     ok('mock api: value', mock.status === 200 && (await mock.json()) === 'teh');
 

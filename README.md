@@ -66,7 +66,7 @@ On top of that, a note can do much more than a notepad: links with different rig
 - **🔑 Owner link.** A separate link to change, share, freeze or delete the note.
 - **🔥 Delete after reading.** Opened 1, 3 or 10 times, then destroyed. Chat apps' link preview bots don't use up a view.
 - **⏳ Expiry and time capsules.** Gone after 10 minutes to 30 days, or locked until the date you pick.
-- **🏷️ Your own address + QR.** `/n/monday-meeting`, and a QR code made in your browser.
+- **🏷️ Your own address + QR.** `/monday-meeting`, and a QR code made in your browser.
 - **📌 Fixed copies and sign-off.** Freeze a version nobody can change, and let readers approve it with their name.
 - **🧑‍🤝‍🧑 Write together.** Everyone's cursor and name live, a chat on the side and "follow the presenter". The server only passes locked data along.
 - **✅ Smart blocks.** Checklists, polls (one vote each), forms, a calculator, Mermaid diagrams, a Kanban board from your headings, and secret blocks behind a PIN or ones that destroy themselves.

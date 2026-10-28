@@ -26,7 +26,7 @@ async function pickMode(p, m) { await p.evaluate(() => { ['opt-who', 'more-modes
   async function mk(title, body) {
     await p.goto(BASE + '/new'); await p.fill('#title', title); await p.fill('.ed-src', body);
     await pickMode(p, 'read');
-    await p.click('#create'); await p.waitForURL(/\/n\//); await p.waitForSelector('#note:not(.hide)'); await p.keyboard.press('Escape');
+    await p.click('#create'); await p.waitForURL(/#k=/); await p.waitForSelector('#note:not(.hide)'); await p.keyboard.press('Escape');
     return p.url();
   }
   const other = await mk('Resep', '- [ ] beli telur\nhttps://example.com');
@@ -76,7 +76,7 @@ async function pickMode(p, m) { await p.evaluate(() => { ['opt-who', 'more-modes
   await p.fill('.ed-src', 'mail budi@contoh.com, telp +62 812-3456-7890, password: rahasia123'); await p.waitForTimeout(1600);
   await act(p, 'redact'); await p.waitForSelector('.redact-out');
   const red = await p.inputValue('.redact-out'); ok('redact masks', !red.includes('budi@') && !red.includes('7890') && !red.includes('rahasia123'), red);
-  await p.click('dialog[open] .btn.primary'); await p.waitForTimeout(1500); const rl = await p.evaluate(() => navigator.clipboard.readText()); ok('redact copy link', /\/n\/\w+#k=/.test(rl), rl.slice(0, 30));
+  await p.click('dialog[open] .btn.primary'); await p.waitForTimeout(1500); const rl = await p.evaluate(() => navigator.clipboard.readText()); ok('redact copy link', /\/\w{8,}#k=/.test(rl), rl.slice(0, 30));
   await p.keyboard.press('Escape');
   // report this note (from the menu; a thank-you toast, no reload)
   await act(p, 'report'); await p.waitForSelector('#report-dlg[open]');

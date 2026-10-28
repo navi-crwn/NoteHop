@@ -34,7 +34,7 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
   if (pw) { await p.click('#opt-private > summary'); await p.click('label:has([name=privacy][value=password])'); await p.fill('#password', pw); }
   if (burn !== '0') { await openAdv(p); if (!(await p.isChecked('[data-feature=burn]'))) await p.click('label:has([data-feature=burn])'); await p.selectOption('#burn', burn); }
   await closeMenus(p); await p.click('#create');
-  await p.waitForURL(/\/n\//, { timeout: 20000 });
+  await p.waitForURL(/#k=/, { timeout: 20000 });
   await p.waitForSelector('#note:not(.hide)', { timeout: 20000 });
   return p.url();
 }
@@ -56,7 +56,7 @@ const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]'
     await p.fill('#lock-text', 'kode brankas 4321'); await p.fill('#lock-pin', '2468');
     await p.click('#lock-form button[type=submit]');
     await p.waitForFunction(() => document.querySelector('.ed-src').value.includes(':::locked'));
-    await closeMenus(p); await p.click('#create'); await p.waitForURL(/\/n\//);
+    await closeMenus(p); await p.click('#create'); await p.waitForURL(/#k=/);
     await p.waitForSelector('#note:not(.hide)');
     const v = await newPage(b); await v.goto(visitorURL(p.url()));
     await v.waitForSelector('.locked-form');
@@ -205,7 +205,7 @@ const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]'
     ok('Home: quick note and full-notepad link', await h.isVisible('#quick-form') && (await h.getAttribute('a.h-pill:not(.dark)', 'href')) === '/new');
     await h.fill('#quick-title', 'Cepat'); await h.fill('#quick-body', 'rahasia kilat 123');
     await h.click('label:has(input[name=quick-mode][value=edit])');
-    await h.click('#quick-create'); await h.waitForURL(/\/n\//, { timeout: 20000 }); await h.waitForSelector('#note:not(.hide)');
+    await h.click('#quick-create'); await h.waitForURL(/#k=/, { timeout: 20000 }); await h.waitForSelector('#note:not(.hide)');
     ok('Home: quick note opens as owner', await h.isVisible('#act-share'));
     ok('Home: only ciphertext sent', sent.length === 1 && !sent[0].includes('rahasia kilat'));
     await h.goto(BASE + '/'); await h.fill('#quick-body', 'lanjut di mode lengkap'); await h.click('#quick-full');

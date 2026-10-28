@@ -28,8 +28,8 @@ const val = p => p.inputValue('.ed-src');
 const spanAt = async p => { const v = await val(p), s = v.indexOf('['); return [s, v.indexOf('}', s) + 1]; };
 // The owner page shows the Share dialog first; its view-only link is used to read.
 async function readLink(p) {
-  await p.waitForSelector('dialog[open] :text("/n/")');
-  const tok = (await p.locator('dialog[open]').innerText()).match(/\/n\/(\w{8,})/)[1];
+  await p.waitForSelector('dialog[open] .link-url');
+  const tok = (await p.locator('dialog[open] .link-url').first().innerText()).trim().replace(/^\//, '');
   const k = new URL(p.url()).hash.match(/k=([^&]+)/)[1];
   await p.keyboard.press('Escape');
   return BASE + '/n/' + tok + '#k=' + k;
@@ -108,7 +108,7 @@ const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]'
   // ---------- Plain note ----------
   await p.fill('#title', 'Polos');
   await p.fill('.ed-src', '**bukan tebal**\n- [ ] bukan kotak\n<b>bukan html</b>');
-  await closeMenus(p); await p.click('#create'); await p.waitForURL(/\/n\//);
+  await closeMenus(p); await p.click('#create'); await p.waitForURL(/#k=/);
   const plainRead = await readLink(p);
   ok('owner editor keeps Plain', (await p.getAttribute('[data-editor]', 'data-type')) === 'plain');
   await p.goto(plainRead); await p.waitForSelector('.plain-view');
@@ -132,7 +132,7 @@ const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]'
   await p.keyboard.press('Escape'); await p.keyboard.press('Tab');
   ok('Esc then Tab leaves the box', await p.evaluate(() => !document.activeElement.classList.contains('ed-src')));
   const codeBody = await val(p);
-  await closeMenus(p); await p.click('#create'); await p.waitForURL(/\/n\//);
+  await closeMenus(p); await p.click('#create'); await p.waitForURL(/#k=/);
   const owner = p.url(), codeRead = await readLink(p);
   ok('owner editor keeps Code + language', (await p.getAttribute('[data-editor]', 'data-type')) === 'code' && (await p.inputValue('.ed-lang')) === 'javascript');
   await p.goto(codeRead); await p.waitForSelector('.code-note');
@@ -165,8 +165,8 @@ const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]'
   await p.fill('.ed-src', '<script>alert(1)</script>');
   await p.evaluate(() => { const d = document.getElementById('adv'); if (d) d.open = true; });
   await p.evaluate(() => { const c = document.getElementById('encrypt'); c.checked = false; c.dispatchEvent(new Event('change', { bubbles: true })); });
-  await closeMenus(p); await p.click('#create'); await p.waitForURL(/\/n\//);
-  const tok = (await p.locator('dialog[open]').innerText()).match(/\/n\/(\w{8,})/)[1];
+  await closeMenus(p); await p.click('#create'); await p.waitForURL(/#k=/);
+  const tok = new URL(p.url()).pathname.slice(1);
   const raw = await fetch(BASE + '/raw/' + tok);
   ok('/raw is text/plain + nosniff', raw.headers.get('content-type').startsWith('text/plain') && raw.headers.get('x-content-type-options') === 'nosniff' &&
     (await raw.text()).includes('<script>alert(1)</script>'));

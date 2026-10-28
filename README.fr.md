@@ -66,7 +66,7 @@ En plus, une note fait bien plus qu'un bloc-notes : des liens avec des droits di
 - **🔑 Lien de propriétaire.** Un lien à part pour modifier, partager, figer ou supprimer la note.
 - **🔥 Supprimer après lecture.** Ouverte 1, 3 ou 10 fois, puis détruite. Les robots d'aperçu des messageries ne consomment pas d'ouverture.
 - **⏳ Expiration et capsules temporelles.** Disparaît après 10 minutes à 30 jours, ou reste verrouillée jusqu'à la date choisie.
-- **🏷️ Adresse personnalisée + QR.** `/n/reunion-lundi`, et un QR code créé dans votre navigateur.
+- **🏷️ Adresse personnalisée + QR.** `/reunion-lundi`, et un QR code créé dans votre navigateur.
 - **📌 Copies figées et signature.** Figez une version que personne ne peut modifier, et laissez les lecteurs l'approuver avec leur nom.
 - **🧑‍🤝‍🧑 Écrire à plusieurs.** Le curseur et le nom de chacun en direct, une discussion à côté et « suivre le présentateur ». Le serveur ne fait que relayer des données verrouillées.
 - **✅ Blocs malins.** Listes à cocher, sondages (un vote par personne), formulaires, calculatrice, diagrammes Mermaid, un tableau Kanban à partir de vos titres, et des blocs secrets sous PIN ou qui s'autodétruisent.

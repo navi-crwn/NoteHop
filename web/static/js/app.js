@@ -135,15 +135,15 @@
     clear: function () { NH.store.del('nh_recent'); }
   };
 
-  // Admin links stay on the main site (sessions, dashboard); links for
-  // readers use the share domain when one is configured, in its short form
-  // share.example/TOKEN.
+  // Notes live at /TOKEN. Owner links stay on the main site; links for
+  // readers use the short domain when one is configured (it redirects to
+  // the main site, and the browser keeps the #fragment).
   NH.noteURL = function (token, frag) {
     var q = new URLSearchParams();
     Object.keys(frag || {}).forEach(function (k) { if (frag[k]) q.set(k, frag[k]); });
-    var s = q.toString(), d = document.body.dataset, owner = frag && frag.a;
-    var base = owner || !d.share ? (d.main || location.origin) + '/n/' : d.share + '/';
-    return base + encodeURIComponent(token) + (s ? '#' + s : '');
+    var s = q.toString(), d = document.body.dataset;
+    var base = (frag && frag.a) || !d.share ? (d.main || location.origin) : d.share;
+    return base + '/' + encodeURIComponent(token) + (s ? '#' + s : '');
   };
 
   var rtf = window.Intl && Intl.RelativeTimeFormat ? new Intl.RelativeTimeFormat(NH.lang, { numeric: 'auto' }) : null;

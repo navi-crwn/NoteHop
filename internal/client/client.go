@@ -199,7 +199,7 @@ func Create(base string, n Note, o Options) (Created, error) {
 	if err != nil {
 		return Created{}, err
 	}
-	link := base + "/n/" + url.PathEscape(res.Token)
+	link := base + "/" + url.PathEscape(res.Token)
 	share := res.Link
 	if share == "" {
 		share = link
@@ -217,7 +217,7 @@ func Get(link, password string) (Note, error) {
 	frag, _ := url.ParseQuery(u.Fragment)
 	token := Token(link)
 	if u.Host == "" || token == "" || strings.Contains(token, "/") {
-		return Note{}, errors.New("not a note link (…/n/TOKEN#k=… or share.example/TOKEN#k=…)")
+		return Note{}, errors.New("not a note link (https://site.example/TOKEN#k=…)")
 	}
 	base := u.Scheme + "://" + u.Host
 	api := base + "/api/n/" + url.PathEscape(token)
