@@ -168,12 +168,14 @@ Jalankan tes dengan `go test -race ./...` dan `./scripts/e2e-all.sh`.
 
 ## Keluarga Hop
 
-NoteHop punya dua saudara open source yang dibuat dengan cara yang sama: gratis, bisa dipasang sendiri, tanpa pelacak.
+NoteHop adalah bagian dari keluarga aplikasi open source HOP yang menghargai privasi dan bisa di-host sendiri.
 
 |  | Fungsinya | Coba | Kode |
 |---|---|---|---|
-| 🔗 **LinkHop** | Link pendek dan halaman link-in-bio: nama sendiri, kode QR, analitik, dan 20+ tema bio | [hel.ink](https://hel.ink) | [GitHub](https://github.com/navi-crwn/LinkHop) |
-| 🖼️ **PixelHop** | Hosting gambar, video, dan PDF dalam satu file Go: GPS dihapus saat unggah, album, ShareX, dan studio foto di browser | [p.hel.ink](https://p.hel.ink) | [GitHub](https://github.com/navi-crwn/PixelHop) |
+| 🏠 **Hub** | Portal akun pusat, login HOP ID, launcher aplikasi & status | [hel.ink](https://hel.ink) | [GitHub](https://github.com/navi-crwn/HEL.ink) |
+| 🔗 **LinkHop** | Pemendek link performa tinggi, slug kustom, kode QR & analitik | [link.hel.ink](https://link.hel.ink) | [GitHub](https://github.com/navi-crwn/LinkHop) |
+| 🌿 **BioHop** | Halaman link-in-bio dengan blok, tema kustom & statistik | [bio.hel.ink](https://bio.hel.ink) | [GitHub](https://github.com/navi-crwn/BioHop) |
+| 🖼️ **PixelHop** | Hosting gambar, video & PDF: hapus GPS saat unggah, album, studio foto | [p.hel.ink](https://p.hel.ink) | [GitHub](https://github.com/navi-crwn/PixelHop) |
 | 📝 **NoteHop** | Catatan yang cuma terbaca oleh yang kamu pilih | [note.hel.ink](https://note.hel.ink) | kamu di sini |
 
 ---
