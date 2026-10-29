@@ -168,12 +168,14 @@ Run the tests with `go test -race ./...` and `./scripts/e2e-all.sh`.
 
 ## The Hop family
 
-NoteHop has two open-source siblings, built the same way: free, self-hostable, no trackers.
+NoteHop is part of the HOP family of privacy-respecting, self-hostable open-source apps.
 
 |  | What it does | Try it | Code |
 |---|---|---|---|
-| 🔗 **LinkHop** | Short links and link-in-bio pages: custom names, QR codes, analytics and 20+ bio themes | [hel.ink](https://hel.ink) | [GitHub](https://github.com/navi-crwn/LinkHop) |
-| 🖼️ **PixelHop** | Image, video and PDF hosting in one Go binary: strips GPS on upload, albums, ShareX and a photo studio in your browser | [p.hel.ink](https://p.hel.ink) | [GitHub](https://github.com/navi-crwn/PixelHop) |
+| 🏠 **Hub** | Central account portal, HOP ID login, app launcher & status | [hel.ink](https://hel.ink) | [GitHub](https://github.com/navi-crwn/HEL.ink) |
+| 🔗 **LinkHop** | High-performance URL shortener, custom slugs, QR codes & analytics | [link.hel.ink](https://link.hel.ink) | [GitHub](https://github.com/navi-crwn/LinkHop) |
+| 🌿 **BioHop** | Link-in-bio pages with custom blocks, themes, and visitor stats | [bio.hel.ink](https://bio.hel.ink) | [GitHub](https://github.com/navi-crwn/BioHop) |
+| 🖼️ **PixelHop** | Image, video and PDF hosting: strips GPS on upload, albums, photo studio | [p.hel.ink](https://p.hel.ink) | [GitHub](https://github.com/navi-crwn/PixelHop) |
 | 📝 **NoteHop** | Notes only the people you choose can read | [note.hel.ink](https://note.hel.ink) | you are here |
 
 ---
