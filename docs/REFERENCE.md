@@ -41,7 +41,7 @@ The database schema migrates itself at start (version in `PRAGMA user_version`, 
 
 ### Languages
 
-The UI comes in 9 languages: English (default and fallback), 简体中文, Español, العربية (right to left), Português, Français, 日本語, Русский, Bahasa Indonesia. The language follows the browser (`Accept-Language`); the globe menu stores a choice in the `nh_lang` cookie, which always wins, and `?lang=xx` works too. Texts live in `web/i18n/*.json`, and `go test ./internal/i18n` checks that every file has the same keys, placeholders and tags. API errors come as `{error, code, vars}` and are translated in the browser.
+The UI comes in 9 languages: English (default and fallback), 简体中文, Español, العربية (right to left), Português, Français, 日本語, Русский, Bahasa Indonesia. Anonymous visitors get English regardless of `Accept-Language`; the globe menu stores a choice in the `nh_lang` cookie, and `?lang=xx` sets that cookie. Both explicit choices always win over the default. Texts live in `web/i18n/*.json`, and `go test ./internal/i18n` checks that every file has the same keys, placeholders and tags. API errors come as `{error, code, vars}` and are translated in the browser.
 
 ## Commands
 

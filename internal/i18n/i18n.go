@@ -70,9 +70,18 @@ func load(code string) map[string]string {
 }
 
 // Supported reports whether code is one of Langs.
+func Supported(code string) bool {
+	_, ok := catalogs[code]
+	return ok
+}
+
 // FromHeader picks the best supported language from an Accept-Language
 // header ("fr-CA,fr;q=0.9,en;q=0.8"), by quality then order; English when
 // nothing matches. Regional tags count as their language (pt-BR → pt).
+//
+// NoteHop no longer uses Accept-Language to choose the UI locale for
+// anonymous visitors, but FromHeader is kept as a reusable utility in case
+// a future feature needs it.
 func FromHeader(h string) string {
 	best, bestQ := Default, 0.0
 	for i, part := range strings.Split(h, ",") {
@@ -91,11 +100,6 @@ func FromHeader(h string) string {
 		}
 	}
 	return best
-}
-
-func Supported(code string) bool {
-	_, ok := catalogs[code]
-	return ok
 }
 
 // Get returns the language for code, or the default.
