@@ -186,16 +186,22 @@ docker run -d -p 127.0.0.1:8090:8080 -v notehop:/data -e NOTEHOP_BASE_URL=https:
 
 ## عائلة Hop
 
-لدى NoteHop مشروعان شقيقان مفتوحا المصدر بُنيا بالطريقة نفسها: مجانيان، ويمكن استضافتهما ذاتيًا، وبلا تتبّع.
+NoteHop جزء من عائلة HOP: تطبيقات مجانية ومفتوحة المصدر يمكن استضافتها ذاتيًا وبلا تتبّع، وتتشارك حسابًا واحدًا (HOP ID).
 
-|  | ماذا يفعل | جرّبه | الشيفرة |
-|---|---|---|---|
-| 🔗 **LinkHop** | روابط قصيرة وصفحات روابط للسيرة: أسماء خاصة، ورموز QR، وإحصاءات، وأكثر من 20 قالبًا | [hel.ink](https://hel.ink) | [GitHub](https://github.com/navi-crwn/LinkHop) |
-| 🖼️ **PixelHop** | استضافة الصور والفيديو وملفات PDF في ملف Go واحد: يزيل بيانات GPS عند الرفع، وألبومات، وShareX، واستوديو صور في متصفحك | [p.hel.ink](https://p.hel.ink) | [GitHub](https://github.com/navi-crwn/PixelHop) |
-| 📝 **NoteHop** | ملاحظات لا يقرؤها إلا من تختارهم | [note.hel.ink](https://note.hel.ink) | أنت هنا |
+<!-- hop-family:start -->
+<!-- Generated from HEL.ink resources/hop-assets/apps.source.json; edit there, then run scripts/hop_assets.py build. -->
+| App | Address | Repository | What it does |
+| --- | --- | --- | --- |
+| **HOP ID** | [hel.ink](https://hel.ink) · accounts at `hub.hel.ink` | [navi-crwn/HEL.ink](https://github.com/navi-crwn/HEL.ink) | One account for every HOP app. |
+| **LinkHop** | [link.hel.ink](https://link.hel.ink) · `hel.ink/l/…` | [navi-crwn/LinkHop](https://github.com/navi-crwn/LinkHop) | Short links, QR codes and click analytics. |
+| **BioHop** | [bio.hel.ink](https://bio.hel.ink) · `hel.ink/b/…` | [navi-crwn/BioHop](https://github.com/navi-crwn/BioHop) | One link-in-bio page for everything you do. |
+| **PixelHop** | [p.hel.ink](https://p.hel.ink) | [navi-crwn/PixelHop](https://github.com/navi-crwn/PixelHop) | Image hosting with albums and direct links. |
+| **NoteHop** | [note.hel.ink](https://note.hel.ink) · `n.hel.ink/…` | [navi-crwn/NoteHop](https://github.com/navi-crwn/NoteHop) | Encrypted notes you share with a link. |
+| **Imperium** | private (owner only) | private | The HOP control panel. |
+<!-- hop-family:end -->
 
 </div>
 
 ---
 
-<p align="center">ترخيص MIT · <a href="docs/REFERENCE.md">المرجع</a> · <a href="docs/SELF-HOSTING.md">استضفه بنفسك</a> · <a href="CHANGELOG.md">سجل التغييرات</a><br><sub>من عائلة HEL.ink: <a href="https://github.com/navi-crwn/LinkHop">LinkHop</a> (روابط قصيرة) · <a href="https://github.com/navi-crwn/PixelHop">PixelHop</a> (استضافة صور) · <a href="https://note.hel.ink">NoteHop</a></sub></p>
+<p align="center">ترخيص MIT · <a href="docs/REFERENCE.md">المرجع</a> · <a href="docs/SELF-HOSTING.md">استضفه بنفسك</a> · <a href="CHANGELOG.md">سجل التغييرات</a><br><sub>من عائلة HEL.ink: <a href="https://github.com/navi-crwn/LinkHop">LinkHop</a> (روابط قصيرة) · <a href="https://github.com/navi-crwn/BioHop">BioHop</a> · <a href="https://github.com/navi-crwn/PixelHop">PixelHop</a> (استضافة صور) · <a href="https://note.hel.ink">NoteHop</a></sub></p>
