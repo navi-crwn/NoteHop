@@ -167,6 +167,15 @@
     </div>
     <p class="h-more" data-rv><a href="/faq">{{.L.T "home.q_more"}}</a></p>
   </section>
+
+  {{with .HopFamily}}<section class="h-sec" id="family" aria-labelledby="family-h">
+    <h2 id="family-h">{{$.L.T "family.title"}}</h2>
+    <p class="h-small">{{$.L.T "family.intro"}}</p>
+    <ul class="hop-family" role="list">
+      {{range .}}<li><a href="{{.URL}}">{{with index .Icons "mark"}}<img src="{{.URL}}" alt="" width="40" height="40" loading="lazy">{{end}}<b>{{.Name}}</b><span>{{.Tagline}}</span></a></li>
+      {{end}}
+    </ul>
+  </section>{{end}}
 </div>
 
 <div class="h-marquee" aria-hidden="true"><div id="h-mq" data-words="{{.L.T "home.mq"}}"></div></div>

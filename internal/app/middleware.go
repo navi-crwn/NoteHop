@@ -13,8 +13,10 @@ import (
 	"github.com/navi-crwn/NoteHop/internal/i18n"
 )
 
-const csp = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; " +
-	"connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+// https://hel.ink serves the HOP family fonts and app marks: styles, fonts and
+// images only. Scripts stay 'self', so notes are never exposed to another origin.
+const csp = "default-src 'self'; script-src 'self'; style-src 'self' https://hel.ink; img-src 'self' data: blob: https://hel.ink; media-src 'self' blob:; " +
+	"connect-src 'self'; font-src 'self' https://hel.ink; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 
 // aiOrigins are the AI providers a reader can bring their own key for (ai.js).
 // The browser calls them directly; NoteHop never sees the text or the key.
