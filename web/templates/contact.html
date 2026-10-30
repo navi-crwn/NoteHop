@@ -6,6 +6,12 @@
   {{if .Contact}}<p class="card contact-card"><svg class="ico"><use href="#i-append"/></svg> {{.L.T "contact.write"}}
     <a href="{{.ContactHref}}" rel="noopener">{{.Contact}}</a></p>
   {{else}}<p class="card contact-card">{{.L.T "contact.none"}}</p>{{end}}
+  {{if .Repo}}<h2>{{.L.T "contact.gh_h"}}</h2>
+  <ul class="contact-list">
+    <li>{{.L.T "contact.issue"}} <a href="https://github.com/{{.Repo}}/issues/new/choose" rel="noopener">GitHub Issues</a></li>
+    <li>{{.L.T "contact.pr"}} <a href="https://github.com/{{.Repo}}/pulls" rel="noopener">Pull requests</a></li>
+    <li>{{.L.T "contact.security"}} <a href="https://github.com/{{.Repo}}/security/advisories/new" rel="noopener">Security advisory</a> · <a href="https://github.com/{{.Repo}}/blob/main/SECURITY.md" rel="noopener">SECURITY.md</a></li>
+  </ul>{{end}}
   <h2>{{.L.T "contact.report_h"}}</h2>
   <p>{{.L.H "contact.report"}}</p>
   <p>{{.L.H "contact.faq"}}</p>
