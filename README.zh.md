@@ -168,14 +168,20 @@ docker run -d -p 127.0.0.1:8090:8080 -v notehop:/data -e NOTEHOP_BASE_URL=https:
 
 ## Hop 家族
 
-NoteHop 还有两个以同样方式打造的开源兄弟项目：免费、可自行部署、无追踪。
+NoteHop 是 HOP 家族的一员：免费、开源、可自行部署、无追踪的应用，共用一个账号（HOP ID）。
 
-|  | 用途 | 试用 | 代码 |
-|---|---|---|---|
-| 🔗 **LinkHop** | 短链接和个人主页链接页：自定义名称、二维码、统计和 20 多种主页主题 | [hel.ink](https://hel.ink) | [GitHub](https://github.com/navi-crwn/LinkHop) |
-| 🖼️ **PixelHop** | 一个 Go 程序搞定图片、视频和 PDF 托管：上传时去除 GPS、相册、ShareX，以及在浏览器里运行的修图工具 | [p.hel.ink](https://p.hel.ink) | [GitHub](https://github.com/navi-crwn/PixelHop) |
-| 📝 **NoteHop** | 只有你选择的人才能读到的笔记 | [note.hel.ink](https://note.hel.ink) | 你在这里 |
+<!-- hop-family:start -->
+<!-- Generated from HEL.ink resources/hop-assets/apps.source.json; edit there, then run scripts/hop_assets.py build. -->
+| App | Address | Repository | What it does |
+| --- | --- | --- | --- |
+| **HOP ID** | [hel.ink](https://hel.ink) · accounts at `hub.hel.ink` | [navi-crwn/HEL.ink](https://github.com/navi-crwn/HEL.ink) | One account for every HOP app. |
+| **LinkHop** | [link.hel.ink](https://link.hel.ink) · `hel.ink/l/…` | [navi-crwn/LinkHop](https://github.com/navi-crwn/LinkHop) | Short links, QR codes and click analytics. |
+| **BioHop** | [bio.hel.ink](https://bio.hel.ink) · `hel.ink/b/…` | [navi-crwn/BioHop](https://github.com/navi-crwn/BioHop) | One link-in-bio page for everything you do. |
+| **PixelHop** | [p.hel.ink](https://p.hel.ink) | [navi-crwn/PixelHop](https://github.com/navi-crwn/PixelHop) | Image hosting with albums and direct links. |
+| **NoteHop** | [note.hel.ink](https://note.hel.ink) · `n.hel.ink/…` | [navi-crwn/NoteHop](https://github.com/navi-crwn/NoteHop) | Encrypted notes you share with a link. |
+| **Imperium** | private (owner only) | private | The HOP control panel. |
+<!-- hop-family:end -->
 
 ---
 
-<p align="center">MIT 许可证 · <a href="docs/REFERENCE.md">参考文档</a> · <a href="docs/SELF-HOSTING.md">自己部署</a> · <a href="CHANGELOG.md">更新日志</a><br><sub>HEL.ink 家族成员：<a href="https://github.com/navi-crwn/LinkHop">LinkHop</a>（短链接）· <a href="https://github.com/navi-crwn/PixelHop">PixelHop</a>（图片托管）· <a href="https://note.hel.ink">NoteHop</a></sub></p>
+<p align="center">MIT 许可证 · <a href="docs/REFERENCE.md">参考文档</a> · <a href="docs/SELF-HOSTING.md">自己部署</a> · <a href="CHANGELOG.md">更新日志</a><br><sub>HEL.ink 家族成员：<a href="https://github.com/navi-crwn/LinkHop">LinkHop</a>（短链接）· <a href="https://github.com/navi-crwn/BioHop">BioHop</a> · <a href="https://github.com/navi-crwn/PixelHop">PixelHop</a>（图片托管）· <a href="https://note.hel.ink">NoteHop</a></sub></p>
