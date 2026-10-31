@@ -67,29 +67,59 @@
 {{if .Back}}<div class="wrap back-row"><a class="back" href="/"><span aria-hidden="true">&larr;</span> {{printf (.L.T "nav.back") .Site}}</a></div>{{end}}
 {{template "content" .}}
 </main>
-<footer>
-  <div class="wrap">
-    <span><b>{{.Site}}</b> · {{.L.T "footer.tagline"}}</span>
-    <nav aria-label="{{.L.T "footer.label"}}">
-      <a href="/about">{{.L.T "footer.about"}}</a>
-      <a href="/features">{{.L.T "features.title"}}</a>
-      <a href="/diff">{{.L.T "diffpage.title"}}</a>
-      <a href="/nearby">{{.L.T "nearby.title"}}</a>
-      <a href="/faq">{{.L.T "footer.faq"}}</a>
-      <a href="/faq#dev">{{.L.T "footer.raw"}}</a>
-      <a href="/contact">{{.L.T "contact.title"}}</a>
-      <a href="/terms">{{.L.T "terms.title"}}</a>
-      <a href="/privacy">{{.L.T "privacy.title"}}</a>
-      <a href="/status">{{.L.T "status.title"}}</a>
-      <a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a>
-      {{range .Links}}<a href="{{.URL}}" rel="noopener">{{.Name}}</a>
-      {{end}}
+<footer class="footer-columns">
+  <div class="wrap footer-grid">
+    <div class="foot-col foot-brand">
+      <b>{{.Site}}</b>
+      <p class="muted small">{{.L.T "footer.tagline"}}</p>
+    </div>
+    <div class="foot-col">
+      <h4 class="foot-heading">{{.Site}}</h4>
+      <nav aria-label="{{.Site}}">
+        <a href="/about">{{.L.T "footer.about"}}</a>
+        <a href="/features">{{.L.T "features.title"}}</a>
+        <a href="/diff">{{.L.T "diffpage.title"}}</a>
+        <a href="/nearby">{{.L.T "nearby.title"}}</a>
+        <a href="/status">{{.L.T "status.title"}}</a>
+        <a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+    <div class="foot-col">
+      <h4 class="foot-heading">Support</h4>
+      <nav aria-label="Support">
+        <a href="/faq">{{.L.T "footer.faq"}}</a>
+        <a href="/faq#dev">{{.L.T "footer.raw"}}</a>
+        <a href="/contact">{{.L.T "contact.title"}}</a>
+      </nav>
+    </div>
+    <div class="foot-col">
+      <h4 class="foot-heading">Policies</h4>
+      <nav aria-label="Policies">
+        <a href="/terms">{{.L.T "terms.title"}}</a>
+        <a href="/privacy">{{.L.T "privacy.title"}}</a>
+      </nav>
+    </div>
+    <div class="foot-col">
+      <h4 class="foot-heading">{{.L.T "family.foot"}}</h4>
+      <nav aria-label="HOP family">
+        {{range .HopFamily}}<a href="{{.URL}}">{{.Name}}</a>{{end}}
+      </nav>
+    </div>
+  </div>
+  <div class="wrap foot-bottom">
+    <p>© 2026 navi-crwn · MIT License</p>
+    <nav class="foot-langs" aria-label="Languages">
+      <a href="?lang=en" lang="en">English</a>
+      <a href="?lang=id" lang="id">Bahasa Indonesia</a>
+      <a href="?lang=zh" lang="zh">中文</a>
+      <a href="?lang=es" lang="es">Español</a>
+      <a href="?lang=ar" lang="ar">العربية</a>
+      <a href="?lang=pt" lang="pt">Português</a>
+      <a href="?lang=fr" lang="fr">Français</a>
+      <a href="?lang=ja" lang="ja">日本語</a>
+      <a href="?lang=ru" lang="ru">Русский</a>
     </nav>
   </div>
-  {{with .HopFamily}}<div class="wrap hop-family-foot">
-    <span>{{$.L.T "family.foot"}}</span>
-    <nav aria-label="HOP">{{range .}}<a href="{{.URL}}">{{.Name}}</a>{{end}}</nav>
-  </div>{{end}}
 </footer>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <script src="/i18n/{{.L.Code}}.js?v={{.Asset}}"></script>
