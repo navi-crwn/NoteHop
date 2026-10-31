@@ -267,8 +267,10 @@ type pageData struct {
 	Langs       []i18n.Lang
 	Clipper     template.URL // bookmarklet for the about page
 	Profile     []profileNote
-	Contact     string // operator contact for /contact
-	ContactHref string // mailto: for an address, the URL otherwise
+	Contact     string       // operator contact for /contact
+	ContactHref string       // mailto: for an address, the URL otherwise
+	HopFonts    *familyAsset // HOP family stylesheet on hel.ink, with its SRI hash
+	HopFamily   []familyApp  // the other public HOP apps
 }
 
 func (a *App) loadTemplates() error {
@@ -297,6 +299,7 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.Origin = a.origin(r)
 	d.Main, d.Share = a.cfg.BaseURL, a.shareURL()
 	d.LinkHost = strings.TrimPrefix(strings.TrimPrefix(cmp.Or(d.Share, d.Origin), "https://"), "http://")
+	d.HopFonts, d.HopFamily = hopFonts(), hopFamily("notehop")
 	d.Contact = a.cfg.Contact
 	if d.Contact != "" {
 		d.ContactHref = d.Contact
