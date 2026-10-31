@@ -40,6 +40,12 @@
           <label class="h-tog"><input type="checkbox" id="quick-once"><span class="h-sw"></span>{{.L.T "priv.once"}}</label>
         </div>
         <p class="h-url" dir="ltr"><span id="quick-url">{{.LinkHost}}/…</span><mark id="quick-frag">#k=…</mark></p>
+        <details class="h-small">
+          <summary>{{.L.T "feat.content_warning"}}</summary>
+          <label for="quick-warning">{{.L.T "feat.content_warning"}}</label>
+          <select id="quick-warning"><option value="none">—</option><option value="sensitive">{{.L.T "gate.sensitive_title"}}</option><option value="adult">{{.L.T "gate.adult_title"}}</option></select>
+          <label for="quick-warning-reason">{{.L.T "gate.reason_label"}}</label><input id="quick-warning-reason" maxlength="255">
+        </details>
         <p class="h-small">{{.L.T "home.d_url_p"}}</p>
         <div class="h-q-foot">
           <a class="h-link" href="/new" id="quick-full"><svg><use href="#i-plus"/></svg>{{.L.T "home.quick_full"}}</a>
@@ -110,6 +116,13 @@
   </section>
 
   <!-- 5. three everyday uses -->
+  <section class="h-sec" aria-labelledby="screens-h">
+    <span class="h-tag">04 / {{.L.T "features.title"}}</span>
+    <h2 id="screens-h">{{.L.T "home.g_share"}}</h2>
+    <div class="bento-grid">
+      {{range $g := .TourGroups}}<article class="bento-card"><h3>{{$.L.T (printf "home.g_%s" $g)}}</h3><figure class="feature-demo"><img class="demo-light" src="/static/img/demos/{{$g}}-light.webp" alt="{{$.L.T (printf "home.g_%s" $g)}}" width="1120" height="760" loading="lazy"><img class="demo-dark" src="/static/img/demos/{{$g}}-dark.webp" alt="{{$.L.T (printf "home.g_%s" $g)}}" width="1120" height="760" loading="lazy"></figure></article>{{end}}
+    </div>
+  </section>
   <section class="h-sec" aria-labelledby="uses-h">
     <span class="h-tag" data-rv>{{.L.T "home.u_tag"}}</span>
     <h2 id="uses-h" data-split>{{.L.H "home.u_h"}}</h2>

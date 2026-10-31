@@ -181,6 +181,9 @@ var migrations = []string{
 		note TEXT NOT NULL DEFAULT '', ip_hash TEXT NOT NULL, created INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'open');
 	CREATE INDEX reports_status ON reports(status, id);
 	CREATE INDEX reports_ip ON reports(ip_hash, created);`,
+	// 11: content warning classification (none, sensitive, adult) and creator note
+	`ALTER TABLE notes ADD COLUMN content_warning TEXT NOT NULL DEFAULT 'none';
+	ALTER TABLE notes ADD COLUMN warning_reason TEXT NOT NULL DEFAULT '';`,
 }
 
 // migrate applies pending migrations, each in its own transaction together
@@ -222,26 +225,40 @@ func isUnique(err error) bool {
 // ---------- notes ----------
 
 type Note struct {
-	ID        int64
-	OwnerID   sql.NullInt64
-	OwnerBlob string
-	Encrypted bool
-	Password  bool
-	Salt      string
-	Content   string
-	Version   int64
-	Checks    string
-	AdminHash string
-	WriteHash string
-	ParentID  sql.NullInt64
-	Frozen    bool
-	MaxViews  int64
-	Views     int64
-	Expires   int64
-	Created   int64
-	Updated   int64
-	Config    string // JSON, decoded by the app layer
-	LastOpen  int64  // last counted (non-admin) open
+	ID             int64
+	OwnerID        sql.NullInt64
+	OwnerBlob      string
+	Encrypted      bool
+	Password       bool
+	Salt           string
+	Content        string
+	Version        int64
+	Checks         string
+	AdminHash      string
+	WriteHash      string
+	ParentID       sql.NullInt64
+	Frozen         bool
+	MaxViews       int64
+	Views          int64
+	Expires        int64
+	Created        int64
+	Updated        int64
+	Config         string // JSON, decoded by the app layer
+	LastOpen       int64  // last counted (non-admin) open
+	ContentWarning string // 'none', 'sensitive', 'adult'
+	WarningReason  string // optional creator note
+}
+
+func (n *Note) IsAdult() bool {
+	return n.ContentWarning == "adult"
+}
+
+func (n *Note) IsSensitive() bool {
+	return n.ContentWarning == "sensitive"
+}
+
+func (n *Note) HasWarning() bool {
+	return n.IsAdult() || n.IsSensitive()
 }
 
 type Link struct {
@@ -258,12 +275,14 @@ type Entry struct {
 }
 
 const noteCols = `n.id, n.owner_id, n.owner_blob, n.encrypted, n.password, n.salt, n.content, n.version, n.checks,
-	n.admin_hash, n.write_hash, n.parent_id, n.frozen, n.max_views, n.views, n.expires, n.created, n.updated, n.config, n.last_open`
+	n.admin_hash, n.write_hash, n.parent_id, n.frozen, n.max_views, n.views, n.expires, n.created, n.updated, n.config, n.last_open,
+	n.content_warning, n.warning_reason`
 
 func scanNote(row interface{ Scan(...any) error }, extra ...any) (*Note, error) {
 	n := &Note{}
 	dest := append([]any{&n.ID, &n.OwnerID, &n.OwnerBlob, &n.Encrypted, &n.Password, &n.Salt, &n.Content, &n.Version, &n.Checks,
-		&n.AdminHash, &n.WriteHash, &n.ParentID, &n.Frozen, &n.MaxViews, &n.Views, &n.Expires, &n.Created, &n.Updated, &n.Config, &n.LastOpen}, extra...)
+		&n.AdminHash, &n.WriteHash, &n.ParentID, &n.Frozen, &n.MaxViews, &n.Views, &n.Expires, &n.Created, &n.Updated, &n.Config, &n.LastOpen,
+		&n.ContentWarning, &n.WarningReason}, extra...)
 	if err := row.Scan(dest...); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotFound
@@ -288,11 +307,15 @@ func (d *DB) CreateNote(n *Note, link *Link) error {
 	if n.Config == "" {
 		n.Config = "{}"
 	}
+	if n.ContentWarning == "" {
+		n.ContentWarning = "none"
+	}
 	res, err := tx.Exec(`INSERT INTO notes (owner_id, owner_blob, encrypted, password, salt, content, version, checks,
-		admin_hash, write_hash, parent_id, frozen, max_views, views, expires, created, updated, config)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
+		admin_hash, write_hash, parent_id, frozen, max_views, views, expires, created, updated, config, content_warning, warning_reason)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)`,
 		n.OwnerID, n.OwnerBlob, n.Encrypted, n.Password, n.Salt, n.Content, n.Version, n.Checks,
-		n.AdminHash, n.WriteHash, n.ParentID, n.Frozen, n.MaxViews, n.Expires, n.Created, n.Updated, n.Config)
+		n.AdminHash, n.WriteHash, n.ParentID, n.Frozen, n.MaxViews, n.Expires, n.Created, n.Updated, n.Config,
+		n.ContentWarning, n.WarningReason)
 	if err != nil {
 		return err
 	}
@@ -422,8 +445,8 @@ func (d *DB) Freeze(n *Note, token string) (*Link, error) {
 	defer tx.Rollback()
 	t := now()
 	res, err := tx.Exec(`INSERT INTO notes (owner_id, owner_blob, encrypted, password, salt, content, version, checks,
-		admin_hash, write_hash, parent_id, frozen, created, updated)
-		SELECT owner_id, owner_blob, encrypted, password, salt, content, version, checks, admin_hash, write_hash, id, 1, ?, ?
+		admin_hash, write_hash, parent_id, frozen, created, updated, content_warning, warning_reason)
+		SELECT owner_id, owner_blob, encrypted, password, salt, content, version, checks, admin_hash, write_hash, id, 1, ?, ?, content_warning, warning_reason
 		FROM notes WHERE id = ?`, t, t, n.ID)
 	if err != nil {
 		return nil, err
@@ -441,6 +464,12 @@ func (d *DB) Freeze(n *Note, token string) (*Link, error) {
 		return nil, err
 	}
 	return l, tx.Commit()
+}
+
+// SetNoteWarning changes the content warning classification and optional note for moderation.
+func (d *DB) SetNoteWarning(id int64, warning, reason string) error {
+	_, err := d.Exec(`UPDATE notes SET content_warning = ?, warning_reason = ? WHERE id = ?`, warning, reason, id)
+	return err
 }
 
 type Snapshot struct {
