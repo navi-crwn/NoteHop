@@ -427,21 +427,24 @@ func assetVersion() string {
 
 const langCookie = "nh_lang"
 
-// locale is the reader's language: ?lang= (remembered in a cookie), then the
-// cookie, then the browser's Accept-Language, then English.
+// locale is the reader's language. The order of precedence is:
+//  1. explicit ?lang= query (remembered in a cookie),
+//  2. explicit nh_lang cookie from a previous choice,
+//  3. English (the anonymous default; Accept-Language is not used).
+//
+// Explicit choices must be a supported language code. Invalid values fall
+// back to English, and they do not overwrite a previously valid cookie.
 func (a *App) locale(w http.ResponseWriter, r *http.Request) i18n.Locale {
 	if q := r.URL.Query().Get("lang"); i18n.Supported(q) {
 		http.SetCookie(w, &http.Cookie{Name: langCookie, Value: q, Path: "/", MaxAge: 365 * 24 * 3600,
 			Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode})
 		return i18n.Locale{Lang: i18n.Get(q)}
 	}
-	// A language the visitor picked wins; otherwise follow the browser's
-	// preference, falling back to English.
-	code := i18n.FromHeader(r.Header.Get("Accept-Language"))
+	code := i18n.Default
 	if c, err := r.Cookie(langCookie); err == nil && i18n.Supported(c.Value) {
 		code = c.Value
 	}
-	w.Header().Add("Vary", "Accept-Language, Cookie")
+	w.Header().Add("Vary", "Cookie")
 	return i18n.Locale{Lang: i18n.Get(code)}
 }
 
