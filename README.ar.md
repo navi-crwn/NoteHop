@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://note.hel.ink"><b>✍️ جرّبه على الإنترنت</b></a> ·
+  <a href="https://navi-crwn.github.io/NoteHop/">Website</a> ·
   <a href="#run-your-own">استضفه بنفسك</a> ·
   <a href="#features">الميزات</a> ·
   <a href="#faq">الأسئلة الشائعة</a> ·

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NoteHop — Notas cifradas de extremo a extremo con autodestrucción</title>
+  <meta name="description" content="Crea una nota, bloquéala en tu navegador con AES-256-GCM y comparte enlaces en n.hel.ink. Conocimiento cero, autodestrucción, parte de HOP.">
+  <link rel="canonical" href="https://navi-crwn.github.io/NoteHop/es/">
+  <link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/styles.css">
+  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/fonts.css" integrity="sha384-T1Y2aaMQ8CSfi7J2t9d1ZAbVcQ1FcO27Jwn3WtNWB+UVK137YCl3hIPvz0G4K22L" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/hop-float.css" integrity="sha384-sl7D409xEmIT5gkArlQLoQQ4rOkqF7tOGf1VhI/iMb7c2/s9w9NtDEjLbJMU/MQ/" crossorigin="anonymous">
+  <link rel="alternate" hreflang="x-default" href="https://navi-crwn.github.io/NoteHop/">
+  <link rel="alternate" hreflang="en" href="https://navi-crwn.github.io/NoteHop/en/">
+  <link rel="alternate" hreflang="id" href="https://navi-crwn.github.io/NoteHop/id/">
+  <link rel="alternate" hreflang="zh" href="https://navi-crwn.github.io/NoteHop/zh/">
+  <link rel="alternate" hreflang="es" href="https://navi-crwn.github.io/NoteHop/es/">
+  <link rel="alternate" hreflang="ar" href="https://navi-crwn.github.io/NoteHop/ar/">
+  <link rel="alternate" hreflang="pt" href="https://navi-crwn.github.io/NoteHop/pt/">
+  <link rel="alternate" hreflang="fr" href="https://navi-crwn.github.io/NoteHop/fr/">
+  <link rel="alternate" hreflang="ru" href="https://navi-crwn.github.io/NoteHop/ru/">
+  <link rel="alternate" hreflang="ja" href="https://navi-crwn.github.io/NoteHop/ja/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="NoteHop">
+  <meta property="og:title" content="NoteHop — Notas cifradas de extremo a extremo con autodestrucción">
+  <meta property="og:description" content="Crea una nota, bloquéala en tu navegador con AES-256-GCM y comparte enlaces en n.hel.ink. Conocimiento cero, autodestrucción, parte de HOP.">
+  <meta property="og:url" content="https://navi-crwn.github.io/NoteHop/es/">
+  <meta property="og:image" content="https://navi-crwn.github.io/NoteHop/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+  <div data-hop-float></div>
+  <a class="skip" href="#main">Saltar al contenido</a>
+
+  <header class="site-header">
+    <a class="brand" href="https://navi-crwn.github.io/NoteHop/es/">
+      <img src="../assets/mark.svg" alt="" width="28" height="28">
+      <span>NoteHop</span>
+    </a>
+    <nav aria-label="Navegación de página">
+      <a href="#features">Características</a>
+      <a href="#run">Autoalojamiento</a>
+      <a href="#faq">Preguntas frecuentes</a>
+      <a href="#family">Familia HOP</a>
+    </nav>
+    <div class="header-actions">
+      <details class="langmenu"><summary aria-label="Language"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg>ES</summary><ul>
+        <li><a href="../" hreflang="en" lang="en">English<small>EN</small></a></li>
+        <li><a href="../id/" hreflang="id" lang="id">Bahasa Indonesia<small>ID</small></a></li>
+        <li><a href="../zh/" hreflang="zh" lang="zh">简体中文<small>ZH</small></a></li>
+        <li><a href="../es/" hreflang="es" lang="es" aria-current="page">Español<small>ES</small></a></li>
+        <li><a href="../ar/" hreflang="ar" lang="ar">العربية<small>AR</small></a></li>
+        <li><a href="../pt/" hreflang="pt" lang="pt">Português<small>PT</small></a></li>
+        <li><a href="../fr/" hreflang="fr" lang="fr">Français<small>FR</small></a></li>
+        <li><a href="../ru/" hreflang="ru" lang="ru">Русский<small>RU</small></a></li>
+        <li><a href="../ja/" hreflang="ja" lang="ja">日本語<small>JA</small></a></li>
+      </ul></details>
+      <button id="theme-toggle" type="button" data-action="dark" data-label-light="Tema claro" data-label-dark="Tema oscuro">Tema oscuro</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="hero">
+      <div>
+        <p class="kicker">HOP &middot; Notas y documentos cifrados</p>
+        <h1>Bloqueado en tu navegador, compartido en segundos</h1>
+        <p class="lede">NoteHop cifra tus notas localmente con AES-256-GCM antes de enviarlas al servidor. La clave permanece en el fragmento de la URL (#), por lo que el servidor no puede leer tus datos. Enlaces limpios en n.hel.ink, código abierto (MIT).</p>
+        <div class="cta-row">
+          <a class="btn primary" href="https://note.hel.ink">Probar NoteHop</a>
+          <a class="btn" href="https://github.com/navi-crwn/NoteHop">Ver el código</a>
+        </div>
+        <p class="note">Las direcciones activas en esta página enlazan a los sitios públicos de la familia HOP.</p>
+      </div>
+      <div class="tile-wrap" aria-hidden="true">
+        <img class="tile" src="../assets/tile.svg" alt="" width="220" height="260">
+      </div>
+    </div>
+
+    <section id="features" aria-labelledby="features-h">
+      <h2 id="features-h">Lo que hace NoteHop</h2>
+      <ul class="features">
+        <li><strong>Cifrado local con AES-256-GCM</strong><p>Tu navegador cifra el contenido antes de guardarlo. La clave de cifrado viaja en el fragmento (#) y nunca se envía al servidor.</p></li>
+        <li><strong>Servidor de conocimiento cero</strong><p>El servidor solo almacena texto cifrado. Ni administradores ni volcados de base de datos pueden acceder a tus textos.</p></li>
+        <li><strong>Autodestrucción y quemar tras leer</strong><p>Las notas pueden eliminarse inmediatamente tras su primera lectura, o expirar a los 10 minutos, 1 hora, 1 día o 30 días.</p></li>
+        <li><strong>Permisos específicos por enlace</strong><p>Emite enlaces distintos para la misma nota: propietario, solo lectura, edición, solo respuesta o solo marcar tareas.</p></li>
+        <li><strong>Colaboración en tiempo real</strong><p>Trabaja simultáneamente mediante retransmisión por WebSocket manteniendo el cifrado de extremo a extremo.</p></li>
+        <li><strong>Diversos formatos de nota</strong><p>Texto Markdown, listas interactivas, encuestas, formularios, notas de código coloreado y notas web aisladas.</p></li>
+        <li><strong>Un solo inicio de sesión: HOP ID</strong><p>Inicia sesión con tu cuenta de SSO HOP ID en toda la familia HOP, o utiliza NoteHop de forma anónima como invitado.</p></li>
+        <li><strong>Binario único en Go autoalojable</strong><p>Compilado en un ejecutable Go de ~16 MB con SQLite integrado y sin dependencias externas.</p></li>
+      </ul>
+    </section>
+
+    <section id="run" aria-labelledby="run-h">
+      <h2 id="run-h">Autoalojamiento</h2>
+      <div class="panel">
+        <p>NoteHop es autoalojable. Compila y ejecuta el binario único en cuestión de segundos:</p>
+        <pre><code>git clone https://github.com/navi-crwn/NoteHop.git
+cd NoteHop
+go build -o notehop ./cmd/notehop
+./notehop</code></pre>
+        <h3>Requisitos</h3>
+        <p>Go 1.22+ y SQLite. Consulta el README en GitHub para ver guías de inicio rápido, comandos Docker y pruebas.</p>
+        <h3>Configuración de acceso</h3>
+        <p>El inicio de sesión usa SSO HOP ID. Configura NOTEHOP_SSO_HUB_URL y NOTEHOP_SSO_SECRET en tu entorno, o ejecuta en modo independiente.</p>
+        <h3>Base de datos y almacenamiento</h3>
+        <p>NoteHop utiliza SQLite integrado con almacenamiento local por defecto. Haz copias en caliente con notehop backup.</p>
+        <p class="note">Tanto el modo independiente como el SSO están totalmente admitidos en autoalojamiento.</p>
+      </div>
+    </section>
+
+    <section id="faq" aria-labelledby="faq-h">
+      <h2 id="faq-h">Preguntas frecuentes</h2>
+      <details>
+        <summary>¿Puede el servidor o proveedor leer mis notas?</summary>
+        <p>No. El cifrado ocurre enteramente en tu navegador usando Web Crypto AES-256-GCM. La clave secreta vive en el hash (#) de la URL y nunca llega al servidor.</p>
+      </details>
+      <details>
+        <summary>¿Qué sucede si pierdo el enlace de mi nota?</summary>
+        <p>Dado que NoteHop es de conocimiento cero y no posee claves maestras ni puertas traseras, perder el enlace significa que nadie podrá descifrar la nota.</p>
+      </details>
+      <details>
+        <summary>¿Puedo alojar NoteHop en mi servidor?</summary>
+        <p>Sí. NoteHop se compila en un binario autónomo en Go sin dependencias externas. Consulta las instrucciones en el README del repositorio.</p>
+      </details>
+      <details>
+        <summary>¿Dónde informo de errores o problemas de seguridad?</summary>
+        <p>Abre una incidencia en GitHub o escribe a security@hel.ink para divulgación responsable de vulnerabilidades.</p>
+      </details>
+    </section>
+
+    <section id="family" aria-labelledby="family-h">
+      <h2 id="family-h">La familia HOP</h2>
+      <p>NoteHop forma parte de HOP, una suite de herramientas ligeras y autoalojables con inicio de sesión unificado.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th scope="col">App</th><th scope="col">Qué hace</th><th scope="col">Servicio activo</th><th scope="col">Código fuente</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>HOP ID</strong></td><td>Inicio de sesión único, centro de cuentas y seguridad</td><td><code>hel.ink</code> <span class="live">&middot; <code>hub.hel.ink</code></span></td><td><a href="https://github.com/navi-crwn/HEL.ink">navi-crwn/HEL.ink</a></td></tr>
+            <tr><td><strong>LinkHop</strong></td><td>Acortador de URL rápido y respetuoso con la privacidad</td><td><code>link.hel.ink</code> <span class="live">&middot; <code>hel.ink/l/{slug}</code></span></td><td><a href="https://github.com/navi-crwn/LinkHop">navi-crwn/LinkHop</a></td></tr>
+            <tr><td><strong>BioHop</strong></td><td>Páginas link-in-bio ligeras con QR y temas</td><td><code>bio.hel.ink</code> <span class="live">&middot; <code>hel.ink/b/{slug}</code></span></td><td><a href="https://github.com/navi-crwn/BioHop">navi-crwn/BioHop</a></td></tr>
+            <tr><td><strong>PixelHop</strong></td><td>Alojamiento de imágenes rápido y taller fotográfico</td><td><code>pixel.hel.ink</code> <span class="live">&middot; <code>p.hel.ink</code></span></td><td><a href="https://github.com/navi-crwn/PixelHop">navi-crwn/PixelHop</a></td></tr>
+            <tr><td><strong>NoteHop</strong></td><td>Notas cifradas de extremo a extremo con autodestrucción</td><td><code>note.hel.ink</code> <span class="live">&middot; <code>n.hel.ink</code></span></td><td>navi-crwn/NoteHop (este repo)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="help" aria-labelledby="help-h">
+      <h2 id="help-h">¿Necesitas ayuda o encontraste un problema?</h2>
+      <p>Preguntas, sugerencias e informes de errores son bienvenidos en nuestro <a href="https://github.com/navi-crwn/NoteHop/issues">rastreador de incidencias en GitHub</a>.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <p><strong>NoteHop</strong> &middot; Notas cifradas de extremo a extremo con autodestrucción</p>
+      <p>Código abierto bajo la licencia <a href="https://github.com/navi-crwn/NoteHop/blob/main/LICENSE">MIT</a>. Alojado en<a href="https://github.com/navi-crwn/NoteHop">GitHub</a>y activo en<a href="https://note.hel.ink">note.hel.ink</a></p>
+    </div>
+  </footer>
+
+  <script src="https://hel.ink/hop-assets/v1/hop-float.js" integrity="sha384-kNviPsMEO9lt9+b4n2S5lX6zHRVnePzGuj9VdgCETTsQwzt/5YJRnv842Xg0gRC+" crossorigin="anonymous" defer></script>
+  <script src="../assets/theme.js"></script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NoteHop — 端到端加密、阅后即焚的安全便签</title>
+  <meta name="description" content="创建便签，在浏览器本地使用 AES-256-GCM 加密，并在 n.hel.ink 分享链接。零知识、阅后即焚，HOP 家族成员。">
+  <link rel="canonical" href="https://navi-crwn.github.io/NoteHop/zh/">
+  <link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/styles.css">
+  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/fonts.css" integrity="sha384-T1Y2aaMQ8CSfi7J2t9d1ZAbVcQ1FcO27Jwn3WtNWB+UVK137YCl3hIPvz0G4K22L" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/hop-float.css" integrity="sha384-sl7D409xEmIT5gkArlQLoQQ4rOkqF7tOGf1VhI/iMb7c2/s9w9NtDEjLbJMU/MQ/" crossorigin="anonymous">
+  <link rel="alternate" hreflang="x-default" href="https://navi-crwn.github.io/NoteHop/">
+  <link rel="alternate" hreflang="en" href="https://navi-crwn.github.io/NoteHop/en/">
+  <link rel="alternate" hreflang="id" href="https://navi-crwn.github.io/NoteHop/id/">
+  <link rel="alternate" hreflang="zh" href="https://navi-crwn.github.io/NoteHop/zh/">
+  <link rel="alternate" hreflang="es" href="https://navi-crwn.github.io/NoteHop/es/">
+  <link rel="alternate" hreflang="ar" href="https://navi-crwn.github.io/NoteHop/ar/">
+  <link rel="alternate" hreflang="pt" href="https://navi-crwn.github.io/NoteHop/pt/">
+  <link rel="alternate" hreflang="fr" href="https://navi-crwn.github.io/NoteHop/fr/">
+  <link rel="alternate" hreflang="ru" href="https://navi-crwn.github.io/NoteHop/ru/">
+  <link rel="alternate" hreflang="ja" href="https://navi-crwn.github.io/NoteHop/ja/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="NoteHop">
+  <meta property="og:title" content="NoteHop — 端到端加密、阅后即焚的安全便签">
+  <meta property="og:description" content="创建便签，在浏览器本地使用 AES-256-GCM 加密，并在 n.hel.ink 分享链接。零知识、阅后即焚，HOP 家族成员。">
+  <meta property="og:url" content="https://navi-crwn.github.io/NoteHop/zh/">
+  <meta property="og:image" content="https://navi-crwn.github.io/NoteHop/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+  <div data-hop-float></div>
+  <a class="skip" href="#main">跳至主要内容</a>
+
+  <header class="site-header">
+    <a class="brand" href="https://navi-crwn.github.io/NoteHop/zh/">
+      <img src="../assets/mark.svg" alt="" width="28" height="28">
+      <span>NoteHop</span>
+    </a>
+    <nav aria-label="页面导航">
+      <a href="#features">功能特色</a>
+      <a href="#run">自行搭建</a>
+      <a href="#faq">常见问题</a>
+      <a href="#family">HOP 家族</a>
+    </nav>
+    <div class="header-actions">
+      <details class="langmenu"><summary aria-label="Language"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg>ZH</summary><ul>
+        <li><a href="../" hreflang="en" lang="en">English<small>EN</small></a></li>
+        <li><a href="../id/" hreflang="id" lang="id">Bahasa Indonesia<small>ID</small></a></li>
+        <li><a href="../zh/" hreflang="zh" lang="zh" aria-current="page">简体中文<small>ZH</small></a></li>
+        <li><a href="../es/" hreflang="es" lang="es">Español<small>ES</small></a></li>
+        <li><a href="../ar/" hreflang="ar" lang="ar">العربية<small>AR</small></a></li>
+        <li><a href="../pt/" hreflang="pt" lang="pt">Português<small>PT</small></a></li>
+        <li><a href="../fr/" hreflang="fr" lang="fr">Français<small>FR</small></a></li>
+        <li><a href="../ru/" hreflang="ru" lang="ru">Русский<small>RU</small></a></li>
+        <li><a href="../ja/" hreflang="ja" lang="ja">日本語<small>JA</small></a></li>
+      </ul></details>
+      <button id="theme-toggle" type="button" data-action="dark" data-label-light="浅色模式" data-label-dark="深色模式">深色模式</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="hero">
+      <div>
+        <p class="kicker">HOP &middot; 加密便签与文档</p>
+        <h1>在浏览器本地加密，数秒内安全分享</h1>
+        <p class="lede">NoteHop 在便签离开设备前于本地浏览器使用 AES-256-GCM 完成加密。解密密钥仅存在于链接锚点（#）中，服务器绝对无法读取您的文本。在 n.hel.ink 获得简洁短链，开源 (MIT)。</p>
+        <div class="cta-row">
+          <a class="btn primary" href="https://note.hel.ink">立即体验 NoteHop</a>
+          <a class="btn" href="https://github.com/navi-crwn/NoteHop">查看源码</a>
+        </div>
+        <p class="note">页面中的有效地址均指向 HOP 家族的公共服务。</p>
+      </div>
+      <div class="tile-wrap" aria-hidden="true">
+        <img class="tile" src="../assets/tile.svg" alt="" width="220" height="260">
+      </div>
+    </div>
+
+    <section id="features" aria-labelledby="features-h">
+      <h2 id="features-h">NoteHop 功能亮点</h2>
+      <ul class="features">
+        <li><strong>客户端 AES-256-GCM 加密</strong><p>内容在浏览器内直接完成加密再保存。密钥仅保存在 URL 片段 (#) 中，从不传输给服务器。</p></li>
+        <li><strong>零知识服务器架构</strong><p>服务器仅存储密文数据块。即便管理员或数据库被导出，也绝无法窥探您的隐私便签。</p></li>
+        <li><strong>阅后即焚与自毁定时</strong><p>支持阅读一次后即刻销毁，或在 10 分钟、1 小时、1 天或 30 天后自动过期。</p></li>
+        <li><strong>细粒度链接权限</strong><p>为同一份便签签发不同权限的链接：所有者、仅只读、可编辑、仅回复或清单仅勾选。</p></li>
+        <li><strong>实时协同编辑</strong><p>基于 WebSocket 中继提供实时协作，同时在所有协作者之间保持全程端到端加密。</p></li>
+        <li><strong>丰富的便签类型</strong><p>Markdown 笔记、交互式任务清单、投票、表单、代码便签与沙箱化 Web 便签。</p></li>
+        <li><strong>全生态统一登录：HOP ID</strong><p>使用 HOP ID 单点登录账户畅行 HOP 全家族应用，亦支持完全匿名的游客便签。</p></li>
+        <li><strong>单一 Go 二进制私有化运行</strong><p>编译为单一约 16 MB 的轻量 Go 可执行程序，内嵌 SQLite，无外部运行时依赖。</p></li>
+      </ul>
+    </section>
+
+    <section id="run" aria-labelledby="run-h">
+      <h2 id="run-h">自行搭建</h2>
+      <div class="panel">
+        <p>NoteHop 支持完全私有化部署。数秒内编译并运行单二进制文件：</p>
+        <pre><code>git clone https://github.com/navi-crwn/NoteHop.git
+cd NoteHop
+go build -o notehop ./cmd/notehop
+./notehop</code></pre>
+        <h3>运行要求</h3>
+        <p>Go 1.22+ 与 SQLite。完整快速上手指引、Docker 命令及测试套件见 GitHub README。</p>
+        <h3>登录配置</h3>
+        <p>登录接入 HOP ID 单点登录。启动前在环境中配置 NOTEHOP_SSO_HUB_URL 和 NOTEHOP_SSO_SECRET，亦可独立模式运行。</p>
+        <h3>数据库与存储</h3>
+        <p>NoteHop 默认使用本地存储的内嵌 SQLite 数据库。运行中可随时通过 notehop backup 备份。</p>
+        <p class="note">私有化部署全面支持独立模式与 SSO 统一登录模式。</p>
+      </div>
+    </section>
+
+    <section id="faq" aria-labelledby="faq-h">
+      <h2 id="faq-h">常见问题</h2>
+      <details>
+        <summary>服务器或托管商能够读取我的便签内容吗？</summary>
+        <p>不能。加密完全在浏览器中使用 Web Crypto AES-256-GCM 运算。密钥仅留在 URL 锚点（#），从不发送给服务器。</p>
+      </details>
+      <details>
+        <summary>如果我丢失了便签链接会怎样？</summary>
+        <p>由于 NoteHop 遵循严格的零知识架构，且不存在主密钥或后门，链接丢失意味着任何人都无法解密或找回该便签。</p>
+      </details>
+      <details>
+        <summary>我可以部署在自己的服务器上吗？</summary>
+        <p>完全可以。NoteHop 编译为单一独立二进制文件，无外部运行时依赖。参见 GitHub 仓库说明。</p>
+      </details>
+      <details>
+        <summary>如何报告问题或安全漏洞？</summary>
+        <p>欢迎在 GitHub 提交 Issue，或致信 security@hel.ink 进行负责任的安全漏洞披露。</p>
+      </details>
+    </section>
+
+    <section id="family" aria-labelledby="family-h">
+      <h2 id="family-h">HOP 家族</h2>
+      <p>NoteHop 是 HOP 的一员。HOP 是一套轻量、可自建且共享统一账户的工具家族。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th scope="col">应用</th><th scope="col">简介</th><th scope="col">在线服务</th><th scope="col">源代码</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>HOP ID</strong></td><td>统一认证、账户中心与安全网关</td><td><code>hel.ink</code> <span class="live">&middot; <code>hub.hel.ink</code></span></td><td><a href="https://github.com/navi-crwn/HEL.ink">navi-crwn/HEL.ink</a></td></tr>
+            <tr><td><strong>LinkHop</strong></td><td>极速、保护隐私的链接缩短工具与数据统计</td><td><code>link.hel.ink</code> <span class="live">&middot; <code>hel.ink/l/{slug}</code></span></td><td><a href="https://github.com/navi-crwn/LinkHop">navi-crwn/LinkHop</a></td></tr>
+            <tr><td><strong>BioHop</strong></td><td>轻量级个人主页，支持二维码与精美主题</td><td><code>bio.hel.ink</code> <span class="live">&middot; <code>hel.ink/b/{slug}</code></span></td><td><a href="https://github.com/navi-crwn/BioHop">navi-crwn/BioHop</a></td></tr>
+            <tr><td><strong>PixelHop</strong></td><td>极速、私密的图像托管与图片工坊</td><td><code>pixel.hel.ink</code> <span class="live">&middot; <code>p.hel.ink</code></span></td><td><a href="https://github.com/navi-crwn/PixelHop">navi-crwn/PixelHop</a></td></tr>
+            <tr><td><strong>NoteHop</strong></td><td>端到端加密、阅后即焚的安全便签</td><td><code>note.hel.ink</code> <span class="live">&middot; <code>n.hel.ink</code></span></td><td>navi-crwn/NoteHop (本仓库)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="help" aria-labelledby="help-h">
+      <h2 id="help-h">需要帮助或反馈建议？</h2>
+      <p>欢迎在我们的 <a href="https://github.com/navi-crwn/NoteHop/issues">GitHub 问题跟踪页</a>提出疑问、建议或报告漏洞。</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <p><strong>NoteHop</strong> &middot; 端到端加密、阅后即焚的安全便签</p>
+      <p>开源项目，遵循 <a href="https://github.com/navi-crwn/NoteHop/blob/main/LICENSE">MIT</a>许可证。托管于<a href="https://github.com/navi-crwn/NoteHop">GitHub</a>，在线运行于<a href="https://note.hel.ink">note.hel.ink</a></p>
+    </div>
+  </footer>
+
+  <script src="https://hel.ink/hop-assets/v1/hop-float.js" integrity="sha384-kNviPsMEO9lt9+b4n2S5lX6zHRVnePzGuj9VdgCETTsQwzt/5YJRnv842Xg0gRC+" crossorigin="anonymous" defer></script>
+  <script src="../assets/theme.js"></script>
+</body>
+</html>
