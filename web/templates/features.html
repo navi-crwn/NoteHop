@@ -1,13 +1,17 @@
 {{define "page"}}features{{end}}
 {{define "content"}}
-<section class="wrap narrow prose">
+<section class="wrap prose" style="max-width: 960px;">
   <h1>{{.L.T "features.title"}}</h1>
   <p class="lead muted">{{.L.T "features.lead"}}</p>
+  <div class="bento-grid">
   {{range $g := .TourGroups}}
-  <h2>{{$.L.T (printf "home.g_%s" $g)}}</h2>
-  <ul class="feat-list">{{range $n := $.TourItems}}<li><b>{{$.L.T (printf "home.f_%s_%d" $g $n)}}</b> <span class="muted">{{$.L.T (printf "home.f_%s_%dp" $g $n)}}</span></li>{{end}}</ul>
+    <div class="bento-card">
+      <h2>{{$.L.T (printf "home.g_%s" $g)}}</h2>
+      <ul class="feat-list">{{range $n := $.TourItems}}<li><b>{{$.L.T (printf "home.f_%s_%d" $g $n)}}</b> <span class="muted">{{$.L.T (printf "home.f_%s_%dp" $g $n)}}</span></li>{{end}}</ul>
+    </div>
   {{end}}
-  <p><a class="btn primary" href="/new">{{.L.T "home.cta_full"}}</a></p>
+  </div>
+  <p class="center" style="margin-top: 32px;"><a class="btn primary lg" href="/new">{{.L.T "home.cta_full"}}</a></p>
 </section>
 {{end}}
 {{define "scripts"}}{{end}}
