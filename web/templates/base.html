@@ -64,6 +64,7 @@
   </div>
 </header>
 <main id="main">
+{{if .Back}}<div class="wrap back-row"><a class="back" href="/"><span aria-hidden="true">&larr;</span> {{printf (.L.T "nav.back") .Site}}</a></div>{{end}}
 {{template "content" .}}
 </main>
 <footer>
@@ -71,6 +72,7 @@
     <span><b>{{.Site}}</b> · {{.L.T "footer.tagline"}}</span>
     <nav aria-label="{{.L.T "footer.label"}}">
       <a href="/about">{{.L.T "footer.about"}}</a>
+      <a href="/features">{{.L.T "features.title"}}</a>
       <a href="/diff">{{.L.T "diffpage.title"}}</a>
       <a href="/nearby">{{.L.T "nearby.title"}}</a>
       <a href="/faq">{{.L.T "footer.faq"}}</a>
@@ -78,6 +80,7 @@
       <a href="/contact">{{.L.T "contact.title"}}</a>
       <a href="/terms">{{.L.T "terms.title"}}</a>
       <a href="/privacy">{{.L.T "privacy.title"}}</a>
+      <a href="/status">{{.L.T "status.title"}}</a>
       <a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a>
       {{range .Links}}<a href="{{.URL}}" rel="noopener">{{.Name}}</a>
       {{end}}

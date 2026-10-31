@@ -3,7 +3,7 @@
 # More can be added without a rebuild: NOTEHOP_RESERVED=promo,launch,...
 
 # site pages and routes
-about faq help contact support terms tos privacy legal imprint cookies security status
+about faq features help contact support terms tos privacy legal imprint cookies security status
 blog news press pricing price plans pro premium business enterprise jobs careers
 docs doc documentation guide guides tutorial changelog roadmap download downloads app apps
 api raw mock in n u static assets i18n diff nearby offline sw manifest robots sitemap favicon
