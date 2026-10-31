@@ -25,6 +25,8 @@
 <link rel="stylesheet" href="/static/css/app.css?v={{.Asset}}">
 {{block "head" .}}{{end}}
 <script src="/static/js/theme.js?v={{.Asset}}"></script>
+<link rel="stylesheet" href="/static/css/family-switcher.css?v={{.Asset}}">
+<script src="/static/js/family-switcher.js?v={{.Asset}}" defer></script>
 </head>
 <body data-page="{{block "page" .}}{{end}}"{{with .Token}} data-token="{{.}}"{{end}}{{with .Mode}} data-mode="{{.}}"{{end}}{{if .User}} data-user="{{.User.Username}}"{{end}}{{with .Main}} data-main="{{.}}"{{end}}{{with .Share}} data-share="{{.}}"{{end}}>
 <a class="skip" href="#main">{{.L.T "nav.skip"}}</a>
@@ -39,6 +41,10 @@
       <a href="/faq" {{if eq .Path "/faq"}}aria-current="page"{{end}}>{{.L.T "nav.faq"}}</a>
     </nav>
     <div class="nav-r">
+      <details class="family-switcher" data-family-switcher>
+        <summary class="icon-btn" aria-label="{{.L.T "family.foot"}}" title="{{.L.T "family.foot"}}"><svg><use href="#i-grid"/></svg></summary>
+        <nav aria-label="{{.L.T "family.foot"}}">{{range .HopPublicApps}}<a href="{{.URL}}" {{if eq .Slug "notehop"}}aria-current="true"{{end}}><img src="{{(index .Icons "mark").URL}}" width="32" height="32" alt="" loading="lazy">{{.Name}}</a>{{end}}</nav>
+      </details>
       <div class="menu lang-menu" id="lang-menu">
         <button type="button" class="icon-btn" aria-haspopup="true" aria-label="{{.L.T "nav.language"}}" title="{{.L.T "nav.language"}}"><svg><use href="#i-globe"/></svg></button>
         <div class="menu-list">{{$cur := .L.Code}}{{range .Langs}}
@@ -81,6 +87,7 @@
         <a href="/diff">{{.L.T "diffpage.title"}}</a>
         <a href="/nearby">{{.L.T "nearby.title"}}</a>
         <a href="/status">{{.L.T "status.title"}}</a>
+        <a href="/changelog">{{.L.T "changelog.title"}}</a>
         <a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a>
       </nav>
     </div>
