@@ -21,6 +21,32 @@ func TestDeriveMatchesBrowser(t *testing.T) {
 	}
 }
 
+func TestDerive128Bit(t *testing.T) {
+	k128 := NewKey128()
+	if len(k128) != 22 {
+		t.Fatalf("expected 22 chars for 128-bit key, got %d (%s)", len(k128), k128)
+	}
+	keys, err := Derive(k128, "", "")
+	if err != nil {
+		t.Fatalf("derive 128-bit key: %v", err)
+	}
+	if len(keys.AES) != 32 {
+		t.Fatalf("expected 32 bytes AES key from HMAC, got %d", len(keys.AES))
+	}
+	plain := []byte("Catatan rahasia dengan kunci 128 bit")
+	sealed, err := Seal(keys.AES, plain)
+	if err != nil {
+		t.Fatalf("seal: %v", err)
+	}
+	opened, err := Open(keys.AES, sealed)
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	if string(opened) != string(plain) {
+		t.Fatalf("got %q, want %q", string(opened), string(plain))
+	}
+}
+
 func TestCreateGet(t *testing.T) {
 	d, err := db.Open(":memory:")
 	if err != nil {

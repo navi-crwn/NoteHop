@@ -32,10 +32,10 @@ type Keys struct {
 	Write string // proof of the key, sent with every change
 }
 
-// Derive mirrors NHC.noteKeys.
+// Derive mirrors NHC.noteKeys. Supports both legacy 256-bit (32 bytes) and 128-bit (16 bytes) keys.
 func Derive(k, password, salt string) (Keys, error) {
 	key, err := b64.DecodeString(strings.TrimRight(k, "="))
-	if err != nil || len(key) != 32 {
+	if err != nil || (len(key) != 32 && len(key) != 16) {
 		return Keys{}, errors.New("bad note key")
 	}
 	secret := key
@@ -91,6 +91,12 @@ func gcmFor(key []byte) (cipher.AEAD, error) {
 
 func NewKey() string {
 	b := make([]byte, 32)
+	rand.Read(b)
+	return b64.EncodeToString(b)
+}
+
+func NewKey128() string {
+	b := make([]byte, 16)
 	rand.Read(b)
 	return b64.EncodeToString(b)
 }

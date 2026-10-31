@@ -58,13 +58,15 @@
     available: !!subtle,
     b64u: b64u,
     unb64u: unb64u,
-    newKey: function () { return b64u(rand(32)); },
+    newKey: function (bits) { return b64u(rand(bits === 128 ? 16 : 32)); },
+    newKey128: function () { return b64u(rand(16)); },
     newSalt: function () { return b64u(rand(16)); },
 
-    // Returns {aes, write} for a note. Rejects if k is malformed.
+    // Returns {aes, write} for a note. Supports both legacy 256-bit (32 bytes)
+    // and shorter 128-bit (16 bytes) keys. Rejects if k is malformed.
     noteKeys: function (k, password, salt) {
       var key = unb64u(k);
-      if (key.length !== 32) return Promise.reject(new Error('bad key'));
+      if (key.length !== 32 && key.length !== 16) return Promise.reject(new Error('bad key'));
       var secret = password ? pbkdf2(password, concat(key, unb64u(salt)), NOTE_ITER, 256) : Promise.resolve(key);
       return secret.then(function (s) {
         return Promise.all([hmac(s, 'notehop/enc').then(aesKey), hmac(s, 'notehop/write')]);

@@ -269,7 +269,8 @@
     if (on('decoy') && (!decoyPw || decoyPw === password)) return fail(NH.t('new.need_decoy'));
     if (!encrypted && NH.leaksKeys(title + '\n' + body) && !confirm(NH.t('warn.public_keys'))) return;
     var mode = form.querySelector('[name=mode]:checked').value;
-    var k = NHC.newKey(), admin = NHC.newKey(), salt = password ? NHC.newSalt() : '';
+    var useShortKey = $('#short-key') && $('#short-key').checked;
+    var k = useShortKey ? NHC.newKey128() : NHC.newKey(), admin = NHC.newKey(), salt = password ? NHC.newSalt() : '';
     var decoy = null;
     btn.disabled = true;
 
