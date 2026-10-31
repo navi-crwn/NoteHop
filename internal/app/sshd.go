@@ -212,6 +212,9 @@ func (a *App) sshGet(ref string) string {
 	if n.Encrypted {
 		return "error: this note is end-to-end encrypted; open it in a browser or with \"notehop get\"\n"
 	}
+	if n.HasWarning() {
+		return "error: content warning; open this note in a browser and confirm before reading\n"
+	}
 	if n.MaxViews > 0 {
 		return "error: self-destructing notes can't be read over SSH\n"
 	}

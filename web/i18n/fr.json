@@ -1,4 +1,5 @@
 {
+ "gate.nojs_encrypted": "Cette note est chiffrée. Activez JavaScript dans un navigateur compatible avec WebCrypto pour la déchiffrer sur votre appareil.",
  "about.append": "Les gens ajoutent des réponses en dessous : présences, idées, journal.",
  "about.blocks": "Tapez <code>/spoiler</code> pour une partie qui s’ouvre d’un clic, ou <code>/pin</code> pour une partie verrouillée par un code PIN. Pratique pour des réponses ou des mots de passe dans une note partagée.",
  "about.blocks_h": "Des secrets dans une note",

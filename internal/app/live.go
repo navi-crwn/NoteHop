@@ -214,6 +214,10 @@ func (a *App) apiLive(w http.ResponseWriter, r *http.Request) {
 	}
 	x.write = hashMatch(auth.Write, n.WriteHash)
 	x.admin = hashMatch(auth.Admin, n.AdminHash)
+	if !a.meta(r, x).GatePassed {
+		c.Close(websocket.StatusPolicyViolation, "content warning")
+		return
+	}
 	if !x.write || (!x.admin && runBeforeRead(n, time.Now(), x.ip) != nil) {
 		c.Close(websocket.StatusPolicyViolation, "denied")
 		return
