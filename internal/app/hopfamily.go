@@ -34,7 +34,7 @@ var hopManifestOnce = sync.OnceValue(func() hopManifest {
 	return m
 })
 
-// hopFonts is the family stylesheet (Syne, Plus Jakarta Sans, JetBrains Mono) on hel.ink.
+// hopFonts is the family stylesheet (Inter, Instrument Serif, JetBrains Mono) on hel.ink.
 func hopFonts() *familyAsset {
 	if a, ok := hopManifestOnce().Assets["fonts_css"]; ok && a.URL != "" {
 		return &a

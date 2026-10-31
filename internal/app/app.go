@@ -162,6 +162,7 @@ func (a *App) routes() {
 	m.HandleFunc("GET /contact", a.page("contact", "contact.title", "contact.lead"))
 	m.HandleFunc("GET /features", a.page("features", "features.title", "features.lead"))
 	m.HandleFunc("GET /status", a.statusPage)
+	m.HandleFunc("GET /changelog", a.changelog)
 	m.HandleFunc("GET /terms", a.page("terms", "terms.title", "terms.lead"))
 	m.HandleFunc("GET /privacy", a.page("privacy", "privacy.title", "privacy.lead"))
 	m.HandleFunc("GET /offline", a.page("offline", "offline.title", "offline.lead"))
@@ -278,13 +279,15 @@ type pageData struct {
 	ContactHref   string       // mailto: for an address, the URL otherwise
 	HopFonts      *familyAsset // HOP family stylesheet on hel.ink, with its SRI hash
 	HopFamily     []familyApp  // the other public HOP apps
-	Back          bool         // inner page: show "Back to NoteHop"
-	Status        *liveStatus  // /status only
+	HopPublicApps []familyApp
+	Back          bool        // inner page: show "Back to NoteHop"
+	Status        *liveStatus // /status only
+	Changelog     *changePage
 }
 
 func (a *App) loadTemplates() error {
 	a.pages = map[string]*template.Template{}
-	for _, name := range []string{"home", "new", "note", "about", "login", "register", "dashboard", "vault", "security", "recover", "diff", "nearby", "profile", "offline", "faq", "contact", "terms", "privacy", "error", "features", "status"} {
+	for _, name := range []string{"home", "new", "note", "about", "login", "register", "dashboard", "vault", "security", "recover", "diff", "nearby", "profile", "offline", "faq", "contact", "terms", "privacy", "error", "features", "status", "changelog"} {
 		t, err := template.New(name).ParseFS(web.Templates, "templates/base.html", "templates/icons.html", "templates/"+name+".html")
 		if err != nil {
 			return err
@@ -310,6 +313,7 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.Main, d.Share = a.cfg.BaseURL, a.shareURL()
 	d.LinkHost = strings.TrimPrefix(strings.TrimPrefix(cmp.Or(d.Share, d.Origin), "https://"), "http://")
 	d.HopFonts, d.HopFamily = hopFonts(), hopFamily("notehop")
+	d.HopPublicApps = hopFamily("")
 	d.Contact = a.cfg.Contact
 	if d.Contact != "" {
 		d.ContactHref = d.Contact
