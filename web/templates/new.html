@@ -129,6 +129,18 @@
               <label class="toggle" data-tech="sign-off"><input type="checkbox" data-feature="signoff"><span><b>{{.L.T "feat.signoff"}}</b><small>{{.L.T "ex.signoff"}}</small></span></label>
               <div class="feat hide" data-panel="signoff"><span class="hint">{{.L.T "new.signoff_hint"}}</span></div>
             </div>
+            <div class="adv-group" id="content-warning-box">
+              <h3><svg class="ico"><use href="#i-shield"/></svg> {{.L.T "feat.content_warning"}}</h3>
+              <label class="toggle"><input type="checkbox" data-feature="warning" id="enable-warning"><span><b>{{.L.T "feat.content_warning"}}</b><small>{{.L.T "ex.content_warning"}}</small></span></label>
+              <div class="feat hide" data-panel="warning">
+                <div class="radios" style="display:flex;flex-direction:column;gap:8px;margin:8px 0;">
+                  <label><input type="radio" name="cw_level" value="sensitive" checked> <b>{{.L.T "gate.sensitive_title"}}</b> <small class="muted">{{.L.T "gate.sensitive_sub"}}</small></label>
+                  <label><input type="radio" name="cw_level" value="adult"> <b>{{.L.T "gate.adult_title"}}</b> <small class="muted">{{.L.T "gate.adult_sub"}}</small></label>
+                </div>
+                <label for="warning-reason" style="display:block;margin-top:8px;">{{.L.T "gate.reason_label"}}</label>
+                <input type="text" id="warning-reason" maxlength="255" placeholder="{{.L.T "gate.reason_placeholder"}}">
+              </div>
+            </div>
             <div class="adv-group">
               <h3><svg class="ico"><use href="#i-key"/></svg> {{.L.T "grp.device"}}</h3>
               <label class="toggle"><input type="checkbox" id="remember" checked><span><b>{{.L.T "feat.remember"}}</b><small>{{.L.T "ex.remember"}}</small></span></label>

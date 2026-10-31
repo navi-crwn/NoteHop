@@ -38,6 +38,12 @@ func isPreviewBot(ua string) bool {
 
 // previewText is the card title and description for a note link.
 func previewText(n *db.Note, l i18n.Locale) (title, desc string) {
+	if n.IsAdult() {
+		return l.T("gate.adult_title"), l.T("gate.adult_desc")
+	}
+	if n.IsSensitive() {
+		return l.T("gate.sensitive_title"), l.T("gate.sensitive_desc")
+	}
 	title = l.T("preview.title_encrypted")
 	if !n.Encrypted {
 		title = l.T("preview.title_public")

@@ -1452,5 +1452,20 @@
  "zen.noise": "Ruído",
  "zen.pause": "Pausar",
  "zen.reset": "Reiniciar",
- "zen.start": "Começar"
+ "zen.start": "Começar",
+ "feat.content_warning": "Aviso de conteúdo",
+ "ex.content_warning": "Avisar leitores antes da descriptografia (sensível ou adulto 18+)",
+ "gate.sensitive_title": "Aviso de conteúdo sensível",
+ "gate.sensitive_desc": "Esta nota contém material sensível (violência, temas delicados ou spoilers).",
+ "gate.sensitive_sub": "Violência, temas delicados ou spoilers",
+ "gate.adult_title": "Conteúdo adulto 18+",
+ "gate.adult_desc": "Esta nota contém conteúdo adulto 18+. Ao continuar, você confirma que tem pelo menos 18 anos ou a maioridade legal em sua jurisdição.",
+ "gate.adult_sub": "Verificação de idade necessária (18+)",
+ "gate.reason_label": "Motivo do aviso / nota (opcional)",
+ "gate.reason_placeholder": "Breve explicação mostrada na tela de aviso...",
+ "gate.creator_note": "Nota do autor",
+ "gate.remember_24h": "Lembrar por 24 horas neste dispositivo",
+ "gate.go_back": "Voltar",
+ "gate.continue_sensitive": "Entendido — Continuar",
+ "gate.continue_adult": "Tenho 18+ anos — Continuar"
 }

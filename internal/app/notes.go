@@ -165,21 +165,23 @@ func (a *App) requireAdmin(w http.ResponseWriter, x access) bool {
 // ---------- create ----------
 
 type createReq struct {
-	Encrypted bool   `json:"encrypted"`
-	Password  bool   `json:"password"`
-	Salt      string `json:"salt"`
-	Content   string `json:"content"`
-	Mode      string `json:"mode"`
-	Slug      string `json:"slug"`
-	ExpiresIn int64  `json:"expires_in"`
-	MaxViews  int64  `json:"max_views"`
-	Admin     string `json:"admin"`
-	Write     string `json:"write"`
-	OwnerBlob string `json:"owner_blob"`
-	OpenAt    int64  `json:"open_at"`
-	LockAt    int64  `json:"lock_at"`
-	SignOff   bool   `json:"sign_off"`
-	Decoy     *struct {
+	Encrypted      bool   `json:"encrypted"`
+	Password       bool   `json:"password"`
+	Salt           string `json:"salt"`
+	Content        string `json:"content"`
+	Mode           string `json:"mode"`
+	Slug           string `json:"slug"`
+	ExpiresIn      int64  `json:"expires_in"`
+	MaxViews       int64  `json:"max_views"`
+	Admin          string `json:"admin"`
+	Write          string `json:"write"`
+	OwnerBlob      string `json:"owner_blob"`
+	OpenAt         int64  `json:"open_at"`
+	LockAt         int64  `json:"lock_at"`
+	SignOff        bool   `json:"sign_off"`
+	ContentWarning string `json:"content_warning"`
+	WarningReason  string `json:"warning_reason"`
+	Decoy          *struct {
 		Content string `json:"content"`
 		Write   string `json:"write"`
 	} `json:"decoy"`
@@ -249,13 +251,19 @@ func (a *App) apiCreate(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	cw := strings.ToLower(strings.TrimSpace(q.ContentWarning))
+	if cw != "adult" && cw != "sensitive" {
+		cw = "none"
+	}
 	n := &db.Note{
-		Encrypted: q.Encrypted,
-		Password:  q.Password,
-		Content:   q.Content,
-		AdminHash: hashHex(q.Admin),
-		WriteHash: hashHex(q.Write),
-		MaxViews:  q.MaxViews,
+		Encrypted:      q.Encrypted,
+		Password:       q.Password,
+		Content:        q.Content,
+		AdminHash:      hashHex(q.Admin),
+		WriteHash:      hashHex(q.Write),
+		MaxViews:       q.MaxViews,
+		ContentWarning: cw,
+		WarningReason:  clip(strings.TrimSpace(q.WarningReason), 255),
 	}
 	if q.Password {
 		n.Salt = q.Salt
@@ -335,6 +343,10 @@ type metaResp struct {
 	SignOff   bool          `json:"sign_off,omitempty"`
 	Watermark bool          `json:"watermark,omitempty"`
 	DMSDays   int           `json:"dms_days,omitempty"`
+	// content warning gate
+	ContentWarning string `json:"content_warning,omitempty"`
+	WarningReason  string `json:"warning_reason,omitempty"`
+	GatePassed     bool   `json:"gate_passed,omitempty"`
 	// admin only
 	IPAllow     []string   `json:"ip_allow,omitempty"`
 	LastOpen    int64      `json:"last_open,omitempty"`
@@ -362,6 +374,9 @@ func (a *App) meta(r *http.Request, x access) metaResp {
 	if u := a.currentUser(r); u != nil && n.OwnerID.Valid && n.OwnerID.Int64 == u.ID {
 		m.Owned = true
 	}
+	m.ContentWarning = n.ContentWarning
+	m.WarningReason = n.WarningReason
+	m.GatePassed = !n.HasWarning() || a.hasGatePassed(r, x.link.Token) || x.admin || m.Owned
 	fillMeta(n, &m, time.Now())
 	cfg := parseConfig(n.Config)
 	m.SignOff, m.Watermark, m.DMSDays, m.Profile = cfg.SignOff, cfg.Watermark, cfg.DMSDays, cfg.Profile
@@ -781,4 +796,40 @@ func (a *App) apiDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+}
+
+func gateCookieName(tok string) string {
+	return "hop_gate_nh_" + tok
+}
+
+func (a *App) hasGatePassed(r *http.Request, tok string) bool {
+	c, err := r.Cookie(gateCookieName(tok))
+	return err == nil && c.Value == "1"
+}
+
+func (a *App) gateConfirm(w http.ResponseWriter, r *http.Request) {
+	tok := r.PathValue("token")
+	if tok == "" {
+		tok = r.PathValue("at")
+	}
+	_, _, err := a.db.NoteByLink(tok)
+	if err != nil {
+		a.notFound(w, r)
+		return
+	}
+	maxAge := 86400
+	http.SetCookie(w, &http.Cookie{
+		Name:     gateCookieName(tok),
+		Value:    "1",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   strings.HasPrefix(a.origin(r), "https://"),
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   maxAge,
+	})
+	if strings.Contains(r.Header.Get("Accept"), "application/json") {
+		writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+		return
+	}
+	http.Redirect(w, r, "/"+tok, http.StatusSeeOther)
 }

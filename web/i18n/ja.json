@@ -1452,5 +1452,20 @@
  "zen.noise": "環境音",
  "zen.pause": "一時停止",
  "zen.reset": "リセット",
- "zen.start": "開始"
+ "zen.start": "開始",
+ "feat.content_warning": "コンテンツ警告",
+ "ex.content_warning": "復号前に読者に警告を表示（センシティブまたは18+成人向け）",
+ "gate.sensitive_title": "センシティブなコンテンツ警告",
+ "gate.sensitive_desc": "このノートにはセンシティブな内容（暴力、機微な話題、ネタバレなど）が含まれています。",
+ "gate.sensitive_sub": "暴力、機微な話題、ネタバレなど",
+ "gate.adult_title": "18+ 成人向けコンテンツ",
+ "gate.adult_desc": "このノートには18歳以上向けの成人向けコンテンツが含まれています。続行することで、18歳以上であること、または法的な成人年齢に達していることを確認したものとみなされます。",
+ "gate.adult_sub": "年齢確認が必要です (18+)",
+ "gate.reason_label": "警告の理由 / 作成者メモ（任意）",
+ "gate.reason_placeholder": "確認画面に表示される簡単な説明...",
+ "gate.creator_note": "作成者のメモ",
+ "gate.remember_24h": "この端末で24時間記憶する",
+ "gate.go_back": "戻る",
+ "gate.continue_sensitive": "理解して続行",
+ "gate.continue_adult": "18歳以上です — 続行"
 }
