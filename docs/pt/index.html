@@ -8,8 +8,8 @@
   <link rel="canonical" href="https://navi-crwn.github.io/NoteHop/pt/">
   <link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/styles.css">
-  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/fonts.css" integrity="sha384-T1Y2aaMQ8CSfi7J2t9d1ZAbVcQ1FcO27Jwn3WtNWB+UVK137YCl3hIPvz0G4K22L" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/hop-float.css" integrity="sha384-sl7D409xEmIT5gkArlQLoQQ4rOkqF7tOGf1VhI/iMb7c2/s9w9NtDEjLbJMU/MQ/" crossorigin="anonymous">
+  <link rel="stylesheet" href="../assets/product.css">
+  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/fonts-amnesia.css" integrity="sha384-750KEkFNx2ykcIsUyi1pZ0JC/Z6jfrK7OJtntqOzB8HKfEpjeostGTWJGAxh/5Zi" crossorigin="anonymous">
   <link rel="alternate" hreflang="x-default" href="https://navi-crwn.github.io/NoteHop/">
   <link rel="alternate" hreflang="en" href="https://navi-crwn.github.io/NoteHop/en/">
   <link rel="alternate" hreflang="id" href="https://navi-crwn.github.io/NoteHop/id/">
@@ -31,7 +31,7 @@
   <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
-  <div data-hop-float></div>
+
   <a class="skip" href="#main">Ir para o conteúdo</a>
 
   <header class="site-header">
@@ -62,7 +62,7 @@
   </header>
 
   <main id="main">
-    <div class="hero">
+    <div class="hero product-hero">
       <div>
         <p class="kicker">HOP &middot; Notas e documentos criptografados</p>
         <h1>Trancado no seu navegador, compartilhado em segundos</h1>
@@ -73,13 +73,11 @@
         </div>
         <p class="note">Os endereços ativos nesta página apontam para os sites públicos da família HOP.</p>
       </div>
-      <div class="tile-wrap" aria-hidden="true">
-        <img class="tile" src="../assets/tile.svg" alt="" width="220" height="260">
-      </div>
+      <div class="product-art note-art" aria-hidden="true"><div class="note-sheet note-back"></div><div class="note-sheet"><img src="../assets/mark.svg" alt="" width="48" height="48"><span>•••• •••• ••••</span><span>•••• ••••</span><span>•••• •••• ••••</span><strong>AES-256-GCM</strong></div></div>
     </div>
 
     <section id="features" aria-labelledby="features-h">
-      <h2 id="features-h">O que o NoteHop faz</h2>
+      <span class="section-number" aria-hidden="true">01</span><h2 id="features-h">O que o NoteHop faz</h2>
       <ul class="features">
         <li><strong>Criptografia no cliente AES-256-GCM</strong><p>Seu navegador criptografa o texto antes de salvá-lo. A chave de decodificação viaja no fragmento do link (#) e nunca é enviada ao servidor.</p></li>
         <li><strong>Servidor de conhecimento zero</strong><p>O servidor armazena apenas dados cifrados. Nem mesmo operadores do sistema ou backups conseguem ler seus textos privados.</p></li>
@@ -92,22 +90,14 @@
       </ul>
     </section>
 
-    <section id="run" aria-labelledby="run-h">
-      <h2 id="run-h">Auto-hospedagem</h2>
-      <div class="panel">
-        <p>O NoteHop pode ser hospedado por você. Compile e execute o binário único em segundos:</p>
-        <pre><code>git clone https://github.com/navi-crwn/NoteHop.git
-cd NoteHop
-go build -o notehop ./cmd/notehop
-./notehop</code></pre>
-        <h3>Requisitos</h3>
-        <p>Go 1.22+ e SQLite. Instruções completas de início rápido, Docker e testes no README do GitHub.</p>
-        <h3>Configuração de login</h3>
-        <p>O login utiliza o SSO HOP ID. Configure NOTEHOP_SSO_HUB_URL e NOTEHOP_SSO_SECRET no seu ambiente antes de entrar, ou opere em modo independente.</p>
-        <h3>Banco de Dados e Armazenamento</h3>
-        <p>O NoteHop utiliza SQLite integrado com armazenamento local. Faça backups durante a execução com notehop backup.</p>
-        <p class="note">Os modos independente e SSO são totalmente suportados em instalações próprias.</p>
-      </div>
+    <section id="run" class="source-card" aria-labelledby="run-h">
+      <div><span class="section-number" aria-hidden="true">02 / OPEN SOURCE</span><h2 id="run-h">Auto-hospedagem</h2><p>Os endereços ativos nesta página apontam para os sites públicos da família HOP.</p></div>
+      <div class="cta-row"><a class="btn" href="https://github.com/navi-crwn/NoteHop/blob/main/README.md">Auto-hospedagem ↗</a><a class="btn" href="https://github.com/navi-crwn/NoteHop">Ver o código ↗</a></div>
+    </section>
+
+    <section class="product-preview" aria-labelledby="preview-h">
+      <div class="preview-caption"><div><span class="section-number" aria-hidden="true">03</span><h2 id="preview-h">NoteHop</h2></div><a class="btn primary" href="https://note.hel.ink">Experimentar NoteHop ↗</a></div>
+      <a class="preview-screen" href="https://note.hel.ink" aria-label="Experimentar NoteHop"><img class="preview-light" src="../assets/product-light.webp" alt="NoteHop" width="1280" height="900" loading="lazy"><img class="preview-dark" src="../assets/product-dark.webp" alt="NoteHop" width="1280" height="900" loading="lazy"></a>
     </section>
 
     <section id="faq" aria-labelledby="faq-h">
@@ -151,18 +141,17 @@ go build -o notehop ./cmd/notehop
 
     <section id="help" aria-labelledby="help-h">
       <h2 id="help-h">Precisa de ajuda ou encontrou um problema?</h2>
-      <p>Dúvidas, sugestões e relatórios de bugs são bem-vindos em nosso <a href="https://github.com/navi-crwn/NoteHop/issues">rastreador de problemas do GitHub</a>.</p>
+      <p>Dúvidas, sugestões e relatórios de bugs são bem-vindos em nosso <a href="https://github.com/navi-crwn/NoteHop/issues">rastreador de problemas do GitHub</a> .</p>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="inner">
       <p><strong>NoteHop</strong> &middot; Notas criptografadas ponta a ponta com autodestruição</p>
-      <p>Código aberto sob a licença <a href="https://github.com/navi-crwn/NoteHop/blob/main/LICENSE">MIT</a>. Hospedado no<a href="https://github.com/navi-crwn/NoteHop">GitHub</a>e ativo em<a href="https://note.hel.ink">note.hel.ink</a></p>
+      <p>Código aberto sob a licença <a href="https://github.com/navi-crwn/NoteHop/blob/main/LICENSE">MIT</a> . Hospedado no <a href="https://github.com/navi-crwn/NoteHop">GitHub</a> e ativo em <a href="https://note.hel.ink">note.hel.ink</a></p>
     </div>
   </footer>
 
-  <script src="https://hel.ink/hop-assets/v1/hop-float.js" integrity="sha384-kNviPsMEO9lt9+b4n2S5lX6zHRVnePzGuj9VdgCETTsQwzt/5YJRnv842Xg0gRC+" crossorigin="anonymous" defer></script>
   <script src="../assets/theme.js"></script>
 </body>
 </html>

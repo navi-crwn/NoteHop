@@ -1,0 +1,20 @@
+{{define "page"}}changelog{{end}}
+{{define "content"}}
+<section class="wrap narrow prose changelog">
+  <h1>{{.L.T "changelog.title"}}</h1>
+  <p class="lead">{{.L.T "changelog.lead"}}</p>
+  <ol class="change-list">
+    {{range .Changelog.Entries}}<li>
+      <div class="muted"><time datetime="{{.Date}}">{{slice .Date 0 10}}</time> · {{if eq .Kind "pr"}}{{$.L.T "changelog.pr"}}{{else if eq .Kind "tag"}}{{$.L.T "changelog.tag"}}{{else}}{{$.L.T "changelog.commit"}}{{end}}</div>
+      <h2><a href="{{.URL}}" rel="noopener">{{.Title}}</a></h2><small>{{.ID}}</small>
+    </li>{{end}}
+  </ol>
+  <nav class="change-pages" aria-label="{{.L.T "changelog.title"}}">
+    {{if .Changelog.Previous}}<a href="{{.Changelog.Previous}}">← {{.L.T "changelog.newer"}}</a>{{else}}<span></span>{{end}}
+    <span>{{.Changelog.Page}} / {{.Changelog.Pages}}</span>
+    {{if .Changelog.Next}}<a href="{{.Changelog.Next}}">{{.L.T "changelog.older"}} →</a>{{else}}<span></span>{{end}}
+  </nav>
+  <details><summary>{{.L.T "changelog.sources"}} ({{.Changelog.Total}})</summary>{{range $repo,$revision := .Changelog.Sources}}<p>{{$repo}} · <a href="https://github.com/navi-crwn/{{$repo}}/commit/{{$revision}}">{{slice $revision 0 12}}</a></p>{{end}}</details>
+</section>
+{{end}}
+{{define "scripts"}}{{end}}

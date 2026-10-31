@@ -8,8 +8,8 @@
   <link rel="canonical" href="https://navi-crwn.github.io/NoteHop/ja/">
   <link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/styles.css">
-  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/fonts.css" integrity="sha384-T1Y2aaMQ8CSfi7J2t9d1ZAbVcQ1FcO27Jwn3WtNWB+UVK137YCl3hIPvz0G4K22L" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/hop-float.css" integrity="sha384-sl7D409xEmIT5gkArlQLoQQ4rOkqF7tOGf1VhI/iMb7c2/s9w9NtDEjLbJMU/MQ/" crossorigin="anonymous">
+  <link rel="stylesheet" href="../assets/product.css">
+  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/fonts-amnesia.css" integrity="sha384-750KEkFNx2ykcIsUyi1pZ0JC/Z6jfrK7OJtntqOzB8HKfEpjeostGTWJGAxh/5Zi" crossorigin="anonymous">
   <link rel="alternate" hreflang="x-default" href="https://navi-crwn.github.io/NoteHop/">
   <link rel="alternate" hreflang="en" href="https://navi-crwn.github.io/NoteHop/en/">
   <link rel="alternate" hreflang="id" href="https://navi-crwn.github.io/NoteHop/id/">
@@ -31,7 +31,7 @@
   <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
-  <div data-hop-float></div>
+
   <a class="skip" href="#main">コンテンツへスキップ</a>
 
   <header class="site-header">
@@ -62,7 +62,7 @@
   </header>
 
   <main id="main">
-    <div class="hero">
+    <div class="hero product-hero">
       <div>
         <p class="kicker">HOP &middot; 暗号化ノート＆ドキュメント</p>
         <h1>ブラウザ内で暗号化、瞬時に安全シェア</h1>
@@ -73,13 +73,11 @@
         </div>
         <p class="note">ページ内のリンクはHOPファミリーの公開サイトへ接続します。</p>
       </div>
-      <div class="tile-wrap" aria-hidden="true">
-        <img class="tile" src="../assets/tile.svg" alt="" width="220" height="260">
-      </div>
+      <div class="product-art note-art" aria-hidden="true"><div class="note-sheet note-back"></div><div class="note-sheet"><img src="../assets/mark.svg" alt="" width="48" height="48"><span>•••• •••• ••••</span><span>•••• ••••</span><span>•••• •••• ••••</span><strong>AES-256-GCM</strong></div></div>
     </div>
 
     <section id="features" aria-labelledby="features-h">
-      <h2 id="features-h">NoteHop の機能</h2>
+      <span class="section-number" aria-hidden="true">01</span><h2 id="features-h">NoteHop の機能</h2>
       <ul class="features">
         <li><strong>端末内 AES-256-GCM 暗号化</strong><p>お使いのブラウザが保存前に暗号化。キーはURLフラグメント（#）に含まれ、サーバーへ送信されることはありません。</p></li>
         <li><strong>ゼロ知識（Zero-knowledge）サーバー</strong><p>サーバーには暗号化されたデータのみが保存されます。管理者やデータベースダンプであっても閲覧不可能です。</p></li>
@@ -92,22 +90,14 @@
       </ul>
     </section>
 
-    <section id="run" aria-labelledby="run-h">
-      <h2 id="run-h">セルフホスト</h2>
-      <div class="panel">
-        <p>NoteHop はご自身で運用可能です。単一バイナリのビルドと起動手順：</p>
-        <pre><code>git clone https://github.com/navi-crwn/NoteHop.git
-cd NoteHop
-go build -o notehop ./cmd/notehop
-./notehop</code></pre>
-        <h3>動作要件</h3>
-        <p>Go 1.22+ および SQLite。クイックスタート、Dockerコマンド、テスト詳細は GitHub の README をご覧ください。</p>
-        <h3>サインイン設定</h3>
-        <p>サインインは HOP ID SSO を利用します。環境変数 NOTEHOP_SSO_HUB_URL と NOTEHOP_SSO_SECRET を設定するか、スタンドアロンモードで運用してください。</p>
-        <h3>データベースとストレージ</h3>
-        <p>標準で内蔵SQLiteとローカルストレージを使用します。稼働中に notehop backup でバックアップ取得が可能です。</p>
-        <p class="note">セルフホスト運用においてスタンドアロンモードとSSOモードの両方を完全サポートしています。</p>
-      </div>
+    <section id="run" class="source-card" aria-labelledby="run-h">
+      <div><span class="section-number" aria-hidden="true">02 / OPEN SOURCE</span><h2 id="run-h">セルフホスト</h2><p>ページ内のリンクはHOPファミリーの公開サイトへ接続します。</p></div>
+      <div class="cta-row"><a class="btn" href="https://github.com/navi-crwn/NoteHop/blob/main/README.md">セルフホスト ↗</a><a class="btn" href="https://github.com/navi-crwn/NoteHop">コードを見る ↗</a></div>
+    </section>
+
+    <section class="product-preview" aria-labelledby="preview-h">
+      <div class="preview-caption"><div><span class="section-number" aria-hidden="true">03</span><h2 id="preview-h">NoteHop</h2></div><a class="btn primary" href="https://note.hel.ink">NoteHop を試す ↗</a></div>
+      <a class="preview-screen" href="https://note.hel.ink" aria-label="NoteHop を試す"><img class="preview-light" src="../assets/product-light.webp" alt="NoteHop" width="1280" height="900" loading="lazy"><img class="preview-dark" src="../assets/product-dark.webp" alt="NoteHop" width="1280" height="900" loading="lazy"></a>
     </section>
 
     <section id="faq" aria-labelledby="faq-h">
@@ -151,18 +141,17 @@ go build -o notehop ./cmd/notehop
 
     <section id="help" aria-labelledby="help-h">
       <h2 id="help-h">サポート・フィードバック</h2>
-      <p>ご質問や機能提案、不具合報告は <a href="https://github.com/navi-crwn/NoteHop/issues">GitHub Issue トラッカー</a>までお寄せください。</p>
+      <p>ご質問や機能提案、不具合報告は <a href="https://github.com/navi-crwn/NoteHop/issues">GitHub Issue トラッカー</a> までお寄せください。</p>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="inner">
       <p><strong>NoteHop</strong> &middot; エンドツーエンド暗号化と自動消滅対応のセキュアノート</p>
-      <p>オープンソース（ <a href="https://github.com/navi-crwn/NoteHop/blob/main/LICENSE">MIT</a>ライセンス）。ホスト：<a href="https://github.com/navi-crwn/NoteHop">GitHub</a>、稼働中：<a href="https://note.hel.ink">note.hel.ink</a></p>
+      <p>オープンソース（ <a href="https://github.com/navi-crwn/NoteHop/blob/main/LICENSE">MIT</a> ライセンス）。ホスト： <a href="https://github.com/navi-crwn/NoteHop">GitHub</a> 、稼働中： <a href="https://note.hel.ink">note.hel.ink</a></p>
     </div>
   </footer>
 
-  <script src="https://hel.ink/hop-assets/v1/hop-float.js" integrity="sha384-kNviPsMEO9lt9+b4n2S5lX6zHRVnePzGuj9VdgCETTsQwzt/5YJRnv842Xg0gRC+" crossorigin="anonymous" defer></script>
   <script src="../assets/theme.js"></script>
 </body>
 </html>

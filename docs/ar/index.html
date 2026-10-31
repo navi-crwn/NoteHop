@@ -8,8 +8,8 @@
   <link rel="canonical" href="https://navi-crwn.github.io/NoteHop/ar/">
   <link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/styles.css">
-  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/fonts.css" integrity="sha384-T1Y2aaMQ8CSfi7J2t9d1ZAbVcQ1FcO27Jwn3WtNWB+UVK137YCl3hIPvz0G4K22L" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/hop-float.css" integrity="sha384-sl7D409xEmIT5gkArlQLoQQ4rOkqF7tOGf1VhI/iMb7c2/s9w9NtDEjLbJMU/MQ/" crossorigin="anonymous">
+  <link rel="stylesheet" href="../assets/product.css">
+  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/fonts-amnesia.css" integrity="sha384-750KEkFNx2ykcIsUyi1pZ0JC/Z6jfrK7OJtntqOzB8HKfEpjeostGTWJGAxh/5Zi" crossorigin="anonymous">
   <link rel="alternate" hreflang="x-default" href="https://navi-crwn.github.io/NoteHop/">
   <link rel="alternate" hreflang="en" href="https://navi-crwn.github.io/NoteHop/en/">
   <link rel="alternate" hreflang="id" href="https://navi-crwn.github.io/NoteHop/id/">
@@ -31,7 +31,7 @@
   <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
-  <div data-hop-float></div>
+
   <a class="skip" href="#main">تخطي إلى المحتوى</a>
 
   <header class="site-header">
@@ -62,7 +62,7 @@
   </header>
 
   <main id="main">
-    <div class="hero">
+    <div class="hero product-hero">
       <div>
         <p class="kicker">HOP &middot; ملاحظات ووثائق مشفرة</p>
         <h1>مشفرة في متصفحك، ومشتركة في ثوانٍ</h1>
@@ -73,13 +73,11 @@
         </div>
         <p class="note">الروابط المباشرة في هذه الصفحة تشير إلى المواقع العامة لعائلة HOP.</p>
       </div>
-      <div class="tile-wrap" aria-hidden="true">
-        <img class="tile" src="../assets/tile.svg" alt="" width="220" height="260">
-      </div>
+      <div class="product-art note-art" aria-hidden="true"><div class="note-sheet note-back"></div><div class="note-sheet"><img src="../assets/mark.svg" alt="" width="48" height="48"><span>•••• •••• ••••</span><span>•••• ••••</span><span>•••• •••• ••••</span><strong>AES-256-GCM</strong></div></div>
     </div>
 
     <section id="features" aria-labelledby="features-h">
-      <h2 id="features-h">ما يقدمه NoteHop</h2>
+      <span class="section-number" aria-hidden="true">01</span><h2 id="features-h">ما يقدمه NoteHop</h2>
       <ul class="features">
         <li><strong>تشفير AES-256-GCM في المتصفح</strong><p>يقوم متصفحك بقفل المحتوى قبل إرساله. يسافر مفتاح التشفير ضمن وسم الرابط (#) ولا يُرسل أبداً إلى الخادم.</p></li>
         <li><strong>خادم بمعرفة معدومة (Zero-knowledge)</strong><p>لا يخزن الخادم سوى نصوص مشفرة غير قابلة للقراءة. حتى مدراء النظام أو النسخ الاحتياطية لا يمكنهم فك تشفير ملاحظاتك.</p></li>
@@ -92,22 +90,14 @@
       </ul>
     </section>
 
-    <section id="run" aria-labelledby="run-h">
-      <h2 id="run-h">استضافة ذاتية</h2>
-      <div class="panel">
-        <p>يمكن استضافة NoteHop ذاتياً. قم ببناء وتشغيل الملف في ثوانٍ:</p>
-        <pre><code>git clone https://github.com/navi-crwn/NoteHop.git
-cd NoteHop
-go build -o notehop ./cmd/notehop
-./notehop</code></pre>
-        <h3>المتطلبات</h3>
-        <p>Go 1.22+ و SQLite. راجع ملف README على GitHub للاطلاع على تعليمات البدء السريع وDocker والاختبارات.</p>
-        <h3>إعداد تسجيل الدخول</h3>
-        <p>يستخدم تسجيل الدخول نظام HOP ID. قم بضبط NOTEHOP_SSO_HUB_URL و NOTEHOP_SSO_SECRET قبل الدخول، أو اعمل في وضع مستقل.</p>
-        <h3>قاعدة البيانات والتخزين</h3>
-        <p>يعتمد NoteHop افتراضياً على قاعدة بيانات SQLite مدمجة وتخزين محلي. يمكن أخذ نسخ احتياطية أثناء التشغيل عبر notehop backup.</p>
-        <p class="note">الوضع المستقل ووضع الدخول الموحد مدعومان بالكامل في التثبيت الذاتي.</p>
-      </div>
+    <section id="run" class="source-card" aria-labelledby="run-h">
+      <div><span class="section-number" aria-hidden="true">02 / OPEN SOURCE</span><h2 id="run-h">استضافة ذاتية</h2><p>الروابط المباشرة في هذه الصفحة تشير إلى المواقع العامة لعائلة HOP.</p></div>
+      <div class="cta-row"><a class="btn" href="https://github.com/navi-crwn/NoteHop/blob/main/README.md">استضافة ذاتية ↗</a><a class="btn" href="https://github.com/navi-crwn/NoteHop">عرض الكود ↗</a></div>
+    </section>
+
+    <section class="product-preview" aria-labelledby="preview-h">
+      <div class="preview-caption"><div><span class="section-number" aria-hidden="true">03</span><h2 id="preview-h">NoteHop</h2></div><a class="btn primary" href="https://note.hel.ink">جرب NoteHop ↗</a></div>
+      <a class="preview-screen" href="https://note.hel.ink" aria-label="جرب NoteHop"><img class="preview-light" src="../assets/product-light.webp" alt="NoteHop" width="1280" height="900" loading="lazy"><img class="preview-dark" src="../assets/product-dark.webp" alt="NoteHop" width="1280" height="900" loading="lazy"></a>
     </section>
 
     <section id="faq" aria-labelledby="faq-h">
@@ -151,18 +141,17 @@ go build -o notehop ./cmd/notehop
 
     <section id="help" aria-labelledby="help-h">
       <h2 id="help-h">هل تحتاج مساعدة أو واجهت مشكلة؟</h2>
-      <p>نرحب بالأسئلة والاقتراحات وبلاغات الأخطاء عبر <a href="https://github.com/navi-crwn/NoteHop/issues">متتبع المشكلات في GitHub</a>.</p>
+      <p>نرحب بالأسئلة والاقتراحات وبلاغات الأخطاء عبر <a href="https://github.com/navi-crwn/NoteHop/issues">متتبع المشكلات في GitHub</a> .</p>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="inner">
       <p><strong>NoteHop</strong> &middot; ملاحظات مشفرة بين الطرفين مع ميزة التدمير الذاتي</p>
-      <p>مفتوح المصدر بموجب رخصة <a href="https://github.com/navi-crwn/NoteHop/blob/main/LICENSE">MIT</a>. مستضاف على<a href="https://github.com/navi-crwn/NoteHop">GitHub</a>ومتاح على<a href="https://note.hel.ink">note.hel.ink</a></p>
+      <p>مفتوح المصدر بموجب رخصة <a href="https://github.com/navi-crwn/NoteHop/blob/main/LICENSE">MIT</a> . مستضاف على <a href="https://github.com/navi-crwn/NoteHop">GitHub</a> ومتاح على <a href="https://note.hel.ink">note.hel.ink</a></p>
     </div>
   </footer>
 
-  <script src="https://hel.ink/hop-assets/v1/hop-float.js" integrity="sha384-kNviPsMEO9lt9+b4n2S5lX6zHRVnePzGuj9VdgCETTsQwzt/5YJRnv842Xg0gRC+" crossorigin="anonymous" defer></script>
   <script src="../assets/theme.js"></script>
 </body>
 </html>

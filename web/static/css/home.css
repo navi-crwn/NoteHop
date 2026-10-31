@@ -2,10 +2,10 @@
    life played by the scroll, the feature tour, uses, open-source numbers, FAQ.
    Motion comes from motion.js (.mo on <html>, .in on what has come into view). Loaded only here, on
    top of app.css, and built on its tokens so dark and light both work. Fonts
-   are the HOP family's (Syne, Plus Jakarta Sans, JetBrains Mono), served by
+   are the HOP family's (Inter, Instrument Serif, JetBrains Mono), served by
    hel.ink, the same operator: no third party sees the visit. */
 
-body[data-page=home] { --h-sans: var(--sans); --h-serif: var(--display); --h-mono: var(--mono);
+body[data-page=home] { --h-sans: var(--sans); --h-serif: var(--hop-font-serif, Georgia, serif); --h-mono: var(--mono);
   --h-ink: linear-gradient(100deg, #0891b2 0%, #6366f1 45%, #c026d3 100%); --h-dark: #0f1220; --h-dark-text: #c9cee0; --h-dark-muted: #8d93ab;
   font-family: var(--h-sans); }
 :root:not([data-theme=light]) body[data-page=home] { --h-ink: linear-gradient(100deg, #22d3ee 0%, #a78bfa 50%, #f472b6 100%); --h-dark: #1a1e2b; }
@@ -16,7 +16,7 @@ body[data-page=home] main::before { content: ""; position: absolute; inset: 0 0 
   background: radial-gradient(600px 420px at 78% 22%, rgba(139, 92, 246, .20), transparent 70%), radial-gradient(520px 380px at 8% 70%, rgba(34, 211, 238, .16), transparent 70%); }
 
 .home { max-width: 1180px; margin: 0 auto; padding: 0 24px 40px; }
-.home em { font-family: var(--h-serif); font-style: normal; font-weight: 700; letter-spacing: -.01em; background: var(--h-ink); -webkit-background-clip: text; background-clip: text; color: transparent; padding-inline-end: .06em; }
+.home em { font-family: var(--h-serif); font-style: italic; font-weight: 400; letter-spacing: -.01em; background: var(--h-ink); -webkit-background-clip: text; background-clip: text; color: transparent; padding-inline-end: .06em; }
 .home kbd { font: 600 .8em var(--h-mono); padding: 2px 6px; border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 6px; background: var(--panel); }
 .home svg { width: 18px; height: 18px; flex: none; }
 .home h2, .home h3 { letter-spacing: -.02em; }
@@ -227,6 +227,7 @@ body[data-page=home] main::before { content: ""; position: absolute; inset: 0 0 
 .h-card small { display: block; margin-bottom: 4px; font: 11px var(--h-mono); color: var(--faint); }
 .h-code { font: 700 18px var(--h-mono); transition: filter .8s, opacity .8s; }
 .burned .h-code { filter: blur(6px); opacity: .2; }
+@media (prefers-reduced-motion: reduce) { .h-code { transition: none; } }
 .h-stamp { position: absolute; bottom: 20px; padding: 6px 12px; border-radius: 999px; background: var(--text); color: var(--bg); font-weight: 650; font-size: 12px; opacity: 0; transition: opacity .4s; }
 .burned .h-stamp { opacity: 1; }
 .h-use-txt { padding: 18px 20px 22px; }
