@@ -8,7 +8,8 @@ import (
 
 // backPages are the inner pages that show a "Back to NoteHop" link (U-06).
 var backPages = map[string]bool{
-	"about": true, "features": true, "faq": true, "contact": true, "terms": true, "privacy": true,
+	"changelog": true,
+	"about":     true, "features": true, "faq": true, "contact": true, "terms": true, "privacy": true,
 	"status": true, "diff": true, "nearby": true, "security": true, "recover": true, "offline": true,
 }
 
