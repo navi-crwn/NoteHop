@@ -181,6 +181,7 @@ func (a *App) routes() {
 	m.HandleFunc("GET /auth/sso/logout", a.ssoLogout)
 	m.HandleFunc("GET /n/{token}", a.oldNoteLink)
 	m.HandleFunc("GET /raw/{token}", a.raw)
+	m.HandleFunc("POST /gate/{token}", a.gateConfirm)
 	m.HandleFunc("GET /mock/{token}", a.mock)
 	m.HandleFunc("GET /mock/{token}/{path...}", a.mock)
 	m.HandleFunc("OPTIONS /mock/{token}/{path...}", a.mock)

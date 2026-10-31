@@ -1452,5 +1452,20 @@
  "zen.noise": "背景音",
  "zen.pause": "暂停",
  "zen.reset": "重置",
- "zen.start": "开始"
+ "zen.start": "开始",
+ "feat.content_warning": "内容警告",
+ "ex.content_warning": "在解密前提醒读者（敏感内容或18+成人内容）",
+ "gate.sensitive_title": "敏感内容警告",
+ "gate.sensitive_desc": "此笔记包含敏感内容（暴力、敏感话题或剧透）。",
+ "gate.sensitive_sub": "暴力、敏感题材或剧透",
+ "gate.adult_title": "18+ 成人内容",
+ "gate.adult_desc": "此笔记包含18+成人内容。继续阅读即表示您确认已年满18周岁或达到所在司法管辖区的法定成年年龄。",
+ "gate.adult_sub": "需进行年龄验证 (18+)",
+ "gate.reason_label": "警告原因 / 备注（可选）",
+ "gate.reason_placeholder": "将在提示屏幕上显示的简要说明...",
+ "gate.creator_note": "作者备注",
+ "gate.remember_24h": "在此设备上记住24小时",
+ "gate.go_back": "返回",
+ "gate.continue_sensitive": "我已了解 — 继续",
+ "gate.continue_adult": "我已满18岁 — 继续"
 }

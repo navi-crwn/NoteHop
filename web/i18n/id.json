@@ -1452,5 +1452,20 @@
  "zen.noise": "Suara latar",
  "zen.pause": "Jeda",
  "zen.reset": "Ulang",
- "zen.start": "Mulai"
+ "zen.start": "Mulai",
+ "feat.content_warning": "Peringatan konten",
+ "ex.content_warning": "Peringatkan pembaca sebelum didekripsi (sensitif atau dewasa 18+)",
+ "gate.sensitive_title": "Peringatan Konten Sensitif",
+ "gate.sensitive_desc": "Catatan ini memuat materi sensitif (kekerasan, topik sensitif, atau spoiler).",
+ "gate.sensitive_sub": "Kekerasan, tema mendalam, atau spoiler",
+ "gate.adult_title": "Konten Dewasa 18+",
+ "gate.adult_desc": "Catatan ini memuat konten dewasa 18+. Dengan melanjutkan, Anda menyatakan telah berusia minimal 18 tahun atau batas usia dewasa hukum di wilayah Anda.",
+ "gate.adult_sub": "Verifikasi usia diperlukan (18+)",
+ "gate.reason_label": "Alasan peringatan / catatan pembuat (opsional)",
+ "gate.reason_placeholder": "Penjelasan singkat yang ditampilkan pada layar gerbang...",
+ "gate.creator_note": "Catatan pembuat",
+ "gate.remember_24h": "Ingat selama 24 jam di perangkat ini",
+ "gate.go_back": "Kembali",
+ "gate.continue_sensitive": "Saya paham — Lanjutkan",
+ "gate.continue_adult": "Saya berusia 18+ — Lanjutkan"
 }
