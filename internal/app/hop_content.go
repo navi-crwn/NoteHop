@@ -37,6 +37,11 @@ func (a *App) hopNoteRow(n *db.Note) map[string]any {
 			features = append(features, name)
 		}
 	}
+	if n.IsAdult() {
+		features = append(features, "adult", "nsfw")
+	} else if n.IsSensitive() {
+		features = append(features, "sensitive")
+	}
 	sort.Strings(features)
 	if features == nil {
 		features = []string{}
@@ -55,6 +60,7 @@ func (a *App) hopNoteRow(n *db.Note) map[string]any {
 		"password": n.Password, "size": len(n.Content), "views": n.Views, "max_views": n.MaxViews, "expires": iso(n.Expires),
 		"created": iso(n.Created), "updated": iso(n.Updated), "last_open": iso(n.LastOpen), "links": ls, "features": features,
 		"url": a.noteURL(first), "preview": publicPreview(n), "flags": features,
+		"content_warning": n.ContentWarning, "warning_reason": n.WarningReason,
 	}
 	if n.OwnerID.Valid {
 		if u, err := a.db.UserByID(n.OwnerID.Int64); err == nil {
@@ -178,7 +184,7 @@ func (a *App) hopNote(w http.ResponseWriter, r *http.Request, _ []byte) {
 	row["inbox"], row["watch"] = inboxErr == nil, cfg.Watch != ""
 	row["snapshots"], _ = a.db.Snapshots(n.ID)
 	row["parent"] = a.db.ParentToken(n)
-	row["actions"] = []string{"delete", "takedown", "freeze", "set_expiry", "release_slug", "disable_inbox", "disable_watch"}
+	row["actions"] = []string{"delete", "takedown", "freeze", "set_expiry", "release_slug", "disable_inbox", "disable_watch", "mark_nsfw", "unmark_nsfw", "mark_sensitive"}
 	hopOK(w, row)
 }
 
@@ -237,6 +243,12 @@ func (a *App) noteAction(n *db.Note, q actionReq) (map[string]any, error) {
 		cfg := parseConfig(n.Config)
 		cfg.Watch, cfg.WatchKey = "", ""
 		return map[string]any{"id": id, "watch": false}, a.db.SetConfig(n.ID, cfg.String())
+	case "mark_nsfw":
+		return map[string]any{"id": id, "content_warning": "adult", "warning_reason": q.Reason}, a.db.SetNoteWarning(n.ID, "adult", q.Reason)
+	case "unmark_nsfw":
+		return map[string]any{"id": id, "content_warning": "none", "warning_reason": ""}, a.db.SetNoteWarning(n.ID, "none", "")
+	case "mark_sensitive":
+		return map[string]any{"id": id, "content_warning": "sensitive", "warning_reason": q.Reason}, a.db.SetNoteWarning(n.ID, "sensitive", q.Reason)
 	}
 	return nil, errHopUnknownAction
 }

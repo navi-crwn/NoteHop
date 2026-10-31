@@ -281,11 +281,18 @@
         decoyPw ? NHC.decoy(k, decoyPw, salt, { t: title, b: $('#decoy-text').value }, { t: title, b: body }) : null
       ]).then(function (r) {
         decoy = r[2];
+        var cw = 'none', wr = '';
+        if (on('warning')) {
+          var cwEl = form.querySelector('[name=cw_level]:checked');
+          cw = cwEl ? cwEl.value : 'sensitive';
+          wr = ($('#warning-reason') ? $('#warning-reason').value : '').trim();
+        }
         return NH.api('POST', '/api/notes', {
           encrypted: encrypted, password: !!password, salt: salt, content: r[0], mode: mode,
           slug: on('slug') ? slug.value.trim() : '', expires_in: expiresIn, max_views: on('burn') ? +$('#burn').value : 0,
           open_at: openAt, lock_at: lockAt, admin: admin, write: keys.write, owner_blob: r[1],
-          burns: burns, sign_off: on('signoff'), decoy: decoy
+          burns: burns, sign_off: on('signoff'), decoy: decoy,
+          content_warning: cw, warning_reason: wr
         });
       });
     }).then(function (res) {

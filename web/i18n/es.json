@@ -1,4 +1,5 @@
 {
+ "gate.nojs_encrypted": "Esta nota está cifrada. Activa JavaScript en un navegador con WebCrypto para descifrarla en tu dispositivo.",
  "about.append": "La gente añade respuestas debajo: asistencia, ideas, un registro.",
  "about.blocks": "Escribe <code>/spoiler</code> para una parte que se abre al hacer clic, o <code>/pin</code> para una parte protegida con un PIN. Útil para respuestas o contraseñas en una nota compartida.",
  "about.blocks_h": "Secretos dentro de una nota",
@@ -1452,5 +1453,20 @@
  "zen.noise": "Ruido",
  "zen.pause": "Pausa",
  "zen.reset": "Reiniciar",
- "zen.start": "Iniciar"
+ "zen.start": "Iniciar",
+ "feat.content_warning": "Advertencia de contenido",
+ "ex.content_warning": "Advertir a los lectores antes de descifrar (sensible o adulto 18+)",
+ "gate.sensitive_title": "Advertencia de contenido sensible",
+ "gate.sensitive_desc": "Esta nota contiene material sensible (violencia, temas delicados o spoilers).",
+ "gate.sensitive_sub": "Violencia, temas intensos o spoilers",
+ "gate.adult_title": "Contenido para adultos 18+",
+ "gate.adult_desc": "Esta nota contiene contenido para adultos 18+. Al continuar, confirmas que tienes al menos 18 años o la mayoría de edad legal en tu jurisdicción.",
+ "gate.adult_sub": "Se requiere verificación de edad (18+)",
+ "gate.reason_label": "Motivo de advertencia / nota (opcional)",
+ "gate.reason_placeholder": "Breve explicación mostrada en la pantalla de aviso...",
+ "gate.creator_note": "Nota del autor",
+ "gate.remember_24h": "Recordar durante 24 horas en este dispositivo",
+ "gate.go_back": "Volver",
+ "gate.continue_sensitive": "Entendido — Continuar",
+ "gate.continue_adult": "Tengo más de 18 años — Continuar"
 }

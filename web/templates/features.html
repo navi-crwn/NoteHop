@@ -1,17 +1,18 @@
 {{define "page"}}features{{end}}
 {{define "content"}}
-<section class="wrap prose" style="max-width: 960px;">
+<section class="wrap prose features-page">
   <h1>{{.L.T "features.title"}}</h1>
   <p class="lead muted">{{.L.T "features.lead"}}</p>
   <div class="bento-grid">
   {{range $g := .TourGroups}}
     <div class="bento-card">
       <h2>{{$.L.T (printf "home.g_%s" $g)}}</h2>
+      <figure class="feature-demo"><img class="demo-light" src="/static/img/demos/{{$g}}-light.webp" alt="{{$.L.T (printf "home.g_%s" $g)}}" width="1120" height="760" loading="lazy"><img class="demo-dark" src="/static/img/demos/{{$g}}-dark.webp" alt="{{$.L.T (printf "home.g_%s" $g)}}" width="1120" height="760" loading="lazy"></figure>
       <ul class="feat-list">{{range $n := $.TourItems}}<li><b>{{$.L.T (printf "home.f_%s_%d" $g $n)}}</b> <span class="muted">{{$.L.T (printf "home.f_%s_%dp" $g $n)}}</span></li>{{end}}</ul>
     </div>
   {{end}}
   </div>
-  <p class="center" style="margin-top: 32px;"><a class="btn primary lg" href="/new">{{.L.T "home.cta_full"}}</a></p>
+  <p class="center features-cta"><a class="btn primary lg" href="/new">{{.L.T "home.cta_full"}}</a></p>
 </section>
 {{end}}
 {{define "scripts"}}{{end}}

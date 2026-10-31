@@ -76,7 +76,8 @@
         var c = last && last.t === t && last.b === b ? last.c : NHC.codec(true, keys.aes).encode({ t: t, b: b });
         return Promise.all([c, vault ? vault.seal({ t: t, k: k, a: admin, p: '' }) : '']).then(function (r) {
           return NH.api('POST', '/api/notes', { encrypted: true, password: false, salt: '', content: r[0], mode: mode(), slug: '',
-            expires_in: 0, max_views: once.checked ? 1 : 0, admin: admin, write: keys.write, owner_blob: r[1] });
+            expires_in: 0, max_views: once.checked ? 1 : 0, admin: admin, write: keys.write, owner_blob: r[1],
+            content_warning: $('#quick-warning').value, warning_reason: $('#quick-warning-reason').value });
         });
       }).then(function (res) {
         NH.recent.add({ token: res.token, k: k, a: admin, t: t, created: Math.floor(Date.now() / 1000), expires: res.expires });

@@ -48,10 +48,74 @@
       S.meta = meta;
       if (K && !/^[A-Za-z0-9_-]{43}$/.test(K)) return gone(NH.t('note.bad_key'));
       if (meta.encrypted && !K) return gone(NH.t('note.no_key'));
-      if (meta.open_at && !meta.admin) return capsule(meta.open_at);
-      if (meta.password) return askPassword();
-      return unlock('');
+      if (meta.content_warning && meta.content_warning !== 'none' && !meta.gate_passed) {
+        return showContentWarningGate(meta);
+      }
+      return proceedAfterGate(meta);
     }, function (e) { gone(e.message); });
+  }
+
+  function proceedAfterGate(meta) {
+    if (meta.open_at && !meta.admin) return capsule(meta.open_at);
+    if (meta.password) return askPassword();
+    return unlock('');
+  }
+
+  function showContentWarningGate(meta) {
+    var isAdult = meta.content_warning === 'adult';
+    var icon = isAdult ? 'shield' : 'alert';
+    var title = isAdult ? NH.t('gate.adult_title') : NH.t('gate.sensitive_title');
+    var text = isAdult ? NH.t('gate.adult_desc') : NH.t('gate.sensitive_desc');
+    var badgeClass = isAdult ? 'pill.bad' : 'pill.warn';
+    var badgeText = title;
+
+    var kids = [];
+    var badge = h('span.' + badgeClass, { style: 'margin-bottom:12px;display:inline-flex;align-items:center;gap:6px;' }, NH.icon(icon), badgeText);
+    kids.push(badge);
+
+    if (meta.warning_reason) {
+      var noteBox = h('div.callout', { style: 'margin:14px 0;text-align:left;background:var(--card,#1a1d27);border-left:3px solid var(--accent,#a855f7);padding:10px 14px;border-radius:6px;' },
+        h('span.small.muted', { style: 'text-transform:uppercase;font-weight:600;display:block;margin-bottom:2px;' }, NH.t('gate.creator_note')),
+        h('span', meta.warning_reason)
+      );
+      kids.push(noteBox);
+    }
+
+    var remember = h('label', { style: 'display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted,#94a3b8);margin:16px 0;cursor:pointer;' },
+      h('input', { type: 'checkbox', id: 'gate-remember' }),
+      NH.t('gate.remember_24h')
+    );
+
+    var backBtn = h('button.btn.ghost', { type: 'button' }, NH.t('gate.go_back'));
+    backBtn.addEventListener('click', function () {
+      if (history.length > 1) { history.back(); } else { location.href = '/'; }
+    });
+
+    var continueBtn = h('button.btn.primary', { type: 'button' }, isAdult ? NH.t('gate.continue_adult') : NH.t('gate.continue_sensitive'));
+    continueBtn.addEventListener('click', function () {
+      continueBtn.disabled = true;
+      var rem = $('#gate-remember') && $('#gate-remember').checked;
+      var body = new URLSearchParams();
+      if (rem) body.set('remember', '1');
+      fetch('/gate/' + encodeURIComponent(token), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
+        body: body.toString()
+      }).then(function (response) {
+        if (!response.ok) throw new Error(NH.t('err.read_failed'));
+        meta.gate_passed = true;
+        proceedAfterGate(meta);
+      }).catch(function (error) {
+        continueBtn.disabled = false;
+        var message = h('p', { role: 'alert' }, error.message || NH.t('err.read_failed'));
+        $('#state').appendChild(message);
+      });
+    });
+
+    var row = h('div.btn-row.center', { style: 'display:flex;gap:10px;justify-content:center;' }, backBtn, continueBtn);
+    kids.push(remember, row);
+
+    showState.apply(null, [icon, title, text].concat(kids));
   }
 
   // Time capsule: the server won't hand out the content before open_at, so

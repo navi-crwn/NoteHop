@@ -1,4 +1,5 @@
 {
+ "gate.nojs_encrypted": "This note is encrypted. Enable JavaScript in a browser with WebCrypto to decrypt it on your device.",
  "about.append": "People add replies below: attendance, ideas, a log.",
  "about.blocks": "Type <code>/spoiler</code> for a part that opens on click, or <code>/pin</code> for a part locked with a PIN. Handy for answers or passwords in a shared note.",
  "about.blocks_h": "Secrets inside a note",
@@ -1452,5 +1453,20 @@
  "zen.noise": "Noise",
  "zen.pause": "Pause",
  "zen.reset": "Reset",
- "zen.start": "Start"
+ "zen.start": "Start",
+ "feat.content_warning": "Content warning",
+ "ex.content_warning": "Warn readers before decrypting (sensitive or 18+ adult)",
+ "gate.sensitive_title": "Sensitive Content Warning",
+ "gate.sensitive_desc": "This note contains sensitive material (violence, sensitive topics, or spoilers).",
+ "gate.sensitive_sub": "Violence, intense themes, or spoilers",
+ "gate.adult_title": "18+ Adult Content",
+ "gate.adult_desc": "This note contains 18+ adult content. By continuing, you confirm that you are at least 18 years old or the age of legal majority in your jurisdiction.",
+ "gate.adult_sub": "Age verification required (18+)",
+ "gate.reason_label": "Warning reason / note (optional)",
+ "gate.reason_placeholder": "Brief explanation shown on gate screen...",
+ "gate.creator_note": "Note from creator",
+ "gate.remember_24h": "Remember for 24 hours on this device",
+ "gate.go_back": "Go Back",
+ "gate.continue_sensitive": "I understand — Continue",
+ "gate.continue_adult": "I am 18+ — Continue"
 }
