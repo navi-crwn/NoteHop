@@ -1,0 +1,16 @@
+{{define "page"}}status{{end}}
+{{define "content"}}
+<section class="wrap narrow prose">
+  <h1>{{.L.T "status.title"}}</h1>
+  {{with .Status}}
+  <p class="status-ok"><span class="dot{{if .DBOK}} ok{{end}}" aria-hidden="true"></span><span><b>{{if .DBOK}}{{$.L.T "status.up"}}{{else}}{{$.L.T "status.degraded"}}{{end}}</b> {{$.L.T "status.live"}}</span></p>
+  <dl class="status-dl">
+    <dt>{{$.L.T "status.version"}}</dt><dd class="mono">{{.Version}}</dd>
+    <dt>{{$.L.T "status.since"}}</dt><dd>{{.Since}}</dd>
+    <dt>{{$.L.T "status.db"}}</dt><dd>{{if .DBOK}}OK{{else}}<b>{{$.L.T "status.db_down"}}</b>{{end}}</dd>
+  </dl>
+  {{end}}
+  <p>{{.L.H "status.more"}}</p>
+</section>
+{{end}}
+{{define "scripts"}}{{end}}

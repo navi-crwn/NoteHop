@@ -160,6 +160,8 @@ func (a *App) routes() {
 	m.HandleFunc("GET /faq", a.page("faq", "faq.title", "faq.lead"))
 	m.HandleFunc("GET /help", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/faq", http.StatusMovedPermanently) })
 	m.HandleFunc("GET /contact", a.page("contact", "contact.title", "contact.lead"))
+	m.HandleFunc("GET /features", a.page("features", "features.title", "features.lead"))
+	m.HandleFunc("GET /status", a.statusPage)
 	m.HandleFunc("GET /terms", a.page("terms", "terms.title", "terms.lead"))
 	m.HandleFunc("GET /privacy", a.page("privacy", "privacy.title", "privacy.lead"))
 	m.HandleFunc("GET /offline", a.page("offline", "offline.title", "offline.lead"))
@@ -271,11 +273,13 @@ type pageData struct {
 	ContactHref string       // mailto: for an address, the URL otherwise
 	HopFonts    *familyAsset // HOP family stylesheet on hel.ink, with its SRI hash
 	HopFamily   []familyApp  // the other public HOP apps
+	Back        bool         // inner page: show "Back to NoteHop"
+	Status      *liveStatus  // /status only
 }
 
 func (a *App) loadTemplates() error {
 	a.pages = map[string]*template.Template{}
-	for _, name := range []string{"home", "new", "note", "about", "login", "register", "dashboard", "vault", "security", "recover", "diff", "nearby", "profile", "offline", "faq", "contact", "terms", "privacy", "error"} {
+	for _, name := range []string{"home", "new", "note", "about", "login", "register", "dashboard", "vault", "security", "recover", "diff", "nearby", "profile", "offline", "faq", "contact", "terms", "privacy", "error", "features", "status"} {
 		t, err := template.New(name).ParseFS(web.Templates, "templates/base.html", "templates/icons.html", "templates/"+name+".html")
 		if err != nil {
 			return err
@@ -290,7 +294,8 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.L, d.Langs = a.locale(w, r), i18n.Langs
 	d.SSO, d.SSOName, d.Links = a.cfg.SSOEnabled(), a.cfg.SSOName, a.cfg.Links
 	d.AI, d.AICustom, d.Repo = a.cfg.aiMode(), len(a.cfg.AIOrigins) > 0, a.cfg.repo()
-	if name == "home" {
+	d.Back = backPages[name]
+	if name == "home" || name == "features" {
 		d.TourGroups, d.TourItems = []string{"share", "private", "together", "blocks", "dev", "web"}, []int{1, 2, 3, 4, 5, 6}
 	}
 	if d.SSO {

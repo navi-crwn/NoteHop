@@ -1219,3 +1219,18 @@ body.wr-full-on { overflow: hidden; }
 .hop-family span { color: var(--muted); font-size: .88rem; }
 .hop-family-foot { display: flex; flex-wrap: wrap; gap: 6px 14px; padding-top: 10px; font-size: .88rem; color: var(--muted); }
 .hop-family-foot nav { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+
+/* Dedicated pages: back link, features list, contact list, status. */
+.back-row { padding-top: 18px; }
+.back { display: inline-flex; align-items: center; gap: 6px; font-size: .9rem; color: var(--muted); text-decoration: none; }
+.back:hover { color: var(--text); }
+[dir=rtl] .back span { transform: scaleX(-1); }
+.feat-list, .contact-list { padding-inline-start: 1.1em; }
+.feat-list li, .contact-list li { margin: .45em 0; }
+.feat-list span { display: block; }
+.status-ok { display: flex; align-items: center; gap: 10px; font-size: 1.05rem; }
+.status-ok .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #ef4444; }
+.status-ok .dot.ok { background: #22c55e; box-shadow: 0 0 0 4px rgb(34 197 94 / .2); }
+.status-dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; }
+.status-dl dt { color: var(--muted); }
+.status-dl dd { margin: 0; }
