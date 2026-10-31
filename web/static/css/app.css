@@ -26,8 +26,10 @@
   --radius-sm: 10px;
   --shadow: 0 24px 60px rgba(0, 0, 0, .45);
   --dot: rgba(255, 255, 255, .06);
-  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
+  /* HOP family typography from hel.ink (fonts.css); system fonts until it loads. */
+  --display: var(--hop-font-display, var(--sans));
+  --sans: var(--hop-font-body, ui-sans-serif), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: var(--hop-font-mono, ui-monospace), ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
   --hl-kw: #c4b5fd; --hl-str: #a3e635; --hl-num: #fbbf24; --hl-fn: #22d3ee; --hl-com: #5d6375; --hl-attr: #f472b6;
   --tc-orange: #fb923c; --tc-blue: #60a5fa; --tc-gray: #9ca3af;
   color-scheme: dark;
@@ -77,7 +79,7 @@ body::before { /* the pixel grid */
 img { max-width: 100%; display: block; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; text-underline-offset: 3px; }
-h1, h2, h3 { line-height: 1.15; margin: 0 0 .5em; letter-spacing: -.02em; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.15; margin: 0 0 .5em; letter-spacing: -.02em; }
 h1 { font-size: clamp(1.9rem, 5vw, 3.2rem); font-weight: 800; }
 h2 { font-size: clamp(1.3rem, 3vw, 1.7rem); font-weight: 750; }
 h3 { font-size: 1.05rem; font-weight: 650; }
@@ -1208,3 +1210,12 @@ body.sheet-open { overflow: hidden; }
 body.wr-full-on { overflow: hidden; }
 
 @media (max-width: 640px) { .wr-full-btn span { display: none; } }
+
+/* HOP family (home section and footer line), from the embedded hel.ink manifest. */
+.hop-family { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.hop-family a { display: grid; grid-template-columns: 40px 1fr; column-gap: 12px; align-items: center; padding: 16px; border-radius: 14px; border: 1px solid var(--line-2); color: inherit; text-decoration: none; transition: border-color .15s; }
+.hop-family a:hover { border-color: var(--muted); }
+.hop-family img { grid-row: span 2; width: 40px; height: 40px; border-radius: 12px; }
+.hop-family span { color: var(--muted); font-size: .88rem; }
+.hop-family-foot { display: flex; flex-wrap: wrap; gap: 6px 14px; padding-top: 10px; font-size: .88rem; color: var(--muted); }
+.hop-family-foot nav { display: flex; flex-wrap: wrap; gap: 6px 14px; }

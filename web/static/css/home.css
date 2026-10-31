@@ -2,13 +2,10 @@
    life played by the scroll, the feature tour, uses, open-source numbers, FAQ.
    Motion comes from motion.js (.mo on <html>, .in on what has come into view). Loaded only here, on
    top of app.css, and built on its tokens so dark and light both work. Fonts
-   are self-hosted (static/fonts, OFL): no third party sees the visit. */
-@font-face { font-family: Inter; src: url(/static/fonts/inter.woff2) format("woff2"); font-weight: 100 900; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: Inter; src: url(/static/fonts/inter-ext.woff2) format("woff2"); font-weight: 100 900; font-display: swap; unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-@font-face { font-family: "Instrument Serif"; src: url(/static/fonts/serif-italic.woff2) format("woff2"); font-style: italic; font-display: swap; }
-@font-face { font-family: "JetBrains Mono"; src: url(/static/fonts/mono.woff2) format("woff2"); font-weight: 100 900; font-display: swap; }
+   are the HOP family's (Syne, Plus Jakarta Sans, JetBrains Mono), served by
+   hel.ink, the same operator: no third party sees the visit. */
 
-body[data-page=home] { --h-sans: Inter, var(--sans); --h-serif: "Instrument Serif", Georgia, serif; --h-mono: "JetBrains Mono", var(--mono);
+body[data-page=home] { --h-sans: var(--sans); --h-serif: var(--display); --h-mono: var(--mono);
   --h-ink: linear-gradient(100deg, #0891b2 0%, #6366f1 45%, #c026d3 100%); --h-dark: #0f1220; --h-dark-text: #c9cee0; --h-dark-muted: #8d93ab;
   font-family: var(--h-sans); }
 :root:not([data-theme=light]) body[data-page=home] { --h-ink: linear-gradient(100deg, #22d3ee 0%, #a78bfa 50%, #f472b6 100%); --h-dark: #1a1e2b; }
@@ -19,7 +16,7 @@ body[data-page=home] main::before { content: ""; position: absolute; inset: 0 0 
   background: radial-gradient(600px 420px at 78% 22%, rgba(139, 92, 246, .20), transparent 70%), radial-gradient(520px 380px at 8% 70%, rgba(34, 211, 238, .16), transparent 70%); }
 
 .home { max-width: 1180px; margin: 0 auto; padding: 0 24px 40px; }
-.home em { font-family: var(--h-serif); font-style: italic; font-weight: 400; letter-spacing: -.01em; background: var(--h-ink); -webkit-background-clip: text; background-clip: text; color: transparent; padding-inline-end: .06em; }
+.home em { font-family: var(--h-serif); font-style: normal; font-weight: 700; letter-spacing: -.01em; background: var(--h-ink); -webkit-background-clip: text; background-clip: text; color: transparent; padding-inline-end: .06em; }
 .home kbd { font: 600 .8em var(--h-mono); padding: 2px 6px; border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 6px; background: var(--panel); }
 .home svg { width: 18px; height: 18px; flex: none; }
 .home h2, .home h3 { letter-spacing: -.02em; }
@@ -60,7 +57,7 @@ body[data-page=home] main::before { content: ""; position: absolute; inset: 0 0 
 .h-chip:hover { text-decoration: none; border-color: var(--accent); }
 .h-chip b { padding: 2px 10px; border-radius: 999px; background: var(--grad); color: #061016; font: 700 12px var(--h-mono); }
 .h-chip svg { width: 15px; height: 15px; color: var(--text); }
-.h-hero h1 { font-size: clamp(42px, 6vw, 82px); line-height: 1; letter-spacing: -.045em; font-weight: 800; margin: 24px 0 20px; text-wrap: balance; }
+.h-hero h1 { font-size: clamp(38px, 5vw, 66px); line-height: 1; letter-spacing: -.045em; font-weight: 800; margin: 24px 0 20px; text-wrap: balance; }
 .h-hero h1 em.scrambled { font-family: var(--h-mono); font-style: normal; font-size: .62em; letter-spacing: 0; }
 .h-lead { font-size: 19px; color: var(--muted); max-width: 33em; margin: 0 0 28px; }
 .h-meta { font: 13.5px var(--h-mono); color: var(--faint); margin: 20px 0 0; }
