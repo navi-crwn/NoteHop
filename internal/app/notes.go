@@ -431,6 +431,10 @@ func (a *App) apiOpen(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	if !a.meta(r, x).GatePassed {
+		apiErr(w, http.StatusForbidden, "gate.sensitive_title")
+		return
+	}
 	var q struct {
 		Poll bool `json:"poll"`
 	}
@@ -506,6 +510,11 @@ func (a *App) raw(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
 		w.Write([]byte("This note is end-to-end encrypted; the server cannot read it.\n" +
 			"Open it in a browser with the full link (including the #key part).\n"))
+		return
+	}
+	if n.HasWarning() && !a.hasGatePassed(r, r.PathValue("token")) {
+		w.WriteHeader(http.StatusForbidden)
+		w.Write([]byte("Content warning: open this note's page and confirm before reading.\n"))
 		return
 	}
 	if e := runBeforeRead(n, time.Now(), a.clientIP(r)); e != nil {
@@ -817,7 +826,10 @@ func (a *App) gateConfirm(w http.ResponseWriter, r *http.Request) {
 		a.notFound(w, r)
 		return
 	}
-	maxAge := 86400
+	maxAge := 0
+	if r.FormValue("remember") == "1" {
+		maxAge = 86400
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     gateCookieName(tok),
 		Value:    "1",

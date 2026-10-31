@@ -1,4 +1,5 @@
 {
+ "gate.nojs_encrypted": "このノートは暗号化されています。WebCrypto 対応のブラウザーで JavaScript を有効にして、お使いの端末で復号してください。",
  "about.append": "みんなが下に返信を追加します。出欠、アイデア、記録に。",
  "about.blocks": "<code>/spoiler</code> と入力するとクリックで開く部分を、<code>/pin</code> と入力すると PIN で鍵をかけた部分を作れます。共有ノートに答えやパスワードを入れたいときに便利です。",
  "about.blocks_h": "ノートの中の秘密",

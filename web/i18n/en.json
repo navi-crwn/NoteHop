@@ -1,4 +1,5 @@
 {
+ "gate.nojs_encrypted": "This note is encrypted. Enable JavaScript in a browser with WebCrypto to decrypt it on your device.",
  "about.append": "People add replies below: attendance, ideas, a log.",
  "about.blocks": "Type <code>/spoiler</code> for a part that opens on click, or <code>/pin</code> for a part locked with a PIN. Handy for answers or passwords in a shared note.",
  "about.blocks_h": "Secrets inside a note",

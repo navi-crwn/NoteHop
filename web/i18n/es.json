@@ -1,4 +1,5 @@
 {
+ "gate.nojs_encrypted": "Esta nota está cifrada. Activa JavaScript en un navegador con WebCrypto para descifrarla en tu dispositivo.",
  "about.append": "La gente añade respuestas debajo: asistencia, ideas, un registro.",
  "about.blocks": "Escribe <code>/spoiler</code> para una parte que se abre al hacer clic, o <code>/pin</code> para una parte protegida con un PIN. Útil para respuestas o contraseñas en una nota compartida.",
  "about.blocks_h": "Secretos dentro de una nota",

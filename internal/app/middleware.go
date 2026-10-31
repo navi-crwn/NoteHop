@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net"
 	"net/http"
-	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -90,14 +89,11 @@ func (a *App) secure(next http.Handler) http.Handler {
 	})
 }
 
-// sameOrigin accepts requests whose Origin (when sent) matches the Host.
+// Fetch Metadata remains available when no-referrer makes a form's Origin
+// opaque. The standard check prefers that browser-controlled metadata and
+// falls back to Origin for older clients.
 func sameOrigin(r *http.Request) bool {
-	o := r.Header.Get("Origin")
-	if o == "" {
-		return r.Header.Get("Sec-Fetch-Site") != "cross-site"
-	}
-	u, err := url.Parse(o)
-	return err == nil && u.Host == r.Host
+	return http.NewCrossOriginProtection().Check(r) == nil
 }
 
 func (a *App) clientIP(r *http.Request) string {

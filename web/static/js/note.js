@@ -67,7 +67,7 @@
     var title = isAdult ? NH.t('gate.adult_title') : NH.t('gate.sensitive_title');
     var text = isAdult ? NH.t('gate.adult_desc') : NH.t('gate.sensitive_desc');
     var badgeClass = isAdult ? 'pill.bad' : 'pill.warn';
-    var badgeText = isAdult ? '18+ Adult' : 'Content Warning';
+    var badgeText = title;
 
     var kids = [];
     var badge = h('span.' + badgeClass, { style: 'margin-bottom:12px;display:inline-flex;align-items:center;gap:6px;' }, NH.icon(icon), badgeText);
@@ -82,7 +82,7 @@
     }
 
     var remember = h('label', { style: 'display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted,#94a3b8);margin:16px 0;cursor:pointer;' },
-      h('input', { type: 'checkbox', id: 'gate-remember', checked: true }),
+      h('input', { type: 'checkbox', id: 'gate-remember' }),
       NH.t('gate.remember_24h')
     );
 
@@ -99,14 +99,16 @@
       if (rem) body.set('remember', '1');
       fetch('/gate/' + encodeURIComponent(token), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
         body: body.toString()
-      }).then(function () {
+      }).then(function (response) {
+        if (!response.ok) throw new Error(NH.t('err.read_failed'));
         meta.gate_passed = true;
         proceedAfterGate(meta);
-      }).catch(function () {
-        meta.gate_passed = true;
-        proceedAfterGate(meta);
+      }).catch(function (error) {
+        continueBtn.disabled = false;
+        var message = h('p', { role: 'alert' }, error.message || NH.t('err.read_failed'));
+        $('#state').appendChild(message);
       });
     });
 

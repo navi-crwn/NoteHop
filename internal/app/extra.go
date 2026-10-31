@@ -155,6 +155,10 @@ func (a *App) apiVersion(w http.ResponseWriter, r *http.Request) {
 	if !ok || !a.canHistory(w, x) {
 		return
 	}
+	if !a.meta(r, x).GatePassed {
+		apiErr(w, http.StatusForbidden, "gate.sensitive_title")
+		return
+	}
 	ver, _ := strconv.ParseInt(r.PathValue("v"), 10, 64)
 	v, err := a.db.VersionContent(x.note.ID, ver)
 	if err != nil {

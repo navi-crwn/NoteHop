@@ -5,10 +5,20 @@
     <div class="spinner" aria-hidden="true"></div>
     <p class="muted">{{.L.T "note.opening"}}</p>
     <noscript>
+      {{if not .GatePassed}}
       <form method="POST" action="/gate/{{.Token}}" style="margin-top:16px;">
-        <p class="muted">{{.L.T "gate.sensitive_desc"}}</p>
-        <button type="submit" class="btn primary sm">{{.L.T "gate.continue_sensitive"}}</button>
+        <h1>{{if eq .Warning "adult"}}{{.L.T "gate.adult_title"}}{{else}}{{.L.T "gate.sensitive_title"}}{{end}}</h1>
+        <p class="muted">{{if eq .Warning "adult"}}{{.L.T "gate.adult_desc"}}{{else}}{{.L.T "gate.sensitive_desc"}}{{end}}</p>
+        {{with .WarningReason}}<p>{{.}}</p>{{end}}
+        <label><input type="checkbox" name="remember" value="1"> {{.L.T "gate.remember_24h"}}</label>
+        <button type="submit" class="btn primary sm">{{if eq .Warning "adult"}}{{.L.T "gate.continue_adult"}}{{else}}{{.L.T "gate.continue_sensitive"}}{{end}}</button>
+        <a href="/" class="btn">{{.L.T "gate.go_back"}}</a>
       </form>
+      {{else if not .Encrypted}}
+      <a href="/raw/{{.Token}}" class="btn primary">{{.L.T "gate.continue_sensitive"}}</a>
+      {{else}}
+      <p>{{.L.T "gate.nojs_encrypted"}}</p>
+      {{end}}
     </noscript>
   </div>
 

@@ -1,4 +1,5 @@
 {
+ "gate.nojs_encrypted": "此笔记已加密。请在支持 WebCrypto 的浏览器中启用 JavaScript，以便在您的设备上解密。",
  "about.append": "大家在下方添加回复：出勤登记、想法、日志。",
  "about.blocks": "输入 <code>/spoiler</code> 添加点击才显示的内容，或输入 <code>/pin</code> 添加需要 PIN 码才能打开的内容。适合在共享笔记里放答案或密码。",
  "about.blocks_h": "笔记里的秘密",

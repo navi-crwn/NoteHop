@@ -241,41 +241,45 @@ func (a *App) routes() {
 // ---------- pages ----------
 
 type pageData struct {
-	Site        string
-	Title       string
-	Desc        string
-	Path        string
-	Asset       string
-	User        *db.User
-	Reg         bool
-	NoIndex     bool
-	Token       string
-	Mode        string
-	SSO         bool // show "Continue with <SSOName>"
-	SSOName     string
-	SSOVia      []Link   // provider buttons, from NOTEHOP_SSO_PROVIDERS
-	AI          string   // writing help mode (Config.AI), for the editor
-	AICustom    bool     // operator allowed extra AI origins
-	Repo        string   // source repository (Config.GitHub), empty when hidden
-	TourGroups  []string // home page feature tour: groups, and the items in each
-	TourItems   []int
-	Links       []Link // related sites, from NOTEHOP_LINKS
-	Next        string // where to go after signing in
-	Msg         string // error page text; empty means "note not found"
-	Origin      string // scheme://host for absolute OpenGraph URLs
-	Main        string // main site, for admin links
-	Share       string // share domain, for links handed to readers (may be empty)
-	LinkHost    string // host of reader links, shown before a link name
-	L           i18n.Locale
-	Langs       []i18n.Lang
-	Clipper     template.URL // bookmarklet for the about page
-	Profile     []profileNote
-	Contact     string       // operator contact for /contact
-	ContactHref string       // mailto: for an address, the URL otherwise
-	HopFonts    *familyAsset // HOP family stylesheet on hel.ink, with its SRI hash
-	HopFamily   []familyApp  // the other public HOP apps
-	Back        bool         // inner page: show "Back to NoteHop"
-	Status      *liveStatus  // /status only
+	Warning       string
+	WarningReason string
+	GatePassed    bool
+	Encrypted     bool
+	Site          string
+	Title         string
+	Desc          string
+	Path          string
+	Asset         string
+	User          *db.User
+	Reg           bool
+	NoIndex       bool
+	Token         string
+	Mode          string
+	SSO           bool // show "Continue with <SSOName>"
+	SSOName       string
+	SSOVia        []Link   // provider buttons, from NOTEHOP_SSO_PROVIDERS
+	AI            string   // writing help mode (Config.AI), for the editor
+	AICustom      bool     // operator allowed extra AI origins
+	Repo          string   // source repository (Config.GitHub), empty when hidden
+	TourGroups    []string // home page feature tour: groups, and the items in each
+	TourItems     []int
+	Links         []Link // related sites, from NOTEHOP_LINKS
+	Next          string // where to go after signing in
+	Msg           string // error page text; empty means "note not found"
+	Origin        string // scheme://host for absolute OpenGraph URLs
+	Main          string // main site, for admin links
+	Share         string // share domain, for links handed to readers (may be empty)
+	LinkHost      string // host of reader links, shown before a link name
+	L             i18n.Locale
+	Langs         []i18n.Lang
+	Clipper       template.URL // bookmarklet for the about page
+	Profile       []profileNote
+	Contact       string       // operator contact for /contact
+	ContactHref   string       // mailto: for an address, the URL otherwise
+	HopFonts      *familyAsset // HOP family stylesheet on hel.ink, with its SRI hash
+	HopFamily     []familyApp  // the other public HOP apps
+	Back          bool         // inner page: show "Back to NoteHop"
+	Status        *liveStatus  // /status only
 }
 
 func (a *App) loadTemplates() error {
@@ -378,7 +382,8 @@ func (a *App) notePage(w http.ResponseWriter, r *http.Request, tok string) {
 	// The page is only a shell: content is fetched (and, for burn notes,
 	// counted) by script after the reader confirms, so link previews from
 	// chat apps never use up a view.
-	a.render(w, r, http.StatusOK, "note", pageData{Title: title, Desc: desc, Token: tok, Mode: l.Mode, NoIndex: true})
+	a.render(w, r, http.StatusOK, "note", pageData{Title: title, Desc: desc, Token: tok, Mode: l.Mode, NoIndex: true,
+		Warning: n.ContentWarning, WarningReason: n.WarningReason, GatePassed: !n.HasWarning() || a.hasGatePassed(r, tok), Encrypted: n.Encrypted})
 }
 
 // origin is the public scheme://host, for absolute URLs in OpenGraph tags.
