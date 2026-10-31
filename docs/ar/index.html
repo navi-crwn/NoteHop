@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NoteHop — ملاحظات مشفرة بين الطرفين مع ميزة التدمير الذاتي</title>
+  <meta name="description" content="اكتب ملاحظتك، وشفرها في متصفحك بتقنية AES-256-GCM، وشارك الروابط عبر n.hel.ink. معرفة معدومة، تدمير ذاتي، جزء من عائلة HOP.">
+  <link rel="canonical" href="https://navi-crwn.github.io/NoteHop/ar/">
+  <link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/styles.css">
+  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/fonts.css" integrity="sha384-T1Y2aaMQ8CSfi7J2t9d1ZAbVcQ1FcO27Jwn3WtNWB+UVK137YCl3hIPvz0G4K22L" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/hop-float.css" integrity="sha384-sl7D409xEmIT5gkArlQLoQQ4rOkqF7tOGf1VhI/iMb7c2/s9w9NtDEjLbJMU/MQ/" crossorigin="anonymous">
+  <link rel="alternate" hreflang="x-default" href="https://navi-crwn.github.io/NoteHop/">
+  <link rel="alternate" hreflang="en" href="https://navi-crwn.github.io/NoteHop/en/">
+  <link rel="alternate" hreflang="id" href="https://navi-crwn.github.io/NoteHop/id/">
+  <link rel="alternate" hreflang="zh" href="https://navi-crwn.github.io/NoteHop/zh/">
+  <link rel="alternate" hreflang="es" href="https://navi-crwn.github.io/NoteHop/es/">
+  <link rel="alternate" hreflang="ar" href="https://navi-crwn.github.io/NoteHop/ar/">
+  <link rel="alternate" hreflang="pt" href="https://navi-crwn.github.io/NoteHop/pt/">
+  <link rel="alternate" hreflang="fr" href="https://navi-crwn.github.io/NoteHop/fr/">
+  <link rel="alternate" hreflang="ru" href="https://navi-crwn.github.io/NoteHop/ru/">
+  <link rel="alternate" hreflang="ja" href="https://navi-crwn.github.io/NoteHop/ja/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="NoteHop">
+  <meta property="og:title" content="NoteHop — ملاحظات مشفرة بين الطرفين مع ميزة التدمير الذاتي">
+  <meta property="og:description" content="اكتب ملاحظتك، وشفرها في متصفحك بتقنية AES-256-GCM، وشارك الروابط عبر n.hel.ink. معرفة معدومة، تدمير ذاتي، جزء من عائلة HOP.">
+  <meta property="og:url" content="https://navi-crwn.github.io/NoteHop/ar/">
+  <meta property="og:image" content="https://navi-crwn.github.io/NoteHop/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+  <div data-hop-float></div>
+  <a class="skip" href="#main">تخطي إلى المحتوى</a>
+
+  <header class="site-header">
+    <a class="brand" href="https://navi-crwn.github.io/NoteHop/ar/">
+      <img src="../assets/mark.svg" alt="" width="28" height="28">
+      <span>NoteHop</span>
+    </a>
+    <nav aria-label="التنقل في الصفحة">
+      <a href="#features">المميزات</a>
+      <a href="#run">استضافة ذاتية</a>
+      <a href="#faq">الأسئلة الشائعة</a>
+      <a href="#family">عائلة HOP</a>
+    </nav>
+    <div class="header-actions">
+      <details class="langmenu"><summary aria-label="Language"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg>AR</summary><ul>
+        <li><a href="../" hreflang="en" lang="en">English<small>EN</small></a></li>
+        <li><a href="../id/" hreflang="id" lang="id">Bahasa Indonesia<small>ID</small></a></li>
+        <li><a href="../zh/" hreflang="zh" lang="zh">简体中文<small>ZH</small></a></li>
+        <li><a href="../es/" hreflang="es" lang="es">Español<small>ES</small></a></li>
+        <li><a href="../ar/" hreflang="ar" lang="ar" aria-current="page">العربية<small>AR</small></a></li>
+        <li><a href="../pt/" hreflang="pt" lang="pt">Português<small>PT</small></a></li>
+        <li><a href="../fr/" hreflang="fr" lang="fr">Français<small>FR</small></a></li>
+        <li><a href="../ru/" hreflang="ru" lang="ru">Русский<small>RU</small></a></li>
+        <li><a href="../ja/" hreflang="ja" lang="ja">日本語<small>JA</small></a></li>
+      </ul></details>
+      <button id="theme-toggle" type="button" data-action="dark" data-label-light="الوضع الفاتح" data-label-dark="الوضع الداكن">الوضع الداكن</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="hero">
+      <div>
+        <p class="kicker">HOP &middot; ملاحظات ووثائق مشفرة</p>
+        <h1>مشفرة في متصفحك، ومشتركة في ثوانٍ</h1>
+        <p class="lede">يقوم NoteHop بتشفير ملاحظتك محلياً بتقنية AES-256-GCM قبل أن تغادر جهازك. مفتاح فك التشفير يبقى في تجزئة الرابط (#)، لذا يعجز الخادم تماماً عن قراءة بياناتك. روابط قصيرة نظيفة على n.hel.ink، مفتوح المصدر (MIT).</p>
+        <div class="cta-row">
+          <a class="btn primary" href="https://note.hel.ink">جرب NoteHop</a>
+          <a class="btn" href="https://github.com/navi-crwn/NoteHop">عرض الكود</a>
+        </div>
+        <p class="note">الروابط المباشرة في هذه الصفحة تشير إلى المواقع العامة لعائلة HOP.</p>
+      </div>
+      <div class="tile-wrap" aria-hidden="true">
+        <img class="tile" src="../assets/tile.svg" alt="" width="220" height="260">
+      </div>
+    </div>
+
+    <section id="features" aria-labelledby="features-h">
+      <h2 id="features-h">ما يقدمه NoteHop</h2>
+      <ul class="features">
+        <li><strong>تشفير AES-256-GCM في المتصفح</strong><p>يقوم متصفحك بقفل المحتوى قبل إرساله. يسافر مفتاح التشفير ضمن وسم الرابط (#) ولا يُرسل أبداً إلى الخادم.</p></li>
+        <li><strong>خادم بمعرفة معدومة (Zero-knowledge)</strong><p>لا يخزن الخادم سوى نصوص مشفرة غير قابلة للقراءة. حتى مدراء النظام أو النسخ الاحتياطية لا يمكنهم فك تشفير ملاحظاتك.</p></li>
+        <li><strong>تدمير ذاتي وحرق بعد القراءة</strong><p>تُحذف الملاحظات فور قراءتها لمرة واحدة، أو تنتهي صلاحيتها بعد 10 دقائق أو ساعة أو يوم أو شهر.</p></li>
+        <li><strong>صلاحيات مخصصة لكل رابط</strong><p>أصدر روابط مختلفة للملاحظة الواحدة: مالك، قراءة فقط، قابل للتحرير، ردود فقط، أو تأشير المهام فقط.</p></li>
+        <li><strong>تعاون حي ومباشر</strong><p>اكتبوا معاً في الوقت الفعلي عبر وسيط WebSocket مع الحفاظ الكامل على التشفير بين الأطراف.</p></li>
+        <li><strong>أنواع ملاحظات متعددة</strong><p>نصوص Markdown، وقوائم مهام تفاعلية، واستطلاعات، ونماذج، وملاحظات برمجية، وملاحظات ويب معزولة.</p></li>
+        <li><strong>تسجيل دخول موحد: HOP ID</strong><p>سجل الدخول بسهولة عبر حساب HOP ID الموحد عبر جميع تطبيقات HOP، أو استخدم NoteHop كزائر مجهول.</p></li>
+        <li><strong>ملف تنفيذي واحد بلغة Go</strong><p>ملف تنفيذي مستقل وخفيف بحجم ~16 ميغابايت مع SQLite مدمج، ولا يتطلب أي حزم خارجية.</p></li>
+      </ul>
+    </section>
+
+    <section id="run" aria-labelledby="run-h">
+      <h2 id="run-h">استضافة ذاتية</h2>
+      <div class="panel">
+        <p>يمكن استضافة NoteHop ذاتياً. قم ببناء وتشغيل الملف في ثوانٍ:</p>
+        <pre><code>git clone https://github.com/navi-crwn/NoteHop.git
+cd NoteHop
+go build -o notehop ./cmd/notehop
+./notehop</code></pre>
+        <h3>المتطلبات</h3>
+        <p>Go 1.22+ و SQLite. راجع ملف README على GitHub للاطلاع على تعليمات البدء السريع وDocker والاختبارات.</p>
+        <h3>إعداد تسجيل الدخول</h3>
+        <p>يستخدم تسجيل الدخول نظام HOP ID. قم بضبط NOTEHOP_SSO_HUB_URL و NOTEHOP_SSO_SECRET قبل الدخول، أو اعمل في وضع مستقل.</p>
+        <h3>قاعدة البيانات والتخزين</h3>
+        <p>يعتمد NoteHop افتراضياً على قاعدة بيانات SQLite مدمجة وتخزين محلي. يمكن أخذ نسخ احتياطية أثناء التشغيل عبر notehop backup.</p>
+        <p class="note">الوضع المستقل ووضع الدخول الموحد مدعومان بالكامل في التثبيت الذاتي.</p>
+      </div>
+    </section>
+
+    <section id="faq" aria-labelledby="faq-h">
+      <h2 id="faq-h">الأسئلة الشائعة</h2>
+      <details>
+        <summary>هل يستطيع الخادم أو مزود الاستضافة قراءة ملاحظاتي؟</summary>
+        <p>كلا. يتم التشفير بالكامل داخل متصفحك عبر واجهة Web Crypto AES-256-GCM. ويبقى المفتاح في الرابط (#) دون إرساله للخادم.</p>
+      </details>
+      <details>
+        <summary>ماذا يحدث إذا فقدت رابط ملاحظتي؟</summary>
+        <p>نظراً لأن NoteHop مبني على مبدأ المعرفة المعدومة وبلا أبواب خلفية، فإن فقدان الرابط يعني استحالة استرجاع الملاحظة أو فك تشفيرها.</p>
+      </details>
+      <details>
+        <summary>هل يمكنني استضافة NoteHop على خادمي الخاص؟</summary>
+        <p>نعم. يترجم NoteHop إلى ملف تنفيذي مستقل بلغة Go دون أي متطلبات تشغيل خارجية. راجع دليل README في المستودع.</p>
+      </details>
+      <details>
+        <summary>أين أبلغ عن المشكلات أو الثغرات الأمنية؟</summary>
+        <p>يمكنك فتح مشكلة في GitHub أو مراسلتنا عبر security@hel.ink للإبلاغ المسؤول عن الثغرات.</p>
+      </details>
+    </section>
+
+    <section id="family" aria-labelledby="family-h">
+      <h2 id="family-h">عائلة HOP</h2>
+      <p>NoteHop جزء من HOP، حزمة أدوات خفيفة ومستقلة وقابلة للاستضافة الذاتية بحساب موحد.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th scope="col">التطبيق</th><th scope="col">الوظيفة</th><th scope="col">الخدمة المباشرة</th><th scope="col">المصدر</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>HOP ID</strong></td><td>تسجيل الدخول الموحد ومركز الحسابات والأمان</td><td><code>hel.ink</code> <span class="live">&middot; <code>hub.hel.ink</code></span></td><td><a href="https://github.com/navi-crwn/HEL.ink">navi-crwn/HEL.ink</a></td></tr>
+            <tr><td><strong>LinkHop</strong></td><td>تقصير الروابط بسرعة مع الحفاظ على الخصوصية والإحصائيات</td><td><code>link.hel.ink</code> <span class="live">&middot; <code>hel.ink/l/{slug}</code></span></td><td><a href="https://github.com/navi-crwn/LinkHop">navi-crwn/LinkHop</a></td></tr>
+            <tr><td><strong>BioHop</strong></td><td>صفحات روابط شخصية خفيفة مع رموز QR وقوالب أنيقة</td><td><code>bio.hel.ink</code> <span class="live">&middot; <code>hel.ink/b/{slug}</code></span></td><td><a href="https://github.com/navi-crwn/BioHop">navi-crwn/BioHop</a></td></tr>
+            <tr><td><strong>PixelHop</strong></td><td>استضافة صور سريعة وخاصة مع استوديو صور متكامل</td><td><code>pixel.hel.ink</code> <span class="live">&middot; <code>p.hel.ink</code></span></td><td><a href="https://github.com/navi-crwn/PixelHop">navi-crwn/PixelHop</a></td></tr>
+            <tr><td><strong>NoteHop</strong></td><td>ملاحظات مشفرة بين الطرفين مع ميزة التدمير الذاتي</td><td><code>note.hel.ink</code> <span class="live">&middot; <code>n.hel.ink</code></span></td><td>navi-crwn/NoteHop (هذا المستودع)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="help" aria-labelledby="help-h">
+      <h2 id="help-h">هل تحتاج مساعدة أو واجهت مشكلة؟</h2>
+      <p>نرحب بالأسئلة والاقتراحات وبلاغات الأخطاء عبر <a href="https://github.com/navi-crwn/NoteHop/issues">متتبع المشكلات في GitHub</a>.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <p><strong>NoteHop</strong> &middot; ملاحظات مشفرة بين الطرفين مع ميزة التدمير الذاتي</p>
+      <p>مفتوح المصدر بموجب رخصة <a href="https://github.com/navi-crwn/NoteHop/blob/main/LICENSE">MIT</a>. مستضاف على<a href="https://github.com/navi-crwn/NoteHop">GitHub</a>ومتاح على<a href="https://note.hel.ink">note.hel.ink</a></p>
+    </div>
+  </footer>
+
+  <script src="https://hel.ink/hop-assets/v1/hop-float.js" integrity="sha384-kNviPsMEO9lt9+b4n2S5lX6zHRVnePzGuj9VdgCETTsQwzt/5YJRnv842Xg0gRC+" crossorigin="anonymous" defer></script>
+  <script src="../assets/theme.js"></script>
+</body>
+</html>
