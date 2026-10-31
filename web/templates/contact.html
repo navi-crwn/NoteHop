@@ -4,7 +4,7 @@
   <h1>{{.L.T "contact.title"}}</h1>
   <p class="lead muted">{{.L.T "contact.lead"}}</p>
   {{if .Contact}}<p class="card contact-card"><svg class="ico"><use href="#i-append"/></svg> {{.L.T "contact.write"}}
-    <a href="{{.ContactHref}}" rel="noopener">{{.Contact}}</a></p>
+    <a href="{{.ContactHref}}" rel="noopener"><!--email_off-->{{.Contact}}<!--/email_off--></a></p>
   {{else}}<p class="card contact-card">{{.L.T "contact.none"}}</p>{{end}}
   {{if .Repo}}<h2>{{.L.T "contact.gh_h"}}</h2>
   <ul class="contact-list">
