@@ -87,7 +87,7 @@ func clipRunes(s string, n int) string {
 }
 
 var previewTmpl = template.Must(template.New("preview").Parse(`<!doctype html>
-<html lang="id"><head><meta charset="utf-8">
+<html lang="{{.Lang}}"><head><meta charset="utf-8">
 <title>{{.Title}} · {{.Site}}</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="description" content="{{.Desc}}">
@@ -103,8 +103,11 @@ var previewTmpl = template.Must(template.New("preview").Parse(`<!doctype html>
 `))
 
 func (a *App) preview(w http.ResponseWriter, r *http.Request, title, desc string) {
+	l := a.locale(w, r)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Robots-Tag", "noindex, nofollow")
-	_ = previewTmpl.Execute(w, map[string]string{"Title": title, "Desc": desc, "Site": a.cfg.Site, "Origin": a.origin(r)})
+	_ = previewTmpl.Execute(w, struct {
+		Title, Desc, Site, Origin, Lang string
+	}{Title: title, Desc: desc, Site: a.cfg.Site, Origin: a.origin(r), Lang: l.Code})
 }
