@@ -170,14 +170,18 @@ Run the tests with `go test -race ./...` and `./scripts/e2e-all.sh`.
 
 NoteHop is part of the HOP family of privacy-respecting, self-hostable open-source apps.
 
-|  | What it does | Try it | Code |
-|---|---|---|---|
-| 🏠 **Hub** | Central account portal, HOP ID login, app launcher & status | [hel.ink](https://hel.ink) | [GitHub](https://github.com/navi-crwn/HEL.ink) |
-| 🔗 **LinkHop** | High-performance URL shortener, custom slugs, QR codes & analytics | [link.hel.ink](https://link.hel.ink) | [GitHub](https://github.com/navi-crwn/LinkHop) |
-| 🌿 **BioHop** | Link-in-bio pages with custom blocks, themes, and visitor stats | [bio.hel.ink](https://bio.hel.ink) | [GitHub](https://github.com/navi-crwn/BioHop) |
-| 🖼️ **PixelHop** | Image, video and PDF hosting: strips GPS on upload, albums, photo studio | [p.hel.ink](https://p.hel.ink) | [GitHub](https://github.com/navi-crwn/PixelHop) |
-| 📝 **NoteHop** | Notes only the people you choose can read | [note.hel.ink](https://note.hel.ink) | you are here |
+<!-- hop-family:start -->
+<!-- Generated from HEL.ink resources/hop-assets/apps.source.json; edit there, then run scripts/hop_assets.py build. -->
+| App | Address | Repository | What it does |
+| --- | --- | --- | --- |
+| **HOP ID** | [hel.ink](https://hel.ink) · accounts at `hub.hel.ink` | [navi-crwn/HEL.ink](https://github.com/navi-crwn/HEL.ink) | One account for every HOP app. |
+| **LinkHop** | [link.hel.ink](https://link.hel.ink) · `hel.ink/l/…` | [navi-crwn/LinkHop](https://github.com/navi-crwn/LinkHop) | Short links, QR codes and click analytics. |
+| **BioHop** | [bio.hel.ink](https://bio.hel.ink) · `hel.ink/b/…` | [navi-crwn/BioHop](https://github.com/navi-crwn/BioHop) | One link-in-bio page for everything you do. |
+| **PixelHop** | [p.hel.ink](https://p.hel.ink) | [navi-crwn/PixelHop](https://github.com/navi-crwn/PixelHop) | Image hosting with albums and direct links. |
+| **NoteHop** | [note.hel.ink](https://note.hel.ink) · `n.hel.ink/…` | [navi-crwn/NoteHop](https://github.com/navi-crwn/NoteHop) | Encrypted notes you share with a link. |
+| **Imperium** | private (owner only) | private | The HOP control panel. |
+<!-- hop-family:end -->
 
 ---
 
-<p align="center">MIT License · <a href="docs/REFERENCE.md">Reference</a> · <a href="docs/SELF-HOSTING.md">Self-hosting</a> · <a href="CHANGELOG.md">Changelog</a><br><sub>HEL.ink family: <a href="https://github.com/navi-crwn/LinkHop">LinkHop</a> (short links) · <a href="https://github.com/navi-crwn/PixelHop">PixelHop</a> (image hosting) · <a href="https://note.hel.ink">NoteHop</a></sub></p>
+<p align="center">MIT License · <a href="docs/REFERENCE.md">Reference</a> · <a href="docs/SELF-HOSTING.md">Self-hosting</a> · <a href="CHANGELOG.md">Changelog</a><br><sub>HEL.ink family: <a href="https://github.com/navi-crwn/LinkHop">LinkHop</a> (short links) · <a href="https://github.com/navi-crwn/BioHop">BioHop</a> · <a href="https://github.com/navi-crwn/PixelHop">PixelHop</a> (image hosting) · <a href="https://note.hel.ink">NoteHop</a></sub></p>

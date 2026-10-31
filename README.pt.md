@@ -168,14 +168,20 @@ Rode os testes com `go test -race ./...` e `./scripts/e2e-all.sh`.
 
 ## A família Hop
 
-O NoteHop tem dois irmãos de código aberto feitos do mesmo jeito: gratuitos, para hospedar você mesmo e sem rastreadores.
+O NoteHop faz parte da família HOP: apps gratuitos e de código aberto, para hospedar você mesmo e sem rastreadores, que compartilham uma só conta (HOP ID).
 
-|  | O que faz | Experimente | Código |
-|---|---|---|---|
-| 🔗 **LinkHop** | Links curtos e páginas de link na bio: nomes próprios, QR codes, estatísticas e mais de 20 temas | [hel.ink](https://hel.ink) | [GitHub](https://github.com/navi-crwn/LinkHop) |
-| 🖼️ **PixelHop** | Hospedagem de imagens, vídeos e PDF em um só binário Go: remove o GPS no upload, álbuns, ShareX e um estúdio de fotos no navegador | [p.hel.ink](https://p.hel.ink) | [GitHub](https://github.com/navi-crwn/PixelHop) |
-| 📝 **NoteHop** | Notas que só as pessoas que você escolher podem ler | [note.hel.ink](https://note.hel.ink) | você está aqui |
+<!-- hop-family:start -->
+<!-- Generated from HEL.ink resources/hop-assets/apps.source.json; edit there, then run scripts/hop_assets.py build. -->
+| App | Address | Repository | What it does |
+| --- | --- | --- | --- |
+| **HOP ID** | [hel.ink](https://hel.ink) · accounts at `hub.hel.ink` | [navi-crwn/HEL.ink](https://github.com/navi-crwn/HEL.ink) | One account for every HOP app. |
+| **LinkHop** | [link.hel.ink](https://link.hel.ink) · `hel.ink/l/…` | [navi-crwn/LinkHop](https://github.com/navi-crwn/LinkHop) | Short links, QR codes and click analytics. |
+| **BioHop** | [bio.hel.ink](https://bio.hel.ink) · `hel.ink/b/…` | [navi-crwn/BioHop](https://github.com/navi-crwn/BioHop) | One link-in-bio page for everything you do. |
+| **PixelHop** | [p.hel.ink](https://p.hel.ink) | [navi-crwn/PixelHop](https://github.com/navi-crwn/PixelHop) | Image hosting with albums and direct links. |
+| **NoteHop** | [note.hel.ink](https://note.hel.ink) · `n.hel.ink/…` | [navi-crwn/NoteHop](https://github.com/navi-crwn/NoteHop) | Encrypted notes you share with a link. |
+| **Imperium** | private (owner only) | private | The HOP control panel. |
+<!-- hop-family:end -->
 
 ---
 
-<p align="center">Licença MIT · <a href="docs/REFERENCE.md">Referência</a> · <a href="docs/SELF-HOSTING.md">Hospede você mesmo</a> · <a href="CHANGELOG.md">Mudanças</a><br><sub>Da família HEL.ink: <a href="https://github.com/navi-crwn/LinkHop">LinkHop</a> (links curtos) · <a href="https://github.com/navi-crwn/PixelHop">PixelHop</a> (hospedagem de imagens) · <a href="https://note.hel.ink">NoteHop</a></sub></p>
+<p align="center">Licença MIT · <a href="docs/REFERENCE.md">Referência</a> · <a href="docs/SELF-HOSTING.md">Hospede você mesmo</a> · <a href="CHANGELOG.md">Mudanças</a><br><sub>Da família HEL.ink: <a href="https://github.com/navi-crwn/LinkHop">LinkHop</a> (links curtos) · <a href="https://github.com/navi-crwn/BioHop">BioHop</a> · <a href="https://github.com/navi-crwn/PixelHop">PixelHop</a> (hospedagem de imagens) · <a href="https://note.hel.ink">NoteHop</a></sub></p>

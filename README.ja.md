@@ -168,14 +168,20 @@ docker run -d -p 127.0.0.1:8090:8080 -v notehop:/data -e NOTEHOP_BASE_URL=https:
 
 ## Hop ファミリー
 
-NoteHop には、同じ考え方で作られたオープンソースの兄弟プロジェクトが 2 つあります。無料で、自分で設置でき、トラッカーなし。
+NoteHop は HOP ファミリーの一員です。無料・オープンソースで、自分で設置でき、トラッカーなし。ひとつのアカウント（HOP ID）を共有します。
 
-|  | できること | 試す | コード |
-|---|---|---|---|
-| 🔗 **LinkHop** | 短縮リンクとリンクインバイオのページ：独自の名前、QR コード、アクセス解析、20 以上のテーマ | [hel.ink](https://hel.ink) | [GitHub](https://github.com/navi-crwn/LinkHop) |
-| 🖼️ **PixelHop** | Go のバイナリ 1 つで画像・動画・PDF をホスティング：アップロード時に GPS を削除、アルバム、ShareX、ブラウザーで動くフォトスタジオ | [p.hel.ink](https://p.hel.ink) | [GitHub](https://github.com/navi-crwn/PixelHop) |
-| 📝 **NoteHop** | あなたが選んだ人だけが読めるノート | [note.hel.ink](https://note.hel.ink) | ここです |
+<!-- hop-family:start -->
+<!-- Generated from HEL.ink resources/hop-assets/apps.source.json; edit there, then run scripts/hop_assets.py build. -->
+| App | Address | Repository | What it does |
+| --- | --- | --- | --- |
+| **HOP ID** | [hel.ink](https://hel.ink) · accounts at `hub.hel.ink` | [navi-crwn/HEL.ink](https://github.com/navi-crwn/HEL.ink) | One account for every HOP app. |
+| **LinkHop** | [link.hel.ink](https://link.hel.ink) · `hel.ink/l/…` | [navi-crwn/LinkHop](https://github.com/navi-crwn/LinkHop) | Short links, QR codes and click analytics. |
+| **BioHop** | [bio.hel.ink](https://bio.hel.ink) · `hel.ink/b/…` | [navi-crwn/BioHop](https://github.com/navi-crwn/BioHop) | One link-in-bio page for everything you do. |
+| **PixelHop** | [p.hel.ink](https://p.hel.ink) | [navi-crwn/PixelHop](https://github.com/navi-crwn/PixelHop) | Image hosting with albums and direct links. |
+| **NoteHop** | [note.hel.ink](https://note.hel.ink) · `n.hel.ink/…` | [navi-crwn/NoteHop](https://github.com/navi-crwn/NoteHop) | Encrypted notes you share with a link. |
+| **Imperium** | private (owner only) | private | The HOP control panel. |
+<!-- hop-family:end -->
 
 ---
 
-<p align="center">MIT ライセンス · <a href="docs/REFERENCE.md">リファレンス</a> · <a href="docs/SELF-HOSTING.md">自分で設置</a> · <a href="CHANGELOG.md">変更履歴</a><br><sub>HEL.ink ファミリー：<a href="https://github.com/navi-crwn/LinkHop">LinkHop</a>（短縮リンク）· <a href="https://github.com/navi-crwn/PixelHop">PixelHop</a>（画像ホスティング）· <a href="https://note.hel.ink">NoteHop</a></sub></p>
+<p align="center">MIT ライセンス · <a href="docs/REFERENCE.md">リファレンス</a> · <a href="docs/SELF-HOSTING.md">自分で設置</a> · <a href="CHANGELOG.md">変更履歴</a><br><sub>HEL.ink ファミリー：<a href="https://github.com/navi-crwn/LinkHop">LinkHop</a>（短縮リンク）· <a href="https://github.com/navi-crwn/BioHop">BioHop</a> · <a href="https://github.com/navi-crwn/PixelHop">PixelHop</a>（画像ホスティング）· <a href="https://note.hel.ink">NoteHop</a></sub></p>
