@@ -8,6 +8,7 @@
 
 <p align="center">
   <a href="https://note.hel.ink"><b>✍️ 在线试用</b></a> ·
+  <a href="https://navi-crwn.github.io/NoteHop/">Website</a> ·
   <a href="#run-your-own">自己部署</a> ·
   <a href="#features">功能</a> ·
   <a href="#faq">常见问题</a> ·

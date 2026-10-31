@@ -8,6 +8,7 @@
 
 <p align="center">
   <a href="https://note.hel.ink"><b>✍️ Pruébalo en línea</b></a> ·
+  <a href="https://navi-crwn.github.io/NoteHop/">Website</a> ·
   <a href="#run-your-own">Instálalo tú</a> ·
   <a href="#features">Funciones</a> ·
   <a href="#faq">Preguntas</a> ·

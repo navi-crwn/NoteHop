@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://navi-crwn.github.io/NoteHop/sitemap.xml

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NoteHop — Catatan terenkripsi ujung-ke-ujung dengan hapus otomatis</title>
+  <meta name="description" content="Tulis catatan, kunci di peramban dengan AES-256-GCM, dan bagikan tautan di n.hel.ink. Zero-knowledge, dapat hapus otomatis, bagian dari keluarga HOP.">
+  <link rel="canonical" href="https://navi-crwn.github.io/NoteHop/id/">
+  <link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/styles.css">
+  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/fonts.css" integrity="sha384-T1Y2aaMQ8CSfi7J2t9d1ZAbVcQ1FcO27Jwn3WtNWB+UVK137YCl3hIPvz0G4K22L" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://hel.ink/hop-assets/v1/hop-float.css" integrity="sha384-sl7D409xEmIT5gkArlQLoQQ4rOkqF7tOGf1VhI/iMb7c2/s9w9NtDEjLbJMU/MQ/" crossorigin="anonymous">
+  <link rel="alternate" hreflang="x-default" href="https://navi-crwn.github.io/NoteHop/">
+  <link rel="alternate" hreflang="en" href="https://navi-crwn.github.io/NoteHop/en/">
+  <link rel="alternate" hreflang="id" href="https://navi-crwn.github.io/NoteHop/id/">
+  <link rel="alternate" hreflang="zh" href="https://navi-crwn.github.io/NoteHop/zh/">
+  <link rel="alternate" hreflang="es" href="https://navi-crwn.github.io/NoteHop/es/">
+  <link rel="alternate" hreflang="ar" href="https://navi-crwn.github.io/NoteHop/ar/">
+  <link rel="alternate" hreflang="pt" href="https://navi-crwn.github.io/NoteHop/pt/">
+  <link rel="alternate" hreflang="fr" href="https://navi-crwn.github.io/NoteHop/fr/">
+  <link rel="alternate" hreflang="ru" href="https://navi-crwn.github.io/NoteHop/ru/">
+  <link rel="alternate" hreflang="ja" href="https://navi-crwn.github.io/NoteHop/ja/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="NoteHop">
+  <meta property="og:title" content="NoteHop — Catatan terenkripsi ujung-ke-ujung dengan hapus otomatis">
+  <meta property="og:description" content="Tulis catatan, kunci di peramban dengan AES-256-GCM, dan bagikan tautan di n.hel.ink. Zero-knowledge, dapat hapus otomatis, bagian dari keluarga HOP.">
+  <meta property="og:url" content="https://navi-crwn.github.io/NoteHop/id/">
+  <meta property="og:image" content="https://navi-crwn.github.io/NoteHop/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+  <div data-hop-float></div>
+  <a class="skip" href="#main">Lewati ke konten</a>
+
+  <header class="site-header">
+    <a class="brand" href="https://navi-crwn.github.io/NoteHop/id/">
+      <img src="../assets/mark.svg" alt="" width="28" height="28">
+      <span>NoteHop</span>
+    </a>
+    <nav aria-label="Navigasi halaman">
+      <a href="#features">Fitur</a>
+      <a href="#run">Pasang mandiri</a>
+      <a href="#faq">Tanya Jawab</a>
+      <a href="#family">Keluarga HOP</a>
+    </nav>
+    <div class="header-actions">
+      <details class="langmenu"><summary aria-label="Language"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg>ID</summary><ul>
+        <li><a href="../" hreflang="en" lang="en">English<small>EN</small></a></li>
+        <li><a href="../id/" hreflang="id" lang="id" aria-current="page">Bahasa Indonesia<small>ID</small></a></li>
+        <li><a href="../zh/" hreflang="zh" lang="zh">简体中文<small>ZH</small></a></li>
+        <li><a href="../es/" hreflang="es" lang="es">Español<small>ES</small></a></li>
+        <li><a href="../ar/" hreflang="ar" lang="ar">العربية<small>AR</small></a></li>
+        <li><a href="../pt/" hreflang="pt" lang="pt">Português<small>PT</small></a></li>
+        <li><a href="../fr/" hreflang="fr" lang="fr">Français<small>FR</small></a></li>
+        <li><a href="../ru/" hreflang="ru" lang="ru">Русский<small>RU</small></a></li>
+        <li><a href="../ja/" hreflang="ja" lang="ja">日本語<small>JA</small></a></li>
+      </ul></details>
+      <button id="theme-toggle" type="button" data-action="dark" data-label-light="Tema terang" data-label-dark="Tema gelap">Tema gelap</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="hero">
+      <div>
+        <p class="kicker">HOP &middot; Catatan & dokumen terenkripsi</p>
+        <h1>Terkunci di peramban Anda, dibagikan dalam hitungan detik</h1>
+        <p class="lede">NoteHop mengenkripsi catatan Anda secara lokal dengan AES-256-GCM sebelum meninggalkan perangkat Anda. Kunci dekripsi berada di fragmen URL (#), sehingga server tidak dapat membaca data Anda. Tautan pendek bersih di n.hel.ink, open source (MIT).</p>
+        <div class="cta-row">
+          <a class="btn primary" href="https://note.hel.ink">Coba NoteHop</a>
+          <a class="btn" href="https://github.com/navi-crwn/NoteHop">Lihat kode</a>
+        </div>
+        <p class="note">Alamat aktif di halaman ini menautkan ke situs publik keluarga HOP.</p>
+      </div>
+      <div class="tile-wrap" aria-hidden="true">
+        <img class="tile" src="../assets/tile.svg" alt="" width="220" height="260">
+      </div>
+    </div>
+
+    <section id="features" aria-labelledby="features-h">
+      <h2 id="features-h">Kemampuan NoteHop</h2>
+      <ul class="features">
+        <li><strong>Enkripsi klien AES-256-GCM</strong><p>Peramban Anda mengunci teks sebelum disimpan. Kunci enkripsi berada di fragmen link (#) dan tidak pernah dikirim ke server.</p></li>
+        <li><strong>Server zero-knowledge</strong><p>Server hanya menyimpan gumpalan teks terenkripsi (ciphertext). Operator server atau dump database tetap tidak bisa membaca catatan Anda.</p></li>
+        <li><strong>Hapus otomatis & bakar setelah dibaca</strong><p>Catatan dapat menghapus diri seketika setelah dibuka sekali, atau kedaluwarsa otomatis setelah 10 menit, 1 jam, 1 hari, atau 30 hari.</p></li>
+        <li><strong>Hak akses bertingkat per tautan</strong><p>Terbitkan tautan berbeda untuk catatan yang sama: pemilik, baca saja, dapat mengedit, balas saja, atau centang saja pada daftar tugas.</p></li>
+        <li><strong>Kolaborasi langsung real-time</strong><p>Menulis bersama secara langsung melalui relay WebSocket dengan enkripsi ujung-ke-ujung yang tetap terjaga antar kolaborator.</p></li>
+        <li><strong>Beragam format catatan</strong><p>Teks Markdown, daftar periksa interaktif, jajak pendapat, formulir, catatan kode berpewarna sintaks, dan catatan web terisolasi.</p></li>
+        <li><strong>Satu login untuk semua app: HOP ID</strong><p>Masuk mulus dengan akun single sign-on HOP ID di seluruh keluarga aplikasi HOP, atau gunakan NoteHop tanpa akun sebagai tamu.</p></li>
+        <li><strong>Biner tunggal Go mandiri</strong><p>Dikompilasi menjadi file eksekusi Go ringan (~16 MB) dengan SQLite bawaan, tanpa ketergantungan runtime eksternal.</p></li>
+      </ul>
+    </section>
+
+    <section id="run" aria-labelledby="run-h">
+      <h2 id="run-h">Pasang mandiri</h2>
+      <div class="panel">
+        <p>NoteHop dapat di-host sendiri. Bangun dan jalankan biner tunggal dalam hitungan detik:</p>
+        <pre><code>git clone https://github.com/navi-crwn/NoteHop.git
+cd NoteHop
+go build -o notehop ./cmd/notehop
+./notehop</code></pre>
+        <h3>Prasyarat</h3>
+        <p>Go 1.22+ dan SQLite. Panduan lengkap, instruksi Docker, dan pengujian tersedia di README GitHub.</p>
+        <h3>Konfigurasi login</h3>
+        <p>Login menggunakan SSO HOP ID. Set NOTEHOP_SSO_HUB_URL dan NOTEHOP_SSO_SECRET di lingkungan Anda sebelum masuk, atau jalankan mode mandiri.</p>
+        <h3>Basis Data & Penyimpanan</h3>
+        <p>NoteHop menggunakan basis data SQLite bawaan yang disimpan secara lokal. Pencadangan dapat dilakukan saat berjalan dengan perintah notehop backup.</p>
+        <p class="note">Mode mandiri dan SSO didukung penuh dalam instalasi mandiri.</p>
+      </div>
+    </section>
+
+    <section id="faq" aria-labelledby="faq-h">
+      <h2 id="faq-h">Tanya Jawab</h2>
+      <details>
+        <summary>Bisakah server atau pengelola membaca catatan saya?</summary>
+        <p>Tidak. Enkripsi berlangsung sepenuhnya di dalam peramban web Anda via Web Crypto AES-256-GCM. Kunci rahasia berada di hash URL (#) dan tidak pernah dikirim ke server.</p>
+      </details>
+      <details>
+        <summary>Apa yang terjadi jika saya kehilangan tautan catatan saya?</summary>
+        <p>Karena NoteHop menerapkan zero-knowledge tanpa kunci master atau backdoor, kehilangan tautan berarti catatan tersebut tidak dapat dipulihkan atau didekripsi oleh siapa pun.</p>
+      </details>
+      <details>
+        <summary>Bisakah saya meng-host NoteHop di server saya sendiri?</summary>
+        <p>Bisa. NoteHop dikompilasi menjadi satu biner mandiri Go tanpa ketergantungan runtime eksternal. Lihat petunjuk di README repo.</p>
+      </details>
+      <details>
+        <summary>Di mana saya dapat melaporkan masalah atau bug?</summary>
+        <p>Buka issue di GitHub atau kirim surel ke security@hel.ink untuk pelaporan kerentanan secara bertanggung jawab.</p>
+      </details>
+    </section>
+
+    <section id="family" aria-labelledby="family-h">
+      <h2 id="family-h">Keluarga HOP</h2>
+      <p>NoteHop adalah bagian dari HOP, rangkaian alat ringan yang dapat di-host mandiri dengan akun terpadu.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th scope="col">Aplikasi</th><th scope="col">Fungsi</th><th scope="col">Layanan aktif</th><th scope="col">Kode sumber</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>HOP ID</strong></td><td>Single sign-on, pusat akun & gerbang keamanan</td><td><code>hel.ink</code> <span class="live">&middot; <code>hub.hel.ink</code></span></td><td><a href="https://github.com/navi-crwn/HEL.ink">navi-crwn/HEL.ink</a></td></tr>
+            <tr><td><strong>LinkHop</strong></td><td>Pemendek tautan cepat dan ramah privasi dengan analitik</td><td><code>link.hel.ink</code> <span class="live">&middot; <code>hel.ink/l/{slug}</code></span></td><td><a href="https://github.com/navi-crwn/LinkHop">navi-crwn/LinkHop</a></td></tr>
+            <tr><td><strong>BioHop</strong></td><td>Halaman link-in-bio ringan dengan QR dan tema</td><td><code>bio.hel.ink</code> <span class="live">&middot; <code>hel.ink/b/{slug}</code></span></td><td><a href="https://github.com/navi-crwn/BioHop">navi-crwn/BioHop</a></td></tr>
+            <tr><td><strong>PixelHop</strong></td><td>Hosting gambar cepat dan studio foto privat</td><td><code>pixel.hel.ink</code> <span class="live">&middot; <code>p.hel.ink</code></span></td><td><a href="https://github.com/navi-crwn/PixelHop">navi-crwn/PixelHop</a></td></tr>
+            <tr><td><strong>NoteHop</strong></td><td>Catatan terenkripsi ujung-ke-ujung dengan hapus otomatis</td><td><code>note.hel.ink</code> <span class="live">&middot; <code>n.hel.ink</code></span></td><td>navi-crwn/NoteHop (repo ini)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="help" aria-labelledby="help-h">
+      <h2 id="help-h">Butuh bantuan atau menemukan kendala?</h2>
+      <p>Pertanyaan, saran, dan laporan bug dapat disampaikan di <a href="https://github.com/navi-crwn/NoteHop/issues">pelacak masalah GitHub</a>.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <p><strong>NoteHop</strong> &middot; Catatan terenkripsi ujung-ke-ujung dengan hapus otomatis</p>
+      <p>Open source di bawah lisensi <a href="https://github.com/navi-crwn/NoteHop/blob/main/LICENSE">MIT</a>. Dihost di<a href="https://github.com/navi-crwn/NoteHop">GitHub</a>dan aktif di<a href="https://note.hel.ink">note.hel.ink</a></p>
+    </div>
+  </footer>
+
+  <script src="https://hel.ink/hop-assets/v1/hop-float.js" integrity="sha384-kNviPsMEO9lt9+b4n2S5lX6zHRVnePzGuj9VdgCETTsQwzt/5YJRnv842Xg0gRC+" crossorigin="anonymous" defer></script>
+  <script src="../assets/theme.js"></script>
+</body>
+</html>
