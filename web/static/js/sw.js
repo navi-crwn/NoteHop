@@ -15,6 +15,10 @@ self.addEventListener('activate', function (e) {
   }).then(function () { return self.clients.claim(); }));
 });
 
+// Pages that are never kept: sign-in steps, and the plain-text and mock-API
+// addresses, which serve a public note's text (and use up a burn note's view).
+var NEVER_KEEP = /^\/(auth|logout|raw|mock|in)(\/|$)/;
+
 function json(obj, status) {
   return new Response(JSON.stringify(obj), { status: status || 200, headers: { 'Content-Type': 'application/json' } });
 }
@@ -32,14 +36,15 @@ self.addEventListener('fetch', function (e) {
   if (url.pathname.indexOf('/static/') === 0 || url.pathname.indexOf('/i18n/') === 0) {
     return e.respondWith(caches.match(req).then(function (hit) {
       return hit || fetch(req).then(function (res) {
-        if (res.ok) { var copy = res.clone(); caches.open(SHELL).then(function (c) { c.put(req, copy); }); }
+        // Only whole responses: cache.put() rejects a 206 (a Range request).
+        if (res.status === 200) { var copy = res.clone(); caches.open(SHELL).then(function (c) { c.put(req, copy); }); }
         return res;
       });
     }));
   }
   if (req.mode === 'navigate') {
     e.respondWith(fetch(req).then(function (res) {
-      if (res.ok && !/^\/(auth|logout)/.test(url.pathname)) { var copy = res.clone(); caches.open(SHELL).then(function (c) { c.put(req, copy); }); }
+      if (res.status === 200 && !NEVER_KEEP.test(url.pathname)) { var copy = res.clone(); caches.open(SHELL).then(function (c) { c.put(req, copy); }); }
       return res;
     }, function () {
       return caches.match(req, { ignoreSearch: true }).then(function (hit) { return hit || caches.match('/offline'); });
