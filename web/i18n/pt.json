@@ -1481,5 +1481,6 @@
   "changelog.pr": "Pull request integrado",
   "changelog.tag": "Versão",
   "changelog.apps": "Todos os aplicativos",
-  "changelog.pagination": "Paginação"
+  "changelog.pagination": "Paginação",
+  "dash.family": "Família HOP"
 }

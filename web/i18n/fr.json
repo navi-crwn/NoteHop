@@ -1481,5 +1481,6 @@
   "changelog.pr": "Demande intégrée",
   "changelog.tag": "Version",
   "changelog.apps": "Toutes les applications",
-  "changelog.pagination": "Pagination"
+  "changelog.pagination": "Pagination",
+  "dash.family": "Famille HOP"
 }

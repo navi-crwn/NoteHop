@@ -1481,5 +1481,6 @@
   "changelog.pr": "Merged pull request",
   "changelog.tag": "Release",
   "changelog.apps": "All apps",
-  "changelog.pagination": "Pagination"
+  "changelog.pagination": "Pagination",
+  "dash.family": "HOP family"
 }
