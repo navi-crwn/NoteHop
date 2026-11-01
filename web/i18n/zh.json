@@ -1481,5 +1481,6 @@
   "changelog.pr": "已合并的拉取请求",
   "changelog.tag": "版本发布",
   "changelog.apps": "所有应用",
-  "changelog.pagination": "分页"
+  "changelog.pagination": "分页",
+  "dash.family": "HOP 家族"
 }

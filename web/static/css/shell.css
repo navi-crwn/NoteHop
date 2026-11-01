@@ -1,0 +1,42 @@
+/* The signed-in dashboard shell: the same chrome as the other HOP dashboards.
+   A floating sidebar (this app's menu, then the HOP family), a top bar of settings-type controls, a compact footer. */
+.shell { --side: 264px; min-height: 100vh; background: radial-gradient(40rem 26rem at 6% -6%, color-mix(in srgb, var(--violet) 16%, transparent), transparent 60%), radial-gradient(34rem 24rem at 100% 0%, color-mix(in srgb, var(--cyan) 12%, transparent), transparent 60%); }
+.shell-side { position: fixed; inset: 12px auto 12px 12px; width: calc(var(--side) - 12px); z-index: 60; display: flex; flex-direction: column; padding: 8px 10px 10px; border: 1px solid var(--line); border-radius: 24px; background: var(--panel); box-shadow: var(--shadow); overflow-y: auto; overscroll-behavior: contain; transition: transform .28s cubic-bezier(.2, .8, .2, 1); }
+.shell-brand { display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 10px; font-weight: 800; font-size: 1.1rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+.shell-nav { display: grid; gap: 2px; margin-bottom: 6px; }
+.shell-nav a { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border-radius: 12px; color: var(--muted); font-size: .92rem; font-weight: 550; text-decoration: none; transition: background-color .15s, color .15s; }
+.shell-nav a svg { width: 18px; height: 18px; flex: none; }
+.shell-nav a img { width: 18px; height: 18px; flex: none; border-radius: 5px; object-fit: contain; }
+.shell-nav a .out { width: 14px; height: 14px; margin-inline-start: auto; opacity: .45; }
+.shell-nav a:hover { background: var(--panel-2); color: var(--text); }
+.shell-nav a[aria-current="page"] { background: var(--panel-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line); }
+.shell-nav a[aria-current="page"] svg { color: var(--cyan); }
+.shell-label { margin: 14px 12px 6px; font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+.shell-side-foot { margin: auto 0 0; padding: 12px 12px 4px; border-top: 1px solid var(--line); font-size: .78rem; color: var(--faint); }
+.shell-side-foot a { color: inherit; }
+.shell-side-foot a:hover { color: var(--text); }
+.shell-body { margin-inline-start: var(--side); min-height: 100vh; display: flex; flex-direction: column; min-width: 0; }
+.shell-top { position: sticky; top: 12px; z-index: 40; display: flex; align-items: center; gap: 10px; height: 56px; margin: 12px 12px 0; padding: 0 10px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 88%, transparent); backdrop-filter: blur(14px); }
+.shell-title { margin: 0 0 0 4px; font-weight: 700; font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shell-tools { margin-inline-start: auto; display: flex; align-items: center; gap: 6px; }
+.shell-tools .menu-list { top: 46px; }
+.shell-burger { display: none; }
+.shell-body main { flex: 1; padding: 22px 12px 12px; min-width: 0; }
+.shell-body main > .wrap, .shell-body main .wrap { max-width: 1120px; }
+.shell .member-nav { display: none; }
+.shell-foot { margin: 8px 12px 12px; padding: 18px 12px; border-top: 1px solid var(--line); text-align: center; font-size: .82rem; color: var(--faint); }
+.shell-foot nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin-bottom: 8px; }
+.shell-foot a { color: var(--muted); text-decoration: none; }
+.shell-foot a:hover { color: var(--text); }
+.shell-foot p { margin: 0; }
+.shell-scrim { position: fixed; inset: 0; z-index: 55; background: rgba(2, 6, 23, .55); }
+@media (max-width: 1023px) {
+  .shell { --side: 0px; }
+  .shell-side { width: min(300px, calc(100vw - 24px)); transform: translateX(calc(-100% - 24px)); }
+  [dir="rtl"] .shell-side { transform: translateX(calc(100% + 24px)); inset: 12px 12px 12px auto; }
+  .shell.open .shell-side { transform: none; }
+  .shell-burger { display: inline-grid; }
+  .shell-body { margin-inline-start: 0; }
+  .shell-tools .btn.primary span { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .shell-side { transition: none; } }
