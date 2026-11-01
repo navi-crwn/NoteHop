@@ -14,9 +14,19 @@
   </div>
   <p class="hint start-desc" id="start-desc">{{.L.T "start.note_d"}}</p>
   <form id="compose" autocomplete="off">
+  <!-- Basic or encrypted: the one choice that changes what the server can read -->
+  <div class="kind" role="radiogroup" aria-label="{{.L.T "kind.label"}}" id="kind">
+    <label class="kind-opt"><input type="radio" name="kind" value="encrypted" checked><svg><use href="#i-lock"/></svg><span><b>{{.L.T "kind.enc"}}</b><small>{{.L.T "kind.enc_d"}}</small></span></label>
+    <label class="kind-opt"><input type="radio" name="kind" value="basic"><svg><use href="#i-doc"/></svg><span><b>{{.L.T "kind.basic"}}</b><small>{{.L.T "kind.basic_d"}}</small></span></label>
+  </div>
     <div class="card editor-card">
       <input type="text" id="title" class="title-input" dir="auto" placeholder="{{.L.T "new.title_ph"}}" maxlength="200" aria-label="{{.L.T "new.title_label"}}">
       {{template "editor" .}}
+      <div class="slug-row hide" id="basic-slug">
+        <label for="slug">{{.L.T "kind.slug"}}</label>
+        <div class="prefix"><span>{{.LinkHost}}/</span><input type="text" id="slug" placeholder="{{.L.T "new.slug_ph"}}" maxlength="48" pattern="[a-z0-9][a-z0-9\-]{2,47}" autocapitalize="off" spellcheck="false"></div>
+        <span class="hint" id="slug-hint"></span>
+      </div>
       <!-- one bar under the editor: each button opens a small menu (a sheet on phones) -->
       <div class="share-bar" role="group" aria-label="{{.L.T "new.options"}}">
         <details class="pick" id="opt-who">
@@ -117,12 +127,7 @@
                 <textarea id="decoy-text" rows="3" dir="auto"></textarea>
                 <span class="hint">{{.L.T "new.decoy_hint"}}</span>
               </div>
-              <label class="toggle" data-tech="slug"><input type="checkbox" data-feature="slug"><span><b>{{.L.T "feat.slug"}}</b><small>{{.L.T "ex.slug"}}</small></span></label>
-              <div class="feat hide" data-panel="slug">
-                <label for="slug">{{.L.T "feat.slug"}}</label>
-                <div class="prefix"><span>{{.LinkHost}}/</span><input type="text" id="slug" placeholder="{{.L.T "new.slug_ph"}}" maxlength="48" pattern="[a-z0-9][a-z0-9\-]{2,47}" autocapitalize="off" spellcheck="false"></div>
-                <span class="hint" id="slug-hint"></span>
-              </div>
+            </div>
             </div>
             <div class="adv-group">
               <h3><svg class="ico"><use href="#i-users"/></svg> {{.L.T "grp.together"}}</h3>
@@ -147,7 +152,7 @@
             </div>
             <details class="adv-group adv-sub" id="expert-box">
               <summary><svg class="ico"><use href="#i-code"/></svg> {{.L.T "grp.expert"}}</summary>
-              <label class="toggle" data-tech="E2E · AES-256-GCM"><input type="checkbox" id="encrypt" data-feature="encrypt" checked><span><b>{{.L.T "feat.e2e"}}</b><small>{{.L.T "ex.e2e"}}</small></span></label>
+              <input type="checkbox" id="encrypt" data-feature="encrypt" checked hidden><!-- set by the type choice above -->
               <label class="toggle"><input type="checkbox" id="expert"><span><b>{{.L.T "new.expert"}}</b></span></label>
               <a class="small" href="/faq">{{.L.T "new.faq_more"}}</a>
             </details>
