@@ -165,6 +165,7 @@ func (a *App) requireAdmin(w http.ResponseWriter, x access) bool {
 // ---------- create ----------
 
 type createReq struct {
+	UploadDraft    string `json:"upload_draft"`
 	Encrypted      bool   `json:"encrypted"`
 	Password       bool   `json:"password"`
 	Salt           string `json:"salt"`
@@ -200,6 +201,8 @@ func (b burnReq) valid() bool {
 
 func (q createReq) invalid() string {
 	switch {
+	case q.UploadDraft != "" && !keyRe.MatchString(q.UploadDraft):
+		return "err.files_note"
 	case !validMode(q.Mode):
 		return "err.bad_mode"
 	case !validContent(q.Encrypted, q.Content, maxContent, "t", "b"):
@@ -264,6 +267,9 @@ func (a *App) apiCreate(w http.ResponseWriter, r *http.Request) {
 		MaxViews:       q.MaxViews,
 		ContentWarning: cw,
 		WarningReason:  clip(strings.TrimSpace(q.WarningReason), 255),
+	}
+	if q.UploadDraft != "" {
+		n.UploadDraft = "draft:" + hashHex(q.UploadDraft)
 	}
 	if q.Password {
 		n.Salt = q.Salt

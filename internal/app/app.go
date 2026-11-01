@@ -28,32 +28,35 @@ import (
 )
 
 type Config struct {
-	Site          string
-	BaseURL       string
-	SecureCookies bool
-	TrustProxy    bool
-	Registration  bool
-	SSOURL        string   // account server for single sign-on; empty turns it off
-	SSOSecret     string   // shared with the account server, 32+ characters
-	SSOName       string   // shown on the button: "Continue with <name>"
-	SSOClient     string   // this app's name at the account server (/sso/<client>)
-	SSOProviders  []Link   // extra buttons straight to a provider: Name shown, URL is its id (/sso/<client>/<id>)
-	Links         []Link   // related sites in the footer
-	ShareURL      string   // optional second domain for share links; needs BaseURL
-	FileMB        int      // largest attachment in MB; 0 turns attachments off
-	FilesTotalMB  int      // disk budget for all live attachments; 0 = no limit
-	FilesPerIPMB  int      // attachments one address may upload per 24 hours; 0 = no limit
-	AI            string   // writing help: "on" (on-device + own API key), "device" (on-device only), "off"
-	GitHub        string   // "owner/name" of the source repository, for the home page's numbers; "-" hides them
-	AIOrigins     []string // extra API origins for "Other" (OpenAI-compatible) providers, e.g. a company proxy
-	PrivateHooks  bool     // let Watch webhooks reach private/loopback addresses (and plain http)
-	TelegramToken string   // bot token from @BotFather; empty turns the bot off
-	Admins        []string // usernames given the admin role at start, if those accounts exist (NOTEHOP_ADMINS)
-	Reserved      []string // extra reserved names, e.g. upcoming campaigns
-	Contact       string   // shown on /contact: an email address or URL
-	HopClients    []string // apps that may call /hop/* with the SSO secret: the control center and the account server
-	SSHAddr       string   // where SSH for public notes listens; empty = off (reported to the control center only)
-	Version       string   // build version, for /hop/health
+	Site           string
+	BaseURL        string
+	SecureCookies  bool
+	TrustProxy     bool
+	Registration   bool
+	SSOURL         string // account server for single sign-on; empty turns it off
+	SSOSecret      string // shared with the account server, 32+ characters
+	SSOName        string // shown on the button: "Continue with <name>"
+	SSOClient      string // this app's name at the account server (/sso/<client>)
+	SSOProviders   []Link // extra buttons straight to a provider: Name shown, URL is its id (/sso/<client>/<id>)
+	Links          []Link // related sites in the footer
+	ShareURL       string // optional second domain for share links; needs BaseURL
+	FileMB         int    // largest attachment in MB; 0 turns attachments off
+	FilesTotalMB   int    // shared attachment budget; capped at 10240 MB
+	StoragePath    string // filesystem holding SQLite, including its WAL
+	MinFreeMB      int
+	MinFreePercent int
+	FilesPerIPMB   int      // attachments one address may upload per 24 hours; 0 = no limit
+	AI             string   // writing help: "on" (on-device + own API key), "device" (on-device only), "off"
+	GitHub         string   // "owner/name" of the source repository, for the home page's numbers; "-" hides them
+	AIOrigins      []string // extra API origins for "Other" (OpenAI-compatible) providers, e.g. a company proxy
+	PrivateHooks   bool     // let Watch webhooks reach private/loopback addresses (and plain http)
+	TelegramToken  string   // bot token from @BotFather; empty turns the bot off
+	Admins         []string // usernames given the admin role at start, if those accounts exist (NOTEHOP_ADMINS)
+	Reserved       []string // extra reserved names, e.g. upcoming campaigns
+	Contact        string   // shown on /contact: an email address or URL
+	HopClients     []string // apps that may call /hop/* with the SSO secret: the control center and the account server
+	SSHAddr        string   // where SSH for public notes listens; empty = off (reported to the control center only)
+	Version        string   // build version, for /hop/health
 }
 
 // Link is a related site shown in the footer (NOTEHOP_LINKS="Name=https://…").
@@ -91,9 +94,20 @@ type App struct {
 	nonces    hop.Nonces // signed requests from the control center work once
 	started   time.Time  // for /hop/health uptime
 	settings  sync.Map   // run-time settings from the control center (key → value), mirrors the settings table
+	uploadMu  sync.Mutex
+	space     func(string) (int64, int64)
 }
 
 func New(cfg Config, d *db.DB) (*App, error) {
+	if cfg.FilesTotalMB <= 0 || cfg.FilesTotalMB > 10240 {
+		cfg.FilesTotalMB = 10240
+	}
+	if cfg.FileMB > 5 {
+		cfg.FileMB = 5
+	}
+	if cfg.StoragePath == "" {
+		cfg.StoragePath = "."
+	}
 	if cfg.Site == "" {
 		cfg.Site = "NoteHop"
 	}
@@ -101,6 +115,7 @@ func New(cfg Config, d *db.DB) (*App, error) {
 		cfg.HopClients = []string{"imperium", "helink"} // the control center and the account server
 	}
 	a := &App{cfg: cfg, db: d, limit: newLimiter(), quota: &dayQuota{m: map[string]*dayUse{}}, used: usedTickets{m: map[string]int64{}}, tickets: recoveryTickets{m: map[string]recoveryTicket{}}}
+	a.space = diskSpace
 	if err := a.loadTemplates(); err != nil {
 		return nil, err
 	}
@@ -216,6 +231,8 @@ func (a *App) routes() {
 	m.HandleFunc("POST /in/{inbox}", a.apiInbox)
 	m.HandleFunc("POST /api/telegram/{secret}", a.apiTelegram)
 	m.HandleFunc("POST /api/files", a.apiUpload)
+	m.HandleFunc("POST /api/n/{token}/files", a.apiUpload)
+	m.HandleFunc("GET /api/files/status", a.apiFileStatus)
 	m.HandleFunc("GET /api/files/{id}", a.apiFile)
 	m.HandleFunc("GET /api/margins/{ref}", a.apiMargin)
 	m.HandleFunc("PUT /api/margins/{ref}", a.apiMargin)

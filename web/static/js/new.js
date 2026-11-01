@@ -6,6 +6,7 @@
   var burnKeys = [];
   var ed = NHEditor($('[data-editor]'), {
     onSave: function () { $('#create').click(); },
+    canUpload: function () { return !btn.disabled; },
     onBurnKey: function (k) { burnKeys.push(k); }
   });
   var form = $('#compose'), err = $('#compose-err'), btn = $('#create');
@@ -254,6 +255,7 @@
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     err.classList.add('hide');
+    if (ed.uploading) return fail(NH.t('file.uploading', { n: 1 }));
     var title = $('#title').value.trim(), body = ed.value;
     if (!title && !body.trim()) return fail(NH.t('new.empty'));
     var encrypted = on('encrypt'), password = encrypted && on('password') ? $('#password').value : '';
@@ -289,6 +291,7 @@
         }
         return NH.api('POST', '/api/notes', {
           encrypted: encrypted, password: !!password, salt: salt, content: r[0], mode: mode,
+          upload_draft: $('[data-editor]').dataset.uploadDraft,
           slug: on('slug') ? slug.value.trim() : '', expires_in: expiresIn, max_views: on('burn') ? +$('#burn').value : 0,
           open_at: openAt, lock_at: lockAt, admin: admin, write: keys.write, owner_blob: r[1],
           burns: burns, sign_off: on('signoff'), decoy: decoy,

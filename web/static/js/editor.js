@@ -288,22 +288,50 @@
     }
 
     // ---------- attachments ----------
+    var uploadDraft = NHC.newKey();
+    root.dataset.uploadDraft = uploadDraft;
+    var storageWarning = NH.h('p', { role: 'status', hidden: true });
+    root.appendChild(storageWarning);
+    var storageBlocked = false, attaching = false;
+    function refreshStorage() {
+      if (!root.isConnected) return;
+      NH.api('GET', '/api/files/status').then(function (s) {
+        storageBlocked = !s.available;
+        storageWarning.hidden = s.available;
+        storageWarning.textContent = s.code ? NH.t(s.code) : '';
+        picker.disabled = storageBlocked;
+        NH.$$('[data-cmd="file"]', root).forEach(function (b) { b.disabled = storageBlocked; });
+      }).catch(function () {});
+    }
     function attach(files, pasted) {
       if (!window.NHFiles) return;
+      if (storageBlocked) return NH.toast(storageWarning.textContent, 'err');
+      if (attaching) return;
+      if (opts.canUpload && !opts.canUpload()) return;
+      attaching = true;
       var s = ta.selectionStart, e = ta.selectionEnd;
       files = Array.prototype.slice.call(files, 0, 10);
       NH.toast(NH.t('file.uploading', { n: files.length }));
       files.reduce(function (p, f) {
-        return p.then(function (out) { return NHFiles.upload(f, pasted).then(function (md) { return out.concat(md); }); });
+        return p.then(function () {
+          var target = opts.uploadTarget ? opts.uploadTarget() : { url: '/api/files', headers: { 'X-Upload-Draft': uploadDraft } };
+          return NHFiles.upload(f, pasted, target).then(function (md) {
+            // Keep successful attachments if a later file exceeds the budget.
+            ta.focus(); ta.setSelectionRange(s, e); insertBlock(md + '\n' + CARET);
+            s = ta.selectionStart; e = ta.selectionEnd;
+          });
+        });
       }, Promise.resolve([])).then(function (mds) {
-        ta.focus();
-        ta.setSelectionRange(s, e);
-        insertBlock(mds.join('\n') + '\n' + CARET);
         NH.toast(NH.t('file.uploaded'), 'ok');
-      }, function (x) { NH.toast(x.message, 'err'); });
+      }, function (x) { NH.toast(x.message, 'err'); }).finally(function () { attaching = false; refreshStorage(); });
     }
     var picker = NH.h('input.hide', { type: 'file', multiple: true });
     root.appendChild(picker);
+    refreshStorage();
+    var storageTimer = setInterval(function () {
+      if (!root.isConnected) return clearInterval(storageTimer);
+      if (!document.hidden) refreshStorage();
+    }, 30000);
     picker.addEventListener('change', function () { if (picker.files.length) attach(picker.files, false); picker.value = ''; });
     ta.addEventListener('dragover', function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') !== -1) e.preventDefault(); });
     ta.addEventListener('drop', function (e) {
@@ -617,6 +645,7 @@
 
     var api = {
       get value() { return type === 'web' && web ? web.value() : ta.value; },
+      get uploading() { return attaching; },
       set value(v) { if (type === 'web' && web) web.load(v); else ta.value = v; refresh(); }, // programmatic: not a user edit
       focus: function () { ta.focus(); },
       palette: function () { openPalette(); },

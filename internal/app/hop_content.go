@@ -435,7 +435,8 @@ func (a *App) hopFiles(w http.ResponseWriter, r *http.Request, _ []byte) {
 		return
 	}
 	hopOK(w, map[string]any{"on": a.cfg.FileMB > 0, "count": count, "bytes": bytes, "budget_bytes": int64(a.cfg.FilesTotalMB) << 20,
-		"file_mb": a.cfg.FileMB, "per_ip_mb": a.cfg.FilesPerIPMB, "ttl_hours": int(fileTTL.Hours())})
+		"file_mb": a.cfg.FileMB, "per_ip_mb": a.cfg.FilesPerIPMB, "ttl_hours": int(fileTTL.Hours()),
+		"note_limit_bytes": 5 << 20, "uploads_available": a.cfg.FileMB > 0 && bytes < int64(a.cfg.FilesTotalMB)<<20 && a.storageAvailable(int64(a.cfg.FileMB)<<20)})
 }
 
 func (a *App) hopRealtime(w http.ResponseWriter, r *http.Request, _ []byte) {

@@ -68,7 +68,7 @@ func (a *App) secure(next http.Handler) http.Handler {
 			switch {
 			case r.URL.Path == "/api/notes":
 				bucket, rate = "c", 30
-			case r.URL.Path == "/api/files":
+			case r.URL.Path == "/api/files" || (strings.HasPrefix(r.URL.Path, "/api/n/") && strings.HasSuffix(r.URL.Path, "/files")):
 				bucket, rate = "f", 20
 			case strings.HasPrefix(r.URL.Path, "/in/"):
 				bucket, rate = "i", 60

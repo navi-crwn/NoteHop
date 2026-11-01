@@ -14,7 +14,10 @@ import (
 
 func upload(t *testing.T, srv *httptest.Server, body []byte) (int, map[string]any) {
 	t.Helper()
-	res, err := http.Post(srv.URL+"/api/files", "application/octet-stream", bytes.NewReader(body))
+	req, _ := http.NewRequest("POST", srv.URL+"/api/files", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/octet-stream")
+	req.Header.Set("X-Upload-Draft", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}
