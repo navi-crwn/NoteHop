@@ -4,3 +4,12 @@
 *.db-shm
 *.db-wal
 .DS_Store
+
+# Written by install.sh / update.sh
+/start.sh
+/backups/
+/.env.backup-*
+/compose.local.yml
+/deploy/generated/
+/bin/
+/data/
