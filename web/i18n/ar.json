@@ -1481,5 +1481,6 @@
   "changelog.pr": "طلب دمج مكتمل",
   "changelog.tag": "إصدار",
   "changelog.apps": "كل التطبيقات",
-  "changelog.pagination": "التنقل بين الصفحات"
+  "changelog.pagination": "التنقل بين الصفحات",
+  "dash.family": "عائلة HOP"
 }

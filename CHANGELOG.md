@@ -2,6 +2,12 @@
 
 What changed in NoteHop, newest first. Each entry links to its pull request.
 
+## [Unreleased]
+
+### Dashboard chrome
+- The signed-in dashboard (My notes, Vault key) has the same chrome as the other HOP dashboards: a sidebar with this app's menu and the HOP family (HOP ID, LinkHop, BioHop, PixelHop, with their marks), a top bar of settings-type controls (new note, language, theme, account menu) and a compact footer. The app grid is no longer in that top bar.
+- The footer on every page spreads its five columns evenly; a flex rule had packed them to the left.
+
 ## 2026-10-28
 
 ### Notes at /name, short share links ([short-links-redirect](https://github.com/navi-crwn/NoteHop/tree/short-links-redirect))

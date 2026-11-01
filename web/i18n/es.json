@@ -1481,5 +1481,6 @@
   "changelog.pr": "Solicitud fusionada",
   "changelog.tag": "Versión",
   "changelog.apps": "Todas las aplicaciones",
-  "changelog.pagination": "Paginación"
+  "changelog.pagination": "Paginación",
+  "dash.family": "Familia HOP"
 }
