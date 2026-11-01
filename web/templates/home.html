@@ -16,7 +16,7 @@
     </div>
     <figure class="h-art">
       <img src="/static/img/home/hero.webp?v={{.Asset}}" alt="" width="560" height="560" fetchpriority="high">
-      <canvas id="h3d" aria-label="{{.L.T "home.h_3d"}}"></canvas>
+      <canvas id="h3d" data-hop-hero="notehop" tabindex="0" aria-label="{{.L.T "home.h_3d"}}"></canvas>
       <figcaption class="h-drag">{{.L.T "home.h_drag"}}</figcaption>
     </figure>
   </section>
@@ -203,7 +203,7 @@
 {{end}}
 {{define "scripts"}}
 <script src="/static/js/crypto.js?v={{.Asset}}"></script>
-<script src="/static/js/motion.js?v={{.Asset}}"></script>
-<script src="/static/js/hero3d.js?v={{.Asset}}"></script>
+<script src="/static/hop-home/hop-motion.js?v={{.Asset}}"></script>
+<script src="/static/hop-home/hop-hero3d.js?v={{.Asset}}"></script>
 <script src="/static/js/home.js?v={{.Asset}}"></script>
 {{end}}

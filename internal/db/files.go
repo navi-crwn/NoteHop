@@ -1,6 +1,11 @@
 package db
 
-import "database/sql"
+import (
+	"database/sql"
+	"errors"
+)
+
+var ErrNoteFilesFull = errors.New("note attachment budget exceeded")
 
 // File is an attachment: AES-GCM ciphertext the browser made with a key the
 // server never sees.
@@ -10,6 +15,7 @@ type File struct {
 	Data    []byte
 	Created int64
 	Expires int64
+	Scope   string
 }
 
 // AddFile stores an attachment unless that would take the total over limit
@@ -23,15 +29,31 @@ func (d *DB) AddFile(f File, limit int64) (bool, error) {
 	defer tx.Rollback()
 	if limit > 0 {
 		var used int64
-		if err := tx.QueryRow(`SELECT COALESCE(SUM(size), 0) FROM files WHERE expires > ?`, now()).Scan(&used); err != nil {
+		if err := tx.QueryRow(`SELECT COALESCE(SUM(size), 0) FROM files`).Scan(&used); err != nil {
 			return false, err
 		}
 		if used+f.Size > limit {
 			return false, nil
 		}
 	}
-	if _, err := tx.Exec(`INSERT INTO files (id, size, data, created, expires) VALUES (?, ?, ?, ?, ?)`,
-		f.ID, f.Size, f.Data, f.Created, f.Expires); err != nil {
+	if f.Scope != "" {
+		var used int64
+		if err := tx.QueryRow(`SELECT COALESCE(SUM(size), 0) FROM files WHERE scope = ? AND expires > ?`, f.Scope, now()).Scan(&used); err != nil {
+			return false, err
+		}
+		if used+f.Size > 5<<20 {
+			return false, ErrNoteFilesFull
+		}
+		var claimed int
+		if err := tx.QueryRow(`SELECT COUNT(*) FROM file_drafts WHERE scope = ?`, f.Scope).Scan(&claimed); err != nil {
+			return false, err
+		}
+		if claimed > 0 {
+			return false, ErrTaken
+		}
+	}
+	if _, err := tx.Exec(`INSERT INTO files (id, size, data, created, expires, scope) VALUES (?, ?, ?, ?, ?, ?)`,
+		f.ID, f.Size, f.Data, f.Created, f.Expires, f.Scope); err != nil {
 		return false, err
 	}
 	return true, tx.Commit()

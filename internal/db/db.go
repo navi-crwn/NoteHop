@@ -184,6 +184,10 @@ var migrations = []string{
 	// 11: content warning classification (none, sensitive, adult) and creator note
 	`ALTER TABLE notes ADD COLUMN content_warning TEXT NOT NULL DEFAULT 'none';
 	ALTER TABLE notes ADD COLUMN warning_reason TEXT NOT NULL DEFAULT '';`,
+	// 12: attachment budgets follow one draft, then one note (never a browser tab).
+	`ALTER TABLE files ADD COLUMN scope TEXT NOT NULL DEFAULT '';
+	CREATE INDEX files_scope ON files(scope, expires);
+	CREATE TABLE file_drafts (scope TEXT PRIMARY KEY, note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE);`,
 }
 
 // migrate applies pending migrations, each in its own transaction together
@@ -225,6 +229,7 @@ func isUnique(err error) bool {
 // ---------- notes ----------
 
 type Note struct {
+	UploadDraft    string // create-only capability hash; not note content or encryption key
 	ID             int64
 	OwnerID        sql.NullInt64
 	OwnerBlob      string
@@ -320,6 +325,17 @@ func (d *DB) CreateNote(n *Note, link *Link) error {
 		return err
 	}
 	n.ID, _ = res.LastInsertId()
+	if n.UploadDraft != "" {
+		if _, err := tx.Exec(`INSERT INTO file_drafts (scope, note_id) VALUES (?, ?)`, n.UploadDraft, n.ID); err != nil {
+			if isUnique(err) {
+				return ErrTaken
+			}
+			return err
+		}
+		if _, err := tx.Exec(`UPDATE files SET scope = ? WHERE scope = ?`, "note:"+strconv.FormatInt(n.ID, 10), n.UploadDraft); err != nil {
+			return err
+		}
+	}
 	link.NoteID, link.Created = n.ID, t
 	if _, err := tx.Exec(`INSERT INTO links (token, note_id, mode, created) VALUES (?, ?, ?, ?)`,
 		link.Token, link.NoteID, link.Mode, link.Created); err != nil {

@@ -336,6 +336,7 @@
       var ti = $('#n-title-input');
       ti.classList.remove('hide');
       ed = NHEditor($('#n-edit [data-editor]'), {
+        uploadTarget: function () { return { url: '/api/n/' + encodeURIComponent(token) + '/files', headers: headers() }; },
         onChange: edited, onSave: saveNow,
         onType: function () { S.typeDirty = true; typeChrome(); edited(); },
         onBurnKey: function (k) {

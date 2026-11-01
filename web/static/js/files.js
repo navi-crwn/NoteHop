@@ -135,13 +135,13 @@
   }
 
   // upload(file) → markdown that embeds it.
-  function upload(file, pasted) {
+  function upload(file, pasted, target) {
     var name = file.name || (pasted ? 'pasted' : 'file');
     if (pasted && /^image\//.test(file.type) && !file.name) name = 'image-' + new Date().toISOString().slice(0, 19).replace(/[-:T]/g, '');
     return (pasted ? webp(new File([file], name, { type: file.type })) : Promise.resolve(file)).then(function (f) {
       return f.arrayBuffer().then(function (buf) { return NHC.fileSeal(new Uint8Array(buf), f.name || name, f.type || 'application/octet-stream'); })
         .then(function (sealed) {
-          return NH.api('POST', '/api/files', sealed.data).then(function (r) {
+          return NH.api('POST', target.url, sealed.data, target.headers).then(function (r) {
             var inline = /^(image|audio|video)\//.test(f.type);
             cache[r.id] = Promise.resolve({ url: URL.createObjectURL(f), name: f.name || name, type: f.type, expires: r.expires, size: f.size });
             return (inline ? '!' : '') + '[' + (f.name || name).replace(/[\[\]\n]/g, '') + '](nh-file:' + r.id + '#' + sealed.key + ')';
