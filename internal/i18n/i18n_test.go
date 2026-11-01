@@ -85,8 +85,10 @@ func TestT(t *testing.T) {
 	if got := string(l.H("new.saved_to", "user", "<b>x</b>")); !strings.Contains(got, "&lt;b&gt;x&lt;/b&gt;") || !strings.Contains(got, "<b>@") {
 		t.Fatalf("H must escape values but keep catalog markup: %q", got)
 	}
-	if (Locale{Get("ar")}).Dir() != "rtl" || (Locale{Get("en")}).Dir() != "ltr" {
-		t.Fatal("dir")
+	for _, code := range []string{"en", "ar", "de", "ru"} {
+		if (Locale{Get(code)}).Dir() != "ltr" {
+			t.Fatalf("%s must be left to right", code)
+		}
 	}
 }
 
@@ -94,11 +96,13 @@ func TestFromHeader(t *testing.T) {
 	for h, want := range map[string]string{
 		"":                           "en",
 		"fr-CA,fr;q=0.9,en;q=0.8":    "fr",
-		"pt-BR":                      "pt",
-		"de-DE,de;q=0.9":             "en",
-		"de;q=0.9,id;q=0.8,en;q=0.7": "id",
-		"zh-TW,zh;q=0.9":             "zh",
-		"ja;q=0.5,ar;q=0.6":          "ar",
+		"pt-BR":                      "pt-BR",
+		"pt-PT,pt;q=0.9":             "pt-BR",
+		"de-DE,de;q=0.9":             "de",
+		"de;q=0.9,id;q=0.8,en;q=0.7": "de",
+		"zh-TW,zh;q=0.9":             "zh-CN",
+		"ja;q=0.5,ar;q=0.6":          "ja",
+		"ar,ar-SA;q=0.9":             "en",
 		"es,fr":                      "es",
 		"en-US,en;q=0.9,id;q=0.8":    "en",
 		"xx;q=1,ru;q=0.1":            "ru",
@@ -107,5 +111,36 @@ func TestFromHeader(t *testing.T) {
 		if got := FromHeader(h); got != want {
 			t.Errorf("FromHeader(%q) = %q, want %q", h, got, want)
 		}
+	}
+}
+
+func TestLangs(t *testing.T) {
+	expected := []string{"en", "zh-CN", "de", "id", "ja", "pt-BR", "es", "fr", "ru"}
+	if len(Langs) != len(expected) {
+		t.Fatalf("expected %d languages, got %d", len(expected), len(Langs))
+	}
+	for i, code := range expected {
+		if Langs[i].Code != code {
+			t.Errorf("Langs[%d] = %q, want %q", i, Langs[i].Code, code)
+		}
+		if Langs[i].Name == "" || Langs[i].Short == "" {
+			t.Errorf("%s has no menu name or short code", code)
+		}
+	}
+}
+
+func TestResolve(t *testing.T) {
+	for in, want := range map[string]string{"en": "en", "EN": "en", "zh": "zh-CN", "zh-cn": "zh-CN", "pt": "pt-BR", "PT-br": "pt-BR", " de ": "de", "ru": "ru"} {
+		if got, ok := Resolve(in); !ok || got != want {
+			t.Errorf("Resolve(%q) = %q, %v; want %q", in, got, ok, want)
+		}
+	}
+	for _, in := range []string{"", "ar", "xx", "zh-TW", "pt-PT"} {
+		if got, ok := Resolve(in); ok {
+			t.Errorf("Resolve(%q) = %q; a retired or unknown language must not resolve", in, got)
+		}
+	}
+	if Get("ar").Code != "en" || Get("zh").Code != "zh-CN" {
+		t.Error("Get must fall back to English and map the old short codes")
 	}
 }

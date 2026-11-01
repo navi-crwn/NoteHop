@@ -61,7 +61,7 @@
         <div class="menu lang-menu" id="lang-menu">
           <button type="button" class="icon-btn" aria-haspopup="true" aria-label="{{.L.T "nav.language"}}" title="{{.L.T "nav.language"}}"><svg><use href="#i-globe"/></svg></button>
           <div class="menu-list">{{$cur := .L.Code}}{{range .Langs}}
-            <a href="?lang={{.Code}}" data-lang="{{.Code}}" lang="{{.Code}}"{{if eq .Code $cur}} aria-current="true"{{end}}>{{.Name}}</a>{{end}}
+            <a href="?lang={{.Code}}" data-lang="{{.Code}}" lang="{{.Code}}"{{if eq .Code $cur}} aria-current="true"{{end}}><span>{{.Name}}</span><small>{{.Short}}</small></a>{{end}}
           </div>
         </div>
         <button class="icon-btn" id="theme" type="button" aria-label="{{.L.T "nav.theme"}}"><svg class="t-moon"><use href="#i-moon"/></svg><svg class="t-sun"><use href="#i-sun"/></svg></button>
@@ -102,7 +102,7 @@
       <div class="menu lang-menu" id="lang-menu">
         <button type="button" class="icon-btn" aria-haspopup="true" aria-label="{{.L.T "nav.language"}}" title="{{.L.T "nav.language"}}"><svg><use href="#i-globe"/></svg></button>
         <div class="menu-list">{{$cur := .L.Code}}{{range .Langs}}
-          <a href="?lang={{.Code}}" data-lang="{{.Code}}" lang="{{.Code}}"{{if eq .Code $cur}} aria-current="true"{{end}}>{{.Name}}</a>{{end}}
+          <a href="?lang={{.Code}}" data-lang="{{.Code}}" lang="{{.Code}}"{{if eq .Code $cur}} aria-current="true"{{end}}><span>{{.Name}}</span><small>{{.Short}}</small></a>{{end}}
         </div>
       </div>
       <button class="icon-btn" id="theme" type="button" aria-label="{{.L.T "nav.theme"}}"><svg class="t-moon"><use href="#i-moon"/></svg><svg class="t-sun"><use href="#i-sun"/></svg></button>
@@ -167,16 +167,8 @@
   <div class="wrap foot-bottom">
     <p>© 2026 navi-crwn · MIT License</p>
     <nav class="foot-langs" aria-label="Languages">
-      <a href="?lang=en" lang="en">English</a>
-      <a href="?lang=id" lang="id">Bahasa Indonesia</a>
-      <a href="?lang=zh" lang="zh">中文</a>
-      <a href="?lang=es" lang="es">Español</a>
-      <a href="?lang=ar" lang="ar">العربية</a>
-      <a href="?lang=pt" lang="pt">Português</a>
-      <a href="?lang=fr" lang="fr">Français</a>
-      <a href="?lang=ja" lang="ja">日本語</a>
-      <a href="?lang=ru" lang="ru">Русский</a>
-    </nav>
+      {{range .Langs}}<a href="?lang={{.Code}}" lang="{{.Code}}">{{.Name}}</a>
+      {{end}}    </nav>
   </div>
 </footer>
 {{end}}
