@@ -30,7 +30,7 @@ func TestSlugRules(t *testing.T) {
 	c := newClient(t, srv)
 	try := func(c *client, slug string) (int, string) {
 		t.Helper()
-		code, m, _ := c.do("POST", "/api/notes", map[string]any{"encrypted": true, "content": fakeCipher("x"), "mode": "read", "admin": key(), "write": key(), "slug": slug}, nil)
+		code, m, _ := c.do("POST", "/api/notes", map[string]any{"encrypted": false, "content": `{"t":"x","b":"x"}`, "mode": "read", "admin": key(), "write": key(), "slug": slug}, nil)
 		s, _ := m["code"].(string)
 		return code, s
 	}

@@ -87,13 +87,17 @@
     NH.$$('[data-panel]', form).forEach(function (p) { p.classList.toggle('hide', !on(p.dataset.panel)); });
     $('#until-other').classList.toggle('hide', radio('until') !== 'other');
     $('[data-for="encrypt-off"]').classList.toggle('hide', on('encrypt'));
+    // Basic or encrypted: only a basic note can have a link name of its own.
+    pick('kind', on('encrypt') ? 'encrypted' : 'basic');
+    $('#basic-slug').classList.toggle('hide', on('encrypt'));
     // "More" stays closed; its button counts the extra settings that are on.
-    var extra = ['capsule', 'lock', 'decoy', 'slug', 'signoff'].filter(on).length + (on('encrypt') ? 0 : 1);
+    var extra = ['capsule', 'lock', 'decoy', 'signoff'].filter(on).length;
     $('#adv-count').textContent = extra;
     $('#adv-count').classList.toggle('hide', !extra);
     if (['check', 'suggest'].indexOf(mode()) !== -1) $('#more-modes').open = true;
     showPicks();
     btn.querySelector('span').textContent = NH.t(on('encrypt') ? 'new.create' : 'new.create_public');
+    if (on('encrypt')) slug.value = '';
     summary();
     slugAdvice();
   }
@@ -104,6 +108,7 @@
     });
   });
   form.addEventListener('change', function (e) {
+    if (e.target.name === 'kind') set('encrypt', e.target.value === 'encrypted');
     if (e.target.name === 'privacy') applyPrivacy();
     if (e.target.name === 'until' || e.target.id === 'expires') applyUntil();
     applyOptions();
@@ -166,6 +171,8 @@
       NH.$$('[data-starter]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
       $('#start-desc').textContent = b.title;
       pick('mode', st.mode);
+      // Burning after reading and passwords need the note locked in the browser.
+      if (st.privacy !== 'normal') set('encrypt', true);
       pick('privacy', st.privacy);
       applyPrivacy();
       set('signoff', !!st.signoff);
@@ -231,7 +238,7 @@
       ed.value = String(hand.b || '');
       var hm = document.querySelector('input[name=mode][value="' + hand.m + '"]');
       if (hm) { hm.checked = true; hm.dispatchEvent(new Event('change', { bubbles: true })); }
-      if (hand.o) { var po = document.querySelector('input[name=privacy][value=once]'); if (po) { po.checked = true; po.dispatchEvent(new Event('change', { bubbles: true })); } }
+      if (hand.o) { set('encrypt', true); var po = document.querySelector('input[name=privacy][value=once]'); if (po) { po.checked = true; po.dispatchEvent(new Event('change', { bubbles: true })); } }
     }
   } catch (x) {}
 
@@ -260,7 +267,6 @@
     if (!title && !body.trim()) return fail(NH.t('new.empty'));
     var encrypted = on('encrypt'), password = encrypted && on('password') ? $('#password').value : '';
     if (on('password') && !password) return fail(NH.t('new.need_password'));
-    if (on('slug') && !slug.value.trim()) return fail(NH.t('new.need_slug'));
     var expiresIn = on('expires') ? +$('#expires').value : 0;
     var openAt = on('capsule') ? unixOf('#open-at') : 0, lockAt = on('lock') ? unixOf('#lock-at') : 0;
     var problem = timeProblem(openAt, lockAt, expiresIn);
@@ -292,7 +298,7 @@
         return NH.api('POST', '/api/notes', {
           encrypted: encrypted, password: !!password, salt: salt, content: r[0], mode: mode,
           upload_draft: $('[data-editor]').dataset.uploadDraft,
-          slug: on('slug') ? slug.value.trim() : '', expires_in: expiresIn, max_views: on('burn') ? +$('#burn').value : 0,
+          slug: encrypted ? '' : slug.value.trim(), expires_in: expiresIn, max_views: on('burn') ? +$('#burn').value : 0,
           open_at: openAt, lock_at: lockAt, admin: admin, write: keys.write, owner_blob: r[1],
           burns: burns, sign_off: on('signoff'), decoy: decoy,
           content_warning: cw, warning_reason: wr

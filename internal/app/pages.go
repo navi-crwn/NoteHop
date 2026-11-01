@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"time"
 )
@@ -36,4 +37,15 @@ func (a *App) statusPage(w http.ResponseWriter, r *http.Request) {
 		code = http.StatusServiceUnavailable
 	}
 	a.render(w, r, code, "status", pageData{Title: l.T("status.title"), Status: s})
+}
+
+// robots keeps crawlers out of the machine paths. Notes themselves are not
+// listed here on purpose: a crawler that may not fetch a note address never
+// sees its "noindex" header, and an address linked from elsewhere could then
+// still be listed. Every note response carries X-Robots-Tag and a robots meta
+// tag instead, and no note is in any sitemap or public list.
+func (a *App) robots(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	io.WriteString(w, "User-agent: *\nDisallow: /api/\nDisallow: /raw/\nDisallow: /mock/\nDisallow: /in/\nDisallow: /gate/\nDisallow: /n/\nDisallow: /auth/\nDisallow: /hop/\nAllow: /\n")
 }

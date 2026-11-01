@@ -1,7 +1,6 @@
 package app
 
 import (
-	"encoding/json"
 	"html/template"
 	"net/http"
 	"strings"
@@ -14,9 +13,8 @@ import (
 
 // Link previews in chat apps. The note page never contains content (it is
 // fetched by script after a click), so a preview can't spend a burn view
-// anyway; this only makes the card say something useful. Encrypted notes
-// show their status only. A public note's title is shown, since anyone with
-// the link can already read it with curl.
+// anyway; this only makes the card say something useful. No note, basic or
+// encrypted, shows its title or text in a preview: only its kind and status.
 
 // Only crawler names, never in-app browsers: a person whose browser matched
 // would get the bare preview page instead of the note.
@@ -44,17 +42,11 @@ func previewText(n *db.Note, l i18n.Locale) (title, desc string) {
 	if n.IsSensitive() {
 		return l.T("gate.sensitive_title"), l.T("gate.sensitive_desc")
 	}
+	// Never the note's own words: a basic note is readable by the server, but a
+	// link preview is shown to whoever the link is pasted next to.
 	title = l.T("preview.title_encrypted")
 	if !n.Encrypted {
 		title = l.T("preview.title_public")
-		var body struct {
-			T string `json:"t"`
-		}
-		if json.Unmarshal([]byte(n.Content), &body) == nil {
-			if t := strings.TrimSpace(body.T); t != "" {
-				title = clipRunes(t, 90)
-			}
-		}
 	}
 	if n.Frozen {
 		title = l.T("preview.snapshot", "title", title)

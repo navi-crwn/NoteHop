@@ -221,7 +221,7 @@ func TestHopUsersAndActions(t *testing.T) {
 	if code, _ := call(t, srv, "imperium", "POST", "/hop/users/42/actions", map[string]any{"action": "set_role", "params": map[string]any{"role": "admin"}}); code != 200 {
 		t.Fatalf("set_role: %d", code)
 	}
-	if code, m, _ := u.do("POST", "/api/notes", map[string]any{"encrypted": true, "content": fakeCipher("x"), "mode": "read", "admin": key(), "write": key(), "slug": "eid"}, nil); code != 201 {
+	if code, m, _ := u.do("POST", "/api/notes", map[string]any{"encrypted": false, "content": `{"t":"x","b":"x"}`, "mode": "read", "admin": key(), "write": key(), "slug": "eid"}, nil); code != 201 {
 		t.Fatalf("admin short name: %d %v", code, m)
 	}
 	if code, env := call(t, srv, "imperium", "POST", "/hop/users/42/actions", map[string]any{"action": "set_role", "params": map[string]any{"role": "god"}}); code != 400 || env["error"] != "bad_role" {
@@ -382,7 +382,7 @@ func TestHopEvents(t *testing.T) {
 func TestHopContentZeroKnowledge(t *testing.T) {
 	srv, _, _ := hopApp(t, Config{FileMB: 10})
 	u := ssoUser(t, srv, "9", "dewi@example.com", nil)
-	enc := u.create(map[string]any{"content": fakeCipher("secret body"), "slug": "rahasia-besar"})
+	enc := u.create(map[string]any{"content": fakeCipher("secret body")})
 	pub, _ := json.Marshal(map[string]string{"t": "Rapat Senin", "b": strings.Repeat("agenda ", 50)})
 	open := newClient(t, srv).create(map[string]any{"encrypted": false, "content": string(pub), "mode": "edit"})
 	newClient(t, srv).create(map[string]any{"max_views": 1})
@@ -427,7 +427,7 @@ func TestHopContentZeroKnowledge(t *testing.T) {
 	if l := list(env); len(l) != 1 || l[0].(map[string]any)["id"] != encRow["id"] {
 		t.Fatalf("owner=9: %v", env)
 	}
-	_, env = call(t, srv, "imperium", "GET", "/hop/content?q=rahasia", nil)
+	_, env = call(t, srv, "imperium", "GET", "/hop/content?q="+enc.token, nil)
 	if l := list(env); len(l) != 1 || l[0].(map[string]any)["id"] != encRow["id"] {
 		t.Fatalf("q=slug: %v", env)
 	}
@@ -565,7 +565,7 @@ func TestHopNoteActions(t *testing.T) {
 	if !held || until < time.Now().Unix()+364*86400 {
 		t.Fatalf("takedown hold: %v %d", held, until)
 	}
-	if code, _, _ := c.do("POST", "/api/notes", map[string]any{"encrypted": true, "content": fakeCipher("x"), "mode": "read", "admin": key(), "write": key(), "slug": "konten-buruk"}, nil); code != 400 {
+	if code, _, _ := c.do("POST", "/api/notes", map[string]any{"encrypted": false, "content": `{"t":"x","b":"x"}`, "mode": "read", "admin": key(), "write": key(), "slug": "konten-buruk"}, nil); code != 400 {
 		t.Fatalf("held name reusable: %d", code)
 	}
 	// The names extension lists it as a takedown hold and can release it.
@@ -580,7 +580,7 @@ func TestHopNoteActions(t *testing.T) {
 	if code, _ := call(t, srv, "imperium", "POST", "/hop/x/names/holds/konten-buruk/actions", map[string]any{"action": "release"}); code != 404 {
 		t.Fatalf("hold release twice: %d", code)
 	}
-	if code, _, _ := c.do("POST", "/api/notes", map[string]any{"encrypted": true, "content": fakeCipher("x"), "mode": "read", "admin": key(), "write": key(), "slug": "konten-buruk"}, nil); code != 201 {
+	if code, _, _ := c.do("POST", "/api/notes", map[string]any{"encrypted": false, "content": `{"t":"x","b":"x"}`, "mode": "read", "admin": key(), "write": key(), "slug": "konten-buruk"}, nil); code != 201 {
 		t.Fatalf("released name: %d", code)
 	}
 	// The other extensions answer.
@@ -637,7 +637,7 @@ func TestHopReportFlow(t *testing.T) {
 		t.Fatalf("reports: %v", env)
 	}
 	first := rows[4].(map[string]any)
-	if first["reason"] != "spam" || first["note"] != "it sells pills" || first["token"] != "laporkan-aku" || first["encrypted"] != true || first["note_exists"] != true || first["title"] != "" {
+	if first["reason"] != "spam" || first["note"] != "it sells pills" || first["token"] != "laporkan-aku" || first["encrypted"] != false || first["note_exists"] != true || first["title"] != "hello" {
 		t.Fatalf("report row: %v", first)
 	}
 	if raw, _ := json.Marshal(env); strings.Contains(string(raw), fakeCipher("hello")) {
@@ -729,11 +729,11 @@ func TestHopSettingsAndSearch(t *testing.T) {
 
 	// Search: exact token or name, public titles, users.
 	u := ssoUser(t, srv, "8", "cari.aku@example.com", nil)
-	enc := u.create(map[string]any{"slug": "nama-unik-sekali"})
+	enc := u.create(nil)
 	pub, _ := json.Marshal(map[string]string{"t": "Daftar Belanja", "b": "nama-unik-sekali"})
 	u.create(map[string]any{"encrypted": false, "content": string(pub)})
-	_, env = call(t, srv, "imperium", "GET", "/hop/search?q=nama-unik-sekali", nil)
-	if l := list(env); len(l) != 1 || l[0].(map[string]any)["kind"] != "content" || l[0].(map[string]any)["url"] != "https://note.test/"+enc.token || l[0].(map[string]any)["label"] != "/nama-unik-sekali" {
+	_, env = call(t, srv, "imperium", "GET", "/hop/search?q="+enc.token, nil)
+	if l := list(env); len(l) != 1 || l[0].(map[string]any)["kind"] != "content" || l[0].(map[string]any)["url"] != "https://note.test/"+enc.token || l[0].(map[string]any)["label"] != "/"+enc.token {
 		t.Fatalf("search token: %v", env)
 	}
 	_, env = call(t, srv, "imperium", "GET", "/hop/search?q=belanja", nil)

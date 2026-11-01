@@ -175,6 +175,10 @@
     <div class="prefix"><span>{{.LinkHost}}/</span><input type="text" id="new-slug" placeholder="{{.L.T "share.random"}}" maxlength="48" autocapitalize="off" spellcheck="false" aria-label="{{.L.T "feat.slug"}}"></div>
     <button class="btn" type="submit"><svg><use href="#i-plus"/></svg>{{.L.T "share.new_link"}}</button>
   </form>
+  <div class="admin-box owner" id="kind-box">
+    <div><b><svg class="ico"><use href="#i-lock"/></svg> <span id="kind-title"></span></b><p class="small muted" id="kind-text"></p></div>
+    <button type="button" class="btn sm" id="kind-switch"></button>
+  </div>
   <div class="admin-box owner">
     <div><b><svg class="ico"><use href="#i-key"/></svg> {{.L.T "share.admin"}}</b><p class="small muted">{{.L.T "share.admin_text"}}</p></div>
     <button type="button" class="btn sm" id="copy-admin"><svg><use href="#i-copy"/></svg>{{.L.T "share.copy_admin"}}</button>

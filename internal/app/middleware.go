@@ -42,6 +42,10 @@ func (a *App) secure(next http.Handler) http.Handler {
 		h.Set("X-Frame-Options", "DENY")
 		h.Set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), interest-cohort=()")
 		h.Set("Cross-Origin-Opener-Policy", "same-origin")
+		// A note, basic or encrypted, never belongs in a search engine.
+		if servesNote(r.URL.Path) {
+			h.Set("X-Robots-Tag", "noindex, nofollow, noarchive")
+		}
 		if a.cfg.SecureCookies {
 			h.Set("Strict-Transport-Security", "max-age=63072000")
 		}
@@ -187,4 +191,21 @@ func apiErr(w http.ResponseWriter, status int, key string, kv ...any) {
 		resp["vars"] = vars
 	}
 	writeJSON(w, status, resp)
+}
+
+// servesNote reports whether a request path leads to a note or to something that
+// serves note data: /TOKEN or /link-name, the older /n/TOKEN, the plain-text
+// and mock endpoints, the API and the inbox addresses, and the profile pages
+// that list notes. Site pages are not notes.
+func servesNote(p string) bool {
+	for _, prefix := range []string{"/n/", "/raw/", "/mock/", "/api/", "/in/", "/gate/"} {
+		if strings.HasPrefix(p, prefix) {
+			return true
+		}
+	}
+	if strings.HasPrefix(p, "/@") { // a profile lists notes
+		return true
+	}
+	seg := strings.TrimPrefix(p, "/")
+	return shortName(seg)
 }

@@ -248,8 +248,8 @@ func cliNew(args []string) {
 	password := fs.String("password", "", "extra password (or NOTEHOP_PASSWORD)")
 	expires := fs.Duration("expires", 0, "delete after, e.g. 1h or 168h")
 	burn := fs.Int("burn", 0, "self-destruct after this many views")
-	public := fs.Bool("public", false, "no encryption: readable by the server and /raw")
-	slug := fs.String("slug", "", "custom address /n/<slug>")
+	public := fs.Bool("public", false, "make a basic note: not encrypted, readable by the server and /raw")
+	slug := fs.String("slug", "", "link name for a basic note, e.g. monday-meeting (needs -public)")
 	fs.Usage = func() {
 		fmt.Fprintln(os.Stderr, "usage: notehop new [flags] [file]   (text from stdin without a file)")
 		fs.PrintDefaults()
@@ -277,6 +277,9 @@ func cliNew(args []string) {
 	pw := *password
 	if pw == "" {
 		pw = os.Getenv("NOTEHOP_PASSWORD")
+	}
+	if *slug != "" && !*public {
+		log.Fatal("new: a link name is only for a basic note; add -public (an encrypted note keeps the long link)")
 	}
 	c, err := client.Create(*server, client.Note{Title: t, Body: body}, client.Options{
 		Mode: *mode, Password: pw, Public: *public, ExpiresIn: int(expires.Seconds()), MaxViews: *burn, Slug: *slug,
