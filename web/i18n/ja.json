@@ -1481,5 +1481,6 @@
   "changelog.pr": "マージ済みプルリクエスト",
   "changelog.tag": "リリース",
   "changelog.apps": "すべてのアプリ",
-  "changelog.pagination": "ページ切り替え"
+  "changelog.pagination": "ページ切り替え",
+  "dash.family": "HOP ファミリー"
 }

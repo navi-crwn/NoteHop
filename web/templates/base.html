@@ -26,11 +26,65 @@
 {{block "head" .}}{{end}}
 <script src="/static/js/theme.js?v={{.Asset}}"></script>
 <link rel="stylesheet" href="/static/css/family-switcher.css?v={{.Asset}}">
+{{if .Dash}}<link rel="stylesheet" href="/static/css/shell.css?v={{.Asset}}">{{end}}
 <script src="/static/js/family-switcher.js?v={{.Asset}}" defer></script>
 </head>
 <body data-page="{{block "page" .}}{{end}}"{{with .Token}} data-token="{{.}}"{{end}}{{with .Mode}} data-mode="{{.}}"{{end}}{{if .User}} data-user="{{.User.Username}}"{{end}}{{with .Main}} data-main="{{.}}"{{end}}{{with .Share}} data-share="{{.}}"{{end}}>
 <a class="skip" href="#main">{{.L.T "nav.skip"}}</a>
 {{template "icons"}}
+{{if .Dash}}
+<div class="shell" id="shell">
+  <div class="shell-scrim" id="shell-scrim" hidden></div>
+  <aside class="shell-side" id="shell-side" aria-label="{{.Site}}">
+    <a class="shell-brand" href="/"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="32" height="32"><span>{{.Site}}</span></a>
+    <nav class="shell-nav" aria-label="{{.L.T "nav.main"}}">
+      <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}><svg><use href="#i-grid"/></svg>{{.L.T "nav.mine"}}</a>
+      <a href="/new"><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a>
+      <a href="/security" {{if eq .Path "/security"}}aria-current="page"{{end}}><svg><use href="#i-key"/></svg>{{.L.T "sec.title"}}</a>
+      <a href="/nearby"><svg><use href="#i-phone"/></svg>{{.L.T "nearby.title"}}</a>
+      <a href="/diff"><svg><use href="#i-sliders"/></svg>{{.L.T "diffpage.title"}}</a>
+      <a href="/about"><svg><use href="#i-doc"/></svg>{{.L.T "nav.about"}}</a>
+      <a href="/faq"><svg><use href="#i-chat"/></svg>{{.L.T "nav.faq"}}</a>
+    </nav>
+    <p class="shell-label">{{.L.T "dash.family"}}</p>
+    <nav class="shell-nav shell-family" aria-label="{{.L.T "dash.family"}}">
+      {{range .HopFamily}}<a href="{{.URL}}"><img src="{{(index .Icons "mark").URL}}" alt="" width="18" height="18" loading="lazy">{{if eq .Slug "hub"}}HOP ID{{else}}{{.Name}}{{end}}<svg class="out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M8 7h9v9"/></svg></a>{{end}}
+    </nav>
+    <p class="shell-side-foot"><a href="/changelog">{{.L.T "changelog.title"}}</a> · <a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a></p>
+  </aside>
+  <div class="shell-body">
+    <header class="shell-top">
+      <button class="icon-btn shell-burger" id="shell-burger" type="button" aria-label="{{.L.T "nav.menu"}}" aria-controls="shell-side" aria-expanded="false"><svg><use href="#i-menu"/></svg></button>
+      <p class="shell-title">{{if .Title}}{{.Title}}{{else}}{{.L.T "nav.mine"}}{{end}}</p>
+      <div class="shell-tools">
+        {{if ne .Path "/dashboard"}}<a class="btn primary sm" href="/new"><svg><use href="#i-plus"/></svg><span>{{.L.T "nav.new"}}</span></a>{{end}}
+        <div class="menu lang-menu" id="lang-menu">
+          <button type="button" class="icon-btn" aria-haspopup="true" aria-label="{{.L.T "nav.language"}}" title="{{.L.T "nav.language"}}"><svg><use href="#i-globe"/></svg></button>
+          <div class="menu-list">{{$cur := .L.Code}}{{range .Langs}}
+            <a href="?lang={{.Code}}" data-lang="{{.Code}}" lang="{{.Code}}"{{if eq .Code $cur}} aria-current="true"{{end}}>{{.Name}}</a>{{end}}
+          </div>
+        </div>
+        <button class="icon-btn" id="theme" type="button" aria-label="{{.L.T "nav.theme"}}"><svg class="t-moon"><use href="#i-moon"/></svg><svg class="t-sun"><use href="#i-sun"/></svg></button>
+        <div class="menu" id="menu">
+          <button type="button" aria-haspopup="true" aria-label="{{.L.T "nav.account_menu"}}"><span class="avatar">{{slice .User.Username 0 1}}</span></button>
+          <div class="menu-list">
+            <div class="who">{{.L.T "nav.signed_in_as"}}<br><b>@{{.User.Username}}</b></div>
+            <a href="/security"><svg width="16" height="16"><use href="#i-key"/></svg>{{.L.T "sec.title"}}</a>
+            <button type="button" id="logout"><svg width="16" height="16"><use href="#i-out"/></svg>{{.L.T "nav.sign_out"}}</button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main id="main">{{template "mainbody" .}}</main>
+    <footer class="shell-foot">
+      <nav aria-label="{{.Site}}">
+        <a href="/about">{{.L.T "footer.about"}}</a><a href="/faq">{{.L.T "footer.faq"}}</a><a href="/status">{{.L.T "status.title"}}</a><a href="/terms">{{.L.T "terms.title"}}</a><a href="/privacy">{{.L.T "privacy.title"}}</a><a href="/contact">{{.L.T "contact.title"}}</a>
+      </nav>
+      <p>© 2026 navi-crwn · MIT License</p>
+    </footer>
+  </div>
+</div>
+{{else}}
 <header class="nav" id="nav">
   <div class="wrap">
     <a class="brand" href="/"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="28" height="28">{{.Site}}</a>
@@ -69,10 +123,7 @@
     </div>
   </div>
 </header>
-<main id="main">
-{{if .Back}}<div class="wrap back-row"><a class="back" href="/"><span aria-hidden="true">&larr;</span> {{printf (.L.T "nav.back") .Site}}</a></div>{{end}}
-{{template "content" .}}
-</main>
+<main id="main">{{template "mainbody" .}}</main>
 <footer class="footer-columns">
   <div class="wrap footer-grid">
     <div class="foot-col foot-brand">
@@ -128,9 +179,11 @@
     </nav>
   </div>
 </footer>
+{{end}}
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <script src="/i18n/{{.L.Code}}.js?v={{.Asset}}"></script>
 <script src="/static/js/app.js?v={{.Asset}}"></script>
+{{if .Dash}}<script src="/static/js/shell.js?v={{.Asset}}" defer></script>{{end}}
 {{block "scripts" .}}{{end}}
 </body>
 </html>{{end}}
@@ -142,3 +195,7 @@
     <p class="small muted center">{{if .SSOVia}}{{.L.T "auth.sso_via" "name" .SSOName}}{{else}}{{.L.T "auth.sso_note" "name" .SSOName}}{{end}}</p>
     <div class="or"><span>{{.L.T "auth.or_local"}}</span></div>
 {{end}}{{end}}
+{{define "mainbody"}}
+{{if .Back}}<div class="wrap back-row"><a class="back" href="/"><span aria-hidden="true">&larr;</span> {{printf (.L.T "nav.back") .Site}}</a></div>{{end}}
+{{template "content" .}}
+{{end}}

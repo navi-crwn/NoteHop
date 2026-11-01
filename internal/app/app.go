@@ -298,6 +298,7 @@ type pageData struct {
 	HopFamily     []familyApp  // the other public HOP apps
 	HopPublicApps []familyApp
 	Back          bool        // inner page: show "Back to NoteHop"
+	Dash          bool        // the signed-in dashboard shell (sidebar, settings-type top bar)
 	Status        *liveStatus // /status only
 	Changelog     *changePage
 }
@@ -320,6 +321,7 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.SSO, d.SSOName, d.Links = a.cfg.SSOEnabled(), a.cfg.SSOName, a.cfg.Links
 	d.AI, d.AICustom, d.Repo = a.cfg.aiMode(), len(a.cfg.AIOrigins) > 0, a.cfg.repo()
 	d.Back = backPages[name]
+	d.Dash = d.User != nil && (name == "dashboard" || name == "vault")
 	if name == "home" || name == "features" {
 		d.TourGroups, d.TourItems = []string{"share", "private", "together", "blocks", "dev", "web"}, []int{1, 2, 3, 4, 5, 6}
 	}

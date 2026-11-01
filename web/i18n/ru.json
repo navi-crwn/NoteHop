@@ -1481,5 +1481,6 @@
   "changelog.pr": "Объединённый запрос",
   "changelog.tag": "Выпуск",
   "changelog.apps": "Все приложения",
-  "changelog.pagination": "Страницы"
+  "changelog.pagination": "Страницы",
+  "dash.family": "Семейство HOP"
 }

@@ -1481,5 +1481,6 @@
   "changelog.pr": "Pull request digabungkan",
   "changelog.tag": "Rilis",
   "changelog.apps": "Semua aplikasi",
-  "changelog.pagination": "Navigasi halaman"
+  "changelog.pagination": "Navigasi halaman",
+  "dash.family": "Keluarga HOP"
 }
