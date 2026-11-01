@@ -4,6 +4,10 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+### Media and asset addresses
+- The avatar the account server sends (in the sign-on ticket or a profile push) is stored and reported to the control center as an absolute http(s) address: a path such as `/storage/avatars/x.png` is resolved against `NOTEHOP_SSO_URL`, and anything unusable is dropped instead of being cut in half.
+- The offline worker no longer keeps `/raw/…`, `/mock/…` or `/in/…` pages (they carry a public note's text and use up a burn note's view), and it caches only complete (200) responses.
+
 ### Dashboard chrome
 - The signed-in dashboard (My notes, Vault key) has the same chrome as the other HOP dashboards: a sidebar with this app's menu and the HOP family (HOP ID, LinkHop, BioHop, PixelHop, with their marks), a top bar of settings-type controls (new note, language, theme, account menu) and a compact footer. The app grid is no longer in that top bar.
 - The footer on every page spreads its five columns evenly; a flex rule had packed them to the left.

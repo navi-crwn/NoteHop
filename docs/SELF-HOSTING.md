@@ -126,7 +126,7 @@ NoteHop uses its own accounts while `NOTEHOP_SSO_URL` is empty. If you run an ac
 2. In `/etc/notehop/notehop.env`: `NOTEHOP_SSO_URL=https://accounts.example.com`, `NOTEHOP_SSO_SECRET=<secret>`, `NOTEHOP_SSO_NAME=<name on the button>`. Then `sudo systemctl restart notehop`.
 3. On the account server: register NoteHop with the same secret and the callback `https://note.example.com/auth/sso/callback`.
 
-The account server receives `GET <SSO_URL>/sso/<NOTEHOP_SSO_CLIENT>?state=…&return_to=…`, signs the user in, then redirects to `return_to?ticket=…`. The ticket is `base64url(JSON).base64url(HMAC-SHA256(secret, first part))` with `sub`, `email`, `name`, `avatar`, `state`, `iat`, `exp` (≤ 2 minutes), `jti`, and optionally `aud` (= `NOTEHOP_SSO_CLIENT`).
+The account server receives `GET <SSO_URL>/sso/<NOTEHOP_SSO_CLIENT>?state=…&return_to=…`, signs the user in, then redirects to `return_to?ticket=…`. The ticket is `base64url(JSON).base64url(HMAC-SHA256(secret, first part))` with `sub`, `email`, `name`, `avatar` (an absolute https address; a path is resolved against `NOTEHOP_SSO_URL`), `state`, `iat`, `exp` (≤ 2 minutes), `jti`, and optionally `aud` (= `NOTEHOP_SSO_CLIENT`).
 
 ## Docker (optional)
 

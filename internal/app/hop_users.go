@@ -19,7 +19,7 @@ func (a *App) hopUserView(u *db.User) map[string]any {
 	c, _ := a.db.UserCounts(u.ID)
 	return map[string]any{
 		"sub": u.SSOID, "id": hopUserID(u), "local_id": u.ID, "username": u.Username, "email": u.Email, "display_name": u.DisplayName,
-		"avatar": u.Avatar, "role": u.Role, "status": u.Status, "sso": u.SSOID != "", "vault_set": u.VaultCheck != "" || u.AuthHash != "",
+		"avatar": a.avatarURL(u.Avatar), "role": u.Role, "status": u.Status, "sso": u.SSOID != "", "vault_set": u.VaultCheck != "" || u.AuthHash != "",
 		"notes": c.Notes, "notes_public": c.NotesPublic, "sessions": c.Sessions, "created_at": iso(u.Created),
 		"url": a.cfg.BaseURL + "/@" + u.Username,
 	}
@@ -188,7 +188,7 @@ func (a *App) applyProfile(p hopProfile) (map[string]any, error) {
 	if p.Avatar == "" {
 		p.Avatar = p.AvatarURL
 	}
-	u.Email, u.DisplayName, u.Avatar = clip(p.Email, 254), clip(p.DisplayName, 60), clip(p.Avatar, 500)
+	u.Email, u.DisplayName, u.Avatar = clip(p.Email, 254), clip(p.DisplayName, 60), a.avatarURL(p.Avatar)
 	if err := a.db.UpdateSSOProfile(u); err != nil {
 		return nil, err
 	}
