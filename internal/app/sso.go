@@ -181,7 +181,7 @@ var errRegClosed = errors.New("registration closed")
 // Existing password accounts are not matched (they have no email); linking
 // them is a later feature.
 func (a *App) linkSSOUser(t *ssoTicket) (*db.User, error) {
-	prof := db.User{SSOID: t.Sub, Email: clip(t.Email, 254), DisplayName: clip(t.Name, 60), Avatar: clip(t.Avatar, 500)}
+	prof := db.User{SSOID: t.Sub, Email: clip(t.Email, 254), DisplayName: clip(t.Name, 60), Avatar: a.avatarURL(t.Avatar)}
 	if t.Roles != nil {
 		prof.Role = a.roleFromRoles(t.Roles)
 	}
@@ -249,6 +249,41 @@ func clip(s string, n int) string {
 		return s[:n]
 	}
 	return s
+}
+
+// avatarURL turns the avatar the account server sent into an address that
+// works from any host. A path ("/storage/avatars/x.png", "avatars/x.png") or a
+// scheme-less "//host/x.png" only means something on the account server's own
+// host, so it is resolved against NOTEHOP_SSO_URL; anything else must already
+// be an absolute http(s) address. What can't be made into one (other schemes,
+// credentials, no host, longer than 500 bytes) is dropped rather than cut in
+// half, so the control center never shows a broken picture.
+func (a *App) avatarURL(raw string) string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" || len(raw) > 500 {
+		return ""
+	}
+	u, err := url.Parse(raw)
+	if err != nil {
+		return ""
+	}
+	if !u.IsAbs() {
+		base, err := url.Parse(a.cfg.SSOURL)
+		if err != nil || base.Host == "" {
+			return ""
+		}
+		if u.Host == "" {
+			u.Path = "/" + strings.TrimLeft(u.Path, "/") // relative to the account server's root
+		}
+		u = base.ResolveReference(u)
+	}
+	if (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" || u.User != nil {
+		return ""
+	}
+	if s := u.String(); len(s) <= 500 {
+		return s
+	}
+	return ""
 }
 
 // authFail shows a sign-in error page; key is a catalog key.
