@@ -25,6 +25,28 @@ func (a *App) apiUpload(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusForbidden, "err.files_off")
 		return
 	}
+	scope := ""
+	if r.PathValue("token") != "" {
+		x, ok := a.access(w, r)
+		if !ok || !a.writable(w, x, modeEdit, modeAppend) {
+			return
+		}
+		scope = "note:" + strconv.FormatInt(x.note.ID, 10)
+	} else {
+		draft := r.Header.Get("X-Upload-Draft")
+		if !keyRe.MatchString(draft) {
+			apiErr(w, http.StatusBadRequest, "err.files_note")
+			return
+		}
+		scope = "draft:" + hashHex(draft)
+	}
+	a.uploadMu.Lock()
+	defer a.uploadMu.Unlock()
+	if !a.storageAvailable(int64(a.cfg.FileMB) << 20) {
+		w.Header().Set("Retry-After", "60")
+		apiErr(w, http.StatusInsufficientStorage, "err.files_storage")
+		return
+	}
 	// AES-GCM adds 28 bytes; the encrypted header with name and type a few hundred.
 	max := int64(a.cfg.FileMB)<<20 + 4096
 	data, err := io.ReadAll(http.MaxBytesReader(w, r.Body, max))
@@ -48,13 +70,22 @@ func (a *App) apiUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	now := time.Now()
-	f := db.File{ID: randToken(20), Size: int64(len(data)), Data: data, Created: now.Unix(), Expires: now.Add(fileTTL).Unix()}
+	f := db.File{ID: randToken(20), Size: int64(len(data)), Data: data, Created: now.Unix(), Expires: now.Add(fileTTL).Unix(), Scope: scope}
 	ok, err := a.db.AddFile(f, int64(a.cfg.FilesTotalMB)<<20)
+	if errors.Is(err, db.ErrNoteFilesFull) {
+		apiErr(w, http.StatusRequestEntityTooLarge, "err.files_note_full")
+		return
+	}
+	if errors.Is(err, db.ErrTaken) {
+		apiErr(w, http.StatusConflict, "err.files_note")
+		return
+	}
 	if err != nil {
 		apiErr(w, http.StatusInternalServerError, "err.save_failed")
 		return
 	}
 	if !ok {
+		w.Header().Set("Retry-After", "60")
 		apiErr(w, http.StatusInsufficientStorage, "err.files_full")
 		return
 	}

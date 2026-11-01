@@ -464,6 +464,7 @@ func TestHopContentZeroKnowledge(t *testing.T) {
 	}
 	// Attachments.
 	req, _ := http.NewRequest("POST", srv.URL+"/api/files", bytes.NewReader(make([]byte, 100)))
+	req.Header.Set("X-Upload-Draft", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	req.Header.Set("Content-Type", "application/octet-stream")
 	res, _ := http.DefaultClient.Do(req)
 	var up map[string]any
