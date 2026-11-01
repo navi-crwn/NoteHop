@@ -1,4 +1,4 @@
-<p align="center">🌐 <b>English</b> · <a href="README.zh.md">简体中文</a> · <a href="README.es.md">Español</a> · <a href="README.ar.md">العربية</a> · <a href="README.pt.md">Português</a> · <a href="README.fr.md">Français</a> · <a href="README.ja.md">日本語</a> · <a href="README.ru.md">Русский</a> · <a href="README.id.md">Bahasa Indonesia</a></p>
+<p align="center">🌐 <b>English</b> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.de.md">Deutsch</a> · <a href="README.id.md">Bahasa Indonesia</a> · <a href="README.ja.md">日本語</a> · <a href="README.pt-BR.md">Português (Brasil)</a> · <a href="README.es.md">Español</a> · <a href="README.fr.md">Français</a> · <a href="README.ru.md">Русский</a></p>
 
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/hero-en-dark.webp"><img src="docs/readme/hero-en-light.webp" alt="NoteHop: notes only the people you choose can read" width="100%"></picture></p>
 
@@ -23,6 +23,14 @@
 > **The key is in the link.** Whoever has the link can read the note, and if you lose every link, nobody can open it again: not you, not the server, not us. Send links to the people you mean, and keep your owner link somewhere safe.
 
 ---
+
+Install in one command (it checks your computer first, asks a few questions, and can set up the HOP ID hub for you):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/navi-crwn/NoteHop/main/install.sh | bash
+```
+
+From a clone: `./install.sh` · update: `./update.sh` · remove: `./uninstall.sh`. Add `--yes` to take every default; `--help` lists the options.
 
 ## What is NoteHop?
 
@@ -79,7 +87,7 @@ On top of that, a note can do much more than a notepad: links with different rig
 - **🕵️ Extra privacy.** Decoy password (opens a fake note), only from certain networks, a leak tracer that tells you which link leaked, and history with differences.
 - **📶 Nearby.** Send a pad or files to a device on the same Wi-Fi, straight from browser to browser.
 - **🧑‍💻 For developers.** `/raw` for curl, a `notehop` CLI that encrypts in the terminal, a mock API from JSON in a note, webhooks in and out, SSH and a Telegram bot.
-- **🌍 9 languages.** English, 简体中文, Español, العربية (right to left), Português, Français, 日本語, Русский and Bahasa Indonesia. Anonymous visitors see English; use the globe menu or `?lang=xx` to choose another language.
+- **🌍 9 languages.** English, 简体中文, Deutsch, Bahasa Indonesia, 日本語, Português (Brasil), Español, Français and Русский. Anonymous visitors see English; use the globe menu or `?lang=xx` to choose another language.
 - **🛡️ Strict by default.** A strict Content Security Policy, no third-party scripts, no ads, no trackers, `noindex`, rate limits. Works offline as an installable app (PWA).
 
 <a id="run-your-own"></a>

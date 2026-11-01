@@ -1,4 +1,4 @@
-<p align="center">🌐 <a href="README.md">English</a> · <a href="README.zh.md">简体中文</a> · <a href="README.es.md">Español</a> · <a href="README.ar.md">العربية</a> · <b>Português</b> · <a href="README.fr.md">Français</a> · <a href="README.ja.md">日本語</a> · <a href="README.ru.md">Русский</a> · <a href="README.id.md">Bahasa Indonesia</a></p>
+<p align="center">🌐 <a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.de.md">Deutsch</a> · <a href="README.id.md">Bahasa Indonesia</a> · <a href="README.ja.md">日本語</a> · <b>Português (Brasil)</b> · <a href="README.es.md">Español</a> · <a href="README.fr.md">Français</a> · <a href="README.ru.md">Русский</a></p>
 
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/hero-pt-dark.webp"><img src="docs/readme/hero-pt-light.webp" alt="NoteHop: notas que só as pessoas que você escolher podem ler" width="100%"></picture></p>
 
@@ -23,6 +23,14 @@
 > **A chave está no link.** Quem tem o link pode ler a nota, e se você perder todos os links, ninguém mais consegue abri-la: nem você, nem o servidor, nem nós. Envie os links só para quem deve recebê-los e guarde seu link de dono em um lugar seguro.
 
 ---
+
+Instale com um comando (ele verifica seu computador primeiro, faz poucas perguntas e pode instalar o hub HOP ID para você):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/navi-crwn/NoteHop/main/install.sh | bash
+```
+
+A partir de um clone: `./install.sh` · atualizar: `./update.sh` · remover: `./uninstall.sh`. Use `--yes` para aceitar todos os padrões; `--help` lista as opções.
 
 ## O que é o NoteHop?
 
