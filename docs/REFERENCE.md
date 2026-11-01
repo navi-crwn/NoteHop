@@ -16,9 +16,11 @@ Every setting is an environment variable. On a VPS they live in `/etc/notehop/no
 | `NOTEHOP_REGISTRATION` | `true` | Open or close sign-ups |
 | `NOTEHOP_SITE` | `NoteHop` | Site name |
 | `NOTEHOP_SHARE_URL` | empty | A short domain for shared links (for example `https://nhop.link`). Reader links become `https://nhop.link/TOKEN`, which redirects to `NOTEHOP_BASE_URL/TOKEN`; nothing is served on it. Owner links stay on `NOTEHOP_BASE_URL` |
-| `NOTEHOP_FILE_MB` | `10` | Largest attachment (MB). `0` turns attachments off. Raise `client_max_body_size` in nginx too |
+| `NOTEHOP_FILE_MB` | `5` | Largest attachment (MB), capped at 5. `0` turns attachments off. All attachments uploaded for one note share a 5 MB ciphertext budget, including encryption overhead |
 | `NOTEHOP_FILES_IP_MB` | `100` | Attachments one IP address may upload per 24 hours (MB). `0` = no limit |
-| `NOTEHOP_FILES_TOTAL_MB` | `2048` | Total size of all live attachments (kept in SQLite, deleted after 24 hours). `0` = no limit |
+| `NOTEHOP_FILES_TOTAL_MB` | `10240` | Shared budget across all users, capped at 10 GB. Nonpositive values use the cap. Expired blobs count until deleted by the janitor |
+| `NOTEHOP_MIN_FREE_MB` | `1024` | Minimum free space reserved on the SQLite filesystem; nonpositive values use the default |
+| `NOTEHOP_MIN_FREE_PERCENT` | `5` | Reserved disk percentage; the greater of this and the MB reserve applies |
 | `NOTEHOP_AI` | `on` | Writing help: `on` (on-device AI + own API key; the editor page's `connect-src` opens for the providers in `middleware.go`), `device` (browser's built-in AI only), `off` (no AI button) |
 | `NOTEHOP_AI_ORIGINS` | empty | Extra origins for the "Other" (OpenAI-compatible) provider, for example `https://ai.company.example`. Origins only, comma-separated |
 | `NOTEHOP_GITHUB` | `navi-crwn/NoteHop` | GitHub repository (`owner/name`) whose numbers show on the home page through `GET /api/repo`. Fetched at most once an hour. `-` hides that section |
@@ -36,6 +38,12 @@ Every setting is an environment variable. On a VPS they live in `/etc/notehop/no
 | `NOTEHOP_SSO_PROVIDERS` | empty | Extra buttons straight to a provider on the account server, for example `google=Google`: visitors go to `<SSO_URL>/sso/<client>/google` |
 | `NOTEHOP_SSO_CLIENT` | `notehop` | This app's name on the account server: visitors go to `<SSO_URL>/sso/<client>`, the ticket comes back to `/auth/sso/callback` |
 | `NOTEHOP_LINKS` | empty | Related sites in the footer, `Name=URL`, comma-separated |
+
+Uploads return HTTP 507 with `Retry-After: 60` when the shared budget would be exceeded or the server disk cannot safely accept the upload. The editor shows a warning, disables file selection and checks again every 30 seconds. No restart is needed after capacity recovers. Existing downloads and text editing remain available. Binary units are used (MB = MiB, GB = GiB).
+
+Uploads before note creation require a random 43-character `X-Upload-Draft` capability. Send it as `upload_draft` when creating the note; it is claimed transactionally and cannot be reused. Uploads to an existing note use `POST /api/n/{token}/files` with the usual `X-Write` and optional `X-Admin` proofs. Per-note accounting includes all unexpired uploads, even when their reference is removed from the encrypted text. The server cannot inspect encrypted note text or prevent readers from copying existing attachment references.
+
+Operational recovery: check filesystem capacity and the janitor, remove expired or unwanted attachments through the existing admin controls, or expand storage. SQLite may reuse freed pages without shrinking its file; disk reserve remains enforced independently of the attachment byte budget. Do not delete live database/WAL files to recover space.
 
 The database schema migrates itself at start (version in `PRAGMA user_version`, steps in `migrations` in `internal/db/db.go`). An older binary refuses to open a database migrated by a newer one.
 

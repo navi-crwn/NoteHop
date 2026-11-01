@@ -230,9 +230,9 @@ func (d *DB) ListFiles(cursor string, limit int) ([]FileInfo, error) {
 	return out, rows.Err()
 }
 
-// FileUsage is how many live attachments there are and their total size.
+// FileUsage includes expired blobs until the janitor actually removes them.
 func (d *DB) FileUsage() (count, bytes int64, err error) {
-	err = d.QueryRow(`SELECT COUNT(*), COALESCE(SUM(size), 0) FROM files WHERE expires > ?`, now()).Scan(&count, &bytes)
+	err = d.QueryRow(`SELECT COUNT(*), COALESCE(SUM(size), 0) FROM files`).Scan(&count, &bytes)
 	return
 }
 
