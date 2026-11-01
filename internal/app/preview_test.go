@@ -25,9 +25,10 @@ func TestPreviewText(t *testing.T) {
 	if _, desc := previewText(&db.Note{MaxViews: 1}, en); !strings.HasPrefix(desc, "Destroyed after reading.") {
 		t.Fatalf("capitalised: %q", desc)
 	}
-	title, _ = previewText(&db.Note{Content: `{"t":"Menu rapat","b":"rahasia"}`}, en)
-	if title != "Menu rapat" {
-		t.Fatalf("public note title: %q", title)
+	// A basic note's words never reach a preview.
+	title, desc = previewText(&db.Note{Content: `{"t":"Menu rapat","b":"rahasia"}`}, en)
+	if title != "Basic note" || strings.Contains(desc, "Menu rapat") || strings.Contains(desc, "rahasia") {
+		t.Fatalf("basic note preview: %q %q", title, desc)
 	}
 }
 

@@ -1269,3 +1269,20 @@ footer .footer-grid { display: grid; grid-template-columns: minmax(180px, 1.35fr
 
 @media (max-width: 960px) { footer .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } footer .foot-brand { grid-column: 1 / -1; } }
 @media (max-width: 520px) { footer .footer-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- basic or encrypted ---------- */
+.kind { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 0 12px; }
+.kind-opt { position: relative; display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--line-2); background: var(--panel); cursor: pointer; }
+.kind-opt input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.kind-opt > svg { width: 20px; height: 20px; flex: none; margin-top: 2px; color: var(--muted); }
+.kind-opt b { display: block; font-size: .95rem; }
+.kind-opt small { display: block; margin-top: 2px; color: var(--muted); font-size: .8rem; line-height: 1.4; }
+.kind-opt:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--panel)); }
+.kind-opt:has(input:checked) > svg { color: var(--accent); }
+.kind-opt:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.slug-row { display: grid; gap: 6px; padding: 12px 14px 0; }
+.slug-row label { font-weight: 600; font-size: .85rem; }
+.link-row.renaming { grid-template-columns: 160px minmax(0, 1fr); }
+.link-rename { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; }
+.link-rename .prefix { flex: 1 1 220px; min-width: 0; }
+@media (max-width: 560px) { .kind { grid-template-columns: minmax(0, 1fr); } .link-row.renaming { grid-template-columns: 1fr; } }

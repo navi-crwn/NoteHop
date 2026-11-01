@@ -4,6 +4,16 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+### Basic and encrypted notes
+- "New note" now starts with one choice: **Encrypted** (the default; locked in the browser, the key stays in the link after `#k=`, so the server can't read it) or **Basic** (readable by the server, with a link name you choose, like `/monday-meeting`). Every kind of note (plain text, document, code, website) exists in both. What used to be the "public note" switch hidden under Expert is now this choice, and "public" wording became "basic" everywhere.
+- Only a basic note can have a link name. An encrypted note keeps the long link: the server refuses a name for it (`err.slug_basic_only`), in a new note and in "Add link".
+- The share dialog renames a link with **Save** and **Cancel** (pencil on the row); "Add link" only creates. The old name is held for the owner for 90 days (`PUT /api/n/{token}/links/{link}`).
+- The owner can change a note between basic and encrypted, both ways, from the share dialog (`POST /api/n/{token}/convert`). The browser re-encodes the text and the server swaps it in; links, keys and settings stay, version history is cleared. A note with added lines, suggestions, a decoy, burn blocks, an inbox or sign-offs can't change type yet (the server says which); snapshots are read-only.
+- No note is ever indexed: `X-Robots-Tag: noindex, nofollow, noarchive` on every note, API, raw, mock and profile response (the robots meta tag was already on note pages), a `robots.txt` that keeps crawlers off the machine paths (note addresses are left crawlable on purpose, so the noindex header is seen), no sitemap, and link previews show only the kind and status of a note, never its title or text.
+- My notes: filters for Encrypted and Basic, a type label on each row, and a basic note's read link is just its address.
+- The CLI refuses `-slug` without `-public` before it calls the server.
+- Copy: claims that "the server can't read your note" now say encrypted notes; new text is English in all catalogs until translated (`docs/pending-translation-basic-notes.json`).
+
 ### Media and asset addresses
 - The avatar the account server sends (in the sign-on ticket or a profile push) is stored and reported to the control center as an absolute http(s) address: a path such as `/storage/avatars/x.png` is resolved against `NOTEHOP_SSO_URL`, and anything unusable is dropped instead of being cut in half.
 - The offline worker no longer keeps `/raw/…`, `/mock/…` or `/in/…` pages (they carry a public note's text and use up a burn note's view), and it caches only complete (200) responses.

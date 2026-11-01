@@ -89,6 +89,15 @@ func (c *client) create(extra map[string]any) note {
 	for k, v := range extra {
 		body[k] = v
 	}
+	// Only a basic note can have a link name of its own.
+	if _, named := extra["slug"]; named {
+		if _, set := extra["encrypted"]; !set {
+			body["encrypted"] = false
+			if _, set := extra["content"]; !set {
+				body["content"] = `{"t":"hello","b":"hello"}`
+			}
+		}
+	}
 	code, m, raw := c.do("POST", "/api/notes", body, nil)
 	if code != http.StatusCreated {
 		c.t.Fatalf("create: %d %s", code, raw)
@@ -140,7 +149,7 @@ func TestCreateValidation(t *testing.T) {
 		}
 	}
 	c.create(map[string]any{"slug": "rapat-senin"})
-	if code, _, _ := c.do("POST", "/api/notes", map[string]any{"mode": "read", "encrypted": true, "content": fakeCipher("x"),
+	if code, _, _ := c.do("POST", "/api/notes", map[string]any{"mode": "read", "encrypted": false, "content": `{"t":"x","b":"x"}`,
 		"admin": key(), "write": key(), "slug": "rapat-senin"}, nil); code != 409 {
 		t.Fatalf("duplicate slug: %d", code)
 	}
@@ -162,8 +171,8 @@ func TestModesAndWriteKey(t *testing.T) {
 	// admin adds an append link and a check link
 	adm := map[string]string{"X-Admin": n.admin, "X-Write": n.write}
 	_, app, _ := c.do("POST", "/api/n/"+n.token+"/links", map[string]any{"mode": "append"}, adm)
-	_, chk, _ := c.do("POST", "/api/n/"+n.token+"/links", map[string]any{"mode": "check", "slug": "belanja"}, adm)
-	appTok := app["token"].(string)
+	_, chk, _ := c.do("POST", "/api/n/"+n.token+"/links", map[string]any{"mode": "check"}, adm)
+	appTok, chkTok := app["token"].(string), chk["token"].(string)
 
 	// append needs the key proof
 	if code, _, _ := c.do("POST", "/api/n/"+appTok+"/entries", map[string]any{"content": fakeCipher("e")}, nil); code != 403 {
@@ -181,7 +190,7 @@ func TestModesAndWriteKey(t *testing.T) {
 	}
 
 	// check link ticks boxes only
-	if code, m, _ := c.do("POST", "/api/n/belanja/checks", map[string]any{"index": 2, "checked": true}, w); code != 200 || m["checks"].(map[string]any)["2"] != true {
+	if code, m, _ := c.do("POST", "/api/n/"+chkTok+"/checks", map[string]any{"index": 2, "checked": true}, w); code != 200 || m["checks"].(map[string]any)["2"] != true {
 		t.Fatalf("check: %d %v", code, m)
 	}
 	if code, _, _ := c.do("POST", "/api/n/"+appTok+"/checks", map[string]any{"index": 0, "checked": true}, w); code != 403 {
@@ -208,7 +217,7 @@ func TestModesAndWriteKey(t *testing.T) {
 	if code, _, _ := c.do("GET", "/api/n/"+appTok, nil, nil); code != 404 {
 		t.Fatalf("dead link: %d", code)
 	}
-	if code, _, _ := c.do("GET", "/api/n/belanja", nil, nil); code != 200 {
+	if code, _, _ := c.do("GET", "/api/n/"+chkTok, nil, nil); code != 200 {
 		t.Fatalf("other link: %d", code)
 	}
 }
@@ -341,8 +350,20 @@ func TestDeleteAndOwnership(t *testing.T) {
 	n := c.create(map[string]any{"owner_blob": "opaque-vault-blob"})
 	_, m, _ := c.do("GET", "/api/me/notes", nil, nil)
 	notes := m["notes"].([]any)
-	if len(notes) != 1 || notes[0].(map[string]any)["blob"] != "opaque-vault-blob" {
+	if len(notes) != 1 || notes[0].(map[string]any)["blob"] != "opaque-vault-blob" || notes[0].(map[string]any)["encrypted"] != true {
 		t.Fatalf("my notes: %v", m)
+	}
+	b := basic(c, nil) // a basic note shows as not encrypted, for the dashboard's filter and label
+	_, m, _ = c.do("GET", "/api/me/notes", nil, nil)
+	got := m["notes"].([]any)
+	if len(got) != 2 {
+		t.Fatalf("my notes with a basic one: %v", m)
+	}
+	for _, x := range got {
+		row := x.(map[string]any)
+		if want := row["token"] != b.token; row["encrypted"] != want {
+			t.Fatalf("encrypted flag of %v: %v", row["token"], row["encrypted"])
+		}
 	}
 	stranger := newClient(t, srv)
 	if code, _, _ := stranger.do("DELETE", "/api/n/"+n.token, nil, nil); code != 403 {

@@ -659,6 +659,12 @@
     qr.addEventListener('click', function () { showQR(url, info.label); });
     var row = h('li.link-row', h('span.link-mode', NH.icon(info.icon), info.label),
       h('code.link-url', { title: url }, '/' + l.token), h('span.btn-row', copy, qr));
+    // A basic note's link can be renamed; an encrypted note keeps its long link.
+    if (!S.meta.encrypted) {
+      var ren = h('button.icon-btn.sm', { type: 'button', title: NH.t('share.rename'), 'aria-label': NH.t('share.rename') }, NH.icon('edit'));
+      ren.addEventListener('click', function () { renameRow(row, l); });
+      row.lastChild.appendChild(ren);
+    }
     if (deletable) {
       var del = h('button.icon-btn.sm', { type: 'button', title: NH.t('share.delete_link'), 'aria-label': NH.t('share.delete_link') }, NH.icon('trash'));
       del.addEventListener('click', function () {
@@ -669,6 +675,62 @@
     }
     return row;
   }
+
+  // The row turns into a small form: the name, Save and Cancel. "Add link" below only creates.
+  function renameRow(row, l) {
+    var input = h('input', { type: 'text', value: l.token, maxlength: 48, autocapitalize: 'off', spellcheck: 'false', 'aria-label': NH.t('share.rename'), pattern: '[a-z0-9][a-z0-9\\-]{2,47}' });
+    input.addEventListener('input', function () { input.value = input.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/^-+/, ''); });
+    var save = h('button.btn.sm.primary', { type: 'submit' }, NH.t('share.rename_save'));
+    var cancel = h('button.btn.sm.ghost', { type: 'button' }, NH.t('share.rename_cancel'));
+    var form = h('form.link-rename', h('div.prefix', h('span', $('#add-link .prefix span').textContent), input), h('span.btn-row', save, cancel));
+    cancel.addEventListener('click', openShare);
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = input.value.trim();
+      if (!name || name === l.token) return openShare();
+      save.disabled = true;
+      api('PUT', '/links/' + encodeURIComponent(l.token), { slug: name }).then(function (r) {
+        NH.toast(NH.t('share.renamed'), 'ok');
+        // The page we are on has just moved: carry on at its new address, key and all.
+        if (l.token === token) { location.replace(NH.noteURL(r.token, { k: K, a: A })); return; }
+        openShare();
+      }, function (x) { save.disabled = false; NH.toast(x.message, 'err'); input.focus(); });
+    });
+    row.replaceChildren(h('span.link-mode', NH.icon(NH.modeInfo[l.mode].icon), NH.modeInfo[l.mode].label), form);
+    row.classList.add('renaming');
+    input.focus();
+    input.select();
+  }
+
+  // Basic <-> encrypted, owner only. The browser locks or unlocks the text; the server swaps it in.
+  function drawKind() {
+    var enc = !!S.meta.encrypted, sw = $('#kind-switch');
+    $('#kind-title').textContent = NH.t(enc ? 'convert.now_enc' : 'convert.now_basic');
+    $('#kind-text').textContent = NH.t(enc ? 'convert.text_enc' : 'convert.text_basic');
+    sw.textContent = NH.t(enc ? 'convert.to_basic' : 'convert.to_enc');
+    sw.disabled = !!S.meta.frozen;
+    sw.title = S.meta.frozen ? NH.t('err.snapshot_read_only') : '';
+  }
+  function convertNote() {
+    var toEnc = !S.meta.encrypted;
+    if (!A || !K || !S.keys) return NH.toast(NH.t('convert.need_key'), 'err');
+    if (!confirm(NH.t(toEnc ? 'convert.confirm_enc' : 'convert.confirm_basic'))) return;
+    var sw = $('#kind-switch');
+    sw.disabled = true;
+    if (ed && S.dirty) saveNow();
+    (function wait() {
+      if (S.saving || S.dirty) return setTimeout(wait, 200);
+      var codec = NHC.codec(toEnc, S.keys.aes);
+      codec.encode(Object.assign({ t: S.title, b: S.body }, noteType())).then(function (content) {
+        return api('POST', '/convert', { to: toEnc ? 'encrypted' : 'basic', content: content, version: S.version });
+      }).then(function () {
+        if (!toEnc && NH.recent) NH.recent.update(token, { p: false });
+        NH.toast(NH.t(toEnc ? 'convert.done_enc' : 'convert.done_basic'), 'ok');
+        setTimeout(function () { location.reload(); }, 600);
+      }, function (x) { sw.disabled = false; NH.toast(x.message, 'err'); });
+    })();
+  }
+  $('#kind-switch').addEventListener('click', convertNote);
 
   function openShare() {
     var dlg = $('#share-dlg');
@@ -691,6 +753,10 @@
           h('a.link-url', { href: NH.noteURL(s.token, { k: K, a: A }) }, '/' + s.token), h('span.btn-row', copy));
       }));
       NH.$$('#new-mode option').forEach(function (o) { o.disabled = S.meta.frozen && o.value !== 'read'; });
+      S.meta.encrypted = m.encrypted;
+      drawKind();
+      // An encrypted note's new links are random: only a basic note can have a name.
+      $('#new-slug').closest('.prefix').classList.toggle('hide', !!S.meta.encrypted);
       if (window.NHAdv) NHAdv.draw(Object.assign({}, S.meta, m));
       // A burn-after-reading note can only get read links.
       if (S.meta.max_views > 0) NH.$$('#new-mode option').forEach(function (o) { if (o.value !== 'read') o.disabled = true; });
