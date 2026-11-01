@@ -213,6 +213,8 @@ func (q createReq) invalid() string {
 		return "err.bad_keys"
 	case q.Slug != "" && !slugRe.MatchString(q.Slug):
 		return "err.bad_slug"
+	case q.Slug != "" && q.Encrypted:
+		return "err.slug_basic_only" // an encrypted note keeps the long link: its key rides in it
 	case q.ExpiresIn < 0 || time.Duration(q.ExpiresIn)*time.Second > maxExpiry:
 		return "err.bad_expiry"
 	case q.MaxViews < 0 || q.MaxViews > maxViews:
@@ -747,6 +749,9 @@ func (a *App) apiAddLink(w http.ResponseWriter, r *http.Request) {
 		return
 	case q.Slug != "" && !slugRe.MatchString(q.Slug):
 		apiErr(w, http.StatusBadRequest, "err.bad_slug")
+		return
+	case q.Slug != "" && x.note.Encrypted:
+		apiErr(w, http.StatusBadRequest, "err.slug_basic_only")
 		return
 	}
 	if q.Slug != "" {

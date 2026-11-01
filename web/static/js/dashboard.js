@@ -19,7 +19,9 @@
     links: function (r) { return r.text != null && /https?:\/\//.test(r.text); },
     code: function (r) { return r.text != null && /^\s*(```|~~~)/m.test(r.text); },
     timed: function (r) { return !!(r.n.expires || r.n.max_views); },
-    snapshots: function (r) { return !!r.n.frozen; }
+    snapshots: function (r) { return !!r.n.frozen; },
+    basic: function (r) { return !r.n.encrypted && !archived(r); },
+    encrypted: function (r) { return !!r.n.encrypted && !archived(r); }
   };
   var needsText = { todo: 1, links: 1, code: 1 };
   function noteText(r) {
@@ -122,7 +124,7 @@
     }
     ul.replaceChildren.apply(ul, shown.map(function (r) {
       var n = r.n, info = NH.modeInfo[n.mode];
-      var meta = [info.label, NH.t('meta.changed', { ago: NH.ago(n.updated) })];
+      var meta = [NH.t(n.encrypted ? 'pill.encrypted' : 'pill.public'), info.label, NH.t('meta.changed', { ago: NH.ago(n.updated) })];
       if (n.frozen) meta.unshift(NH.t('meta.snapshot'));
       if (n.expires) meta.push(NH.t('meta.disappears', { ago: NH.ago(n.expires) }));
       if (n.max_views) meta.push(NH.t('meta.opened', { n: n.views, max: n.max_views }));
@@ -135,7 +137,8 @@
       var acts = h('span.btn-row');
       if (r.k) {
         var copy = h('button.btn.sm', { type: 'button', title: NH.t('dash.copy_link', { mode: info.label }) }, NH.icon('copy'), NH.t('dash.link'));
-        copy.addEventListener('click', function () { NH.copy(NH.noteURL(n.token, { k: r.k }), NH.t('js.link_copied')); });
+        // A basic note's read link is just its address; the key matters for encrypted notes and for writing.
+        copy.addEventListener('click', function () { NH.copy(NH.noteURL(n.token, !n.encrypted && n.mode === 'read' ? {} : { k: r.k }), NH.t('js.link_copied')); });
         acts.appendChild(copy);
       }
       var del = h('button.icon-btn.sm', { type: 'button', title: NH.t('common.delete'), 'aria-label': NH.t('dash.delete_note') }, NH.icon('trash'));

@@ -297,3 +297,42 @@ func TestPreviewHTMLLangMatchesEffectiveLocale(t *testing.T) {
 		t.Fatalf("?lang=id public preview html lang = %q, want id", got)
 	}
 }
+
+// The nine languages: the old short codes mean the new ones, a retired language
+// is English, and every page is left to right.
+func TestNineLanguages(t *testing.T) {
+	srv := newTestApp(t)
+	for q, want := range map[string]string{"zh": "zh-CN", "pt": "pt-BR", "de": "de", "ru": "ru", "zh-CN": "zh-CN", "ar": "en", "xx": "en"} {
+		body, res := fetch(t, srv, "/new?lang="+q, "")
+		if got := htmlLang(body); got != want {
+			t.Errorf("?lang=%s: html lang = %q, want %q", q, got, want)
+		}
+		if !strings.Contains(body, `dir="ltr"`) {
+			t.Errorf("?lang=%s: the page must be left to right", q)
+		}
+		if want == "en" {
+			for _, c := range res.Cookies() {
+				if c.Name == "nh_lang" {
+					t.Errorf("?lang=%s must not set the language cookie, got %q", q, c.Value)
+				}
+			}
+		}
+	}
+	req, _ := http.NewRequest("GET", srv.URL+"/new", nil)
+	req.AddCookie(&http.Cookie{Name: "nh_lang", Value: "pt"})
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := io.ReadAll(res.Body)
+	res.Body.Close()
+	if got := htmlLang(string(b)); got != "pt-BR" {
+		t.Errorf("a stored pt cookie: html lang = %q, want pt-BR", got)
+	}
+	if body, res := fetch(t, srv, "/i18n/zh.js", ""); res.StatusCode != 200 || !strings.Contains(body, "NH_I18N") {
+		t.Errorf("/i18n/zh.js must serve the zh-CN catalog: %d", res.StatusCode)
+	}
+	if _, res := fetch(t, srv, "/i18n/ar.js", ""); res.StatusCode != 404 {
+		t.Errorf("/i18n/ar.js: %d, want 404", res.StatusCode)
+	}
+}
