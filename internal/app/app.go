@@ -475,14 +475,16 @@ const langCookie = "nh_lang"
 // Explicit choices must be a supported language code. Invalid values fall
 // back to English, and they do not overwrite a previously valid cookie.
 func (a *App) locale(w http.ResponseWriter, r *http.Request) i18n.Locale {
-	if q := r.URL.Query().Get("lang"); i18n.Supported(q) {
+	if q, ok := i18n.Resolve(r.URL.Query().Get("lang")); ok {
 		http.SetCookie(w, &http.Cookie{Name: langCookie, Value: q, Path: "/", MaxAge: 365 * 24 * 3600,
 			Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode})
 		return i18n.Locale{Lang: i18n.Get(q)}
 	}
 	code := i18n.Default
-	if c, err := r.Cookie(langCookie); err == nil && i18n.Supported(c.Value) {
-		code = c.Value
+	if c, err := r.Cookie(langCookie); err == nil {
+		if resolved, ok := i18n.Resolve(c.Value); ok {
+			code = resolved
+		}
 	}
 	w.Header().Add("Vary", "Cookie")
 	return i18n.Locale{Lang: i18n.Get(code)}
@@ -491,8 +493,8 @@ func (a *App) locale(w http.ResponseWriter, r *http.Request) i18n.Locale {
 // catalogJS hands the browser scripts their text: GET /i18n/en.js sets
 // window.NH_I18N. A script file (not inline) because of the CSP.
 func (a *App) catalogJS(w http.ResponseWriter, r *http.Request) {
-	code := strings.TrimSuffix(r.PathValue("lang"), ".js")
-	if !i18n.Supported(code) {
+	code, ok := i18n.Resolve(strings.TrimSuffix(r.PathValue("lang"), ".js"))
+	if !ok {
 		a.notFound(w, r)
 		return
 	}

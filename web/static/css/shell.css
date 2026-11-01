@@ -33,7 +33,6 @@
 @media (max-width: 1023px) {
   .shell { --side: 0px; }
   .shell-side { width: min(300px, calc(100vw - 24px)); transform: translateX(calc(-100% - 24px)); }
-  [dir="rtl"] .shell-side { transform: translateX(calc(100% + 24px)); inset: 12px 12px 12px auto; }
   .shell.open .shell-side { transform: none; }
   .shell-burger { display: inline-grid; }
   .shell-body { margin-inline-start: 0; }
