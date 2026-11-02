@@ -163,6 +163,14 @@ type execer interface {
 	Exec(query string, args ...any) (sql.Result, error)
 }
 
+// dropNoteFiles removes the attachments of the notes matching where (over
+// notes n). They belong to the note, so they go with it instead of lingering
+// until their own 24 hours are up. Call it before the notes are deleted.
+func dropNoteFiles(e execer, where string, args ...any) error {
+	_, err := e.Exec(`DELETE FROM files WHERE scope IN (SELECT 'note:' || n.id FROM notes n WHERE `+where+`)`, args...)
+	return err
+}
+
 // holdSlugs reserves the names of the links matching where (over links l
 // joined with notes n). Random tokens almost always contain capitals, so
 // only lowercase names, the custom ones, are held.
@@ -195,6 +203,9 @@ func (d *DB) Takedown(noteID int64) error {
 	defer tx.Rollback()
 	if _, err := tx.Exec(`INSERT OR REPLACE INTO slug_holds (slug, owner_id, until)
 		SELECT token, NULL, ? FROM links WHERE note_id = ? AND token NOT GLOB '*[A-Z]*'`, now()+365*86400, noteID); err != nil {
+		return err
+	}
+	if err := dropNoteFiles(tx, `n.id = ?`, noteID); err != nil {
 		return err
 	}
 	if _, err := tx.Exec(`DELETE FROM notes WHERE id = ?`, noteID); err != nil {

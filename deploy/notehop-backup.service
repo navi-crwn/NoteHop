@@ -10,6 +10,7 @@ Group=notehop
 EnvironmentFile=/etc/notehop/notehop.env
 ExecStart=/usr/local/lib/notehop/backup.sh
 StateDirectory=notehop
+StateDirectoryMode=0750
 UMask=0077
 NoNewPrivileges=true
 ProtectSystem=strict

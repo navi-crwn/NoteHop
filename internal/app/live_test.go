@@ -3,7 +3,9 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"runtime"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -163,4 +165,82 @@ func TestNearby(t *testing.T) {
 	if nearbyRoom("2001:db8:1:2:aa::1") != nearbyRoom("2001:db8:1:2:bb::9") || nearbyRoom("10.0.0.1") == nearbyRoom("10.0.0.2") {
 		t.Fatal("room grouping")
 	}
+}
+
+// A peer that joins while the last peer of a note is leaving must end up in
+// the room that is registered for the note, or the people editing the same
+// note would be split into rooms that never hear each other.
+func TestLiveJoinLeaveRace(t *testing.T) {
+	var h liveHub
+	for i := 0; i < 20000; i++ {
+		first := &livePeer{send: make(chan []byte, 4), cancel: func() {}}
+		room, _, ok := h.join(1, first)
+		if !ok {
+			t.Fatal("first join refused")
+		}
+		second := &livePeer{send: make(chan []byte, 4), cancel: func() {}}
+		var wg sync.WaitGroup
+		wg.Add(2)
+		go func() { defer wg.Done(); h.leave(1, room, first) }()
+		go func() { defer wg.Done(); _, _, ok = h.join(1, second) }()
+		wg.Wait()
+		if !ok {
+			t.Fatal("second join refused")
+		}
+		h.mu.Lock()
+		cur := h.rooms[1]
+		h.mu.Unlock()
+		if cur == nil {
+			t.Fatalf("round %d: peer is in a room that is no longer registered for the note", i)
+		}
+		cur.mu.Lock()
+		_, in := cur.peers[second.id]
+		cur.mu.Unlock()
+		if !in {
+			t.Fatalf("round %d: peer is not in the note's registered room", i)
+		}
+		h.leave(1, cur, second)
+		if h.count() != 0 {
+			t.Fatalf("round %d: empty room left registered", i)
+		}
+	}
+}
+
+// A closed connection frees its seat: the room is dropped when the last
+// person leaves, and nothing keeps running for the connection afterwards.
+func TestLiveDisconnectCleansUp(t *testing.T) {
+	a, _, c := newAppDB(t)
+	n := c.create(map[string]any{"mode": "edit"})
+	waitFor := func(what string, ok func() bool) {
+		t.Helper()
+		for i := 0; i < 200; i++ {
+			if ok() {
+				return
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+		t.Fatalf("still not true after 2s: %s", what)
+	}
+	before := runtime.NumGoroutine()
+	var peers []*wsPeer
+	for i := 0; i < 5; i++ {
+		p, hello := dialLive(t, c, n.token, n.write, "")
+		if hello["t"] != "hello" {
+			t.Fatalf("hello: %v", hello)
+		}
+		peers = append(peers, p)
+	}
+	if got := a.live.count(); got != 1 {
+		t.Fatalf("rooms while connected: %d", got)
+	}
+	// Half of them leave politely, half drop the connection.
+	for i, p := range peers {
+		if i%2 == 0 {
+			p.c.Close(websocket.StatusNormalClosure, "")
+		} else {
+			p.c.CloseNow()
+		}
+	}
+	waitFor("room dropped", func() bool { return a.live.count() == 0 })
+	waitFor("goroutines gone", func() bool { return runtime.NumGoroutine() <= before+2 })
 }

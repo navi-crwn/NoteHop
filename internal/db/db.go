@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -445,6 +446,9 @@ func (d *DB) DeleteNote(id int64) error {
 	if err := holdSlugs(tx, `n.id = ?`, id); err != nil {
 		return err
 	}
+	if err := dropNoteFiles(tx, `n.id = ?`, id); err != nil {
+		return err
+	}
 	if _, err := tx.Exec(`DELETE FROM notes WHERE id = ?`, id); err != nil {
 		return err
 	}
@@ -871,10 +875,20 @@ func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
 }
 
 // Backup writes a consistent copy of the database to path while the server
-// keeps running (VACUUM INTO also compacts it). path must not exist yet.
+// keeps running (VACUUM INTO also compacts it). path must not exist yet. The
+// copy holds password hashes and webhook keys, so it is created readable by
+// its owner only, whatever the caller's umask.
 func (d *DB) Backup(path string) error {
-	_, err := d.Exec(`VACUUM INTO ?`, path)
-	return err
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		return err
+	}
+	f.Close()
+	if _, err := d.Exec(`VACUUM INTO ?`, path); err != nil {
+		os.Remove(path)
+		return err
+	}
+	return nil
 }
 
 // SetConfig replaces a note's feature settings (JSON).
@@ -893,6 +907,9 @@ func (d *DB) SetConfig(id int64, config string) error {
 func (d *DB) Sweep() (int64, error) {
 	t := now()
 	if err := holdSlugs(d, `n.expires > 0 AND n.expires <= ?`, t); err != nil {
+		return 0, err
+	}
+	if err := dropNoteFiles(d, `n.expires > 0 AND n.expires <= ?`, t); err != nil {
 		return 0, err
 	}
 	res, err := d.Exec(`DELETE FROM notes WHERE expires > 0 AND expires <= ?`, t)

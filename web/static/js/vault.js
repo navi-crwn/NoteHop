@@ -6,7 +6,7 @@
   var form = $('#vault-form');
   if (!form) return;
   var next = form.dataset.next || '/dashboard', isNew = !!form.dataset.new;
-  if (!/^\/(?![\/\\])/.test(next)) next = '/dashboard';
+  if (!/^\/(?![\/\\])[^\x00-\x1f\x7f\\]*$/.test(next)) next = '/dashboard';
   // Already unlocked in this browser: nothing to ask.
   if (NHC.vault()) return location.replace(next);
   form.classList.remove('hide');

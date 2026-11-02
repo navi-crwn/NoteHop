@@ -107,9 +107,13 @@ func (u *usedTickets) first(jti string, exp int64) bool {
 	return true
 }
 
-// safeNext keeps post-login redirects on this site.
+// safeNext keeps post-login redirects on this site. Browsers drop tabs and
+// line breaks from a URL and read a backslash as a slash, so "/<tab>/host"
+// would leave the site: control characters and backslashes are refused.
 func safeNext(next string) string {
-	if !strings.HasPrefix(next, "/") || strings.HasPrefix(next, "//") || strings.HasPrefix(next, "/\\") {
+	if !strings.HasPrefix(next, "/") || strings.HasPrefix(next, "//") || strings.ContainsFunc(next, func(r rune) bool {
+		return r < ' ' || r == 0x7f || r == '\\'
+	}) {
 		return "/dashboard"
 	}
 	return next

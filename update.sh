@@ -163,8 +163,11 @@ confirm "Update now? (a copy of the database is saved first)" y || { say "Nothin
 DBF="$(get_env .env NOTEHOP_DB)"; [ -n "$DBF" ] || DBF="$(get_env .env NOTEHOP_DATA)/notehop.db"
 case "$DBF" in /data/*) DBF="$(sed -n 's#.*"\(.*\):/data".*#\1#p' compose.local.yml 2>/dev/null | head -1)/${DBF#/data/}" ;; esac
 if [ -f "$DBF" ] && [ "$DRY" = 0 ]; then
-  mkdir -p backups; OUT="backups/notehop-$(date +%Y%m%d-%H%M%S).db"
+  # The copy holds password hashes and keys: private to this user.
+  OLD_UMASK="$(umask)"; umask 077
+  mkdir -p backups; chmod 700 backups; OUT="backups/notehop-$(date +%Y%m%d-%H%M%S).db"
   if have sqlite3; then sqlite3 "$DBF" ".backup '$OUT'" && ok "Database copied to $OUT"; else cp "$DBF" "$OUT" && ok "Database copied to $OUT"; warn "sqlite3 is not installed, so this was a plain file copy: best done while NoteHop is stopped."; fi
+  umask "$OLD_UMASK"
 fi
 
 git symbolic-ref -q HEAD >/dev/null || die "This checkout is not on a branch. Run:  git checkout main  and try again."

@@ -59,6 +59,9 @@ func (d *DB) DeleteNotesByOwner(userID int64) (int64, error) {
 	if err := holdSlugs(tx, `n.owner_id = ?`, userID); err != nil {
 		return 0, err
 	}
+	if err := dropNoteFiles(tx, `n.owner_id = ?`, userID); err != nil {
+		return 0, err
+	}
 	res, err := tx.Exec(`DELETE FROM notes WHERE owner_id = ?`, userID)
 	if err != nil {
 		return 0, err
@@ -69,9 +72,22 @@ func (d *DB) DeleteNotesByOwner(userID int64) (int64, error) {
 
 // DeleteUser removes the account row; sessions, margins and recovery codes
 // go with it (foreign keys), notes must be deleted first or they stay as
-// ownerless notes.
+// ownerless notes. Link names still held for the account are held for
+// everyone from now on: SQLite hands the id of a deleted last row to the next
+// account, which would otherwise inherit them.
 func (d *DB) DeleteUser(userID int64) error {
-	return deleted(d.Exec(`DELETE FROM users WHERE id = ?`, userID))
+	tx, err := d.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err := tx.Exec(`UPDATE slug_holds SET owner_id = NULL WHERE owner_id = ?`, userID); err != nil {
+		return err
+	}
+	if err := deleted(tx.Exec(`DELETE FROM users WHERE id = ?`, userID)); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 // UserCounts is what the control center sees about one account.

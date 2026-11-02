@@ -3,6 +3,8 @@
 # than $NOTEHOP_BACKUP_KEEP_DAYS. Run by notehop-backup.service; also fine by hand:
 #   sudo -u notehop env $(cat /etc/notehop/notehop.env | xargs) /usr/local/lib/notehop/backup.sh
 set -eu
+# Backups hold password hashes and webhook keys: private to the service user.
+umask 077
 DB="${NOTEHOP_DB:-/var/lib/notehop/notehop.db}"
 DIR="${NOTEHOP_BACKUP_DIR:-/var/lib/notehop/backups}"
 KEEP="${NOTEHOP_BACKUP_KEEP_DAYS:-14}"

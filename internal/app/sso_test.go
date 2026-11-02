@@ -61,6 +61,10 @@ func TestSafeNext(t *testing.T) {
 	for in, want := range map[string]string{
 		"/n/abc": "/n/abc", "": "/dashboard", "//evil.com": "/dashboard",
 		"/\\evil.com": "/dashboard", "https://evil.com": "/dashboard",
+		// Browsers drop tabs and line breaks inside a URL, so these become //evil.com.
+		"/\t/evil.com": "/dashboard", "/\n/evil.com": "/dashboard", "/\r/evil.com": "/dashboard",
+		"/\t\\evil.com": "/dashboard", "/a/\\evil.com": "/dashboard", "/a\x00b": "/dashboard",
+		"/n/abc?x=1#k=abc": "/n/abc?x=1#k=abc",
 	} {
 		if got := safeNext(in); got != want {
 			t.Errorf("safeNext(%q) = %q, want %q", in, got, want)

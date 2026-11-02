@@ -53,3 +53,21 @@ func TestProfileAndMock(t *testing.T) {
 		t.Fatalf("mock of encrypted note: %d", res.StatusCode)
 	}
 }
+
+// The profile list is found by looking for "profile":true in the note's JSON
+// settings. Text the owner controls (the webhook address) is escaped inside
+// that JSON, so it can never look like the setting.
+func TestProfileNotFooledBySettingsText(t *testing.T) {
+	_, _, c := newAppDB(t)
+	c.do("POST", "/api/register", map[string]any{"username": "budi", "auth": key()}, nil)
+	pub := c.create(map[string]any{"encrypted": false, "content": `{"t":"Rahasia","b":"x"}`})
+	adm := map[string]string{"X-Admin": pub.admin}
+	for _, u := range []string{`https://example.com/"profile":true`, `https://example.com/\"profile":true`, `https://example.com/x\`, `https://example.com/"profile`} {
+		if code, _, raw := c.do("POST", "/api/n/"+pub.token+"/config", map[string]any{"watch": u}, adm); code != 200 {
+			t.Fatalf("watch %q: %d %s", u, code, raw)
+		}
+		if code, _, _ := c.do("GET", "/@budi", nil, nil); code != 404 {
+			t.Fatalf("watch %q put a note on the profile: %d", u, code)
+		}
+	}
+}
