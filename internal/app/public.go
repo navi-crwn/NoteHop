@@ -52,7 +52,7 @@ func (a *App) profile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	l := a.locale(w, r)
-	a.render(w, r, http.StatusOK, "profile", pageData{Title: "@" + u.Username, Desc: l.T("profile.lead", "name", u.Username), Profile: list})
+	a.render(w, r, http.StatusOK, "profile", pageData{Title: "@" + u.Username, Desc: l.T("profile.lead", "name", u.Username), Profile: list, NoIndex: true})
 }
 
 var mockFence = regexp.MustCompile("(?s)```json\\s*\\n(.*?)\\n```")

@@ -402,3 +402,82 @@ func (d *DB) ResetChecks(noteID int64) error {
 	_, err := d.Exec(`UPDATE notes SET checks = '{}', updated = ? WHERE id = ?`, now(), noteID)
 	return err
 }
+
+// ---------- basic and encrypted notes ----------
+
+// RenameLink gives a link of a note a new address: a name the owner chose,
+// for a basic note. The old name is held for the account, so nobody else can
+// take it the day after.
+func (d *DB) RenameLink(noteID int64, from, to string) error {
+	tx, err := d.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if err := holdSlugs(tx, `l.note_id = ? AND l.token = ?`, noteID, from); err != nil {
+		return err
+	}
+	res, err := tx.Exec(`UPDATE links SET token = ? WHERE note_id = ? AND token = ?`, to, noteID, from)
+	if err != nil {
+		if isUnique(err) {
+			return ErrTaken
+		}
+		return err
+	}
+	if k, _ := res.RowsAffected(); k == 0 {
+		return ErrNotFound
+	}
+	return tx.Commit()
+}
+
+// ConvertBlockers names what a note carries that a change between basic and
+// encrypted cannot take along, because it is stored in the note's own form:
+// added lines, suggestions, a decoy, burn blocks, an inbox, sign-off marks.
+func (d *DB) ConvertBlockers(noteID int64) ([]string, error) {
+	var out []string
+	for _, c := range []struct{ name, q string }{
+		{"entries", `SELECT COUNT(*) FROM entries WHERE note_id = ?`},
+		{"suggestions", `SELECT COUNT(*) FROM suggestions WHERE note_id = ?`},
+		{"decoy", `SELECT COUNT(*) FROM decoys WHERE note_id = ?`},
+		{"burn", `SELECT COUNT(*) FROM burn_keys WHERE note_id = ?`},
+		{"inbox", `SELECT COUNT(*) FROM inboxes WHERE note_id = ?`},
+		{"signatures", `SELECT COUNT(*) FROM signatures WHERE note_id = ?`},
+	} {
+		var n int
+		if err := d.QueryRow(c.q, noteID).Scan(&n); err != nil {
+			return nil, err
+		}
+		if n > 0 {
+			out = append(out, c.name)
+		}
+	}
+	return out, nil
+}
+
+// ConvertNote swaps a note between basic and encrypted with the new content
+// the owner's browser prepared. Links, keys and settings stay as they are; the
+// version history is dropped, because it is stored in the old form. A password
+// goes with a change to basic. baseVersion guards against a save that landed
+// in the meantime.
+func (d *DB) ConvertNote(id, baseVersion int64, encrypted bool, content string) (int64, error) {
+	tx, err := d.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+	var v int64
+	err = tx.QueryRow(`UPDATE notes SET encrypted = ?, content = ?, version = version + 1, checks = '{}', updated = ?,
+		password = CASE WHEN ? THEN password ELSE 0 END, salt = CASE WHEN ? THEN salt ELSE '' END
+		WHERE id = ? AND version = ? AND frozen = 0 RETURNING version`,
+		encrypted, content, now(), encrypted, encrypted, id, baseVersion).Scan(&v)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, ErrConflict
+	}
+	if err != nil {
+		return 0, err
+	}
+	if _, err := tx.Exec(`DELETE FROM versions WHERE note_id = ?`, id); err != nil {
+		return 0, err
+	}
+	return v, tx.Commit()
+}

@@ -838,20 +838,21 @@ func (d *DB) Recover(userID int64, slot int, sso bool, hash, vaultWrap string) e
 // OwnedNote is a dashboard row. Blob is the owner's vault-encrypted
 // {title, key, admin} — the server can't read it.
 type OwnedNote struct {
-	Token    string `json:"token"`
-	Mode     string `json:"mode"`
-	Blob     string `json:"blob"`
-	Frozen   bool   `json:"frozen"`
-	Views    int64  `json:"views"`
-	MaxViews int64  `json:"max_views"`
-	Expires  int64  `json:"expires"`
-	Created  int64  `json:"created"`
-	Updated  int64  `json:"updated"`
-	LastOpen int64  `json:"last_open"`
+	Token     string `json:"token"`
+	Mode      string `json:"mode"`
+	Blob      string `json:"blob"`
+	Encrypted bool   `json:"encrypted"`
+	Frozen    bool   `json:"frozen"`
+	Views     int64  `json:"views"`
+	MaxViews  int64  `json:"max_views"`
+	Expires   int64  `json:"expires"`
+	Created   int64  `json:"created"`
+	Updated   int64  `json:"updated"`
+	LastOpen  int64  `json:"last_open"`
 }
 
 func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
-	rows, err := d.Query(`SELECT l.token, l.mode, n.owner_blob, n.frozen, n.views, n.max_views, n.expires, n.created, n.updated, n.last_open
+	rows, err := d.Query(`SELECT l.token, l.mode, n.owner_blob, n.encrypted, n.frozen, n.views, n.max_views, n.expires, n.created, n.updated, n.last_open
 		FROM notes n JOIN links l ON l.token = (SELECT token FROM links WHERE note_id = n.id ORDER BY rowid LIMIT 1)
 		WHERE n.owner_id = ? AND (n.expires = 0 OR n.expires > ?) ORDER BY n.updated DESC LIMIT 500`, userID, now())
 	if err != nil {
@@ -861,7 +862,7 @@ func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
 	out := []OwnedNote{}
 	for rows.Next() {
 		var o OwnedNote
-		if err := rows.Scan(&o.Token, &o.Mode, &o.Blob, &o.Frozen, &o.Views, &o.MaxViews, &o.Expires, &o.Created, &o.Updated, &o.LastOpen); err != nil {
+		if err := rows.Scan(&o.Token, &o.Mode, &o.Blob, &o.Encrypted, &o.Frozen, &o.Views, &o.MaxViews, &o.Expires, &o.Created, &o.Updated, &o.LastOpen); err != nil {
 			return nil, err
 		}
 		out = append(out, o)

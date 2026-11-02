@@ -181,6 +181,7 @@ func (a *App) routes() {
 	m.HandleFunc("GET /terms", a.page("terms", "terms.title", "terms.lead"))
 	m.HandleFunc("GET /privacy", a.page("privacy", "privacy.title", "privacy.lead"))
 	m.HandleFunc("GET /offline", a.page("offline", "offline.title", "offline.lead"))
+	m.HandleFunc("GET /robots.txt", a.robots)
 	m.HandleFunc("GET /sw.js", a.serviceWorker)
 	m.HandleFunc("GET /manifest.webmanifest", a.manifest)
 	m.HandleFunc("GET /api/nearby", a.apiNearby)
@@ -237,7 +238,9 @@ func (a *App) routes() {
 	m.HandleFunc("GET /api/margins/{ref}", a.apiMargin)
 	m.HandleFunc("PUT /api/margins/{ref}", a.apiMargin)
 	m.HandleFunc("POST /api/n/{token}/links", a.apiAddLink)
+	m.HandleFunc("PUT /api/n/{token}/links/{link}", a.apiRenameLink)
 	m.HandleFunc("DELETE /api/n/{token}/links/{link}", a.apiDeleteLink)
+	m.HandleFunc("POST /api/n/{token}/convert", a.apiConvert)
 
 	m.HandleFunc("POST /api/register", a.apiRegister)
 	m.HandleFunc("POST /api/login", a.apiLogin)
