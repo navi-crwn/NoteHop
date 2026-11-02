@@ -52,7 +52,10 @@ type liveHub struct {
 }
 
 func (h *liveHub) join(note int64, p *livePeer) (*liveRoom, []*livePeer, bool) {
+	// The hub stays locked until the peer is in the room: leave drops an empty
+	// room under the same lock, so a joiner never lands in a dropped one.
 	h.mu.Lock()
+	defer h.mu.Unlock()
 	if h.rooms == nil {
 		h.rooms = map[int64]*liveRoom{}
 	}
@@ -63,7 +66,6 @@ func (h *liveHub) join(note int64, p *livePeer) (*liveRoom, []*livePeer, bool) {
 	}
 	h.seq++
 	p.id = h.seq
-	h.mu.Unlock()
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
