@@ -24,7 +24,7 @@ Every setting is an environment variable. On a VPS they live in `/etc/notehop/no
 | `NOTEHOP_AI` | `on` | Writing help: `on` (on-device AI + own API key; the editor page's `connect-src` opens for the providers in `middleware.go`), `device` (browser's built-in AI only), `off` (no AI button) |
 | `NOTEHOP_AI_ORIGINS` | empty | Extra origins for the "Other" (OpenAI-compatible) provider, for example `https://ai.company.example`. Origins only, comma-separated |
 | `NOTEHOP_GITHUB` | `navi-crwn/NoteHop` | GitHub repository (`owner/name`) whose numbers show on the home page through `GET /api/repo`. Fetched at most once an hour. `-` hides that section |
-| `NOTEHOP_SSH_ADDR` | empty | Turn on SSH for public notes, for example `:2222` |
+| `NOTEHOP_SSH_ADDR` | empty | Turn on SSH for basic notes, for example `:2222` |
 | `NOTEHOP_SSH_KEY` | `ssh_host_ed25519_key` next to the DB | SSH host key (made on first start) |
 | `NOTEHOP_PRIVATE_HOOKS` | `false` | Allow Watch webhooks to private/loopback addresses and `http://` (own network only) |
 | `TELEGRAM_BOT_TOKEN` | empty | Bot token from @BotFather; needs `NOTEHOP_BASE_URL` (the webhook is registered at start) |
@@ -38,6 +38,10 @@ Every setting is an environment variable. On a VPS they live in `/etc/notehop/no
 | `NOTEHOP_SSO_PROVIDERS` | empty | Extra buttons straight to a provider on the account server, for example `google=Google`: visitors go to `<SSO_URL>/sso/<client>/google` |
 | `NOTEHOP_SSO_CLIENT` | `notehop` | This app's name on the account server: visitors go to `<SSO_URL>/sso/<client>`, the ticket comes back to `/auth/sso/callback` |
 | `NOTEHOP_LINKS` | empty | Related sites in the footer, `Name=URL`, comma-separated |
+| `NOTEHOP_BACKUP_DIR` | `/var/lib/notehop/backups` | Read by `deploy/backup.sh`, not by the server: where the daily backup goes |
+| `NOTEHOP_BACKUP_KEEP_DAYS` | `14` | Read by `deploy/backup.sh`: backups older than this many days are deleted |
+
+The `notehop` command-line client reads two more: `NOTEHOP_SERVER` (the address for `notehop new`, default `http://127.0.0.1:8080`) and `NOTEHOP_PASSWORD` (the extra password for `new` and `get`).
 
 Uploads return HTTP 507 with `Retry-After: 60` when the shared budget would be exceeded or the server disk cannot safely accept the upload. The editor shows a warning, disables file selection and checks again every 30 seconds. No restart is needed after capacity recovers. Existing downloads and text editing remain available. Binary units are used (MB = MiB, GB = GiB).
 
@@ -51,6 +55,22 @@ The database schema migrates itself at start (version in `PRAGMA user_version`, 
 
 The UI comes in 9 languages: English (default and fallback), 简体中文 (zh-CN), Deutsch, Bahasa Indonesia, 日本語, Português (pt-BR), Español, Français and Русский. The old codes `zh` and `pt` still work and map to `zh-CN` and `pt-BR`. Anonymous visitors get English regardless of `Accept-Language`; the globe menu stores a choice in the `nh_lang` cookie, and `?lang=xx` sets that cookie. Both explicit choices always win over the default. Texts live in `web/i18n/*.json`, and `go test ./internal/i18n` checks that every file has the same keys, placeholders and tags. API errors come as `{error, code, vars}` and are translated in the browser.
 
+When you add or change interface text, change it in all nine files in `web/i18n/`, then run `go test ./internal/i18n`. Two other places carry translated text and are separate from the interface catalogs:
+
+- The README exists once per language (`README.md`, `README.zh-CN.md`, `README.de.md`, `README.id.md`, `README.ja.md`, `README.pt-BR.md`, `README.es.md`, `README.fr.md`, `README.ru.md`). Keep them in step with the English one.
+- The documentation site in `docs/` (GitHub Pages) is generated. Edit `docs/locales.ini` (one section per language) or `docs/.template.html`, then run `node docs/.render.mjs` from the repository root to rewrite `docs/index.html` and `docs/<lang>/index.html`.
+
+### Changelog
+
+`CHANGELOG.md` is written by hand, newest first, with an `[Unreleased]` section on top and one entry per pull request. `web/changelog.json` is different: it is a generated snapshot of the commit, tag and pull request history that the `/changelog` page shows, so do not edit it by hand. To refresh it, run this from a checkout where `origin/main` is up to date and `gh` is signed in:
+
+```bash
+git fetch origin
+python3 scripts/build-changelog.py --repo NoteHop
+```
+
+Then commit `web/changelog.json`. The program embeds the file, so the page shows the new history after the next build and deploy.
+
 ## Commands
 
 ```bash
@@ -59,7 +79,8 @@ notehop backup -db notehop.db copy.db                               # safe copy 
 notehop new -server https://note.example.com < note.md              # encrypted in the terminal, prints the link
 notehop new -server https://… -password secret -expires 24h -burn 1 file.md
 notehop get 'https://note.example.com/TOKEN#k=…'                    # download and decrypt in the terminal
-ssh -p 2222 note.example.com < note.md                              # ⚠️ public note (when NOTEHOP_SSH_ADDR is set)
+ssh -p 2222 note.example.com < note.md                              # a basic note, readable by the server (when NOTEHOP_SSH_ADDR is set)
+notehop new -server https://… -public -slug monday-meeting note.md  # a basic note with a link name
 notehop takedown -db notehop.db https://note.example.com/xxxx       # moderation: delete + hold the link name for 365 days
 notehop takedown -db notehop.db -file FILE_ID                       # moderation: delete one attachment
 ```
@@ -83,7 +104,11 @@ admin  = 32 random bytes                       → owner link: #k=<K>&a=<admin>;
 - Password change and recovery: the vault key itself never changes. After a change, the first 32 bytes of the password's PBKDF2 become a wrapping key, and `users.vault_wrap = AES-GCM(that key, vault key)`. Recovery codes are 16 characters (80 bits); `HKDF-SHA256(code, salt "notehop/recovery/"+username)` → 32 bytes that seal the vault key (`recovery_codes.wrap`) + 32 bytes of proof, of which the server keeps only the SHA-256.
 - PIN blocks: `salt.b64 + "." + AES-GCM(PBKDF2(PIN, salt, 250000))`.
 
-What the server can see: the ciphertext's size, times, view counts, link modes, which checkboxes are ticked (index + true/false), and the number of replies.
+What the server can see in an encrypted note: the ciphertext's size, times, view counts, link modes, the settings for expiry, open and lock times and allowed networks, which checkboxes are ticked (index + true/false), the votes of each poll (option index and a random browser ID), the number of replies, and any content warning label and reason, which are stored readable so the gate can show them before decryption.
+
+A basic note is not encrypted. Its content is the JSON `{"t": title, "b": body}` in plain text, so the server can read it, and so can anyone who reads the database or a backup. Because the server has the text, `/raw`, the mock API, SSH, the public `/@name` page and a link name are possible for basic notes only; a password, a decoy and self-destructing blocks need encryption and are refused for them. An attachment's key is stored inside the note text, so in a basic note the server can read attachments as well, and live editing in a basic note is relayed without encryption. The owner can change a note between the two types with `POST /api/n/{token}/convert`.
+
+For an encrypted note, "the server cannot read it" assumes the browser runs the JavaScript the server sent. A server operator who changed that JavaScript could capture keys, which is why the `notehop` CLI, which encrypts on your own machine, and self-hosting exist.
 
 ## API
 
@@ -91,7 +116,7 @@ Everything is JSON. Headers: `X-Admin` (owner token), `X-Write` (proof of the ke
 
 | Method & path | Who | What it does |
 | --- | --- | --- |
-| `POST /api/notes` | anyone | Create a note `{encrypted, password, salt, content, mode, slug, expires_in, max_views, admin, write, owner_blob}` |
+| `POST /api/notes` | anyone | Create a note `{encrypted, password, salt, content, mode, slug, expires_in, max_views, admin, write, owner_blob, content_warning, warning_reason}`. `slug` is accepted only when `encrypted` is false; `password` and burn blocks only when it is true |
 | `GET /api/n/{token}` | anyone | Metadata without content (owner: + links, snapshots) |
 | `POST /api/n/{token}/open` | anyone (+X-Write with a password) | Content + replies + checks; counts a view. `{"poll":true}` doesn't count (refused for delete-after-reading notes) |
 | `PUT /api/n/{token}` | edit mode / owner + X-Write | Save `{content, version}`; 409 when the version is stale |
@@ -108,6 +133,8 @@ Everything is JSON. Headers: `X-Admin` (owner token), `X-Write` (proof of the ke
 | `PUT` · `DELETE /api/n/{token}/decoy` | owner | Decoy password: a second ciphertext; its openings are logged for the owner |
 | `POST /api/n/{token}/claim` | account owner + X-Admin | Move a guest note into the account |
 | `POST /api/n/{token}/links` · `DELETE …/links/{t}` | owner | Add / turn off a link |
+| `PUT /api/n/{token}/links/{link}` | owner, basic notes | Rename a link `{slug}`; the old name is held for the owner for 90 days |
+| `POST /api/n/{token}/convert` | owner + X-Admin | Change a note between basic and encrypted `{to: "basic"\|"encrypted", content, version}`; the browser prepares `content`. Refused when the note has entries, suggestions, a decoy, burn blocks, an inbox or sign-offs, or is a frozen copy |
 | `DELETE /api/n/{token}` | owner or account owner | Delete the note |
 | `GET` · `PUT /api/margins/{ref}` | account | Private margin notes (vault-encrypted) next to anyone's note |
 | `GET /api/n/{token}/live` (WebSocket) | key holders | Live collaboration. First message `{t:"auth", write, admin}`, then `{t, to, d}` with `d` encrypted. Types: `y` (Yjs update, writers only), `need`/`sync`/`nosync` (initial state), `aw` (presence/cursors), `chat`, `follow`. Not for frozen or delete-after-reading notes |
@@ -117,9 +144,9 @@ Everything is JSON. Headers: `X-Admin` (owner token), `X-Write` (proof of the ke
 | `POST /api/n/{token}/inbox` · `DELETE` | owner | Turn on an inbox `{pub, priv}` (P-256 public key + the private key sealed by the browser) / turn it off |
 | `POST /in/{token}` | anyone who knows the address (60/min/IP) | Raw text or JSON `{text, from}` → an encrypted reply |
 | `POST /api/telegram/{secret}` | Telegram | Bot webhook (checked with `X-Telegram-Bot-Api-Secret-Token`) |
-| `GET /mock/{token}/{path…}` | anyone | JSON from a public note, CORS `*` |
-| `GET /raw/{token}` | anyone | Plain text (public notes only) |
-| `GET /@{username}` | anyone | Public profile (the public notes its owner picked) |
+| `GET /mock/{token}/{path…}` | anyone | JSON from a basic note without a view limit, CORS `*` |
+| `GET /raw/{token}` | anyone | Plain text (basic notes only) |
+| `GET /@{username}` | anyone | Public profile (the basic notes its owner picked) |
 | `GET /api/repo` | anyone | GitHub numbers for the home page (cached for an hour): `{repo, url, stars, forks, issues, license, pushed, langs, weeks}`. 404 when `NOTEHOP_GITHUB=-`, 503 before the first successful fetch |
 | `POST /api/register` · `/api/login` · `/api/logout`, `GET /api/me`, `GET /api/me/notes` | | Accounts |
 | `GET /auth/sso` · `GET /auth/sso/callback` | | Single sign-on (HMAC ticket, `aud`, `state` + `nh_sso` cookie, one-time `jti`) |
@@ -138,7 +165,7 @@ Everything is JSON. Headers: `X-Admin` (owner token), `X-Write` (proof of the ke
 
 With single sign-on configured, NoteHop also speaks the HOP App Protocol v1 under `/hop/*`, so a control center can read and act on it and the account server can push account events. Every call is signed with `NOTEHOP_SSO_SECRET` by one of the apps in `NOTEHOP_HOP_CLIENTS` (`X-HOP-App`, `X-HOP-Timestamp`, `X-HOP-Nonce`, `X-HOP-Actor`, `X-HOP-Signature` = base64url HMAC-SHA256 of `hop1|app|ts|nonce|METHOD|path-with-query|sha256hex(body)`; 120 s max age, nonces work once). There are no cookies and no CSRF check here. Replies are `{ok:true, data, page?}` or `{ok:false, error, message}` (401 `bad_signature` / `stale_request` / `replay`, 404 `not_configured` while SSO is off). Times are ISO-8601 UTC; users are identified by their account-server id (`sub`) and `local_id` (password accounts: `local:<id>`). Everything that changes data lands in the `hop_audit` table.
 
-**Zero-knowledge still holds:** an encrypted note is listed with its metadata and `encrypted: true`, never its content; `title` and `preview` are filled only for public notes.
+**Encrypted notes stay unreadable here:** an encrypted note is listed with its metadata and `encrypted: true`, never its content; `title` and `preview` are filled only for basic notes.
 
 | Endpoint | What it does |
 | --- | --- |

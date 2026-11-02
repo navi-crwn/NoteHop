@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NoteHop — Notes chiffrées de bout en bout avec autodestruction</title>
-  <meta name="description" content="Rédigez une note, verrouillez-la dans votre navigateur avec AES-256-GCM et partagez des liens sur n.hel.ink. Zéro connaissance, autodestruction, membre HOP.">
+  <meta name="description" content="Écrivez une note, verrouillez-la dans votre navigateur avec AES-256-GCM et partagez-la par un lien sur n.hel.ink. Le serveur ne peut pas lire les notes chiffrées, mais il peut lire les notes basiques. Fait partie de la famille HOP.">
   <link rel="canonical" href="https://navi-crwn.github.io/NoteHop/fr/">
   <link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/styles.css">
@@ -23,7 +23,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="NoteHop">
   <meta property="og:title" content="NoteHop — Notes chiffrées de bout en bout avec autodestruction">
-  <meta property="og:description" content="Rédigez une note, verrouillez-la dans votre navigateur avec AES-256-GCM et partagez des liens sur n.hel.ink. Zéro connaissance, autodestruction, membre HOP.">
+  <meta property="og:description" content="Écrivez une note, verrouillez-la dans votre navigateur avec AES-256-GCM et partagez-la par un lien sur n.hel.ink. Le serveur ne peut pas lire les notes chiffrées, mais il peut lire les notes basiques. Fait partie de la famille HOP.">
   <meta property="og:url" content="https://navi-crwn.github.io/NoteHop/fr/">
   <meta property="og:image" content="https://navi-crwn.github.io/NoteHop/og.png">
   <meta property="og:image:width" content="1200">
@@ -66,7 +66,7 @@
       <div>
         <p class="kicker">HOP &middot; Notes et documents chiffrés</p>
         <h1>Verrouillé dans votre navigateur, partagé en quelques secondes</h1>
-        <p class="lede">NoteHop chiffre vos notes localement avec AES-256-GCM avant qu’elles ne quittent votre appareil. La clé réside dans le fragment d’URL (#), rendant le serveur incapable de lire vos données. Liens courts et propres sur n.hel.ink, open source (MIT).</p>
+        <p class="lede">Par défaut, NoteHop chiffre votre note dans votre navigateur avec AES-256-GCM avant qu'elle ne quitte votre appareil. La clé se trouve dans le fragment de l'URL (#), donc le serveur ne peut pas lire une note chiffrée. Une note basique, que le serveur peut lire, reçoit un nom de lien de votre choix. Liens courts sur n.hel.ink, open source (MIT).</p>
         <div class="cta-row">
           <a class="btn primary" href="https://note.hel.ink">Essayer NoteHop</a>
           <a class="btn" href="https://github.com/navi-crwn/NoteHop">Voir le code</a>
@@ -80,13 +80,13 @@
       <span class="section-number" aria-hidden="true">01</span><h2 id="features-h">Ce que propose NoteHop</h2>
       <ul class="features">
         <li><strong>Chiffrement côté client AES-256-GCM</strong><p>Votre navigateur verrouille le contenu avant tout envoi. La clé de déchiffrement voyage dans le fragment (#) et n’est jamais transmise au serveur.</p></li>
-        <li><strong>Serveur à zéro connaissance (Zero-knowledge)</strong><p>Le serveur ne conserve que des blocs chiffrés. Même les administrateurs ou les sauvegardes ne peuvent inspecter vos écrits.</p></li>
+        <li><strong>Un serveur qui ne peut pas lire les notes chiffrées</strong><p>Pour une note chiffrée, le serveur ne stocke que le texte chiffré : ni les opérateurs ni les copies de la base de données ne peuvent en lire le titre ou le texte. Les notes basiques sont stockées en clair et signalées comme basiques.</p></li>
         <li><strong>Autodestruction et lecture unique</strong><p>Les notes peuvent s’autodétruire dès leur première ouverture ou expirer après 10 minutes, 1 heure, 1 jour ou 30 jours.</p></li>
         <li><strong>Permissions modulables par lien</strong><p>Créez plusieurs liens pour une même note : propriétaire, lecture seule, modification, réponses seules ou cases à cocher seules.</p></li>
-        <li><strong>Collaboration en temps réel</strong><p>Travaillez à plusieurs via des relais WebSocket tout en conservant un chiffrement complet de bout en bout.</p></li>
+        <li><strong>Collaboration en temps réel</strong><p>Écrivez à plusieurs en temps réel via un relais WebSocket. Dans une note chiffrée, tout ce que le relais transmet est chiffré.</p></li>
         <li><strong>Formats de notes variés</strong><p>Texte Markdown, listes interactives, sondages, formulaires, code coloré et pages web encapsulées.</p></li>
         <li><strong>Connexion unique : HOP ID</strong><p>Connectez-vous avec votre compte SSO HOP ID sur l’ensemble de la famille HOP, ou utilisez NoteHop en mode invité.</p></li>
-        <li><strong>Binaire Go unique auto-hébergeable</strong><p>Binaire autonome léger (~16 Mo) avec SQLite intégré, sans dépendances d’exécution externes.</p></li>
+        <li><strong>Binaire Go unique auto-hébergeable</strong><p>Un seul exécutable Go d'environ 20 Mo avec SQLite intégré, rien d'autre à installer, et un installateur en une commande.</p></li>
       </ul>
     </section>
 
@@ -104,11 +104,11 @@
       <h2 id="faq-h">FAQ</h2>
       <details>
         <summary>Le serveur ou l’hébergeur peut-il lire mes notes ?</summary>
-        <p>Non. Le chiffrement s’exécute entièrement dans votre navigateur via Web Crypto AES-256-GCM. La clé secrète réside dans l’ancre de l’URL (#) et ne parvient jamais au serveur.</p>
+        <p>Pas une note chiffrée. Votre navigateur la chiffre avec Web Crypto AES-256-GCM avant l'envoi, et la clé reste dans le hash de l'URL (#), que les navigateurs n'envoient pas à un serveur. Une note basique n'est pas chiffrée, et le serveur peut la lire.</p>
       </details>
       <details>
         <summary>Que se passe-t-il si je perds le lien de ma note ?</summary>
-        <p>Puisque NoteHop est à zéro connaissance et ne possède aucune porte dérobée, la perte du lien rend la note définitivement irrécupérable.</p>
+        <p>Une note chiffrée, personne ne peut la récupérer. NoteHop n'a ni clé maîtresse ni porte dérobée : le lien est la seule entrée. Une note basique se retrouve grâce au nom de son lien.</p>
       </details>
       <details>
         <summary>Puis-je héberger NoteHop sur mon propre serveur ?</summary>
@@ -116,7 +116,7 @@
       </details>
       <details>
         <summary>Où signaler un problème ou une faille de sécurité ?</summary>
-        <p>Ouvrez un ticket sur GitHub ou écrivez à security@hel.ink pour une divulgation responsable.</p>
+        <p>N'ouvrez pas de ticket public pour une vulnérabilité. Signalez-la en privé via GitHub : ouvrez l'onglet Security du dépôt et choisissez Report a vulnerability. SECURITY.md donne les détails.</p>
       </details>
     </section>
 

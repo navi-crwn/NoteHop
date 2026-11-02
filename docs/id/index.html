@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NoteHop — Catatan terenkripsi ujung-ke-ujung dengan hapus otomatis</title>
-  <meta name="description" content="Tulis catatan, kunci di peramban dengan AES-256-GCM, dan bagikan tautan di n.hel.ink. Zero-knowledge, dapat hapus otomatis, bagian dari keluarga HOP.">
+  <meta name="description" content="Tulis catatan, kunci di browser Anda dengan AES-256-GCM, lalu bagikan lewat tautan di n.hel.ink. Server tidak bisa membaca catatan terenkripsi, tetapi bisa membaca catatan dasar. Bagian dari keluarga HOP.">
   <link rel="canonical" href="https://navi-crwn.github.io/NoteHop/id/">
   <link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/styles.css">
@@ -23,7 +23,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="NoteHop">
   <meta property="og:title" content="NoteHop — Catatan terenkripsi ujung-ke-ujung dengan hapus otomatis">
-  <meta property="og:description" content="Tulis catatan, kunci di peramban dengan AES-256-GCM, dan bagikan tautan di n.hel.ink. Zero-knowledge, dapat hapus otomatis, bagian dari keluarga HOP.">
+  <meta property="og:description" content="Tulis catatan, kunci di browser Anda dengan AES-256-GCM, lalu bagikan lewat tautan di n.hel.ink. Server tidak bisa membaca catatan terenkripsi, tetapi bisa membaca catatan dasar. Bagian dari keluarga HOP.">
   <meta property="og:url" content="https://navi-crwn.github.io/NoteHop/id/">
   <meta property="og:image" content="https://navi-crwn.github.io/NoteHop/og.png">
   <meta property="og:image:width" content="1200">
@@ -66,7 +66,7 @@
       <div>
         <p class="kicker">HOP &middot; Catatan & dokumen terenkripsi</p>
         <h1>Terkunci di peramban Anda, dibagikan dalam hitungan detik</h1>
-        <p class="lede">NoteHop mengenkripsi catatan Anda secara lokal dengan AES-256-GCM sebelum meninggalkan perangkat Anda. Kunci dekripsi berada di fragmen URL (#), sehingga server tidak dapat membaca data Anda. Tautan pendek bersih di n.hel.ink, open source (MIT).</p>
+        <p class="lede">Secara bawaan, NoteHop mengenkripsi catatan Anda di browser dengan AES-256-GCM sebelum keluar dari perangkat. Kuncinya ada di fragmen URL (#), sehingga server tidak bisa membaca catatan terenkripsi. Catatan dasar, yang bisa dibaca server, mendapat nama tautan pilihan Anda. Tautan pendek di n.hel.ink, sumber terbuka (MIT).</p>
         <div class="cta-row">
           <a class="btn primary" href="https://note.hel.ink">Coba NoteHop</a>
           <a class="btn" href="https://github.com/navi-crwn/NoteHop">Lihat kode</a>
@@ -80,13 +80,13 @@
       <span class="section-number" aria-hidden="true">01</span><h2 id="features-h">Kemampuan NoteHop</h2>
       <ul class="features">
         <li><strong>Enkripsi klien AES-256-GCM</strong><p>Peramban Anda mengunci teks sebelum disimpan. Kunci enkripsi berada di fragmen link (#) dan tidak pernah dikirim ke server.</p></li>
-        <li><strong>Server zero-knowledge</strong><p>Server hanya menyimpan gumpalan teks terenkripsi (ciphertext). Operator server atau dump database tetap tidak bisa membaca catatan Anda.</p></li>
+        <li><strong>Server yang tidak bisa membaca catatan terenkripsi</strong><p>Untuk catatan terenkripsi, server hanya menyimpan teks sandi, jadi operator dan dump database tidak bisa membaca judul maupun isinya. Catatan dasar disimpan sebagai teks biasa dan ditandai sebagai dasar.</p></li>
         <li><strong>Hapus otomatis & bakar setelah dibaca</strong><p>Catatan dapat menghapus diri seketika setelah dibuka sekali, atau kedaluwarsa otomatis setelah 10 menit, 1 jam, 1 hari, atau 30 hari.</p></li>
         <li><strong>Hak akses bertingkat per tautan</strong><p>Terbitkan tautan berbeda untuk catatan yang sama: pemilik, baca saja, dapat mengedit, balas saja, atau centang saja pada daftar tugas.</p></li>
-        <li><strong>Kolaborasi langsung real-time</strong><p>Menulis bersama secara langsung melalui relay WebSocket dengan enkripsi ujung-ke-ujung yang tetap terjaga antar kolaborator.</p></li>
+        <li><strong>Kolaborasi langsung real-time</strong><p>Menulis bersama secara real time lewat relay WebSocket. Pada catatan terenkripsi, semua yang diteruskan relay sudah terenkripsi.</p></li>
         <li><strong>Beragam format catatan</strong><p>Teks Markdown, daftar periksa interaktif, jajak pendapat, formulir, catatan kode berpewarna sintaks, dan catatan web terisolasi.</p></li>
         <li><strong>Satu login untuk semua app: HOP ID</strong><p>Masuk mulus dengan akun single sign-on HOP ID di seluruh keluarga aplikasi HOP, atau gunakan NoteHop tanpa akun sebagai tamu.</p></li>
-        <li><strong>Biner tunggal Go mandiri</strong><p>Dikompilasi menjadi file eksekusi Go ringan (~16 MB) dengan SQLite bawaan, tanpa ketergantungan runtime eksternal.</p></li>
+        <li><strong>Biner tunggal Go mandiri</strong><p>Satu program Go sekitar 20 MB dengan SQLite bawaan, tanpa yang lain untuk dipasang, dan penginstal satu perintah.</p></li>
       </ul>
     </section>
 
@@ -104,11 +104,11 @@
       <h2 id="faq-h">Tanya Jawab</h2>
       <details>
         <summary>Bisakah server atau pengelola membaca catatan saya?</summary>
-        <p>Tidak. Enkripsi berlangsung sepenuhnya di dalam peramban web Anda via Web Crypto AES-256-GCM. Kunci rahasia berada di hash URL (#) dan tidak pernah dikirim ke server.</p>
+        <p>Catatan terenkripsi tidak. Browser Anda mengenkripsinya dengan Web Crypto AES-256-GCM sebelum dikirim, dan kuncinya tetap di hash URL (#) yang tidak dikirim browser ke server. Catatan dasar tidak terenkripsi, dan server bisa membacanya.</p>
       </details>
       <details>
         <summary>Apa yang terjadi jika saya kehilangan tautan catatan saya?</summary>
-        <p>Karena NoteHop menerapkan zero-knowledge tanpa kunci master atau backdoor, kehilangan tautan berarti catatan tersebut tidak dapat dipulihkan atau didekripsi oleh siapa pun.</p>
+        <p>Catatan terenkripsi tidak bisa dipulihkan siapa pun. NoteHop tidak punya kunci utama maupun pintu belakang, jadi tautan adalah satu-satunya jalan masuk. Catatan dasar bisa ditemukan lagi lewat nama tautannya.</p>
       </details>
       <details>
         <summary>Bisakah saya meng-host NoteHop di server saya sendiri?</summary>
@@ -116,7 +116,7 @@
       </details>
       <details>
         <summary>Di mana saya dapat melaporkan masalah atau bug?</summary>
-        <p>Buka issue di GitHub atau kirim surel ke security@hel.ink untuk pelaporan kerentanan secara bertanggung jawab.</p>
+        <p>Jangan membuka issue publik untuk kerentanan. Laporkan secara privat lewat GitHub: buka tab Security di repositori, lalu pilih Report a vulnerability. Rinciannya ada di SECURITY.md.</p>
       </details>
     </section>
 

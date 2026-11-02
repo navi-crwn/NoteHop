@@ -1,183 +1,221 @@
 <p align="center">🌐 <a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.de.md">Deutsch</a> · <a href="README.id.md">Bahasa Indonesia</a> · <a href="README.ja.md">日本語</a> · <b>Português (Brasil)</b> · <a href="README.es.md">Español</a> · <a href="README.fr.md">Français</a> · <a href="README.ru.md">Русский</a></p>
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/hero-pt-dark.webp"><img src="docs/readme/hero-pt-light.webp" alt="NoteHop: notas que só as pessoas que você escolher podem ler" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/hero-pt-dark.webp"><img src="docs/readme/hero-pt-light.webp" alt="A página inicial do NoteHop: o título "Notas que só as pessoas que você escolhe podem ler" ao lado do logotipo em 3D" width="100%"></picture></p>
+
+<p align="center"><b>Escreva uma nota, envie o link, pronto.</b><br>Por padrão, a nota é criptografada no seu navegador antes de ser salva, então o servidor guarda um texto que não consegue ler.</p>
 
 <p align="center">
-  <b>Escreva uma nota, envie o link, pronto.<br>Ela é trancada no seu navegador antes de ser salva, então nem o servidor consegue ler.</b>
-</p>
-
-<p align="center">
-  <a href="https://note.hel.ink"><b>✍️ Experimente online</b></a> ·
-  <a href="https://navi-crwn.github.io/NoteHop/">Website</a> ·
+  <a href="https://note.hel.ink"><b>Experimente online</b></a> ·
+  <a href="https://navi-crwn.github.io/NoteHop/">Site</a> ·
   <a href="#run-your-own">Hospede você mesmo</a> ·
-  <a href="#features">Recursos</a> ·
-  <a href="#faq">Perguntas</a> ·
-  <a href="docs/SELF-HOSTING.md">Guia de servidor (EN)</a> ·
-  <a href="docs/REFERENCE.md">Referência (EN)</a> ·
-  <a href="CHANGELOG.md">Mudanças</a>
+  <a href="#encrypted-and-basic-notes">Notas criptografadas e básicas</a> ·
+  <a href="#faq">FAQ</a> ·
+  <a href="docs/SELF-HOSTING.md">Guia de auto-hospedagem</a> ·
+  <a href="docs/REFERENCE.md">Referência</a> ·
+  <a href="CHANGELOG.md">Histórico de mudanças</a>
 </p>
 
-<p align="center"><sub>Um binário Go + um arquivo SQLite · 9 idiomas · sem anúncios nem rastreadores · gratuito e de código aberto (MIT)</sub></p>
+<p align="center"><sub>Um programa Go e um arquivo SQLite · 9 idiomas · sem anúncios, sem rastreadores · gratuito e de código aberto (MIT)</sub></p>
 
 > [!IMPORTANT]
-> **A chave está no link.** Quem tem o link pode ler a nota, e se você perder todos os links, ninguém mais consegue abri-la: nem você, nem o servidor, nem nós. Envie os links só para quem deve recebê-los e guarde seu link de dono em um lugar seguro.
+> Uma nota criptografada guarda a chave no link. Quem tem o link pode ler a nota, e se todas as cópias do link se perderem, ninguém consegue abri-la de novo, nem o servidor nem as pessoas que o operam. Uma nota básica funciona de outro jeito: o servidor guarda o texto dela como texto simples e pode lê-lo. Use notas básicas só para coisas que você aceita que o operador do servidor leia.
 
----
+O NoteHop é um aplicativo de compartilhamento de notas que você pode hospedar por conta própria. Você escreve uma nota, recebe um link e o envia. Cada link tem seus próprios direitos (somente leitura, pode escrever, só responder, só marcar), a nota pode se apagar depois de lida, e várias pessoas podem escrever nela ao mesmo tempo.
 
-Instale com um comando (ele verifica seu computador primeiro, faz poucas perguntas e pode instalar o hub HOP ID para você):
+Ele serve a quem:
+
+- envia senhas, endereços ou notas privadas por chat e não quer que fiquem no histórico,
+- compartilha uma lista de compras, uma ata de reunião ou uma lista de inscrição sem pedir que todos criem uma conta,
+- quer um pastebin ou bloco de notas para hospedar no próprio servidor, em um único arquivo.
+
+Instale com um comando. O script verifica o seu computador, faz algumas perguntas e também pode configurar para você o hub de contas HOP ID:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/navi-crwn/NoteHop/main/install.sh | bash
 ```
 
-A partir de um clone: `./install.sh` · atualizar: `./update.sh` · remover: `./uninstall.sh`. Use `--yes` para aceitar todos os padrões; `--help` lista as opções.
+A partir de um clone: `./install.sh`. Atualize com `./update.sh` e remova com `./uninstall.sh`. Adicione `--yes` para aceitar todos os padrões; `--help` lista as opções.
 
-## O que é o NoteHop?
-
-Pense numa nota como uma carta dentro de uma caixa trancada. O NoteHop tranca a caixa **no seu navegador**, coloca a chave no link e só então envia a caixa ao servidor. O servidor guarda uma caixa que não consegue abrir. Quem receber o link abre ali mesmo, no próprio navegador.
-
-Além disso, uma nota faz muito mais que um bloco de notas: links com permissões diferentes (somente leitura, pode escrever, só responder, só marcar), apagar-se depois de lida, escrever junto ao vivo, listas de tarefas, enquetes, formulários, código e até pequenas páginas web que rodam numa caixa isolada.
-
-**É para você se:**
-- você envia senhas, endereços ou notas pessoais pelo chat e não quer que fiquem no histórico,
-- quer compartilhar uma lista de compras, uma ata de reunião ou uma lista de inscrição sem obrigar todo mundo a criar conta,
-- quer um pastebin ou bloco de notas que rode no seu próprio servidor, em um só arquivo.
-
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/demo-dark.webp"><img src="docs/readme/demo-light.webp" alt="Demonstração ao vivo: digite à esquerda e veja à direita o texto embaralhado que o servidor recebe" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/demo-dark.webp"><img src="docs/readme/demo-light.webp" alt="A demonstração ao vivo na página inicial: uma nota digitada à esquerda e, à direita, o texto embaralhado que o servidor receberia" width="100%"></picture></p>
 
 <details>
-<summary><b>Um olhar mais de perto</b> (interface em inglês)</summary>
+<summary>Mais capturas de tela</summary>
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/note-dark.webp"><img src="docs/readme/note-light.webp" alt="Uma nota com lista de tarefas, tabela e enquete" width="100%"></picture></p>
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/share-dark.webp"><img src="docs/readme/share-light.webp" alt="A janela Compartilhar: links com permissões próprias e o link de dono" width="70%"></picture></p>
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/tour-dark.webp"><img src="docs/readme/tour-light.webp" alt="O tour de recursos na página inicial" width="100%"></picture></p>
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/web-dark.webp"><img src="docs/readme/web-light.webp" alt="Uma nota web: arquivos HTML, CSS e JS com o resultado e o console" width="100%"></picture></p>
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/phone-dark.webp"><img src="docs/readme/phone-light.webp" alt="NoteHop no celular" width="32%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/new-dark.webp"><img src="docs/readme/new-light.webp" alt="A página Nova nota: a escolha entre Criptografada e Básica, o editor com pré-visualização ao vivo e a barra de configurações" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/note-dark.webp"><img src="docs/readme/note-light.webp" alt="Uma nota criptografada com lista de tarefas, tabela e enquete, aberta com o link de proprietário" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/share-dark.webp"><img src="docs/readme/share-light.webp" alt="A caixa Compartilhar: um link somente leitura, o botão para adicionar outro link, a opção de tornar a nota básica e o link de proprietário" width="70%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/basic-dark.webp"><img src="docs/readme/basic-light.webp" alt="Uma nota básica com o nome de link monday-meeting, marcada como Básica ao lado do rótulo Proprietário" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/web-dark.webp"><img src="docs/readme/web-light.webp" alt="Uma nota web: arquivos HTML, CSS e JS com o resultado em execução numa caixa isolada" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/dashboard-dark.webp"><img src="docs/readme/dashboard-light.webp" alt="Minhas notas de uma conta conectada: uma barra lateral com a família HOP, filtros e uma lista de notas criptografadas e básicas" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/tour-dark.webp"><img src="docs/readme/tour-light.webp" alt="O tour de recursos na página inicial, mostrando o grupo Compartilhar" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/phone-dark.webp"><img src="docs/readme/phone-light.webp" alt="Uma nota criptografada num celular, com a barra Compartilhar, Chat, Histórico e Mais na parte de baixo" width="32%"></picture></p>
 
 </details>
 
-## O que o servidor vê, e o que ele nunca vê
+<a id="encrypted-and-basic-notes"></a>
 
-| 🙈 Nunca chega ao servidor | 👀 O que o servidor vê |
+## Notas criptografadas e básicas
+
+Toda nota nova começa com uma escolha.
+
+| | Criptografada (padrão) | Básica |
+|---|---|---|
+| Quem pode ler o texto | Quem tem o link completo, que contém a chave | Quem tem o link, e o servidor |
+| Como é guardada | Como texto cifrado (AES-256-GCM) | Como texto simples no banco de dados e nos backups dele |
+| Link | Aleatório, com a chave depois de `#k=` | Um nome que você escolhe, como `/monday-meeting`, ou um aleatório |
+| Senha, senha-isca, blocos que se autodestroem | Sim | Não |
+| `/raw`, a API de simulação (mock), SSH, sua página pública `/@name` | Não | Sim |
+| Mecanismos de busca | Nunca indexada | Nunca indexada |
+
+O proprietário pode mudar uma nota de um tipo para o outro na caixa Compartilhar. O navegador criptografa ou descriptografa o texto, e o servidor só o troca. Links e configurações permanecem. O histórico de versões é apagado, e uma nota com linhas adicionadas, sugestões, isca, blocos que se autodestroem, caixa de entrada ou assinaturas ainda não pode mudar de tipo.
+
+Anexos e edição ao vivo funcionam nos dois tipos. Numa nota básica, o servidor também consegue ler esses itens, porque a chave de um anexo fica guardada no texto da nota e as edições ao vivo não são criptografadas.
+
+As pré-visualizações de links, por exemplo num aplicativo de chat, mostram apenas que existe uma nota e de que tipo ela é, nunca o título nem o texto.
+
+<a id="what-the-server-sees"></a>
+
+## O que o servidor vê
+
+Para uma nota criptografada:
+
+| Nunca chega ao servidor | O que o servidor vê |
 |---|---|
-| O título e o texto da nota | Texto embaralhado (cifrado) e o tamanho dele |
-| A chave (fica depois do `#` no link, que os navegadores nunca enviam) | Quando a nota foi criada, alterada e aberta, e quantas vezes |
-| Anexos, mensagens de chat e edições ao vivo (também trancados) | Que tipo de link foi usado (somente leitura, pode escrever…) |
-| A senha da sua conta e a sua lista de notas | Quais caixas estão marcadas e quantas respostas existem |
-| O texto que você envia à ajuda de escrita com IA (vai do seu navegador direto ao provedor que você escolher) | Seu endereço IP, para limites de uso |
+| O título e o texto da nota | O texto cifrado e o tamanho dele |
+| A chave (fica depois do `#` no link, que os navegadores não enviam) | Quando a nota foi criada, alterada e aberta, e quantas vezes |
+| Respostas, sugestões, nomes de assinaturas, mensagens de chat e edições ao vivo | Que tipo de link foi usado (somente leitura, pode escrever e assim por diante) e os endereços dos links |
+| Anexos (os arquivos também são criptografados) | Expiração, horários de bloqueio e de abertura, e as redes permitidas, se você os definir |
+| A senha da sua conta e a lista das suas notas com os títulos | Quais caixas estão marcadas, quantos votos cada opção de enquete tem e quantas respostas existem |
+| O texto que você envia à ajuda de escrita (vai do seu navegador direto ao provedor que você escolher) | Seu endereço IP, para limites de uso e para os limites de rede que você definir; seu nome de usuário, se tiver conta |
 
-<a id="features"></a>
+Até onde vai o "o servidor não consegue ler":
+
+- Vale para notas criptografadas. Notas básicas são legíveis. Também são os recursos que trabalham com texto simples: `/raw`, a API de simulação, o SSH, e a caixa de entrada e o bot do Telegram, em que o servidor vê o texto quando ele chega e depois o guarda selado com a chave da nota.
+- Depende do código que o servidor envia ao seu navegador. A criptografia roda em JavaScript entregue pelo servidor, então um operador que alterasse esse código poderia capturar chaves de quem abre notas. Uma Content Security Policy rígida mantém scripts de terceiros de fora, mas não muda isso. Se isso importa para você, hospede o NoteHop por conta própria, leia o código ou use o programa de linha de comando `notehop`, que criptografa na sua própria máquina.
+- O link é a chave. Quem o tem pode ler a nota, inclusive qualquer serviço que guarde um link que você colou nele.
+- Alguns detalhes ficam guardados de forma legível mesmo numa nota criptografada: o rótulo do aviso de conteúdo e o motivo opcional dele (até 255 caracteres), que são mostrados antes de a nota abrir, e o motivo e a mensagem de uma denúncia feita contra uma nota.
+- Os backups do banco de dados contêm tudo o que o banco contém: texto cifrado, o texto das notas básicas e os registros de contas.
 
 ## Recursos
 
-- **🔒 Trancada no seu navegador.** AES-256-GCM com uma chave aleatória de 256 bits que só existe no link. Dá para somar uma senha extra.
-- **🔗 Vários links, permissões diferentes.** Somente leitura, pode escrever, só responder (como um livro de visitas) ou só marcar (para listas). Um link vazou? Desligue; os outros continuam funcionando.
-- **🔑 Link de dono.** Um link separado para mudar, compartilhar, congelar ou apagar a nota.
-- **🔥 Apagar depois de ler.** Aberta 1, 3 ou 10 vezes e destruída. Os robôs de pré-visualização dos apps de chat não gastam aberturas.
-- **⏳ Validade e cápsulas do tempo.** Some depois de 10 minutos a 30 dias, ou fica trancada até a data que você escolher.
-- **🏷️ Endereço próprio + QR.** `/reuniao-segunda` e um QR code feito no seu navegador.
-- **📌 Cópias fixas e assinatura.** Congele uma versão que ninguém pode mudar e deixe os leitores aprovarem com o nome deles.
-- **🧑‍🤝‍🧑 Escrever junto.** O cursor e o nome de cada um ao vivo, um chat ao lado e "seguir o apresentador". O servidor só repassa dados trancados.
-- **✅ Blocos inteligentes.** Listas de tarefas, enquetes (um voto por pessoa), formulários, calculadora, diagramas Mermaid, um quadro Kanban a partir dos seus títulos e blocos secretos com PIN ou que se autodestroem.
-- **📝 Tipos de nota.** Simples (como o Bloco de Notas), Documento (Markdown com menu `/` e menu de formatação no clique direito), Código (números de linha, nunca é executado, baixa como `.txt`) e Web.
-- **🌐 Notas web.** Arquivos HTML, CSS e JS numa nota, com botão Executar, o resultado e um console. O código só roda numa caixa isolada no seu navegador, sem internet e sem acesso à página, e o leitor sempre é perguntado antes de rodar o código de outra pessoa.
-- **✨ Ajuda para escrever (opcional).** Resumir, reescrever, traduzir, corrigir ortografia. Use a IA embutida do navegador (o texto fica no seu aparelho) ou sua própria chave de API (Claude, ChatGPT, Gemini, OpenRouter ou Ollama). O NoteHop nunca vê o texto nem a chave.
-- **📎 Anexos.** Arraste arquivos ou imagens para a nota; também vão trancados e ficam guardados por 24 horas.
-- **👤 Conta opcional.** Com uma conta, sua lista de notas é trancada com uma chave que só a sua senha abre. Os códigos de recuperação devolvem o acesso se você esquecer a senha.
-- **🕵️ Privacidade extra.** Senha isca (abre uma nota falsa), só de certas redes, um rastreador que mostra qual link vazou e histórico com diferenças.
-- **📶 Aparelhos por perto.** Envie uma nota ou arquivos para um aparelho no mesmo Wi-Fi, direto de navegador para navegador.
-- **🧑‍💻 Para desenvolvedores.** `/raw` para curl, uma CLI `notehop` que criptografa no terminal, uma API simulada a partir do JSON de uma nota, webhooks de entrada e saída, SSH e um bot do Telegram.
-- **🌍 9 idiomas.** English, 简体中文, Español, العربية (da direita para a esquerda), Português, Français, 日本語, Русский e Bahasa Indonesia, escolhido pelo seu navegador.
-- **🛡️ Rigoroso por padrão.** Política de segurança de conteúdo rígida, sem scripts de terceiros, sem anúncios nem rastreadores, `noindex`, limites de uso. Funciona offline como app instalável (PWA).
+- Criptografada no navegador. AES-256-GCM com uma chave aleatória de 256 bits que vive só no link. Você pode acrescentar uma senha.
+- Vários links com direitos diferentes: somente leitura, pode escrever, só responder (como um livro de visitas), só marcar (para listas de tarefas) ou sugerir alterações. Se um link vazar, desligue só esse e os outros continuam funcionando. Um link de proprietário à parte altera, compartilha, congela ou apaga a nota.
+- Apagar depois de ler: a nota é destruída depois de aberta 1, 3 ou 10 vezes. Os bots de pré-visualização dos aplicativos de chat não gastam uma abertura, porque a pessoa que lê aperta um botão antes.
+- Expiração e cápsulas do tempo: a nota some depois de 10 minutos até 30 dias, ou fica fechada até uma data que você escolher.
+- Seu próprio endereço e um código QR para notas básicas, por exemplo `/monday-meeting`. O código QR é gerado no seu navegador.
+- Cópias fixas que ninguém pode alterar e aprovação por assinatura, em que quem lê aprova uma versão com o próprio nome.
+- Escrever junto: vocês veem os cursores e os nomes uns dos outros ao vivo, há um chat ao lado e todos podem acompanhar quem apresenta. Numa nota criptografada, o servidor repassa dados criptografados.
+- Blocos no texto: listas de tarefas, enquetes (um voto por pessoa), formulários, uma calculadora, diagramas Mermaid, um quadro Kanban montado a partir dos seus títulos, slides e blocos secretos protegidos por PIN ou que se autodestroem.
+- Tipos de nota: Simples (como o Bloco de Notas), Documento (Markdown com menu `/` e menu de formatação no clique direito), Código (números de linha, nunca executado, baixado como `.txt`) e Web.
+- Notas web: arquivos HTML, CSS e JS numa só nota, com botão Executar, o resultado e um console. O código roda num quadro isolado no seu navegador, sem acesso à internet e sem acesso à página da nota, aos cookies dela nem à chave. Quem lê é consultado antes de o código de outra pessoa rodar.
+- Ajuda de escrita, opcional: resumir, reescrever, traduzir e corrigir a ortografia. Usa a IA embutida do navegador, que fica no seu dispositivo, ou a sua própria chave de API do Claude, ChatGPT, Gemini, OpenRouter ou Ollama. O texto e a chave vão do seu navegador ao provedor e nunca passam pelo NoteHop.
+- Avisos de conteúdo: marque uma nota como 18+ ou sensível, com um motivo opcional. Quem lê confirma antes de a nota abrir, e `/raw` e a API de simulação respeitam a mesma verificação.
+- Anexos: solte arquivos ou imagens numa nota. Eles são criptografados no navegador, guardados por 24 horas e limitados a 5 MB por arquivo, com um orçamento de armazenamento compartilhado que o operador pode definir.
+- As contas são opcionais. Com uma conta, a lista das suas notas é criptografada com uma chave que só a sua senha abre. Oito códigos de recuperação de uso único trazem você de volta se esquecer a senha. Os operadores também podem conectar um servidor de contas com login único, como o HOP ID.
+- Privacidade extra: uma senha-isca que abre uma nota falsa, acesso só de certas redes, um rastreador de vazamento que mostra por qual link um texto copiado saiu e histórico de versões com diferenças.
+- Por perto: envie um bloco ou arquivos para um dispositivo na mesma rede, direto de navegador para navegador.
+- Para desenvolvedores: `/raw` para o curl, a CLI `notehop` que criptografa no terminal, uma API de simulação a partir de JSON numa nota básica, webhooks de entrada e de saída, SSH e um bot do Telegram.
+- Nove idiomas: English, 简体中文, Deutsch, Bahasa Indonesia, 日本語, Português (Brasil), Español, Français e Русский. Visitantes anônimos veem inglês. Use o menu do globo ou `?lang=xx` para escolher outro.
+- Sem anúncios, sem rastreadores, sem scripts de terceiros, e um aplicativo offline instalável (PWA).
+- Denúncias e moderação: toda nota tem **Denunciar esta nota**. Os operadores analisam as denúncias com o comando `notehop takedown` ou a partir de uma central de controle por meio do [HOP App Protocol](docs/REFERENCE.md#control-center-hop-app-protocol).
 
 <a id="run-your-own"></a>
 
 ## Hospede você mesmo
 
-O NoteHop é **um binário Go e um arquivo SQLite**. Sem Node, sem etapa de build, sem outros serviços.
+O NoteHop é um programa Go e um arquivo SQLite. Não precisa de Node, de etapa de build nem de outros serviços.
 
-**Opção 1: num VPS** (systemd + Caddy ou nginx, backup diário)
+O instalador no início desta página é o jeito mais fácil num computador que você controla. Para um servidor público, use uma destas opções.
+
+Num VPS (systemd, com Caddy ou nginx para HTTPS e um backup diário):
 
 ```bash
 git clone https://github.com/navi-crwn/NoteHop.git && cd NoteHop
 sudo DOMAIN=note.example.com ./deploy/install.sh
 ```
 
-O guia completo, com HTTPS, atualizações, backup e restauração, está em **[docs/SELF-HOSTING.md](docs/SELF-HOSTING.md)** (em inglês).
+O [guia de auto-hospedagem](docs/SELF-HOSTING.md) cobre HTTPS, atualizações, backups e restauração.
 
-**Opção 2: no seu computador** (precisa do Go 1.27+)
+No seu próprio computador, para desenvolvimento (precisa do Go 1.27 ou mais recente):
 
 ```bash
 go run ./cmd/notehop -addr 127.0.0.1:8090 -db data/dev.db
 ```
 
-Abra http://127.0.0.1:8090. Os navegadores só permitem essa criptografia em **HTTPS ou localhost**.
+Abra http://127.0.0.1:8090. Os navegadores só permitem a criptografia em HTTPS ou em localhost.
 
-**Opção 3: Docker**
+Com Docker:
 
 ```bash
 docker build -t notehop .
 docker run -d -p 127.0.0.1:8090:8080 -v notehop:/data -e NOTEHOP_BASE_URL=https://note.example.com notehop
 ```
 
-Cada configuração é uma variável de ambiente (`NOTEHOP_*`). Todas estão em **[docs/REFERENCE.md](docs/REFERENCE.md)**, junto com o modelo de criptografia e a API.
+Toda configuração é uma variável de ambiente que começa com `NOTEHOP_`. Elas estão listadas em [docs/REFERENCE.md](docs/REFERENCE.md), junto com o modelo de criptografia e a API.
+
+Backups: `notehop backup -db notehop.db copy.db` faz uma cópia com o servidor em execução, e o arquivo só pode ser lido pelo proprietário. O instalador de VPS também configura um backup diário, mantido por 14 dias. Um backup contém as notas básicas como texto simples, então guarde-o com cuidado.
 
 ## Sua primeira nota
 
 1. Abra a página inicial, digite na caixa e veja o texto embaralhado que o servidor receberia.
-2. Escolha quem pode fazer o quê: **Somente leitura**, **Pode escrever** ou **Pode responder**. Marque **Leitura única** para um segredo.
-3. Toque em **Criar link** e envie. Pronto, sem conta.
-4. Quer mais (prazos, privacidade extra, escrever junto)? Use **Abrir o bloco completo**, ou o botão **Compartilhar** em qualquer nota sua.
+2. Escolha quem pode fazer o quê: **Somente leitura**, **Pode escrever** ou **Pode responder**. Ative **Leitura única** para um segredo.
+3. Aperte **Criar link criptografado** e envie o link. Não é preciso ter conta.
+4. Para mais opções (horários, privacidade extra, escrita em conjunto), use **Abrir o bloco completo** ou o botão **Compartilhar** em qualquer nota sua. Para uma nota básica com nome de link, escolha **Básica** no alto da página Nova nota.
 
 <a id="faq"></a>
 
-## Perguntas frequentes
+## FAQ
 
-**Quem administra o servidor consegue ler minhas notas?**
-Não. A nota é trancada no seu navegador antes de ser enviada, e a chave fica na parte do link depois do `#`, que os navegadores nunca enviam a um servidor. O servidor só tem texto embaralhado.
+**As pessoas que operam o servidor podem ler minhas notas?**
+Uma nota criptografada, não. Seu navegador a criptografa antes de enviá-la, e a chave fica na parte do link depois do `#`, que os navegadores não enviam a um servidor. O servidor só tem o texto embaralhado. Uma nota básica o servidor consegue ler. Veja [O que o servidor vê](#what-the-server-sees) para os limites dessa afirmação.
 
 **E se eu perder o link?**
-Aí ninguém consegue abrir a nota. Se você tem conta, suas notas aparecem em **Minhas notas** e podem ser abertas de lá. Sem conta, as notas recentes ficam lembradas só neste navegador.
+Numa nota criptografada, ninguém mais consegue abri-la. Se você tem uma conta, suas notas aparecem em Minhas notas e você pode abri-las de lá. Sem conta, as notas recentes ficam lembradas só naquele navegador. Uma nota básica é fácil de encontrar de novo pelo nome do link.
 
-**"Apagar depois de ler" é seguro contra pré-visualizações de link?**
-Sim. Abrir a página não mostra o conteúdo; o leitor toca num botão primeiro. Os robôs de pré-visualização dos apps de chat recebem um cartão, não uma leitura.
+**"Apagar depois de ler" é seguro contra pré-visualizações de links?**
+Sim. Abrir a página não mostra o conteúdo. Quem lê aperta um botão primeiro, e os bots de pré-visualização dos aplicativos de chat recebem um cartão de pré-visualização, não uma abertura.
 
-**A IA lê minhas notas?**
-A ajuda para escrever fica desligada até você escolher. A IA embutida do navegador trabalha no seu aparelho. Com sua própria chave de API, o texto vai do seu navegador direto para esse provedor, nunca pelo NoteHop. Quem administra o servidor pode desligar a IA com `NOTEHOP_AI=off`.
+**A IA lê as minhas notas?**
+A ajuda de escrita fica desligada até você usá-la. A IA embutida do navegador funciona no seu dispositivo. Com a sua própria chave de API, o texto vai do seu navegador direto a esse provedor e nunca passa pelo NoteHop. Os operadores podem desligá-la com `NOTEHOP_AI=off`.
 
-**O código de uma nota pode atacar quem a abre?**
-Notas de código nunca são executadas: aparecem como texto e baixam como `.txt`. Notas web só rodam num quadro isolado, sem internet, sem cookies e sem acesso à página da nota ou à chave dela, e o leitor é perguntado antes.
+**O código numa nota pode atacar quem a abre?**
+Notas de código nunca são executadas. Elas aparecem como texto e são baixadas como `.txt`. Notas web só rodam num quadro isolado, sem internet, sem cookies e sem acesso à página da nota ou à chave dela, e quem lê é consultado antes.
 
-**Posso usar meu próprio servidor de login?**
-Pode. O NoteHop tem contas próprias e também pode fazer login por um servidor de contas seu (login único). Veja `NOTEHOP_SSO_*` em [docs/REFERENCE.md](docs/REFERENCE.md).
+**Posso usar o meu próprio servidor de login?**
+Sim. O NoteHop tem contas próprias e também pode autenticar pessoas por um servidor de contas que você opera (login único). Veja as configurações `NOTEHOP_SSO_*` em [docs/REFERENCE.md](docs/REFERENCE.md).
 
 **O que acontece se alguém compartilhar algo nocivo?**
-Toda nota tem **Denunciar esta nota** no menu. A denúncia (um motivo e uma mensagem curta, nunca o conteúdo da nota) vai para quem administra o site. Eles não conseguem ler uma nota cifrada, mas podem retirá-la, e o nome do link fica reservado por um ano. Os operadores revisam denúncias com o comando `notehop takedown` ou por um centro de controle via [HOP App Protocol](docs/REFERENCE.md#control-center-hop-app-protocol).
+Toda nota tem **Denunciar esta nota** no menu. A denúncia (um motivo e uma mensagem curta, nunca o conteúdo da nota) vai para as pessoas que operam o site. Elas não conseguem ler uma nota criptografada, mas podem derrubá-la, e o nome do link fica retido por um ano.
 
-**Como faço backup?**
-`notehop backup -db notehop.db copia.db` funciona com o servidor rodando. O instalador para VPS também agenda um backup diário. No backup, as notas continuam trancadas.
+## Por baixo do capô
 
-## Por dentro
-
-| Pasta | O que tem |
+| Pasta | O que há nela |
 |---|---|
-| `cmd/notehop/` | O programa: servidor, configurações e os comandos `backup`, `new`, `get` e `takedown` |
-| `internal/app/` | Handlers HTTP, recursos das notas, retransmissão da colaboração ao vivo, SSH, Telegram, login único |
-| `internal/db/` | Esquema SQLite e migrações automáticas |
-| `internal/client/` | A criptografia da CLI (a mesma do navegador) |
-| `internal/i18n/` | Carregamento dos 9 idiomas e um teste que os mantém alinhados |
-| `web/templates/`, `web/static/` | Páginas, JavaScript e CSS puros, sem build. Bibliotecas de terceiros ficam em `web/static/vendor/` |
-| `web/i18n/` | Os textos da interface em 9 idiomas |
-| `deploy/` | Instalador, unidades systemd, backups, exemplos de Caddy e nginx |
-| `scripts/` | Testes de navegador (Playwright): `./scripts/e2e-all.sh` roda todos contra um servidor novo |
+| `cmd/notehop/` | O programa: o servidor, as configurações dele e os comandos `backup`, `new`, `get` e `takedown` |
+| `internal/app/` | Handlers HTTP, recursos das notas, o relay de escrita em conjunto, SSH, Telegram, login único, o HOP App Protocol |
+| `internal/db/` | O esquema SQLite e as migrações automáticas |
+| `internal/client/` | A criptografia da CLI, igual à do navegador |
+| `internal/i18n/` | O carregamento dos 9 idiomas e um teste que os mantém em sincronia |
+| `web/templates/`, `web/static/` | Páginas, JavaScript puro e CSS, sem etapa de build. As bibliotecas de terceiros vêm incluídas em `web/static/vendor/` |
+| `web/i18n/` | Os textos da interface em 9 idiomas, um arquivo JSON para cada |
+| `web/changelog.json` | Um instantâneo do histórico de commits e pull requests, exibido na página `/changelog`. Gerado por `scripts/build-changelog.py` |
+| `deploy/` | O instalador de VPS, units do systemd, backups, exemplos de Caddy e nginx |
+| `docs/` | O site de documentação (GitHub Pages), a referência, o guia de auto-hospedagem e as imagens do README |
+| `scripts/` | Testes de navegador (Playwright), todos com `./scripts/e2e-all.sh`, e os scripts auxiliares |
 
-Rode os testes com `go test -race ./...` e `./scripts/e2e-all.sh`.
+Execute os testes com `go test -race ./...` e `./scripts/e2e-all.sh`.
+
+## Segurança, licença e histórico
+
+- Para relatar uma vulnerabilidade, siga o [SECURITY.md](SECURITY.md). Por favor, não abra uma issue pública para isso.
+- O [CHANGELOG.md](CHANGELOG.md) lista o que mudou, das mudanças mais recentes às mais antigas.
+- O NoteHop é distribuído sob a [Licença MIT](LICENSE). As bibliotecas e fontes incluídas mantêm suas próprias licenças, listadas em [docs/REFERENCE.md](docs/REFERENCE.md#third-party-code).
 
 <a id="family"></a>
 
 ## A família Hop
 
-O NoteHop faz parte da família HOP: apps gratuitos e de código aberto, para hospedar você mesmo e sem rastreadores, que compartilham uma só conta (HOP ID).
+O NoteHop faz parte da família HOP, de aplicativos de código aberto que respeitam a privacidade e podem ser hospedados por você mesmo.
 
 <!-- hop-family:start -->
 <!-- Generated from HEL.ink resources/hop-assets/apps.source.json; edit there, then run scripts/hop_assets.py build. -->
@@ -190,7 +228,3 @@ O NoteHop faz parte da família HOP: apps gratuitos e de código aberto, para ho
 | **NoteHop** | [note.hel.ink](https://note.hel.ink) · `n.hel.ink/…` | [navi-crwn/NoteHop](https://github.com/navi-crwn/NoteHop) | Encrypted notes you share with a link. |
 | **Imperium** | private (owner only) | private | The HOP control panel. |
 <!-- hop-family:end -->
-
----
-
-<p align="center">Licença MIT · <a href="docs/REFERENCE.md">Referência</a> · <a href="docs/SELF-HOSTING.md">Hospede você mesmo</a> · <a href="CHANGELOG.md">Mudanças</a><br><sub>Da família HEL.ink: <a href="https://github.com/navi-crwn/LinkHop">LinkHop</a> (links curtos) · <a href="https://github.com/navi-crwn/BioHop">BioHop</a> · <a href="https://github.com/navi-crwn/PixelHop">PixelHop</a> (hospedagem de imagens) · <a href="https://note.hel.ink">NoteHop</a></sub></p>

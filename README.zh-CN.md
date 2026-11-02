@@ -1,183 +1,221 @@
 <p align="center">🌐 <a href="README.md">English</a> · <b>简体中文</b> · <a href="README.de.md">Deutsch</a> · <a href="README.id.md">Bahasa Indonesia</a> · <a href="README.ja.md">日本語</a> · <a href="README.pt-BR.md">Português (Brasil)</a> · <a href="README.es.md">Español</a> · <a href="README.fr.md">Français</a> · <a href="README.ru.md">Русский</a></p>
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/hero-zh-dark.webp"><img src="docs/readme/hero-zh-light.webp" alt="NoteHop：只有你选择的人才能读到的笔记" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/hero-zh-dark.webp"><img src="docs/readme/hero-zh-light.webp" alt="NoteHop 首页：标题“只有你选择的人才能读到的笔记”，旁边是 3D 标志" width="100%"></picture></p>
+
+<p align="center"><b>写一条笔记，发出链接，就这么简单。</b><br>笔记默认在保存之前就已在浏览器中加密，所以服务器保存的是它读不懂的文本。</p>
 
 <p align="center">
-  <b>写下笔记，发送链接，搞定。<br>内容在保存之前就已在你的浏览器里加密，连服务器也读不到。</b>
-</p>
-
-<p align="center">
-  <a href="https://note.hel.ink"><b>✍️ 在线试用</b></a> ·
-  <a href="https://navi-crwn.github.io/NoteHop/">Website</a> ·
+  <a href="https://note.hel.ink"><b>在线试用</b></a> ·
+  <a href="https://navi-crwn.github.io/NoteHop/">网站</a> ·
   <a href="#run-your-own">自己部署</a> ·
-  <a href="#features">功能</a> ·
+  <a href="#encrypted-and-basic-notes">加密笔记与基础笔记</a> ·
   <a href="#faq">常见问题</a> ·
-  <a href="docs/SELF-HOSTING.md">部署指南（英文）</a> ·
-  <a href="docs/REFERENCE.md">参考文档（英文）</a> ·
+  <a href="docs/SELF-HOSTING.md">自托管指南</a> ·
+  <a href="docs/REFERENCE.md">参考文档</a> ·
   <a href="CHANGELOG.md">更新日志</a>
 </p>
 
-<p align="center"><sub>一个 Go 程序 + 一个 SQLite 文件 · 9 种语言 · 无广告、无追踪 · 免费开源（MIT）</sub></p>
+<p align="center"><sub>一个 Go 程序加一个 SQLite 文件 · 9 种语言 · 无广告、无追踪 · 免费开源（MIT）</sub></p>
 
 > [!IMPORTANT]
-> **密钥就在链接里。** 拿到链接的人就能读这条笔记；如果所有链接都丢了，就再也没人能打开它：你不能，服务器不能，我们也不能。只把链接发给你想给的人，并把所有者链接存在安全的地方。
+> 加密笔记把密钥放在链接里。拿到链接的人都能读这条笔记；如果所有链接都丢了，谁也打不开它，包括服务器和运营服务器的人。基础笔记的做法不同：服务器以纯文本保存它的内容，并且能够读取。基础笔记只适合放你不介意服务器运营者看到的内容。
 
----
+NoteHop 是一个可以自己部署的笔记分享应用。你写好笔记，得到一个链接，把它发出去就行。每个链接有各自的权限（仅查看、可编辑、可回复、可勾选），笔记可以在被读过之后自行删除，也可以多人同时编辑。
 
-一条命令安装（它会先检查你的电脑，只问几个问题，还能为你装好 HOP ID 中心）：
+它适合这样的人：
+
+- 通过聊天软件发送密码、地址或私密笔记，又不想让它们留在聊天记录里，
+- 要分享购物清单、会议记录或报名表，又不想让每个人都先注册账号，
+- 想要一个可以放在自己服务器上的粘贴板或记事本，而且只有一个文件。
+
+一条命令即可安装。脚本会先检查你的电脑，问几个问题，还可以顺便帮你搭好 HOP ID 账户中心：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/navi-crwn/NoteHop/main/install.sh | bash
 ```
 
-已克隆仓库时：`./install.sh` · 更新：`./update.sh` · 卸载：`./uninstall.sh`。加上 `--yes` 即接受所有默认值；`--help` 列出全部选项。
+也可以在克隆的仓库里运行 `./install.sh`。用 `./update.sh` 更新，用 `./uninstall.sh` 卸载。加上 `--yes` 接受所有默认值，`--help` 列出全部选项。
 
-## NoteHop 是什么？
-
-把一条笔记想象成锁在盒子里的信。NoteHop **在你的浏览器里**把盒子锁上，把钥匙放进链接，然后才把盒子交给服务器。服务器保管着一个它打不开的盒子。你把链接给谁，谁就能在自己的浏览器里当场打开。
-
-除此之外，一条笔记能做的远不止记事本：权限不同的链接（仅查看、可编辑、仅回复、仅勾选）、阅后即焚、实时一起写、勾选清单、投票、表单、代码，甚至能在封闭的框里运行的小网页。
-
-**适合你，如果你：**
-- 通过聊天发送密码、地址或私人笔记，又不想它们留在聊天记录里，
-- 想分享购物清单、会议记录或报名表，又不想让每个人都注册账号，
-- 想要一个能放在自己服务器上的 pastebin 或记事本，只需一个文件。
-
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/demo-dark.webp"><img src="docs/readme/demo-light.webp" alt="实时演示：在左边输入，右边显示服务器收到的乱码" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/demo-dark.webp"><img src="docs/readme/demo-light.webp" alt="首页上的实时演示：左边输入笔记，右边显示服务器会收到的乱码文本" width="100%"></picture></p>
 
 <details>
-<summary><b>近看一下</b>（英文界面）</summary>
+<summary>更多截图</summary>
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/note-dark.webp"><img src="docs/readme/note-light.webp" alt="一条带清单、表格和投票的笔记" width="100%"></picture></p>
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/share-dark.webp"><img src="docs/readme/share-light.webp" alt="分享对话框：各有权限的链接，以及所有者链接" width="70%"></picture></p>
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/tour-dark.webp"><img src="docs/readme/tour-light.webp" alt="首页的功能导览" width="100%"></picture></p>
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/web-dark.webp"><img src="docs/readme/web-light.webp" alt="网页笔记：HTML、CSS 和 JS 文件，附运行结果和控制台" width="100%"></picture></p>
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/phone-dark.webp"><img src="docs/readme/phone-light.webp" alt="手机上的 NoteHop" width="32%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/new-dark.webp"><img src="docs/readme/new-light.webp" alt="“新建笔记”页面：在“加密”和“基础”之间选择，带实时预览的编辑器，以及设置栏" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/note-dark.webp"><img src="docs/readme/note-light.webp" alt="用所有者链接打开的加密笔记，包含清单、表格和投票" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/share-dark.webp"><img src="docs/readme/share-light.webp" alt="“分享”对话框：一个仅查看链接、添加其他链接的按钮、把笔记改为基础笔记的选项，以及所有者链接" width="70%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/basic-dark.webp"><img src="docs/readme/basic-light.webp" alt="链接名为 monday-meeting 的基础笔记，“所有者”标签旁标有“基础”" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/web-dark.webp"><img src="docs/readme/web-light.webp" alt="网页笔记：HTML、CSS 和 JS 文件，以及在隔离框中运行的结果" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/dashboard-dark.webp"><img src="docs/readme/dashboard-light.webp" alt="已登录账号的“我的笔记”：带 HOP 家族的侧边栏、筛选器，以及加密笔记和基础笔记的列表" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/tour-dark.webp"><img src="docs/readme/tour-light.webp" alt="首页的功能导览，显示“分享”这一组" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/phone-dark.webp"><img src="docs/readme/phone-light.webp" alt="手机上的加密笔记，底部是“分享”“聊天”“历史”“更多”栏" width="32%"></picture></p>
 
 </details>
 
-## 服务器能看到什么，永远看不到什么
+<a id="encrypted-and-basic-notes"></a>
 
-| 🙈 永远不会到达服务器 | 👀 服务器确实能看到的 |
+## 加密笔记与基础笔记
+
+每条新笔记都从一个选择开始。
+
+| | 加密（默认） | 基础 |
+|---|---|---|
+| 谁能读到文本 | 拿到完整链接的人（链接里含有密钥） | 拿到链接的人，以及服务器 |
+| 保存方式 | 密文（AES-256-GCM） | 以纯文本存放在数据库及其备份中 |
+| 链接 | 随机生成，密钥在 `#k=` 之后 | 你自己取的名字，例如 `/monday-meeting`，也可以是随机的 |
+| 密码、诱饵密码、自毁块 | 支持 | 不支持 |
+| `/raw`、模拟 API、SSH、你的公开页面 `/@name` | 不支持 | 支持 |
+| 搜索引擎 | 从不收录 | 从不收录 |
+
+所有者可以在“分享”对话框里把笔记在两种类型之间切换。浏览器负责加密或解密文本，服务器只是把结果换上去。链接和设置保持不变。历史版本会被清空；带有追加行、修改建议、诱饵、自毁块、收件箱或签署记录的笔记暂时不能切换类型。
+
+附件和实时协作在两种类型里都能用。在基础笔记中，服务器同样能读到它们，因为附件的密钥保存在笔记文本里，实时编辑的内容也没有加密。
+
+链接预览（例如在聊天应用里）只显示有一条笔记以及它是哪一类，从不显示标题或正文。
+
+<a id="what-the-server-sees"></a>
+
+## 服务器能看到什么
+
+对于一条加密笔记：
+
+| 服务器永远收不到 | 服务器能看到的 |
 |---|---|
-| 笔记的标题和内容 | 乱码（密文）及其大小 |
-| 密钥（在链接的 `#` 后面，浏览器从不发送这部分） | 笔记何时创建、修改、打开，以及打开次数 |
-| 附件、聊天消息和一起写时的编辑（同样加密） | 用的是哪种链接（仅查看、可编辑……） |
-| 你的账号密码和笔记列表 | 哪些复选框被勾选，以及回复的数量 |
-| 你发给 AI 写作助手的文字（从你的浏览器直接发给你选的服务商） | 你的 IP 地址，用于频率限制 |
+| 笔记的标题和正文 | 密文及其大小 |
+| 密钥（在链接中 `#` 之后，浏览器不会发送这部分） | 笔记创建、修改、被打开的时间，以及打开的次数 |
+| 回复、修改建议、签署人姓名、聊天消息和实时编辑 | 用的是哪种链接（仅查看、可编辑等），以及链接地址 |
+| 附件（文件同样是加密的） | 如果你设置了，还有过期时间、锁定和开放时间，以及允许的网络 |
+| 你的账户密码，以及带标题的笔记列表 | 哪些复选框被勾选、每个投票选项有多少票，以及有多少条回复 |
+| 你发给写作助手的文本（它从你的浏览器直接发往你选择的服务商） | 你的 IP 地址，用于限流和你设置的网络限制；如果有账号，还有你的用户名 |
 
-<a id="features"></a>
+“服务器读不到”这个说法的适用范围：
+
+- 它只适用于加密笔记。基础笔记是可读的，处理纯文本的功能也一样：`/raw`、模拟 API、SSH，以及收件箱和 Telegram 机器人。在后两者里，服务器会在文本到达时看到它，随后用笔记的密钥封存后保存。
+- 它取决于服务器发给你浏览器的代码。加密运行在服务器下发的 JavaScript 里，所以如果运营者改动了这些代码，就可能截获打开笔记的人的密钥。严格的内容安全策略（CSP）能挡住第三方脚本，但改变不了这一点。如果你在意，可以自己部署 NoteHop、阅读源码，或者使用 `notehop` 命令行程序，它在你自己的机器上完成加密。
+- 链接就是密钥。谁持有它，谁就能读这条笔记，也包括你把链接粘贴进去并保存了它的任何服务。
+- 即使是加密笔记，有些细节也以可读形式保存：内容警告标签及其可选的原因（最多 255 个字符），它们会在笔记打开之前显示；还有他人对某条笔记提交的举报的原因和留言。
+- 数据库的备份包含数据库里的一切：密文、基础笔记的文本和账户记录。
 
 ## 功能
 
-- **🔒 在浏览器里加密。** AES-256-GCM，随机 256 位密钥只存在于链接里。还可以再加一个密码。
-- **🔗 多个链接，不同权限。** 仅查看、可编辑、仅回复（像留言簿）或仅勾选（用于清单）。链接泄露了？关掉它，其他链接照常可用。
-- **🔑 所有者链接。** 一个单独的链接，用来修改、分享、冻结或删除笔记。
-- **🔥 阅后即焚。** 打开 1、3 或 10 次后销毁。聊天应用的链接预览机器人不会用掉次数。
-- **⏳ 过期和时间胶囊。** 10 分钟到 30 天后消失，或锁到你选的日期才能打开。
-- **🏷️ 自定义地址 + 二维码。** `/monday-meeting`，以及在浏览器里生成的二维码。
-- **📌 固定副本和签名确认。** 冻结一个谁都改不了的版本，并让读者用自己的名字确认。
-- **🧑‍🤝‍🧑 一起写。** 每个人的光标和名字实时可见，旁边有聊天，还能"跟随演示者"。服务器只转发加密数据。
-- **✅ 智能区块。** 勾选清单、投票（每人一票）、表单、计算器、Mermaid 图表、根据标题生成的看板，以及需要 PIN 或会自毁的秘密区块。
-- **📝 笔记类型。** 纯文本（像记事本）、文档（Markdown，带 `/` 菜单和右键格式菜单）、代码（行号、从不运行、下载为 `.txt`）和网页。
-- **🌐 网页笔记。** 一条笔记里放 HTML、CSS 和 JS 文件，有运行按钮、结果和控制台。代码只在你浏览器里的封闭框中运行，没有网络、碰不到页面；运行别人的代码之前一定会先询问读者。
-- **✨ 写作助手（可选）。** 总结、改写、翻译、纠正拼写。使用浏览器内置 AI（文字不离开你的设备）或你自己的 API 密钥（Claude、ChatGPT、Gemini、OpenRouter 或 Ollama）。NoteHop 永远看不到文字和密钥。
-- **📎 附件。** 把文件或图片拖进笔记；同样加密，保存 24 小时。
-- **👤 账号可选。** 有账号时，你的笔记列表用只有你的密码才能打开的密钥加密。忘记密码时可以用恢复码找回。
-- **🕵️ 额外隐私。** 诱饵密码（打开一条假笔记）、仅限特定网络、告诉你哪个链接泄露的泄露追踪，以及带差异对比的历史记录。
-- **📶 附近设备。** 把笔记或文件发给同一 Wi-Fi 下的设备，浏览器直连浏览器。
-- **🧑‍💻 给开发者。** 给 curl 用的 `/raw`、在终端里加密的 `notehop` 命令行、用笔记里的 JSON 生成模拟 API、进出双向的 Webhook、SSH 和 Telegram 机器人。
-- **🌍 9 种语言。** English、简体中文、Español、العربية（从右到左）、Português、Français、日本語、Русский 和 Bahasa Indonesia，根据浏览器自动选择。
-- **🛡️ 默认严格。** 严格的内容安全策略（CSP）、没有第三方脚本、无广告、无追踪、`noindex`、频率限制。可安装为应用并离线使用（PWA）。
+- 在浏览器中加密。AES-256-GCM，使用只存在于链接里的随机 256 位密钥。你还可以再加一个密码。
+- 多个链接，权限各不相同：仅查看、可编辑、可回复（像留言簿）、可勾选（用于清单）或可提议修改。某个链接泄露了，只关掉它，其余照常可用。另有一个所有者链接，用来修改、分享、冻结或删除笔记。
+- 阅后即焚：笔记被打开 1、3 或 10 次后销毁。聊天应用的链接预览机器人不会消耗次数，因为读者要先点一个按钮。
+- 过期与时间胶囊：笔记在 10 分钟到 30 天后消失，或者保持关闭，直到你选定的日期。
+- 基础笔记可以有自己的地址和二维码，例如 `/monday-meeting`。二维码在你的浏览器里生成。
+- 谁也改不了的固定副本，以及签署：读者可以用自己的名字确认某个版本。
+- 一起写：实时看到彼此的光标和名字，旁边有聊天，大家还可以跟随演示者。在加密笔记里，服务器转发的是加密数据。
+- 文本里的块：清单、投票（每人一票）、表单、计算器、Mermaid 图表、由标题生成的看板、幻灯片，以及需要 PIN 才能查看的或会自行销毁的秘密块。
+- 笔记类型：纯文本（像记事本）、文档（Markdown，带 `/` 菜单和右键格式菜单）、代码（行号，从不运行，可下载为 `.txt`）和网页。
+- 网页笔记：一条笔记里放 HTML、CSS 和 JS 文件，带运行按钮、结果和控制台。代码在浏览器里的一个隔离框中运行，没有网络访问，也无法访问笔记页面、它的 Cookie 或密钥。运行别人的代码之前会先征求读者同意。
+- 写作助手（可选）：摘要、改写、翻译、拼写检查。它使用浏览器内置的 AI（留在你的设备上），或者你自己的 Claude、ChatGPT、Gemini、OpenRouter 或 Ollama API 密钥。文本和密钥从你的浏览器直接发往服务商，不经过 NoteHop。
+- 内容警告：把笔记标为 18+ 或敏感内容，可附原因。读者确认后笔记才会打开，`/raw` 和模拟 API 也遵守同样的检查。
+- 附件：把文件或图片拖进笔记。它们在浏览器里加密，保存 24 小时，每个文件最大 5 MB，并有一个由运营者设定的共享存储额度。
+- 账号是可选的。有了账号，你的笔记列表会用只有你的密码才能打开的密钥加密。忘记密码时，8 个一次性恢复码可以让你重新进入。运营者还可以接入单点登录账户服务器，例如 HOP ID。
+- 额外的隐私：打开假笔记的诱饵密码、仅限特定网络访问、能指出复制的文本来自哪条链接的泄露追踪，以及带差异对比的版本历史。
+- 附近设备：直接在浏览器之间，把记事板或文件发给同一网络里的设备。
+- 面向开发者：用于 curl 的 `/raw`、在终端里加密的 `notehop` 命令行程序、由基础笔记里的 JSON 生成的模拟 API、进出两个方向的 Webhook、SSH 和 Telegram 机器人。
+- 九种语言：English、简体中文、Deutsch、Bahasa Indonesia、日本語、Português (Brasil)、Español、Français 和 Русский。匿名访客看到的是英语，可以用地球图标菜单或 `?lang=xx` 切换。
+- 没有广告，没有追踪，没有第三方脚本，还可以作为可安装的离线应用（PWA）使用。
+- 举报与处理：每条笔记都有 **举报此笔记**。运营者通过 `notehop takedown` 命令，或通过 [HOP App Protocol](docs/REFERENCE.md#control-center-hop-app-protocol) 上的控制中心来审核举报。
 
 <a id="run-your-own"></a>
 
 ## 自己部署
 
-NoteHop 就是**一个 Go 程序和一个 SQLite 文件**。不需要 Node，没有构建步骤，也不依赖其他服务。
+NoteHop 是一个 Go 程序加一个 SQLite 文件。不需要 Node，不需要构建步骤，也不需要其他服务。
 
-**方式 1：在 VPS 上**（systemd + Caddy 或 nginx，每日备份）
+本页顶部的安装脚本是在你自己掌控的电脑上最省事的办法。要搭建公网服务器，请用下面其中一种方式。
+
+在 VPS 上（systemd，用 Caddy 或 nginx 提供 HTTPS，并带每日备份）：
 
 ```bash
 git clone https://github.com/navi-crwn/NoteHop.git && cd NoteHop
 sudo DOMAIN=note.example.com ./deploy/install.sh
 ```
 
-完整指南（HTTPS、更新、备份和恢复）见 **[docs/SELF-HOSTING.md](docs/SELF-HOSTING.md)**（英文）。
+[自托管指南](docs/SELF-HOSTING.md) 涵盖 HTTPS、更新、备份和恢复。
 
-**方式 2：在自己的电脑上**（需要 Go 1.27+）
+在你自己的电脑上开发（需要 Go 1.27 或更高版本）：
 
 ```bash
 go run ./cmd/notehop -addr 127.0.0.1:8090 -db data/dev.db
 ```
 
-打开 http://127.0.0.1:8090。浏览器只在 **HTTPS 或 localhost** 下允许这种加密。
+打开 http://127.0.0.1:8090。浏览器只允许在 HTTPS 或 localhost 下使用加密功能。
 
-**方式 3：Docker**
+使用 Docker：
 
 ```bash
 docker build -t notehop .
 docker run -d -p 127.0.0.1:8090:8080 -v notehop:/data -e NOTEHOP_BASE_URL=https://note.example.com notehop
 ```
 
-所有设置都是环境变量（`NOTEHOP_*`），完整列表、加密模型和 API 都在 **[docs/REFERENCE.md](docs/REFERENCE.md)**。
+所有设置都是以 `NOTEHOP_` 开头的环境变量。它们连同加密模型和 API 一起列在 [docs/REFERENCE.md](docs/REFERENCE.md) 里。
+
+备份：`notehop backup -db notehop.db copy.db` 可以在服务器运行时做一份副本，文件只有所有者可读。VPS 安装脚本还会设置每日备份，保留 14 天。备份里的基础笔记是纯文本，请妥善保管。
 
 ## 你的第一条笔记
 
-1. 打开首页，在框里输入，看看服务器会收到的乱码。
-2. 选择谁能做什么：**仅查看**、**可编辑** 或 **可回复**。要发秘密就勾选 **只能看一次**。
-3. 点 **创建链接** 并发送。就这样，不需要账号。
-4. 想要更多（定时、额外隐私、一起写）？用 **打开完整记事本**，或在你拥有的笔记上点 **分享**。
+1. 打开首页，在输入框里输入，看看服务器会收到的乱码文本。
+2. 选择谁能做什么：**仅查看**、**可编辑** 或 **可回复**。想发一条秘密，就打开 **只能看一次**。
+3. 点 **创建加密链接**，把链接发出去。不需要账号。
+4. 需要更多（定时、额外隐私、协作）时，用 **打开完整记事本**，或者你拥有的任何笔记上的 **分享** 按钮。想要带链接名的基础笔记，请在“新建笔记”页面顶部选择 **基础**。
 
 <a id="faq"></a>
 
 ## 常见问题
 
-**运营服务器的人能读我的笔记吗？**
-不能。笔记在发送之前就在你的浏览器里加密，密钥在链接 `#` 后面的部分，浏览器从不把它发给服务器。服务器只有乱码。
+**运营服务器的人能读到我的笔记吗？**
+加密笔记不能。你的浏览器在发送之前就把它加密了，密钥在链接中 `#` 之后的部分，浏览器不会把这部分发给服务器。服务器拿到的只有乱码文本。基础笔记服务器是能读的。这个说法的适用范围见[服务器能看到什么](#what-the-server-sees)。
 
 **链接丢了怎么办？**
-那这条笔记谁都打不开了。如果你有账号，笔记会列在 **我的笔记** 里，可以从那里打开。没有账号时，最近的笔记只记在这个浏览器里。
+加密笔记就再也没有人能打开了。如果你有账号，笔记会列在“我的笔记”里，可以从那里打开。没有账号的话，最近的笔记只记在那个浏览器里。基础笔记可以凭链接名称再找到。
 
-**"阅后即焚"会被链接预览用掉吗？**
-不会。只打开页面不会显示内容，读者要先点一个按钮。聊天应用的预览机器人只拿到一张预览卡片，不算一次阅读。
+**“阅后即焚”会被链接预览误触发吗？**
+不会。只打开页面不会显示内容，读者要先点一个按钮，聊天应用的预览机器人拿到的是预览卡片，不算一次查看。
 
 **AI 会读我的笔记吗？**
-在你选择之前，写作助手一直关闭。浏览器内置 AI 在你的设备上运行。使用自己的 API 密钥时，文字从你的浏览器直接发给该服务商，从不经过 NoteHop。服务器管理员可以用 `NOTEHOP_AI=off` 关闭 AI。
+写作助手在你使用之前是关闭的。浏览器内置的 AI 在你的设备上运行。如果用你自己的 API 密钥，文本从你的浏览器直接发往那家服务商，不经过 NoteHop。运营者可以用 `NOTEHOP_AI=off` 把它关掉。
 
 **笔记里的代码会攻击打开它的人吗？**
-代码笔记从不运行：只作为文字显示，下载为 `.txt`。网页笔记只在封闭的框里运行，没有网络、没有 Cookie，也碰不到笔记页面或它的密钥，而且会先询问读者。
+代码笔记从不运行，只作为文本显示，并以 `.txt` 下载。网页笔记只在一个隔离框里运行，没有网络、没有 Cookie，也无法访问笔记页面或其密钥，而且会先征求读者同意。
 
-**能用自己的登录服务器吗？**
-可以。NoteHop 有自己的账号，也可以通过你运营的账号服务器登录（单点登录）。见 [docs/REFERENCE.md](docs/REFERENCE.md) 里的 `NOTEHOP_SSO_*`。
+**我能用自己的登录服务器吗？**
+可以。NoteHop 有自己的账号，也可以通过你自己运行的账户服务器登录（单点登录）。见 [docs/REFERENCE.md](docs/REFERENCE.md) 里的 `NOTEHOP_SSO_*` 设置。
 
-**如果有人分享了有害内容怎么办？**
-每条笔记的菜单里都有 **举报此笔记**。举报（一个原因和一句简短留言，绝不包含笔记内容）会送到网站管理者那里。他们读不了加密的笔记，但可以将其下架，下架后链接名会被保留一年。管理者通过 `notehop takedown` 命令或经由 [HOP App Protocol](docs/REFERENCE.md#control-center-hop-app-protocol) 的控制中心处理举报。
+**有人分享有害内容怎么办？**
+每条笔记的菜单里都有 **举报此笔记**。举报（一个原因和一条简短留言，从不包含笔记内容）会发给运营网站的人。他们读不了加密笔记，但可以把它下架，之后这个链接名称会被保留一年。
 
-**怎么备份？**
-`notehop backup -db notehop.db copy.db` 可以在服务器运行时执行。VPS 安装脚本也会设置每日备份。备份里的笔记同样是加密的。
+## 内部结构
 
-## 内部构成
-
-| 文件夹 | 内容 |
+| 文件夹 | 里面有什么 |
 |---|---|
-| `cmd/notehop/` | 程序本体：服务器、设置，以及 `backup`、`new`、`get`、`takedown` 命令 |
-| `internal/app/` | HTTP 处理、笔记功能、实时协作中继、SSH、Telegram、单点登录 |
-| `internal/db/` | SQLite 结构和自动迁移 |
-| `internal/client/` | 命令行的加密（与浏览器相同） |
-| `internal/i18n/` | 加载 9 种语言，以及保持它们一致的测试 |
-| `web/templates/`、`web/static/` | 页面、原生 JavaScript 和 CSS，无构建步骤。第三方库放在 `web/static/vendor/` |
-| `web/i18n/` | 9 种语言的界面文字 |
-| `deploy/` | 安装脚本、systemd 单元、备份、Caddy 和 nginx 示例 |
-| `scripts/` | 浏览器测试（Playwright）：`./scripts/e2e-all.sh` 对一个全新的服务器运行全部测试 |
+| `cmd/notehop/` | 程序本身：服务器、它的设置，以及 `backup`、`new`、`get` 和 `takedown` 命令 |
+| `internal/app/` | HTTP 处理器、笔记功能、实时协作中继、SSH、Telegram、单点登录、HOP App Protocol |
+| `internal/db/` | SQLite 表结构和自动迁移 |
+| `internal/client/` | 命令行程序的加密部分，与浏览器里的一致 |
+| `internal/i18n/` | 加载 9 种语言，以及一个让它们保持同步的测试 |
+| `web/templates/`, `web/static/` | 页面、原生 JavaScript 和 CSS，没有构建步骤。第三方库放在 `web/static/vendor/` |
+| `web/i18n/` | 9 种语言的界面文字，每种语言一个 JSON 文件 |
+| `web/changelog.json` | 提交和拉取请求历史的快照，显示在 `/changelog` 页面。由 `scripts/build-changelog.py` 生成 |
+| `deploy/` | VPS 安装脚本、systemd 单元、备份、Caddy 和 nginx 示例 |
+| `docs/` | 文档网站（GitHub Pages）、参考文档、自托管指南和 README 图片 |
+| `scripts/` | 浏览器测试（Playwright），用 `./scripts/e2e-all.sh` 运行全部，以及辅助脚本 |
 
-运行测试：`go test -race ./...` 和 `./scripts/e2e-all.sh`。
+用 `go test -race ./...` 和 `./scripts/e2e-all.sh` 运行测试。
+
+## 安全、许可证与历史
+
+- 报告漏洞请按 [SECURITY.md](SECURITY.md) 操作。请不要为此公开提交 issue。
+- [CHANGELOG.md](CHANGELOG.md) 按时间倒序列出了变更。
+- NoteHop 以 [MIT 许可证](LICENSE) 发布。内置的库和字体保留各自的许可证，列在 [docs/REFERENCE.md](docs/REFERENCE.md#third-party-code)。
 
 <a id="family"></a>
 
-## Hop 家族
+## HOP 家族
 
-NoteHop 是 HOP 家族的一员：免费、开源、可自行部署、无追踪的应用，共用一个账号（HOP ID）。
+NoteHop 是 HOP 家族的一员，这是一组尊重隐私、可自托管的开源应用。
 
 <!-- hop-family:start -->
 <!-- Generated from HEL.ink resources/hop-assets/apps.source.json; edit there, then run scripts/hop_assets.py build. -->
@@ -190,7 +228,3 @@ NoteHop 是 HOP 家族的一员：免费、开源、可自行部署、无追踪�
 | **NoteHop** | [note.hel.ink](https://note.hel.ink) · `n.hel.ink/…` | [navi-crwn/NoteHop](https://github.com/navi-crwn/NoteHop) | Encrypted notes you share with a link. |
 | **Imperium** | private (owner only) | private | The HOP control panel. |
 <!-- hop-family:end -->
-
----
-
-<p align="center">MIT 许可证 · <a href="docs/REFERENCE.md">参考文档</a> · <a href="docs/SELF-HOSTING.md">自己部署</a> · <a href="CHANGELOG.md">更新日志</a><br><sub>HEL.ink 家族成员：<a href="https://github.com/navi-crwn/LinkHop">LinkHop</a>（短链接）· <a href="https://github.com/navi-crwn/BioHop">BioHop</a> · <a href="https://github.com/navi-crwn/PixelHop">PixelHop</a>（图片托管）· <a href="https://note.hel.ink">NoteHop</a></sub></p>

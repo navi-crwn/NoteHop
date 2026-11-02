@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NoteHop — Notas cifradas de extremo a extremo con autodestrucción</title>
-  <meta name="description" content="Crea una nota, bloquéala en tu navegador con AES-256-GCM y comparte enlaces en n.hel.ink. Conocimiento cero, autodestrucción, parte de HOP.">
+  <meta name="description" content="Escribe una nota, ciérrala en tu navegador con AES-256-GCM y compártela con un enlace en n.hel.ink. El servidor no puede leer las notas cifradas, pero sí las básicas. Parte de la familia HOP.">
   <link rel="canonical" href="https://navi-crwn.github.io/NoteHop/es/">
   <link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/styles.css">
@@ -23,7 +23,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="NoteHop">
   <meta property="og:title" content="NoteHop — Notas cifradas de extremo a extremo con autodestrucción">
-  <meta property="og:description" content="Crea una nota, bloquéala en tu navegador con AES-256-GCM y comparte enlaces en n.hel.ink. Conocimiento cero, autodestrucción, parte de HOP.">
+  <meta property="og:description" content="Escribe una nota, ciérrala en tu navegador con AES-256-GCM y compártela con un enlace en n.hel.ink. El servidor no puede leer las notas cifradas, pero sí las básicas. Parte de la familia HOP.">
   <meta property="og:url" content="https://navi-crwn.github.io/NoteHop/es/">
   <meta property="og:image" content="https://navi-crwn.github.io/NoteHop/og.png">
   <meta property="og:image:width" content="1200">
@@ -66,7 +66,7 @@
       <div>
         <p class="kicker">HOP &middot; Notas y documentos cifrados</p>
         <h1>Bloqueado en tu navegador, compartido en segundos</h1>
-        <p class="lede">NoteHop cifra tus notas localmente con AES-256-GCM antes de enviarlas al servidor. La clave permanece en el fragmento de la URL (#), por lo que el servidor no puede leer tus datos. Enlaces limpios en n.hel.ink, código abierto (MIT).</p>
+        <p class="lede">Por defecto, NoteHop cifra tu nota en el navegador con AES-256-GCM antes de que salga de tu dispositivo. La clave vive en el fragmento de la URL (#), así que el servidor no puede leer una nota cifrada. Una nota básica, que el servidor sí puede leer, recibe un nombre de enlace a tu elección. Enlaces cortos en n.hel.ink, código abierto (MIT).</p>
         <div class="cta-row">
           <a class="btn primary" href="https://note.hel.ink">Probar NoteHop</a>
           <a class="btn" href="https://github.com/navi-crwn/NoteHop">Ver el código</a>
@@ -80,13 +80,13 @@
       <span class="section-number" aria-hidden="true">01</span><h2 id="features-h">Lo que hace NoteHop</h2>
       <ul class="features">
         <li><strong>Cifrado local con AES-256-GCM</strong><p>Tu navegador cifra el contenido antes de guardarlo. La clave de cifrado viaja en el fragmento (#) y nunca se envía al servidor.</p></li>
-        <li><strong>Servidor de conocimiento cero</strong><p>El servidor solo almacena texto cifrado. Ni administradores ni volcados de base de datos pueden acceder a tus textos.</p></li>
+        <li><strong>Un servidor que no puede leer notas cifradas</strong><p>En una nota cifrada, el servidor guarda solo el texto cifrado, así que ni los operadores ni los volcados de la base de datos pueden leer su título ni su texto. Las notas básicas se guardan como texto plano y se marcan como básicas.</p></li>
         <li><strong>Autodestrucción y quemar tras leer</strong><p>Las notas pueden eliminarse inmediatamente tras su primera lectura, o expirar a los 10 minutos, 1 hora, 1 día o 30 días.</p></li>
         <li><strong>Permisos específicos por enlace</strong><p>Emite enlaces distintos para la misma nota: propietario, solo lectura, edición, solo respuesta o solo marcar tareas.</p></li>
-        <li><strong>Colaboración en tiempo real</strong><p>Trabaja simultáneamente mediante retransmisión por WebSocket manteniendo el cifrado de extremo a extremo.</p></li>
+        <li><strong>Colaboración en tiempo real</strong><p>Escribid juntos en tiempo real mediante un relé WebSocket. En una nota cifrada, todo lo que pasa el relé va cifrado.</p></li>
         <li><strong>Diversos formatos de nota</strong><p>Texto Markdown, listas interactivas, encuestas, formularios, notas de código coloreado y notas web aisladas.</p></li>
         <li><strong>Un solo inicio de sesión: HOP ID</strong><p>Inicia sesión con tu cuenta de SSO HOP ID en toda la familia HOP, o utiliza NoteHop de forma anónima como invitado.</p></li>
-        <li><strong>Binario único en Go autoalojable</strong><p>Compilado en un ejecutable Go de ~16 MB con SQLite integrado y sin dependencias externas.</p></li>
+        <li><strong>Binario único en Go autoalojable</strong><p>Un ejecutable de Go de unos 20 MB con SQLite incluido, sin nada más que instalar y con un instalador de un solo comando.</p></li>
       </ul>
     </section>
 
@@ -104,11 +104,11 @@
       <h2 id="faq-h">Preguntas frecuentes</h2>
       <details>
         <summary>¿Puede el servidor o proveedor leer mis notas?</summary>
-        <p>No. El cifrado ocurre enteramente en tu navegador usando Web Crypto AES-256-GCM. La clave secreta vive en el hash (#) de la URL y nunca llega al servidor.</p>
+        <p>Una nota cifrada no. Tu navegador la cifra con Web Crypto AES-256-GCM antes de enviarla, y la clave se queda en el hash de la URL (#), que los navegadores no envían a ningún servidor. Una nota básica no está cifrada y el servidor puede leerla.</p>
       </details>
       <details>
         <summary>¿Qué sucede si pierdo el enlace de mi nota?</summary>
-        <p>Dado que NoteHop es de conocimiento cero y no posee claves maestras ni puertas traseras, perder el enlace significa que nadie podrá descifrar la nota.</p>
+        <p>Una nota cifrada no la puede recuperar nadie. NoteHop no tiene clave maestra ni puerta trasera, así que el enlace es la única entrada. Una nota básica se puede volver a encontrar por el nombre de su enlace.</p>
       </details>
       <details>
         <summary>¿Puedo alojar NoteHop en mi servidor?</summary>
@@ -116,7 +116,7 @@
       </details>
       <details>
         <summary>¿Dónde informo de errores o problemas de seguridad?</summary>
-        <p>Abre una incidencia en GitHub o escribe a security@hel.ink para divulgación responsable de vulnerabilidades.</p>
+        <p>No abras una incidencia pública para una vulnerabilidad. Comunícala en privado a través de GitHub: abre la pestaña Security del repositorio y elige Report a vulnerability. Los detalles están en SECURITY.md.</p>
       </details>
     </section>
 

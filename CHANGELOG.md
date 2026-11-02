@@ -4,14 +4,31 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
-### Hardening
+### Copy edits ([#36](https://github.com/navi-crwn/NoteHop/pull/36))
+- The error for a missing note is worded in parallel with the other errors, and the Russian export text has its punctuation fixed.
+
+### Hardening ([#35](https://github.com/navi-crwn/NoteHop/pull/35))
 - After signing in, `?next=` only follows paths on this site: a tab, line break or other control character, or a backslash, in the path sent the browser to another site (`/<tab>/host`). The server and the sign-in and vault scripts all refuse it now.
 - `notehop backup` creates its copy readable by its owner only (0600), whatever the umask; a failed backup removes the half-written file. `deploy/backup.sh` and `update.sh` keep the backup folder at 0700, and the backup service sets the same state directory mode as the main one.
 - Deleting a note, a takedown, an expired note and deleting an account remove the note's attachments with it instead of leaving them until their 24 hours are over.
 - Deleting an account releases the link names held for it: they stay reserved for everyone, instead of for the next account that gets the same numeric id.
 - Live editing: a person joining at the moment the last one leaves could end up in a room the note no longer pointed to, cut off from everyone else on that note.
+- The license names the copyright holder, as the other HOP repositories do.
 
-### Basic and encrypted notes
+### Installers, READMEs and documentation site ([#34](https://github.com/navi-crwn/NoteHop/pull/34))
+- `install.sh` is a one-command installer that also runs straight from GitHub with `curl … | bash`. It checks for Go or Docker, git, curl and free disk space, asks for the site name, address, port and data folder (every question has a default, and `--yes` takes them all), writes a private `.env`, builds the program, and starts it once to check `/healthz`. It can run NoteHop in the foreground, as a systemd unit, or with Docker Compose, and can connect to an existing HOP ID hub or install one next to NoteHop. `--dry-run` shows the steps without running them.
+- `update.sh` copies the database into a private `backups/` folder (mode 0700), runs `git pull --ff-only` and rebuilds, or rebuilds the Docker image. It refuses to run over local changes unless you pass `--force`.
+- `uninstall.sh` removes the program and keeps `.env`, the data folder and `backups/`. `--purge` deletes those too, after you type the site name.
+- A README in each of the nine languages, and a documentation site for GitHub Pages in the nine languages (`docs/`, rendered from `docs/locales.ini` by `docs/.render.mjs`).
+
+### Nine languages ([#33](https://github.com/navi-crwn/NoteHop/pull/33))
+- The interface is available in English, 简体中文, Deutsch, Bahasa Indonesia, 日本語, Português (Brasil), Español, Français and Русский. German is new. The catalogs `zh` and `pt` are now `zh-CN` and `pt-BR`; the old codes `zh` and `pt` still work. Arabic and right-to-left layout are removed.
+- `go test ./internal/i18n` checks that every catalog has the same keys, placeholders and tags as English.
+
+### Shared home engine and HOP assets v2 ([#27](https://github.com/navi-crwn/NoteHop/pull/27), [#28](https://github.com/navi-crwn/NoteHop/pull/28), [#32](https://github.com/navi-crwn/NoteHop/pull/32))
+- The home page's hero renderer and scroll motion come from the shared HOP home module, and the family manifest is synced to HOP assets v2 (`scripts/sync-hop-assets.sh`).
+
+### Basic and encrypted notes ([#31](https://github.com/navi-crwn/NoteHop/pull/31))
 - "New note" now starts with one choice: **Encrypted** (the default; locked in the browser, the key stays in the link after `#k=`, so the server can't read it) or **Basic** (readable by the server, with a link name you choose, like `/monday-meeting`). Every kind of note (plain text, document, code, website) exists in both. What used to be the "public note" switch hidden under Expert is now this choice, and "public" wording became "basic" everywhere.
 - Only a basic note can have a link name. An encrypted note keeps the long link: the server refuses a name for it (`err.slug_basic_only`), in a new note and in "Add link".
 - The share dialog renames a link with **Save** and **Cancel** (pencil on the row); "Add link" only creates. The old name is held for the owner for 90 days (`PUT /api/n/{token}/links/{link}`).
@@ -19,17 +36,55 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 - No note is ever indexed: `X-Robots-Tag: noindex, nofollow, noarchive` on every note, API, raw, mock and profile response (the robots meta tag was already on note pages), a `robots.txt` that keeps crawlers off the machine paths (note addresses are left crawlable on purpose, so the noindex header is seen), no sitemap, and link previews show only the kind and status of a note, never its title or text.
 - My notes: filters for Encrypted and Basic, a type label on each row, and a basic note's read link is just its address.
 - The CLI refuses `-slug` without `-public` before it calls the server.
-- Copy: claims that "the server can't read your note" now say encrypted notes; new text is English in all catalogs until translated (`docs/pending-translation-basic-notes.json`).
+- Copy: claims that "the server can't read your note" now say encrypted notes; the new text is translated in all nine catalogs (`docs/pending-translation-basic-notes.json` is the list of those keys and is no longer needed).
 
-### Media and asset addresses
+### Media and asset addresses ([#30](https://github.com/navi-crwn/NoteHop/pull/30))
 - The avatar the account server sends (in the sign-on ticket or a profile push) is stored and reported to the control center as an absolute http(s) address: a path such as `/storage/avatars/x.png` is resolved against `NOTEHOP_SSO_URL`, and anything unusable is dropped instead of being cut in half.
 - The offline worker no longer keeps `/raw/…`, `/mock/…` or `/in/…` pages (they carry a public note's text and use up a burn note's view), and it caches only complete (200) responses.
 
-### Dashboard chrome
+### Dashboard chrome ([#29](https://github.com/navi-crwn/NoteHop/pull/29))
 - The signed-in dashboard (My notes, Vault key) has the same chrome as the other HOP dashboards: a sidebar with this app's menu and the HOP family (HOP ID, LinkHop, BioHop, PixelHop, with their marks), a top bar of settings-type controls (new note, language, theme, account menu) and a compact footer. The app grid is no longer in that top bar.
 - The footer on every page spreads its five columns evenly; a flex rule had packed them to the left.
 
+### Attachment storage limits ([#27](https://github.com/navi-crwn/NoteHop/pull/27))
+- Attachments are limited per note (a shared 5 MB ciphertext budget for everything uploaded to one note), per address (`NOTEHOP_FILES_IP_MB`, 100 MB per 24 hours by default) and across the site (`NOTEHOP_FILES_TOTAL_MB`, at most 10 GB). The server also keeps a free-disk reserve (`NOTEHOP_MIN_FREE_MB`, `NOTEHOP_MIN_FREE_PERCENT`).
+- When a limit would be exceeded, uploads answer `507` with `Retry-After: 60`. The editor shows a warning, disables file selection and checks again every 30 seconds.
+- A file uploaded before its note exists is tied to the note by a one-time `X-Upload-Draft` capability. Database migration 12 adds `files.scope` and `file_drafts`.
+
+## 2026-10-31
+
+### Content warning gate ([#24](https://github.com/navi-crwn/NoteHop/pull/24))
+- A note can carry a content warning: sensitive, or 18+ adult, with an optional reason of up to 255 characters. Readers see a gate with the reason and confirm before the note is decrypted; the confirmation is remembered for 24 hours on that device, and a form works without JavaScript.
+- `/raw`, the mock API, SSH and live rooms honour the same gate. Link previews show the warning title instead of anything from the note.
+- The label and the reason are stored readable, outside the ciphertext, so the gate can work before decryption.
+- The control center can mark a note adult or sensitive, or clear the mark (`mark_nsfw`, `unmark_nsfw`, `mark_sensitive`).
+
+### Product history and family experience ([#25](https://github.com/navi-crwn/NoteHop/pull/25), [#26](https://github.com/navi-crwn/NoteHop/pull/26))
+- A `/changelog` page shows the commit, tag and pull request history from `web/changelog.json`, which `scripts/build-changelog.py` generates.
+- The family switcher and the HOP family section list the other apps with their marks.
+
+### Features grid, contact page and footer ([#23](https://github.com/navi-crwn/NoteHop/pull/23))
+- `/features` is a responsive grid, `/contact` shows its channels as cards and links the private security advisory form, and every page has the same four-column footer with the language switcher.
+
+### Documentation site ([#22](https://github.com/navi-crwn/NoteHop/pull/22))
+- A GitHub Pages site for NoteHop in the nine languages, with theme-aware feature demos on the home page and screenshots in the README.
+
+### Smaller changes ([#15](https://github.com/navi-crwn/NoteHop/pull/15) to [#20](https://github.com/navi-crwn/NoteHop/pull/20))
+- English is the default language for new visitors. A language picked with `?lang=` or remembered in the cookie still wins; `Accept-Language` is no longer used ([#16](https://github.com/navi-crwn/NoteHop/pull/16)).
+- Typography from the HOP family and a family section on the home page and in the footer ([#17](https://github.com/navi-crwn/NoteHop/pull/17)).
+- The HOP family table in this README is checked against the canonical copy in HEL.ink by a CI job ([#18](https://github.com/navi-crwn/NoteHop/pull/18)), and PixelHop is listed at `pixel.hel.ink` ([#20](https://github.com/navi-crwn/NoteHop/pull/20)).
+- `/features` and `/status` pages (version, start time and a live database check), back links on inner pages, and GitHub contact links on `/contact` ([#19](https://github.com/navi-crwn/NoteHop/pull/19)).
+- `SECURITY.md` and structured issue forms ([#15](https://github.com/navi-crwn/NoteHop/pull/15)).
+
+## 2026-10-29 and 2026-10-30
+
+### Continuous integration ([#13](https://github.com/navi-crwn/NoteHop/pull/13))
+- A GitHub Actions workflow runs `gofmt`, `go vet`, `go test -race` and the build on every push and pull request.
+
 ## 2026-10-28
+
+### Chained logout ([#12](https://github.com/navi-crwn/NoteHop/pull/12))
+- `GET /auth/sso/logout` ends the NoteHop session when you sign out at the account server or in another HOP app, then goes on to `?next=`, only when that is an https address on the account server's domain.
 
 ### Notes at /name, short share links ([short-links-redirect](https://github.com/navi-crwn/NoteHop/tree/short-links-redirect))
 - Notes live at `/TOKEN` or `/link-name` on the main site. The old `/n/TOKEN` redirects there, for links of every kind (read, write, reply, tick, owner); the browser keeps the `#…` part.

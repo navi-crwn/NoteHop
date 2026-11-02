@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NoteHop — エンドツーエンド暗号化と自動消滅対応のセキュアノート</title>
-  <meta name="description" content="ノートを作成し、ブラウザ内で AES-256-GCM 暗号化。n.hel.ink で安全に短縮共有。ゼロ知識・自動消滅、HOPファミリーの一員。">
+  <meta name="description" content="ノートを書き、ブラウザ内で AES-256-GCM により暗号化し、n.hel.ink のリンクで共有します。サーバーは暗号化ノートを読めませんが、ベーシックノートは読めます。HOP ファミリーの一員です。">
   <link rel="canonical" href="https://navi-crwn.github.io/NoteHop/ja/">
   <link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/styles.css">
@@ -23,7 +23,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="NoteHop">
   <meta property="og:title" content="NoteHop — エンドツーエンド暗号化と自動消滅対応のセキュアノート">
-  <meta property="og:description" content="ノートを作成し、ブラウザ内で AES-256-GCM 暗号化。n.hel.ink で安全に短縮共有。ゼロ知識・自動消滅、HOPファミリーの一員。">
+  <meta property="og:description" content="ノートを書き、ブラウザ内で AES-256-GCM により暗号化し、n.hel.ink のリンクで共有します。サーバーは暗号化ノートを読めませんが、ベーシックノートは読めます。HOP ファミリーの一員です。">
   <meta property="og:url" content="https://navi-crwn.github.io/NoteHop/ja/">
   <meta property="og:image" content="https://navi-crwn.github.io/NoteHop/og.png">
   <meta property="og:image:width" content="1200">
@@ -66,7 +66,7 @@
       <div>
         <p class="kicker">HOP &middot; 暗号化ノート＆ドキュメント</p>
         <h1>ブラウザ内で暗号化、瞬時に安全シェア</h1>
-        <p class="lede">NoteHop は端末から送信される前にブラウザ内で AES-256-GCM 暗号化を実行します。復号キーはURLフラグメント（#）にのみ存在するため、サーバーは内容を一切読み取れません。n.hel.ink の短縮リンク、オープンソース（MIT）。</p>
+        <p class="lede">NoteHop は既定で、ノートが端末を離れる前にブラウザ内で AES-256-GCM により暗号化します。鍵は URL フラグメント（#）にあるため、サーバーは暗号化ノートを読めません。サーバーが読めるベーシックノートには、好きなリンク名を付けられます。n.hel.ink の短いリンク、オープンソース（MIT）。</p>
         <div class="cta-row">
           <a class="btn primary" href="https://note.hel.ink">NoteHop を試す</a>
           <a class="btn" href="https://github.com/navi-crwn/NoteHop">コードを見る</a>
@@ -80,13 +80,13 @@
       <span class="section-number" aria-hidden="true">01</span><h2 id="features-h">NoteHop の機能</h2>
       <ul class="features">
         <li><strong>端末内 AES-256-GCM 暗号化</strong><p>お使いのブラウザが保存前に暗号化。キーはURLフラグメント（#）に含まれ、サーバーへ送信されることはありません。</p></li>
-        <li><strong>ゼロ知識（Zero-knowledge）サーバー</strong><p>サーバーには暗号化されたデータのみが保存されます。管理者やデータベースダンプであっても閲覧不可能です。</p></li>
+        <li><strong>暗号化ノートを読めないサーバー</strong><p>暗号化ノートについて、サーバーが保存するのは暗号文だけなので、運営者もデータベースのダンプも、タイトルや本文を読めません。ベーシックノートは平文で保存され、ベーシックと表示されます。</p></li>
         <li><strong>自動消滅と1回限りの閲覧</strong><p>1回閲覧されたら即座に消去する設定や、10分・1時間・1日・30日後の自動消滅タイマーに対応。</p></li>
         <li><strong>リンクごとの柔軟な権限設定</strong><p>オーナー用、閲覧専用、編集可能、返信専用、チェックリスト専用など用途に応じた個別リンクを発行可能。</p></li>
-        <li><strong>リアルタイム共同編集</strong><p>WebSocket 中継を介して、参加者間のエンドツーエンド暗号化を維持したままリアルタイムに共同作業。</p></li>
+        <li><strong>リアルタイム共同編集</strong><p>WebSocket リレーを通じてリアルタイムに共同編集できます。暗号化ノートでは、リレーが中継する内容はすべて暗号化されています。</p></li>
         <li><strong>多彩なノートフォーマット</strong><p>Markdown、インタラクティブチェックリスト、投票、フォーム、シンタックスハイライト付きコード、隔離Webノート。</p></li>
         <li><strong>全アプリ共通サインイン：HOP ID</strong><p>HOP ID シングルサインオンでHOPファミリー全体をシームレスに利用可能。匿名ゲスト利用もサポート。</p></li>
-        <li><strong>Go単一バイナリでのセルフホスト</strong><p>約16MBの軽量Goバイナリ1つと内蔵SQLiteで動作。外部ランタイム不要で即時デプロイ可能。</p></li>
+        <li><strong>Go単一バイナリでのセルフホスト</strong><p>SQLite 内蔵の約 20 MB の Go 実行ファイル 1 つ。ほかに入れるものはなく、コマンド 1 つのインストーラーもあります。</p></li>
       </ul>
     </section>
 
@@ -104,11 +104,11 @@
       <h2 id="faq-h">よくある質問</h2>
       <details>
         <summary>サーバーやホスティング業者は私のノートを読めますか？</summary>
-        <p>いいえ。暗号化はブラウザ内の Web Crypto AES-256-GCM で完結します。秘密鍵はURLのハッシュ（#）に残り、サーバーへは届きません。</p>
+        <p>暗号化ノートは読めません。ブラウザが送信前に Web Crypto の AES-256-GCM で暗号化し、鍵は URL ハッシュ（#）に残ります。ブラウザはこの部分をサーバーに送りません。ベーシックノートは暗号化されておらず、サーバーが読めます。</p>
       </details>
       <details>
         <summary>ノートのリンクを紛失した場合はどうなりますか？</summary>
-        <p>NoteHop はゼロ知識設計でありバックドアやマスターキーを持たないため、リンクを失うと誰もノートを復号・復元できなくなります。</p>
+        <p>暗号化ノートは誰にも復元できません。NoteHop にはマスターキーもバックドアもなく、リンクが唯一の入口です。ベーシックノートはリンク名から再び見つけられます。</p>
       </details>
       <details>
         <summary>自分のサーバーでホストできますか？</summary>
@@ -116,7 +116,7 @@
       </details>
       <details>
         <summary>不具合やセキュリティ報告はどこへ連絡すればよいですか？</summary>
-        <p>GitHub の Issue、または security@hel.ink 宛にご連絡ください。責任ある情報開示に対応しています。</p>
+        <p>脆弱性について公開の Issue は立てないでください。GitHub から非公開で報告してください。リポジトリの Security タブを開き、Report a vulnerability を選びます。詳しくは SECURITY.md をご覧ください。</p>
       </details>
     </section>
 
