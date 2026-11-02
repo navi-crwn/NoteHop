@@ -429,7 +429,7 @@
   "err.vault_wrong": "Wrong vault key.",
   "err.vote_limit": "Too many votes from this network on this poll.",
   "error.back_login": "Back to sign-in",
-  "error.missing_text": "It may have expired, been destroyed after reading, deleted by its owner, or the link has a typo.",
+  "error.missing_text": "It may have expired, been destroyed after reading, or been deleted by its owner. The link might also have a typo.",
   "error.missing_title": "This note doesn't exist",
   "error.write_new": "Write a new note",
   "ex.burn": "Gone after it’s opened 1, 3 or 10 times. Link previews in chat apps don’t count.",
