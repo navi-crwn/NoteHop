@@ -4,6 +4,13 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+### Hardening
+- After signing in, `?next=` only follows paths on this site: a tab, line break or other control character, or a backslash, in the path sent the browser to another site (`/<tab>/host`). The server and the sign-in and vault scripts all refuse it now.
+- `notehop backup` creates its copy readable by its owner only (0600), whatever the umask; a failed backup removes the half-written file. `deploy/backup.sh` and `update.sh` keep the backup folder at 0700, and the backup service sets the same state directory mode as the main one.
+- Deleting a note, a takedown, an expired note and deleting an account remove the note's attachments with it instead of leaving them until their 24 hours are over.
+- Deleting an account releases the link names held for it: they stay reserved for everyone, instead of for the next account that gets the same numeric id.
+- Live editing: a person joining at the moment the last one leaves could end up in a room the note no longer pointed to, cut off from everyone else on that note.
+
 ### Basic and encrypted notes
 - "New note" now starts with one choice: **Encrypted** (the default; locked in the browser, the key stays in the link after `#k=`, so the server can't read it) or **Basic** (readable by the server, with a link name you choose, like `/monday-meeting`). Every kind of note (plain text, document, code, website) exists in both. What used to be the "public note" switch hidden under Expert is now this choice, and "public" wording became "basic" everywhere.
 - Only a basic note can have a link name. An encrypted note keeps the long link: the server refuses a name for it (`err.slug_basic_only`), in a new note and in "Add link".
