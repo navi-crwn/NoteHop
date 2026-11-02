@@ -446,6 +446,9 @@ func (d *DB) DeleteNote(id int64) error {
 	if err := holdSlugs(tx, `n.id = ?`, id); err != nil {
 		return err
 	}
+	if err := dropNoteFiles(tx, `n.id = ?`, id); err != nil {
+		return err
+	}
 	if _, err := tx.Exec(`DELETE FROM notes WHERE id = ?`, id); err != nil {
 		return err
 	}
@@ -904,6 +907,9 @@ func (d *DB) SetConfig(id int64, config string) error {
 func (d *DB) Sweep() (int64, error) {
 	t := now()
 	if err := holdSlugs(d, `n.expires > 0 AND n.expires <= ?`, t); err != nil {
+		return 0, err
+	}
+	if err := dropNoteFiles(d, `n.expires > 0 AND n.expires <= ?`, t); err != nil {
 		return 0, err
 	}
 	res, err := d.Exec(`DELETE FROM notes WHERE expires > 0 AND expires <= ?`, t)
