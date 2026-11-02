@@ -135,7 +135,6 @@ body[data-page=home] main::before { content: ""; position: absolute; inset: 0 0 
 .h-chiplink { position: absolute; inset-inline-start: 12%; top: 76%; display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 999px; background: var(--text); color: var(--bg); font: 600 13px var(--h-mono); opacity: 0; white-space: nowrap; }
 .h-chiplink svg { width: 16px; height: 16px; }
 /* The chip is dir="ltr" (it shows a link), so its logical sides would follow ltr; place it from the page's start instead. */
-[dir=rtl] .h-chiplink { inset-inline-start: auto; inset-inline-end: 12%; }
 .h-phone { position: absolute; inset-inline-end: 7%; top: 9%; width: 30%; aspect-ratio: 9 / 18; border-radius: 30px; background: var(--h-dark); border: 1px solid var(--line-2); padding: 12px; box-shadow: var(--shadow); transition: transform .5s; }
 .h-screen { position: relative; height: 100%; border-radius: 20px; background: var(--panel); padding: 16px 14px; overflow: hidden; }
 .h-from { font: 11px var(--h-mono); color: var(--faint); }
@@ -263,7 +262,7 @@ body[data-page=home] main::before { content: ""; position: absolute; inset: 0 0 
 .h-marquee div { display: flex; gap: 34px; width: max-content; font: 800 clamp(26px, 4vw, 46px) var(--h-sans); letter-spacing: -.03em; white-space: nowrap; }
 .h-marquee span:nth-child(4n+3) { font-family: var(--h-serif); font-style: italic; font-weight: 400; color: var(--faint); }
 .h-marquee .dia { align-self: center; font-size: .6em; color: var(--accent); }
-@media (prefers-reduced-motion: no-preference) { .h-marquee div { animation: h-mq 40s linear infinite; } [dir="rtl"] .h-marquee div { animation-direction: reverse; } }
+@media (prefers-reduced-motion: no-preference) { .h-marquee div { animation: h-mq 40s linear infinite; } }
 @keyframes h-mq { to { transform: translateX(-50%); } }
 .h-final { max-width: 1180px; margin: 0 auto; padding: 90px 24px 110px; text-align: center; }
 .h-final h2 { font-size: clamp(40px, 6vw, 76px); line-height: 1.02; letter-spacing: -.04em; font-weight: 800; margin: 0 0 28px; }
