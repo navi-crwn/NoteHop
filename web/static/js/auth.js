@@ -27,7 +27,7 @@
         return NHC.vaultKey(k.vault, res.vault_wrap).then(function (v) { NHC.remember(res.username, v); });
       }).then(function () {
         var next = new URLSearchParams(location.search).get('next') || '/dashboard';
-        location.href = /^\/(?!\/)/.test(next) ? next : '/dashboard';
+        location.href = /^\/(?![\/\\])[^\x00-\x1f\x7f\\]*$/.test(next) ? next : '/dashboard';
       });
     }).catch(function (x) { fail(x.message); });
   });
