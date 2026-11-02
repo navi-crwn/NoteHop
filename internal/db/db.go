@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -871,10 +872,20 @@ func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
 }
 
 // Backup writes a consistent copy of the database to path while the server
-// keeps running (VACUUM INTO also compacts it). path must not exist yet.
+// keeps running (VACUUM INTO also compacts it). path must not exist yet. The
+// copy holds password hashes and webhook keys, so it is created readable by
+// its owner only, whatever the caller's umask.
 func (d *DB) Backup(path string) error {
-	_, err := d.Exec(`VACUUM INTO ?`, path)
-	return err
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		return err
+	}
+	f.Close()
+	if _, err := d.Exec(`VACUUM INTO ?`, path); err != nil {
+		os.Remove(path)
+		return err
+	}
+	return nil
 }
 
 // SetConfig replaces a note's feature settings (JSON).
