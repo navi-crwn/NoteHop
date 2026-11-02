@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NoteHop — 端到端加密、阅后即焚的安全便签</title>
-  <meta name="description" content="创建便签，在浏览器本地使用 AES-256-GCM 加密，并在 n.hel.ink 分享链接。零知识、阅后即焚，HOP 家族成员。">
+  <meta name="description" content="写一条笔记，在浏览器中用 AES-256-GCM 加密，并通过 n.hel.ink 的链接分享。服务器无法读取加密笔记，但可以读取基础笔记。HOP 家族的一员。">
   <link rel="canonical" href="https://navi-crwn.github.io/NoteHop/zh-CN/">
   <link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/styles.css">
@@ -23,7 +23,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="NoteHop">
   <meta property="og:title" content="NoteHop — 端到端加密、阅后即焚的安全便签">
-  <meta property="og:description" content="创建便签，在浏览器本地使用 AES-256-GCM 加密，并在 n.hel.ink 分享链接。零知识、阅后即焚，HOP 家族成员。">
+  <meta property="og:description" content="写一条笔记，在浏览器中用 AES-256-GCM 加密，并通过 n.hel.ink 的链接分享。服务器无法读取加密笔记，但可以读取基础笔记。HOP 家族的一员。">
   <meta property="og:url" content="https://navi-crwn.github.io/NoteHop/zh-CN/">
   <meta property="og:image" content="https://navi-crwn.github.io/NoteHop/og.png">
   <meta property="og:image:width" content="1200">
@@ -66,7 +66,7 @@
       <div>
         <p class="kicker">HOP &middot; 加密便签与文档</p>
         <h1>在浏览器本地加密，数秒内安全分享</h1>
-        <p class="lede">NoteHop 在便签离开设备前于本地浏览器使用 AES-256-GCM 完成加密。解密密钥仅存在于链接锚点（#）中，服务器绝对无法读取您的文本。在 n.hel.ink 获得简洁短链，开源 (MIT)。</p>
+        <p class="lede">NoteHop 默认在笔记离开你的设备之前，先在浏览器中用 AES-256-GCM 加密。密钥放在 URL 片段（#）里，所以服务器无法读取加密笔记。基础笔记服务器可以读取，它的链接名称由你自己决定。n.hel.ink 短链接，开源（MIT）。</p>
         <div class="cta-row">
           <a class="btn primary" href="https://note.hel.ink">立即体验 NoteHop</a>
           <a class="btn" href="https://github.com/navi-crwn/NoteHop">查看源码</a>
@@ -80,13 +80,13 @@
       <span class="section-number" aria-hidden="true">01</span><h2 id="features-h">NoteHop 功能亮点</h2>
       <ul class="features">
         <li><strong>客户端 AES-256-GCM 加密</strong><p>内容在浏览器内直接完成加密再保存。密钥仅保存在 URL 片段 (#) 中，从不传输给服务器。</p></li>
-        <li><strong>零知识服务器架构</strong><p>服务器仅存储密文数据块。即便管理员或数据库被导出，也绝无法窥探您的隐私便签。</p></li>
+        <li><strong>无法读取加密笔记的服务器</strong><p>加密笔记在服务器上只有密文，所以运营者和数据库转储都无法读取它的标题或正文。基础笔记以纯文本保存，并会标明为基础笔记。</p></li>
         <li><strong>阅后即焚与自毁定时</strong><p>支持阅读一次后即刻销毁，或在 10 分钟、1 小时、1 天或 30 天后自动过期。</p></li>
         <li><strong>细粒度链接权限</strong><p>为同一份便签签发不同权限的链接：所有者、仅只读、可编辑、仅回复或清单仅勾选。</p></li>
-        <li><strong>实时协同编辑</strong><p>基于 WebSocket 中继提供实时协作，同时在所有协作者之间保持全程端到端加密。</p></li>
+        <li><strong>实时协同编辑</strong><p>通过 WebSocket 中继实时协作。在加密笔记中，中继转发的所有内容都是加密的。</p></li>
         <li><strong>丰富的便签类型</strong><p>Markdown 笔记、交互式任务清单、投票、表单、代码便签与沙箱化 Web 便签。</p></li>
         <li><strong>全生态统一登录：HOP ID</strong><p>使用 HOP ID 单点登录账户畅行 HOP 全家族应用，亦支持完全匿名的游客便签。</p></li>
-        <li><strong>单一 Go 二进制私有化运行</strong><p>编译为单一约 16 MB 的轻量 Go 可执行程序，内嵌 SQLite，无外部运行时依赖。</p></li>
+        <li><strong>单一 Go 二进制私有化运行</strong><p>一个约 20 MB 的 Go 可执行文件，内置 SQLite，无需安装其他东西，并提供一条命令即可完成的安装脚本。</p></li>
       </ul>
     </section>
 
@@ -104,11 +104,11 @@
       <h2 id="faq-h">常见问题</h2>
       <details>
         <summary>服务器或托管商能够读取我的便签内容吗？</summary>
-        <p>不能。加密完全在浏览器中使用 Web Crypto AES-256-GCM 运算。密钥仅留在 URL 锚点（#），从不发送给服务器。</p>
+        <p>加密笔记不能。浏览器在发送之前用 Web Crypto AES-256-GCM 加密，密钥留在 URL 哈希（#）里，浏览器不会把它发给服务器。基础笔记没有加密，服务器可以读取。</p>
       </details>
       <details>
         <summary>如果我丢失了便签链接会怎样？</summary>
-        <p>由于 NoteHop 遵循严格的零知识架构，且不存在主密钥或后门，链接丢失意味着任何人都无法解密或找回该便签。</p>
+        <p>加密笔记无人能够找回。NoteHop 没有主密钥，也没有后门，链接是唯一的入口。基础笔记可以通过链接名称再找到。</p>
       </details>
       <details>
         <summary>我可以部署在自己的服务器上吗？</summary>
@@ -116,7 +116,7 @@
       </details>
       <details>
         <summary>如何报告问题或安全漏洞？</summary>
-        <p>欢迎在 GitHub 提交 Issue，或致信 security@hel.ink 进行负责任的安全漏洞披露。</p>
+        <p>请不要为安全漏洞公开提交 issue。请通过 GitHub 私下报告：打开仓库的 Security 标签页，选择 Report a vulnerability。详情见 SECURITY.md。</p>
       </details>
     </section>
 

@@ -1,183 +1,221 @@
 <p align="center">🌐 <a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.de.md">Deutsch</a> · <a href="README.id.md">Bahasa Indonesia</a> · <b>日本語</b> · <a href="README.pt-BR.md">Português (Brasil)</a> · <a href="README.es.md">Español</a> · <a href="README.fr.md">Français</a> · <a href="README.ru.md">Русский</a></p>
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/hero-ja-dark.webp"><img src="docs/readme/hero-ja-light.webp" alt="NoteHop：あなたが選んだ人だけが読めるノート" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/hero-ja-dark.webp"><img src="docs/readme/hero-ja-light.webp" alt="NoteHop のホーム画面：3D ロゴの横に見出し「あなたが選んだ人だけが読めるノート」" width="100%"></picture></p>
+
+<p align="center"><b>ノートを書いて、リンクを送るだけ。</b><br>ノートは既定で、保存される前にブラウザー内で暗号化されます。そのため、サーバーが保存するのは読めないテキストです。</p>
 
 <p align="center">
-  <b>ノートを書いて、リンクを送って、おしまい。<br>保存される前にブラウザーで鍵がかかるので、サーバーにも読めません。</b>
-</p>
-
-<p align="center">
-  <a href="https://note.hel.ink"><b>✍️ オンラインで試す</b></a> ·
-  <a href="https://navi-crwn.github.io/NoteHop/">Website</a> ·
-  <a href="#run-your-own">自分で設置</a> ·
-  <a href="#features">機能</a> ·
-  <a href="#faq">よくある質問</a> ·
-  <a href="docs/SELF-HOSTING.md">サーバーガイド（英語）</a> ·
-  <a href="docs/REFERENCE.md">リファレンス（英語）</a> ·
+  <a href="https://note.hel.ink"><b>オンラインで試す</b></a> ·
+  <a href="https://navi-crwn.github.io/NoteHop/">Web サイト</a> ·
+  <a href="#run-your-own">自分で運用する</a> ·
+  <a href="#encrypted-and-basic-notes">暗号化ノートとベーシックノート</a> ·
+  <a href="#faq">FAQ</a> ·
+  <a href="docs/SELF-HOSTING.md">セルフホスティングガイド</a> ·
+  <a href="docs/REFERENCE.md">リファレンス</a> ·
   <a href="CHANGELOG.md">変更履歴</a>
 </p>
 
-<p align="center"><sub>Go のバイナリ 1 つ + SQLite ファイル 1 つ · 9 言語 · 広告なし・トラッカーなし · 無料のオープンソース（MIT）</sub></p>
+<p align="center"><sub>Go のプログラム 1 つと SQLite ファイル 1 つ · 9 言語 · 広告なし、トラッカーなし · 無料のオープンソース（MIT）</sub></p>
 
 > [!IMPORTANT]
-> **鍵はリンクの中にあります。** リンクを持っている人はノートを読めます。すべてのリンクをなくすと、誰にも開けなくなります。あなたにも、サーバーにも、私たちにも。リンクは渡したい相手にだけ送り、オーナーリンクは安全な場所に保管してください。
+> 暗号化ノートは、鍵をリンクの中に持っています。リンクを持つ人はそのノートを読めますし、リンクのコピーがすべて失われると、サーバーや運営者を含めて誰も開けなくなります。ベーシックノートは仕組みが違います。サーバーはそのテキストを平文で保存し、読むことができます。ベーシックノートは、サーバーの運営者に読まれても構わない内容にだけ使ってください。
 
----
+NoteHop は、自分で運用できるノート共有アプリです。ノートを書いてリンクを受け取り、それを送ります。リンクごとに権限があり（閲覧のみ、編集できる、返信のみ、チェックのみ）、ノートは読まれた後に自分で削除でき、複数人が同時に書き込むこともできます。
 
-1 つのコマンドでインストール（まずお使いのコンピューターを確認し、いくつか質問し、HOP ID ハブの設定もできます）：
+次のような人に向いています。
+
+- パスワードや住所、個人的なメモをチャットで送りたいが、履歴に残したくない人、
+- 買い物リストや会議メモ、参加者募集シートを、全員にアカウントを作らせずに共有したい人、
+- ペーストビンやメモ帳を、1 つのファイルで自分のサーバーに置きたい人です。
+
+コマンド 1 つでインストールできます。スクリプトはコンピューターを確認し、いくつか質問し、必要なら HOP ID のアカウントハブも用意します。
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/navi-crwn/NoteHop/main/install.sh | bash
 ```
 
-クローンから: `./install.sh` · 更新: `./update.sh` · 削除: `./uninstall.sh`。`--yes` を付けるとすべて既定値になります。`--help` でオプション一覧を表示します。
+クローンから実行する場合は `./install.sh` です。更新は `./update.sh`、削除は `./uninstall.sh` です。`--yes` を付けるとすべて既定値で進み、`--help` でオプションを確認できます。
 
-## NoteHop とは？
-
-ノートを、鍵のかかった箱に入れた手紙だと考えてください。NoteHop は**あなたのブラウザーの中で**箱に鍵をかけ、その鍵をリンクに入れ、それから箱をサーバーに送ります。サーバーが持っているのは、自分では開けられない箱です。リンクを渡された人は、自分のブラウザーでその場で開けます。
-
-さらに、1 つのノートでメモ帳以上のことができます。権限の違うリンク（閲覧のみ・編集できる・返信のみ・チェックのみ）、読んだら自動で削除、リアルタイムの共同編集、チェックリスト、投票、フォーム、コード、そして隔離された枠の中で動く小さな Web ページまで。
-
-**こんな人に向いています：**
-- パスワードや住所、個人的なメモをチャットで送りたいけれど、履歴に残したくない人
-- 買い物リストや会議メモ、参加者リストを、全員にアカウントを作らせずに共有したい人
-- 自分のサーバーに置ける pastebin やメモ帳を、ファイル 1 つで動かしたい人
-
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/demo-dark.webp"><img src="docs/readme/demo-light.webp" alt="ライブデモ：左に入力すると、サーバーが受け取る暗号文が右に表示される" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/demo-dark.webp"><img src="docs/readme/demo-light.webp" alt="ホーム画面のライブデモ：左に入力したノート、右にサーバーが受け取る暗号化されたテキスト" width="100%"></picture></p>
 
 <details>
-<summary><b>もっと詳しく</b>（英語の画面）</summary>
+<summary>ほかのスクリーンショット</summary>
 
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/note-dark.webp"><img src="docs/readme/note-light.webp" alt="チェックリスト、表、投票の入ったノート" width="100%"></picture></p>
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/share-dark.webp"><img src="docs/readme/share-light.webp" alt="共有ダイアログ：それぞれ権限を持つリンクと、オーナーリンク" width="70%"></picture></p>
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/tour-dark.webp"><img src="docs/readme/tour-light.webp" alt="ホームページの機能ツアー" width="100%"></picture></p>
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/web-dark.webp"><img src="docs/readme/web-light.webp" alt="Web ノート：HTML・CSS・JS ファイルと、実行結果・コンソール" width="100%"></picture></p>
-<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/phone-dark.webp"><img src="docs/readme/phone-light.webp" alt="スマートフォンの NoteHop" width="32%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/new-dark.webp"><img src="docs/readme/new-light.webp" alt="「新しいノート」ページ：暗号化とベーシックの選択、ライブプレビュー付きのエディター、設定バー" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/note-dark.webp"><img src="docs/readme/note-light.webp" alt="チェックリスト、表、投票を含む暗号化ノート。オーナーリンクで開いたところ" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/share-dark.webp"><img src="docs/readme/share-light.webp" alt="「共有」ダイアログ：閲覧のみのリンク、別のリンクを追加するボタン、ノートをベーシックにするオプション、オーナーリンク" width="70%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/basic-dark.webp"><img src="docs/readme/basic-light.webp" alt="リンク名 monday-meeting のベーシックノート。「オーナー」ラベルの隣に「ベーシック」と表示されている" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/web-dark.webp"><img src="docs/readme/web-light.webp" alt="Web ノート：HTML、CSS、JS のファイルと、隔離ボックス内で動く実行結果" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/dashboard-dark.webp"><img src="docs/readme/dashboard-light.webp" alt="サインイン済みアカウントの「マイノート」：HOP ファミリーのサイドバー、フィルター、暗号化ノートとベーシックノートの一覧" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/tour-dark.webp"><img src="docs/readme/tour-light.webp" alt="ホーム画面の機能ツアー。「共有」のグループを表示している" width="100%"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/readme/phone-dark.webp"><img src="docs/readme/phone-light.webp" alt="スマートフォンでの暗号化ノート。下部に共有、チャット、履歴、その他のバー" width="32%"></picture></p>
 
 </details>
 
-## サーバーに見えるもの、決して見えないもの
+<a id="encrypted-and-basic-notes"></a>
 
-| 🙈 サーバーには決して届かない | 👀 サーバーに見えるもの |
+## 暗号化ノートとベーシックノート
+
+新しいノートは、まず 1 つの選択から始まります。
+
+| | 暗号化（既定） | ベーシック |
+|---|---|---|
+| テキストを読める人 | 鍵を含む完全なリンクを持つ人 | リンクを持つ人と、サーバー |
+| 保存のされ方 | 暗号文（AES-256-GCM）として | データベースとそのバックアップに平文で |
+| リンク | ランダムで、鍵は `#k=` の後ろ | `/monday-meeting` のように自分で付けた名前、またはランダムなもの |
+| パスワード、おとりのパスワード、自己消滅ブロック | 使える | 使えない |
+| `/raw`、モック API、SSH、公開ページ `/@name` | 使えない | 使える |
+| 検索エンジン | インデックスされない | インデックスされない |
+
+オーナーは「共有」ダイアログで、ノートの種類を相互に切り替えられます。ブラウザーがテキストを暗号化または復号し、サーバーはそれを差し替えるだけです。リンクと設定はそのまま残ります。バージョン履歴は消去され、追記された行、提案、おとり、自己消滅ブロック、受信箱、承認サインのあるノートは、まだ種類を切り替えられません。
+
+添付ファイルとリアルタイム共同編集は、どちらの種類でも使えます。ベーシックノートでは、サーバーはそれらも読めます。添付ファイルの鍵がノートのテキストに保存され、ライブ編集は暗号化されないためです。
+
+チャットアプリなどでのリンクプレビューには、ノートがあることとその種類だけが表示され、タイトルや本文は表示されません。
+
+<a id="what-the-server-sees"></a>
+
+## サーバーに見えるもの
+
+暗号化ノートの場合：
+
+| サーバーに届かないもの | サーバーに見えるもの |
 |---|---|
 | ノートのタイトルと本文 | 暗号文とそのサイズ |
-| 鍵（リンクの `#` より後ろにあり、ブラウザーはこの部分を送信しません） | ノートの作成・変更・閲覧の時刻と回数 |
-| 添付ファイル、チャット、共同編集の入力（これらも暗号化） | 使われたリンクの種類（閲覧のみ、編集できる…） |
-| アカウントのパスワードとノートの一覧 | どのチェックボックスにチェックが入っているか、返信の数 |
-| AI の書くお手伝いに送る文章（ブラウザーから選んだプロバイダーへ直接送られます） | IP アドレス（回数制限のため） |
+| 鍵（リンクの `#` の後ろにあり、ブラウザーは送信しません） | ノートが作成、変更、開封された日時と、開かれた回数 |
+| 返信、提案、承認サインの名前、チャットメッセージ、ライブ編集 | 使われたリンクの種類（閲覧のみ、編集できる など）と、リンクのアドレス |
+| 添付ファイル（ファイルも暗号化されます） | 設定した場合の、有効期限、ロックと開封の時刻、許可したネットワーク |
+| アカウントのパスワードと、タイトル付きのノート一覧 | どのチェックボックスがオンか、投票の各選択肢の票数、返信の数 |
+| 執筆アシスタントに送るテキスト（ブラウザーから、選んだ提供元に直接送られます） | レート制限と、設定したネットワーク制限のための IP アドレス。アカウントがあればユーザー名 |
 
-<a id="features"></a>
+「サーバーは読めない」という説明が及ぶ範囲：
+
+- これは暗号化ノートに当てはまります。ベーシックノートは読めます。平文を扱う機能も同様です。`/raw`、モック API、SSH、そして受信箱と Telegram ボットでは、サーバーが到着時にテキストを見て、その後ノートの鍵で封印して保存します。
+- これは、サーバーがブラウザーに送るコードに依存します。暗号化はサーバーが配信する JavaScript の中で動くため、運営者がそのコードを書き換えれば、ノートを開く人の鍵を取得できてしまいます。厳格な Content Security Policy はサードパーティのスクリプトを防ぎますが、この点は変わりません。気になる場合は、NoteHop を自分で運用する、コードを読む、または自分のマシン上で暗号化するコマンドラインプログラム `notehop` を使ってください。
+- リンクが鍵です。リンクを持つ人は誰でもノートを読めます。リンクを貼り付けて保存するサービスも同じです。
+- 暗号化ノートでも、読める形で保存される情報があります。ノートを開く前に表示される内容警告のラベルと任意の理由（最大 255 文字）、そして誰かがノートについて出した報告の理由とメッセージです。
+- データベースのバックアップには、データベースにあるものがすべて含まれます。暗号文、ベーシックノートのテキスト、アカウントの記録です。
 
 ## 機能
 
-- **🔒 ブラウザーで暗号化。** AES-256-GCM と、リンクの中にしかないランダムな 256 ビットの鍵。追加のパスワードも設定できます。
-- **🔗 複数のリンク、別々の権限。** 閲覧のみ、編集できる、返信のみ（ゲストブックのように）、チェックのみ（リスト用）。リンクが漏れた？止めても、ほかのリンクはそのまま使えます。
-- **🔑 オーナーリンク。** ノートの変更・共有・固定・削除のための別のリンク。
-- **🔥 読んだら削除。** 1・3・10 回開かれたら消滅。チャットアプリのリンクプレビュー用ボットでは回数を消費しません。
-- **⏳ 有効期限とタイムカプセル。** 10 分から 30 日で消える、または選んだ日まで開けないように。
-- **🏷️ 独自アドレス + QR。** `/monday-meeting` と、ブラウザーで作る QR コード。
-- **📌 固定コピーと承認サイン。** 誰にも変えられない版を固定し、読み手に名前で承認してもらえます。
-- **🧑‍🤝‍🧑 一緒に書く。** 全員のカーソルと名前がリアルタイムで見え、横にチャット、「発表者に追従」も。サーバーは暗号化されたデータを中継するだけです。
-- **✅ スマートブロック。** チェックリスト、投票（1 人 1 票）、フォーム、計算機、Mermaid の図、見出しから作るカンバン、PIN 付きや自動で消える秘密ブロック。
-- **📝 ノートの種類。** テキスト（メモ帳のように）、ドキュメント（`/` メニューと右クリックの書式メニュー付き Markdown）、コード（行番号付き、実行されない、`.txt` でダウンロード）、Web。
-- **🌐 Web ノート。** 1 つのノートに HTML・CSS・JS ファイル。実行ボタン、結果、コンソール付き。コードはブラウザー内の隔離された枠の中だけで動き、インターネットにもページにもアクセスできません。他人のコードを動かす前には必ず読み手に確認します。
-- **✨ 書くお手伝い（任意）。** 要約、書き直し、翻訳、スペル修正。ブラウザー内蔵の AI（文章は端末から出ません）か、自分の API キー（Claude、ChatGPT、Gemini、OpenRouter、Ollama）を使えます。NoteHop は文章も鍵も見ません。
-- **📎 添付ファイル。** ファイルや画像をノートにドロップ。これも暗号化され、24 時間保存されます。
-- **👤 アカウントは任意。** アカウントがあると、ノートの一覧はあなたのパスワードでしか開かない鍵で暗号化されます。パスワードを忘れても、リカバリーコードで戻れます。
-- **🕵️ さらなるプライバシー。** おとりパスワード（偽のノートが開く）、特定のネットワークからだけ、どのリンクから漏れたか分かる漏えい追跡、差分付きの履歴。
-- **📶 近くの端末。** 同じ Wi-Fi の端末へ、ブラウザーからブラウザーへ直接ノートやファイルを送れます。
-- **🧑‍💻 開発者向け。** curl 用の `/raw`、ターミナルで暗号化する `notehop` CLI、ノートの JSON から作るモック API、送受信の Webhook、SSH、Telegram ボット。
-- **🌍 9 言語。** English、简体中文、Español、العربية（右から左）、Português、Français、日本語、Русский、Bahasa Indonesia。ブラウザーに合わせて自動で選ばれます。
-- **🛡️ 最初から厳格。** 厳しいコンテンツセキュリティポリシー、サードパーティのスクリプトなし、広告・トラッカーなし、`noindex`、回数制限。インストールできるアプリ（PWA）としてオフラインでも使えます。
+- ブラウザー内で暗号化。リンクの中にだけある、ランダムな 256 ビット鍵による AES-256-GCM です。さらにパスワードを追加できます。
+- 権限の異なる複数のリンク：閲覧のみ、編集できる、返信のみ（ゲストブックのように）、チェックのみ（チェックリスト用）、変更を提案できる。リンクが漏れたら、そのリンクだけを無効にでき、ほかのリンクは使い続けられます。別のオーナーリンクで、ノートの変更、共有、凍結、削除ができます。
+- 読んだら削除：ノートは 1 回、3 回、10 回開かれた後に破棄されます。読み手がまずボタンを押すので、チャットアプリのプレビュー用ボットが回数を消費することはありません。
+- 有効期限とタイムカプセル：ノートは 10 分から 30 日で消えるか、選んだ日付まで閉じたままになります。
+- ベーシックノートには、独自のアドレスと QR コードを付けられます。たとえば `/monday-meeting` です。QR コードはブラウザー内で作られます。
+- 誰も変更できない固定コピーと、承認サイン。読み手が自分の名前でバージョンを承認できます。
+- 共同で書く：互いのカーソルと名前がリアルタイムに見え、横にチャットがあり、全員がプレゼンターに追従できます。暗号化ノートでは、サーバーは暗号化されたデータを中継するだけです。
+- テキスト内のブロック：チェックリスト、投票（1 人 1 票）、フォーム、電卓、Mermaid 図、見出しから作るカンバンボード、スライド、PIN で保護されたり自己消滅したりする秘密のブロック。
+- ノートの種類：プレーン（メモ帳のように）、ドキュメント（`/` メニューと右クリックの書式メニュー付き Markdown）、コード（行番号付き、実行されず、`.txt` としてダウンロード）、Web。
+- Web ノート：1 つのノートに HTML、CSS、JS のファイルを入れ、実行ボタン、結果、コンソールを使えます。コードはブラウザー内の隔離されたフレームで動き、インターネットにも、ノートページ、その Cookie、鍵にもアクセスできません。他の人のコードを実行する前に、読み手に確認します。
+- 執筆アシスタント（任意）：要約、書き直し、翻訳、スペル修正。デバイス内にとどまるブラウザー内蔵 AI、または Claude、ChatGPT、Gemini、OpenRouter、Ollama の自分の API キーを使います。テキストとキーはブラウザーから提供元へ直接送られ、NoteHop を経由しません。
+- 内容警告：ノートに 18+ またはセンシティブ の印を付け、理由も添えられます。読み手が確認してからノートが開き、`/raw` とモック API も同じチェックに従います。
+- 添付ファイル：ファイルや画像をノートにドロップします。ブラウザー内で暗号化され、24 時間保存され、1 ファイル 5 MB までで、運営者が決める共有ストレージの予算があります。
+- アカウントは任意です。アカウントがあると、ノート一覧は自分のパスワードでしか開けない鍵で暗号化されます。パスワードを忘れても、1 回限りのリカバリーコード 8 個で戻れます。運営者は、HOP ID のようなシングルサインオンのアカウントサーバーを接続することもできます。
+- プライバシーの追加機能：偽のノートを開くおとりのパスワード、特定のネットワークからのみのアクセス、コピーされたテキストがどのリンク経由かを示す漏洩トレーサー、差分付きのバージョン履歴。
+- 近くのデバイス：同じネットワーク上のデバイスへ、ブラウザーからブラウザーへ直接、パッドやファイルを送れます。
+- 開発者向け：curl 用の `/raw`、ターミナルで暗号化する `notehop` CLI、ベーシックノートの JSON から作るモック API、送受信の Webhook、SSH、Telegram ボット。
+- 9 言語：English、简体中文、Deutsch、Bahasa Indonesia、日本語、Português (Brasil)、Español、Français、Русский。匿名の訪問者には英語が表示されます。地球儀メニューまたは `?lang=xx` で別の言語を選べます。
+- 広告なし、トラッカーなし、サードパーティのスクリプトなし。インストールできるオフラインアプリ（PWA）です。
+- 報告とモデレーション：すべてのノートに **このノートを報告** があります。運営者は `notehop takedown` コマンド、または [HOP App Protocol](docs/REFERENCE.md#control-center-hop-app-protocol) 経由のコントロールセンターで報告を確認します。
 
 <a id="run-your-own"></a>
 
-## 自分で設置する
+## 自分で運用する
 
-NoteHop は **Go のバイナリ 1 つと SQLite ファイル 1 つ**だけ。Node もビルド手順も、ほかのサービスも要りません。
+NoteHop は、Go のプログラム 1 つと SQLite ファイル 1 つです。Node も、ビルド手順も、ほかのサービスも要りません。
 
-**方法 1：VPS に**（systemd + Caddy または nginx、毎日のバックアップ）
+このページの冒頭のインストーラーは、自分で管理できるコンピューターでは最も手軽な方法です。公開サーバーでは、次のいずれかを使ってください。
+
+VPS で（systemd、HTTPS 用の Caddy または nginx、毎日のバックアップ付き）：
 
 ```bash
 git clone https://github.com/navi-crwn/NoteHop.git && cd NoteHop
 sudo DOMAIN=note.example.com ./deploy/install.sh
 ```
 
-HTTPS、更新、バックアップ、復元を含む詳しい手順は **[docs/SELF-HOSTING.md](docs/SELF-HOSTING.md)**（英語）にあります。
+[セルフホスティングガイド](docs/SELF-HOSTING.md) では、HTTPS、更新、バックアップ、復元を説明しています。
 
-**方法 2：自分のパソコンで**（Go 1.27 以上が必要）
+開発用に自分のコンピューターで（Go 1.27 以降が必要）：
 
 ```bash
 go run ./cmd/notehop -addr 127.0.0.1:8090 -db data/dev.db
 ```
 
-http://127.0.0.1:8090 を開きます。ブラウザーがこの暗号化を許可するのは **HTTPS か localhost** のときだけです。
+http://127.0.0.1:8090 を開きます。ブラウザーは、HTTPS または localhost でのみ暗号化を許可します。
 
-**方法 3：Docker**
+Docker で：
 
 ```bash
 docker build -t notehop .
 docker run -d -p 127.0.0.1:8090:8080 -v notehop:/data -e NOTEHOP_BASE_URL=https://note.example.com notehop
 ```
 
-設定はすべて環境変数（`NOTEHOP_*`）です。一覧、暗号化の仕組み、API は **[docs/REFERENCE.md](docs/REFERENCE.md)** にあります。
+すべての設定は `NOTEHOP_` で始まる環境変数です。暗号化モデルや API とともに、[docs/REFERENCE.md](docs/REFERENCE.md) に一覧があります。
+
+バックアップ：`notehop backup -db notehop.db copy.db` は、サーバーが動いている間にコピーを作り、そのファイルは所有者だけが読めます。VPS 用インストーラーは、14 日間保存される毎日のバックアップも設定します。バックアップにはベーシックノートが平文で入っているので、慎重に保管してください。
 
 ## 最初のノート
 
-1. ホームページを開き、ボックスに入力して、サーバーが受け取る暗号文を見てみましょう。
-2. 誰が何をできるかを選びます：**閲覧のみ**、**編集できる**、**返信できる**。秘密なら **1 回だけ読める** にチェック。
-3. **リンクを作成** を押して送ります。これだけ。アカウントは要りません。
-4. もっと使いたい（時間設定、追加のプライバシー、一緒に書く）？ **フル機能のメモ帳を開く** か、自分のノートの **共有** ボタンを使ってください。
+1. ホーム画面を開き、ボックスに入力して、サーバーが受け取る暗号化されたテキストを確かめます。
+2. 誰に何を許すかを選びます：**閲覧のみ**、**編集できる**、**返信できる**。秘密にしたい内容なら **1 回だけ読める** をオンにします。
+3. **暗号化リンクを作成** を押して、リンクを送ります。アカウントは要りません。
+4. さらに詳しく（タイミング、追加のプライバシー、共同編集）設定するには、**フル機能のメモ帳を開く**、または自分のノートの **共有** ボタンを使います。リンク名付きのベーシックノートにするには、「新しいノート」ページの上部で **ベーシック** を選びます。
 
 <a id="faq"></a>
 
-## よくある質問
+## FAQ
 
-**サーバーの運営者は私のノートを読めますか？**
-読めません。ノートは送信前にあなたのブラウザーで暗号化され、鍵はリンクの `#` より後ろの部分にあります。ブラウザーはこの部分をサーバーに送りません。サーバーにあるのは暗号文だけです。
+**サーバーを運営している人は、私のノートを読めますか？**
+暗号化ノートは読めません。ブラウザーが送信前に暗号化し、鍵はリンクの `#` の後ろの部分にあって、ブラウザーはそこをサーバーに送りません。サーバーが持つのは暗号化されたテキストだけです。ベーシックノートはサーバーが読めます。この説明の範囲は [サーバーに見えるもの](#what-the-server-sees) を参照してください。
 
-**リンクをなくしたら？**
-そのノートは誰にも開けなくなります。アカウントがあれば、ノートは **マイノート** に一覧され、そこから開けます。アカウントがない場合、最近のノートはこのブラウザーにだけ記憶されます。
+**リンクをなくしたらどうなりますか？**
+暗号化ノートは、誰にも開けなくなります。アカウントがあれば、ノートは「マイノート」に並び、そこから開けます。アカウントがない場合、最近のノートはそのブラウザーにだけ記憶されます。ベーシックノートは、リンク名から簡単に見つけ直せます。
 
-**「読んだら削除」はリンクプレビューで消費されませんか？**
-されません。ページを開いただけでは中身は表示されず、読み手がまずボタンを押します。チャットアプリのプレビュー用ボットが受け取るのはプレビューカードだけで、閲覧には数えません。
+**「読んだら削除」は、リンクプレビューに対して安全ですか？**
+はい。ページを開くだけでは内容は表示されません。読み手がまずボタンを押します。チャットアプリのプレビュー用ボットが受け取るのはプレビューカードで、閲覧回数には数えられません。
 
-**AI はノートを読みますか？**
-書くお手伝いは、あなたが選ぶまでオフです。ブラウザー内蔵の AI は端末の中で動きます。自分の API キーを使う場合、文章はブラウザーからそのプロバイダーへ直接送られ、NoteHop を通ることはありません。サーバーの運営者は `NOTEHOP_AI=off` で AI を止められます。
+**AI は私のノートを読みますか？**
+執筆アシスタントは、使うまでオフです。ブラウザー内蔵 AI は、デバイス上で動きます。自分の API キーを使う場合、テキストはブラウザーからその提供元へ直接送られ、NoteHop を経由しません。運営者は `NOTEHOP_AI=off` で無効にできます。
 
-**ノートのコードが、開いた人を攻撃することはありますか？**
-コードノートは実行されません。テキストとして表示され、`.txt` でダウンロードされます。Web ノートはインターネットも Cookie もない隔離された枠の中だけで動き、ノートのページや鍵には触れられません。実行前には読み手に確認します。
+**ノート内のコードは、開いた人を攻撃できますか？**
+コードノートは実行されません。テキストとして表示され、`.txt` としてダウンロードされます。Web ノートは、インターネットも Cookie もなく、ノートページやその鍵にもアクセスできない隔離フレームの中でのみ動き、読み手には先に確認が出ます。
 
 **自分のログインサーバーを使えますか？**
-使えます。NoteHop には独自のアカウントがあり、あなたが運営するアカウントサーバー経由のログイン（シングルサインオン）もできます。[docs/REFERENCE.md](docs/REFERENCE.md) の `NOTEHOP_SSO_*` を見てください。
+はい。NoteHop には独自のアカウントがあり、自分で運用するアカウントサーバー経由のサインイン（シングルサインオン）にも対応します。[docs/REFERENCE.md](docs/REFERENCE.md) の `NOTEHOP_SSO_*` 設定を参照してください。
 
 **誰かが有害なものを共有したらどうなりますか？**
-どのノートにもメニューに **このノートを報告** があります。報告（理由と短いメッセージ。ノートの内容は含みません）はサイトの運営者に届きます。運営者は暗号化されたノートを読めませんが、削除することはでき、そのリンク名は1年間確保されます。運営者は `notehop takedown` コマンド、または [HOP App Protocol](docs/REFERENCE.md#control-center-hop-app-protocol) 経由のコントロールセンターから報告を処理します。
+すべてのノートのメニューに **このノートを報告** があります。報告（理由と短いメッセージで、ノートの内容は含まれません）は、サイトの運営者に届きます。運営者は暗号化ノートを読めませんが、削除でき、その後リンク名は 1 年間保留されます。
 
-**バックアップは？**
-`notehop backup -db notehop.db copy.db` はサーバーの稼働中でも使えます。VPS 用インストーラーは毎日のバックアップも設定します。バックアップの中でもノートは暗号化されたままです。
-
-## 中身の構成
+## 内部構成
 
 | フォルダー | 内容 |
 |---|---|
-| `cmd/notehop/` | 本体：サーバー、設定、`backup`・`new`・`get`・`takedown` コマンド |
-| `internal/app/` | HTTP ハンドラー、ノートの機能、共同編集の中継、SSH、Telegram、シングルサインオン |
+| `cmd/notehop/` | プログラム本体：サーバー、その設定、そして `backup`、`new`、`get`、`takedown` コマンド |
+| `internal/app/` | HTTP ハンドラー、ノート機能、共同編集の中継、SSH、Telegram、シングルサインオン、HOP App Protocol |
 | `internal/db/` | SQLite のスキーマと自動マイグレーション |
-| `internal/client/` | CLI の暗号化（ブラウザーと同じ） |
-| `internal/i18n/` | 9 言語の読み込みと、それらをそろえておくテスト |
-| `web/templates/`、`web/static/` | ページ、素の JavaScript と CSS（ビルド不要）。サードパーティのライブラリは `web/static/vendor/` に |
-| `web/i18n/` | 9 言語の UI テキスト |
-| `deploy/` | インストーラー、systemd ユニット、バックアップ、Caddy と nginx の例 |
-| `scripts/` | ブラウザーテスト（Playwright）：`./scripts/e2e-all.sh` で新しいサーバーに対して全テストを実行 |
+| `internal/client/` | CLI の暗号化。ブラウザーと同じです |
+| `internal/i18n/` | 9 言語の読み込みと、それらを揃えておくテスト |
+| `web/templates/`, `web/static/` | ページ、素の JavaScript と CSS。ビルド手順はありません。サードパーティのライブラリは `web/static/vendor/` に同梱しています |
+| `web/i18n/` | 9 言語のインターフェースの文言。言語ごとに JSON ファイル 1 つ |
+| `web/changelog.json` | コミットとプルリクエストの履歴のスナップショット。`/changelog` ページに表示されます。`scripts/build-changelog.py` が生成します |
+| `deploy/` | VPS 用インストーラー、systemd ユニット、バックアップ、Caddy と nginx の例 |
+| `docs/` | ドキュメントサイト（GitHub Pages）、リファレンス、セルフホスティングガイド、README の画像 |
+| `scripts/` | ブラウザーテスト（Playwright）。すべて `./scripts/e2e-all.sh` で実行できます。補助スクリプトも含みます |
 
 テストは `go test -race ./...` と `./scripts/e2e-all.sh` で実行します。
+
+## セキュリティ、ライセンス、履歴
+
+- 脆弱性を報告するには、[SECURITY.md](SECURITY.md) に従ってください。公開の issue は立てないでください。
+- [CHANGELOG.md](CHANGELOG.md) に、新しい順で変更点が並んでいます。
+- NoteHop は [MIT ライセンス](LICENSE) で公開されています。同梱のライブラリとフォントはそれぞれのライセンスのままで、[docs/REFERENCE.md](docs/REFERENCE.md#third-party-code) に一覧があります。
 
 <a id="family"></a>
 
 ## Hop ファミリー
 
-NoteHop は HOP ファミリーの一員です。無料・オープンソースで、自分で設置でき、トラッカーなし。ひとつのアカウント（HOP ID）を共有します。
+NoteHop は、プライバシーを尊重し、自分で運用できるオープンソースアプリの HOP ファミリーの一員です。
 
 <!-- hop-family:start -->
 <!-- Generated from HEL.ink resources/hop-assets/apps.source.json; edit there, then run scripts/hop_assets.py build. -->
@@ -190,7 +228,3 @@ NoteHop は HOP ファミリーの一員です。無料・オープンソース�
 | **NoteHop** | [note.hel.ink](https://note.hel.ink) · `n.hel.ink/…` | [navi-crwn/NoteHop](https://github.com/navi-crwn/NoteHop) | Encrypted notes you share with a link. |
 | **Imperium** | private (owner only) | private | The HOP control panel. |
 <!-- hop-family:end -->
-
----
-
-<p align="center">MIT ライセンス · <a href="docs/REFERENCE.md">リファレンス</a> · <a href="docs/SELF-HOSTING.md">自分で設置</a> · <a href="CHANGELOG.md">変更履歴</a><br><sub>HEL.ink ファミリー：<a href="https://github.com/navi-crwn/LinkHop">LinkHop</a>（短縮リンク）· <a href="https://github.com/navi-crwn/BioHop">BioHop</a> · <a href="https://github.com/navi-crwn/PixelHop">PixelHop</a>（画像ホスティング）· <a href="https://note.hel.ink">NoteHop</a></sub></p>

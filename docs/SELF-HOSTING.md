@@ -14,6 +14,20 @@ Internet ──HTTPS──► Caddy/nginx (:443) ──HTTP──► notehop (12
 | `deploy/notehop-backup.{service,timer}` + `deploy/backup.sh` | Daily backup to `/var/lib/notehop/backups`, kept for 14 days |
 | `deploy/Caddyfile.example` / `deploy/nginx.conf.example` | Reverse proxy + HTTPS |
 
+## The one-command installer (any computer)
+
+For a computer you control, a home server or a test machine, the installer in the repository root is the quickest way. It checks for Go or Docker, asks a few questions (every one has a default) and writes a private `.env`. It then builds the program, starts it once to check `/healthz`, and tells you how to run it: in the foreground with `./start.sh`, as a systemd unit, or with Docker Compose.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/navi-crwn/NoteHop/main/install.sh | bash
+```
+
+Options include `--yes` (accept every default), `--dry-run`, `--dir`, `--url`, `--port`, `--run foreground|systemd|docker|none` and `--hub standalone|existing|new` (connect to a HOP ID hub, or install one next to NoteHop). `./install.sh --help` lists them all.
+
+`./update.sh` copies the database into `backups/`, pulls the new code with `git pull --ff-only` and rebuilds. `./uninstall.sh` removes the program and keeps `.env`, the data folder and `backups/`; `--purge` deletes those as well after you type the site name.
+
+The rest of this guide covers the other route: a Linux VPS with systemd and a reverse proxy, using `deploy/install.sh`.
+
 ## 1. Before you start
 
 - A Linux VPS with systemd (Ubuntu, Debian, Rocky…) and root access over SSH.
@@ -116,7 +130,7 @@ sudo rm -f /var/lib/notehop/notehop.db-wal /var/lib/notehop/notehop.db-shm
 sudo systemctl start notehop
 ```
 
-Notes stay encrypted in the backup; their keys exist only in the links people hold.
+Encrypted notes stay encrypted in the backup; their keys exist only in the links people hold. Basic notes are stored as plain text, so a backup shows them to anyone who can read the file. The backup files are readable by the `notehop` user only; keep any off-server copies just as private.
 
 ## 7. Optional: single sign-on with your own account server
 

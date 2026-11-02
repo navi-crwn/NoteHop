@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NoteHop — Ende-zu-Ende-verschlüsselte Notizen mit Selbstzerstörung</title>
-  <meta name="description" content="Schreibe eine Notiz, verschließe sie in deinem Browser mit AES-256-GCM und teile Links auf n.hel.ink. Zero-Knowledge, selbstzerstörend und Teil der HOP-Familie.">
+  <meta name="description" content="Schreibe eine Notiz, verschließe sie in deinem Browser mit AES-256-GCM und teile sie per Link auf n.hel.ink. Der Server kann verschlüsselte Notizen nicht lesen, einfache Notizen schon. Teil der HOP-Familie.">
   <link rel="canonical" href="https://navi-crwn.github.io/NoteHop/de/">
   <link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/styles.css">
@@ -23,7 +23,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="NoteHop">
   <meta property="og:title" content="NoteHop — Ende-zu-Ende-verschlüsselte Notizen mit Selbstzerstörung">
-  <meta property="og:description" content="Schreibe eine Notiz, verschließe sie in deinem Browser mit AES-256-GCM und teile Links auf n.hel.ink. Zero-Knowledge, selbstzerstörend und Teil der HOP-Familie.">
+  <meta property="og:description" content="Schreibe eine Notiz, verschließe sie in deinem Browser mit AES-256-GCM und teile sie per Link auf n.hel.ink. Der Server kann verschlüsselte Notizen nicht lesen, einfache Notizen schon. Teil der HOP-Familie.">
   <meta property="og:url" content="https://navi-crwn.github.io/NoteHop/de/">
   <meta property="og:image" content="https://navi-crwn.github.io/NoteHop/og.png">
   <meta property="og:image:width" content="1200">
@@ -66,7 +66,7 @@
       <div>
         <p class="kicker">HOP &middot; Verschlüsselte Notizen & Dokumente</p>
         <h1>Im Browser verschlossen, in Sekunden geteilt</h1>
-        <p class="lede">NoteHop verschlüsselt deine Notiz im Client mit AES-256-GCM, bevor sie dein Gerät verlässt. Der Schlüssel liegt im URL-Fragment (#), sodass der Server deine Daten nicht lesen kann. Saubere Kurzlinks auf n.hel.ink, Open Source (MIT).</p>
+        <p class="lede">NoteHop verschlüsselt deine Notiz standardmäßig in deinem Browser mit AES-256-GCM, bevor sie dein Gerät verlässt. Der Schlüssel liegt im URL-Fragment (#), sodass der Server eine verschlüsselte Notiz nicht lesen kann. Eine einfache Notiz, die der Server lesen kann, bekommt einen Linknamen deiner Wahl. Kurzlinks auf n.hel.ink, Open Source (MIT).</p>
         <div class="cta-row">
           <a class="btn primary" href="https://note.hel.ink">NoteHop ausprobieren</a>
           <a class="btn" href="https://github.com/navi-crwn/NoteHop">Code ansehen</a>
@@ -80,13 +80,13 @@
       <span class="section-number" aria-hidden="true">01</span><h2 id="features-h">Was NoteHop kann</h2>
       <ul class="features">
         <li><strong>AES-256-GCM im Client</strong><p>Dein Browser verschlüsselt den Inhalt vor dem Speichern. Der Schlüssel reist im Link-Fragment (#) und wird nie an den Server gesendet.</p></li>
-        <li><strong>Zero-Knowledge-Server</strong><p>Der Server speichert nur verschlüsselte Datenblöcke. Auch Betreiber oder Datenbank-Dumps können deinen privaten Text oder deine Dokumente nicht einsehen.</p></li>
+        <li><strong>Ein Server, der verschlüsselte Notizen nicht lesen kann</strong><p>Bei einer verschlüsselten Notiz speichert der Server nur den Geheimtext, sodass Betreiber und Datenbank-Dumps weder Titel noch Text lesen können. Einfache Notizen werden als Klartext gespeichert und sind als einfach gekennzeichnet.</p></li>
         <li><strong>Selbstzerstörung & Löschen nach dem Lesen</strong><p>Notizen können sich direkt nach dem ersten Lesen löschen oder automatisch nach 10 Minuten, 1 Stunde, 1 Tag oder 30 Tagen ablaufen.</p></li>
         <li><strong>Fein abgestufte Rechte pro Link</strong><p>Erstelle für dieselbe Notiz verschiedene Links: Inhaber, nur lesen, schreiben, nur antworten oder nur abhaken bei Checklisten.</p></li>
-        <li><strong>Gemeinsames Bearbeiten live</strong><p>Arbeite in Echtzeit über WebSocket-Relays gemeinsam und behalte dabei die Ende-zu-Ende-Verschlüsselung für alle Beteiligten.</p></li>
+        <li><strong>Gemeinsames Bearbeiten live</strong><p>Schreibt gemeinsam in Echtzeit über ein WebSocket-Relay. In einer verschlüsselten Notiz ist alles verschlüsselt, was das Relay weiterreicht.</p></li>
         <li><strong>Vielfältige Notizarten</strong><p>Markdown-Text, interaktive Checklisten, Umfragen, Formulare, Code-Notizen mit Syntaxfarben und Web-Notizen in einer abgeschotteten Umgebung.</p></li>
         <li><strong>Eine Anmeldung für alle Apps: HOP ID</strong><p>Melde dich nahtlos mit deinem einheitlichen HOP-ID-Konto in der gesamten HOP-Familie an, oder nutze NoteHop anonym als Gast.</p></li>
-        <li><strong>Selbst hosten mit einem einzigen Go-Programm</strong><p>Als etwa 16 MB großes Go-Programm mit eingebettetem SQLite kompiliert, ohne Laufzeitabhängigkeiten und sofort einsatzbereit.</p></li>
+        <li><strong>Selbst hosten mit einem einzigen Go-Programm</strong><p>Ein Go-Programm von etwa 20 MB mit eingebautem SQLite, nichts weiter zu installieren, und ein Installer, der mit einem Befehl auskommt.</p></li>
       </ul>
     </section>
 
@@ -104,11 +104,11 @@
       <h2 id="faq-h">FAQ</h2>
       <details>
         <summary>Können der Server oder der Hoster meine Notizen lesen?</summary>
-        <p>Nein. Die Verschlüsselung findet vollständig in deinem Browser mit Web Crypto AES-256-GCM statt. Der geheime Schlüssel bleibt im URL-Hash (#) und wird nie an unsere Server übertragen.</p>
+        <p>Eine verschlüsselte Notiz nicht. Dein Browser verschlüsselt sie vor dem Senden mit Web Crypto AES-256-GCM, und der Schlüssel bleibt im URL-Hash (#), den Browser nicht an einen Server senden. Eine einfache Notiz ist nicht verschlüsselt, der Server kann sie lesen.</p>
       </details>
       <details>
         <summary>Was passiert, wenn ich den Link zu meiner Notiz verliere?</summary>
-        <p>Da NoteHop Zero-Knowledge ist und weder Generalschlüssel noch Hintertüren hat, kann die Notiz nach dem Verlust des Links von niemandem wiederhergestellt oder entschlüsselt werden.</p>
+        <p>Eine verschlüsselte Notiz kann niemand wiederherstellen. NoteHop hat weder einen Generalschlüssel noch eine Hintertür, der Link ist der einzige Zugang. Eine einfache Notiz lässt sich über ihren Linknamen wiederfinden.</p>
       </details>
       <details>
         <summary>Kann ich NoteHop auf meinem eigenen Server betreiben?</summary>
@@ -116,7 +116,7 @@
       </details>
       <details>
         <summary>Wo melde ich Sicherheitslücken oder Fehler?</summary>
-        <p>Eröffne ein Issue auf GitHub oder schreibe an security@hel.ink, um eine Schwachstelle verantwortungsvoll zu melden.</p>
+        <p>Bitte eröffne für eine Sicherheitslücke kein öffentliches Issue. Melde sie privat über GitHub: Öffne den Reiter Security des Repositorys und wähle Report a vulnerability. Details stehen in SECURITY.md.</p>
       </details>
     </section>
 

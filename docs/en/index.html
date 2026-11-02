@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NoteHop — End-to-end encrypted notes with self-destruct</title>
-  <meta name="description" content="Write a note, lock it in your browser with AES-256-GCM, and share links at n.hel.ink. Zero-knowledge, self-destructing, and part of the HOP family.">
+  <meta name="description" content="Write a note, lock it in your browser with AES-256-GCM, and share it with a link at n.hel.ink. The server cannot read encrypted notes; it can read basic notes. Part of the HOP family.">
   <link rel="canonical" href="https://navi-crwn.github.io/NoteHop/en/">
   <link rel="icon" href="../assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/styles.css">
@@ -23,7 +23,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="NoteHop">
   <meta property="og:title" content="NoteHop — End-to-end encrypted notes with self-destruct">
-  <meta property="og:description" content="Write a note, lock it in your browser with AES-256-GCM, and share links at n.hel.ink. Zero-knowledge, self-destructing, and part of the HOP family.">
+  <meta property="og:description" content="Write a note, lock it in your browser with AES-256-GCM, and share it with a link at n.hel.ink. The server cannot read encrypted notes; it can read basic notes. Part of the HOP family.">
   <meta property="og:url" content="https://navi-crwn.github.io/NoteHop/en/">
   <meta property="og:image" content="https://navi-crwn.github.io/NoteHop/og.png">
   <meta property="og:image:width" content="1200">
@@ -66,7 +66,7 @@
       <div>
         <p class="kicker">HOP &middot; Encrypted notes & docs</p>
         <h1>Locked in your browser, shared in seconds</h1>
-        <p class="lede">NoteHop encrypts your note client-side with AES-256-GCM before it ever leaves your device. The key lives in the URL fragment (#), so the server cannot read your data. Clean short links at n.hel.ink, open source (MIT).</p>
+        <p class="lede">By default, NoteHop encrypts your note in your browser with AES-256-GCM before it leaves your device. The key lives in the URL fragment (#), so the server cannot read an encrypted note. A basic note, which the server can read, gets a link name you choose. Short links at n.hel.ink, open source (MIT).</p>
         <div class="cta-row">
           <a class="btn primary" href="https://note.hel.ink">Try NoteHop</a>
           <a class="btn" href="https://github.com/navi-crwn/NoteHop">View the code</a>
@@ -80,13 +80,13 @@
       <span class="section-number" aria-hidden="true">01</span><h2 id="features-h">What NoteHop does</h2>
       <ul class="features">
         <li><strong>Client-side AES-256-GCM</strong><p>Your browser encrypts the content before saving. The decryption key travels in the link fragment (#) and is never sent to the server.</p></li>
-        <li><strong>Zero-knowledge server</strong><p>The server only stores ciphertext blobs. Even operators or database dumps cannot inspect your private text or documents.</p></li>
+        <li><strong>A server that cannot read encrypted notes</strong><p>For an encrypted note the server stores only ciphertext, so operators and database dumps cannot read its title or text. Basic notes are stored as plain text and are marked as basic.</p></li>
         <li><strong>Self-destruct & burn on read</strong><p>Notes can delete themselves immediately after being read once, or expire automatically after 10 minutes, 1 hour, 1 day, or 30 days.</p></li>
         <li><strong>Granular permissions per link</strong><p>Issue different links for the same note: owner, read-only, can-write, reply-only, or tick-only for checklists.</p></li>
-        <li><strong>Live collaborative editing</strong><p>Work together in real-time over WebSocket relays while retaining end-to-end encryption across all collaborators.</p></li>
+        <li><strong>Live collaborative editing</strong><p>Write together in real time through a WebSocket relay. In an encrypted note, everything the relay passes along is encrypted.</p></li>
         <li><strong>Rich note types</strong><p>Markdown text, interactive checklists, polls, forms, syntax-highlighted code notes, and sandboxed web notes.</p></li>
         <li><strong>One sign-in for every app: HOP ID</strong><p>Sign in seamlessly with your unified HOP ID account across the entire HOP family, or use NoteHop anonymously as a guest.</p></li>
-        <li><strong>Single Go binary self-hosting</strong><p>Compiled into a ~16 MB Go executable with embedded SQLite, zero runtime dependencies, and instant deployment.</p></li>
+        <li><strong>Single Go binary self-hosting</strong><p>One Go executable of about 20 MB with SQLite built in, nothing else to install, and a one-command installer.</p></li>
       </ul>
     </section>
 
@@ -104,11 +104,11 @@
       <h2 id="faq-h">FAQ</h2>
       <details>
         <summary>Can the server or hosting provider read my notes?</summary>
-        <p>No. Encryption happens entirely within your web browser using Web Crypto AES-256-GCM. The secret key stays in the URL hash (#) and is never transmitted to our servers.</p>
+        <p>Not an encrypted note. Your browser encrypts it with Web Crypto AES-256-GCM before it is sent, and the key stays in the URL hash (#), which browsers do not send to a server. A basic note is not encrypted, and the server can read it.</p>
       </details>
       <details>
         <summary>What happens if I lose the link to my note?</summary>
-        <p>Because NoteHop is zero-knowledge and has no master keys or backdoors, losing the link means the note cannot be recovered or decrypted by anyone.</p>
+        <p>For an encrypted note, nobody can recover it. NoteHop has no master key and no backdoor, so the link is the only way in. A basic note can be found again by its link name.</p>
       </details>
       <details>
         <summary>Can I host NoteHop on my own server?</summary>
@@ -116,7 +116,7 @@
       </details>
       <details>
         <summary>Where do I report security vulnerabilities or bugs?</summary>
-        <p>Open an issue on GitHub or email security@hel.ink for responsible vulnerability disclosure.</p>
+        <p>Please do not open a public issue for a vulnerability. Report it privately through GitHub: open the repository's Security tab and choose Report a vulnerability. SECURITY.md has the details.</p>
       </details>
     </section>
 

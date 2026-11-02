@@ -2,7 +2,7 @@
 /*
  * Render NoteHop static documentation pages from docs/.template.html + docs/locales.ini.
  * Static-only generator: writes docs/index.html and docs/<lang>/index.html for the
- * nine documented languages (English root + en,id,zh,es,ar,pt,fr,ru,ja).
+ * nine documented languages (English root + en, zh-CN, de, id, ja, pt-BR, es, fr, ru).
  * No network, no runtime app code, idempotent.
  *
  * Usage: node docs/.render.mjs   (from repository root)

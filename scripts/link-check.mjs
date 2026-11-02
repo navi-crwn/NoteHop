@@ -8,14 +8,14 @@ const docs = join(root, 'docs');
 const htmlFiles = [
   'index.html',
   'en/index.html',
+  'zh-CN/index.html',
+  'de/index.html',
   'id/index.html',
-  'zh/index.html',
+  'ja/index.html',
+  'pt-BR/index.html',
   'es/index.html',
-  'ar/index.html',
-  'pt/index.html',
   'fr/index.html',
-  'ru/index.html',
-  'ja/index.html'
+  'ru/index.html'
 ];
 
 let errors = 0;
