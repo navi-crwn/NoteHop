@@ -3,6 +3,7 @@ package app
 import (
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -20,6 +21,14 @@ const (
 	reportMaxNote  = 500
 )
 
+// A note's key and owner token live in the link's #fragment (#k=…, #a=…). A
+// reporter who pastes the full link would hand them to whoever reads the queue,
+// and the control center forwards report text on. The report already carries
+// the link token, so the key part is dropped before the text is stored.
+var keyFragment = regexp.MustCompile(`(?i)([#&?;])(k|a)(?:=|%3d)[A-Za-z0-9_%-]{8,}`)
+
+func scrubKeyFragments(s string) string { return keyFragment.ReplaceAllString(s, "${1}${2}=[removed]") }
+
 var reportReasons = map[string]bool{"illegal": true, "abuse": true, "spam": true, "copyright": true, "other": true}
 
 func (a *App) apiReport(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +45,7 @@ func (a *App) apiReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	q.Reason = strings.ToLower(strings.TrimSpace(q.Reason))
-	q.Note = strings.TrimSpace(q.Note)
+	q.Note = scrubKeyFragments(strings.TrimSpace(q.Note))
 	if !reportReasons[q.Reason] || len([]rune(q.Note)) > reportMaxNote {
 		apiErr(w, http.StatusBadRequest, "err.bad_report")
 		return

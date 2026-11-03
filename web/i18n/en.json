@@ -1138,6 +1138,7 @@
   "report.copyright": "Someone’s copyrighted work",
   "report.illegal": "Illegal content",
   "report.lead": "Tell the people who run this site what’s wrong. They can’t read a locked note, but they can take it down.",
+  "report.key_warn": "Don't paste the full link of an encrypted note here. The part after the # is its key, and we don't need it to remove the note.",
   "report.note": "Anything else we should know? (optional)",
   "report.other": "Something else",
   "report.reason": "What’s wrong?",

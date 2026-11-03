@@ -1138,6 +1138,7 @@
   "report.copyright": "侵犯他人版权",
   "report.illegal": "违法内容",
   "report.lead": "告诉网站管理者哪里有问题。他们无法读取加密的笔记，但可以将其下架。",
+  "report.key_warn": "请不要在这里粘贴加密笔记的完整链接。# 之后的部分是密钥，我们删除笔记并不需要它。",
   "report.note": "还有什么需要我们了解的？（可选）",
   "report.other": "其他",
   "report.reason": "出了什么问题？",

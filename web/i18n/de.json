@@ -1138,6 +1138,7 @@
   "report.copyright": "Urheberrechtlich geschütztes Werk einer anderen Person",
   "report.illegal": "Illegale Inhalte",
   "report.lead": "Sag den Betreibern dieser Website, was nicht stimmt. Sie können eine gesperrte Notiz nicht lesen, aber sie entfernen.",
+  "report.key_warn": "Füge hier nicht den vollständigen Link einer verschlüsselten Notiz ein. Der Teil nach dem # ist der Schlüssel, und wir brauchen ihn nicht, um die Notiz zu entfernen.",
   "report.note": "Gibt es noch etwas, das wir wissen sollten? (optional)",
   "report.other": "Etwas anderes",
   "report.reason": "Was ist das Problem?",

@@ -1138,6 +1138,7 @@
   "report.copyright": "Karya berhak cipta milik orang lain",
   "report.illegal": "Konten ilegal",
   "report.lead": "Beri tahu pengelola situs ini apa yang salah. Mereka tidak bisa membaca catatan terkunci, tetapi bisa menurunkannya.",
+  "report.key_warn": "Jangan tempel tautan lengkap catatan terenkripsi di sini. Bagian setelah # adalah kuncinya, dan kami tidak membutuhkannya untuk menghapus catatan.",
   "report.note": "Ada hal lain yang perlu kami tahu? (opsional)",
   "report.other": "Hal lain",
   "report.reason": "Apa yang salah?",

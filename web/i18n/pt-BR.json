@@ -1138,6 +1138,7 @@
   "report.copyright": "Obra protegida por direitos autorais de outra pessoa",
   "report.illegal": "Conteúdo ilegal",
   "report.lead": "Conte a quem administra este site o que há de errado. Eles não conseguem ler uma nota cifrada, mas podem retirá-la.",
+  "report.key_warn": "Não cole aqui o link completo de uma nota criptografada. A parte depois do # é a chave, e não precisamos dela para remover a nota.",
   "report.note": "Mais alguma coisa que devemos saber? (opcional)",
   "report.other": "Outra coisa",
   "report.reason": "O que há de errado?",

@@ -1138,6 +1138,7 @@
   "report.copyright": "Œuvre protégée appartenant à quelqu’un d’autre",
   "report.illegal": "Contenu illégal",
   "report.lead": "Dites aux responsables de ce site ce qui ne va pas. Ils ne peuvent pas lire une note chiffrée, mais ils peuvent la retirer.",
+  "report.key_warn": "Ne collez pas ici le lien complet d’une note chiffrée. La partie après le # est sa clé, et nous n’en avons pas besoin pour retirer la note.",
   "report.note": "Autre chose à nous signaler ? (facultatif)",
   "report.other": "Autre chose",
   "report.reason": "Quel est le problème ?",
