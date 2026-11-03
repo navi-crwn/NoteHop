@@ -158,6 +158,12 @@ func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
 		a.authFail(w, r, http.StatusBadRequest, "err.sso_ticket")
 		return
 	}
+	// The account server never issues a ticket for an account that is not active; refuse one that says
+	// otherwise before any local account is made or linked (older servers send no status).
+	if t.Status != "" && t.Status != "active" {
+		a.authFail(w, r, http.StatusForbidden, "err.account_suspended")
+		return
+	}
 	u, err := a.linkSSOUser(t)
 	if errors.Is(err, errRegClosed) {
 		a.authFail(w, r, http.StatusForbidden, "err.sso_closed")
