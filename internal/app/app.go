@@ -10,6 +10,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -148,6 +149,7 @@ func (a *App) Janitor(ctx context.Context) {
 		} else if n > 0 {
 			log.Printf("janitor: removed %d expired note(s)", n)
 		}
+		a.dropGoneRooms()
 		a.limit.gc()
 		a.runJobs(ctx, time.Now())
 		select {
@@ -156,6 +158,20 @@ func (a *App) Janitor(ctx context.Context) {
 		case <-t.C:
 		}
 	}
+}
+
+// dropGoneRooms disconnects live peers whose note was deleted or has expired.
+// Deletes inside this process call it right away; the janitor calls it every
+// minute, which is also how expiry and a CLI takedown (another process) reach
+// peers that are already connected.
+func (a *App) dropGoneRooms() {
+	a.live.dropGone(func(id int64) bool {
+		n, err := a.db.NoteByID(id)
+		if err != nil {
+			return errors.Is(err, db.ErrNotFound)
+		}
+		return n.Expires > 0 && n.Expires <= time.Now().Unix()
+	})
 }
 
 func (a *App) routes() {
