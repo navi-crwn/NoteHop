@@ -4,16 +4,15 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+### Copy edits ([#36](https://github.com/navi-crwn/NoteHop/pull/36))
+- The error for a missing note is worded in parallel with the other errors, and the Russian export text has its punctuation fixed.
+
 ### Audit fixes ([#39](https://github.com/navi-crwn/NoteHop/pull/39))
 - Live editing: peers are closed when a note is deleted, a link is revoked or a note expires. The icon-only formatting buttons have an accessible name.
 - A report no longer keeps a note's key or owner token: `#k=…` and `#a=…` in the report text are replaced with `[removed]` before it is stored, and the report dialog tells people not to paste the full link of an encrypted note.
 - A sign-in ticket that says the account is suspended, banned or locked is refused before any local account is made or linked.
 - A page that fails while it renders now answers 500 instead of a 200 with half a page.
-- `/privacy` and `/terms` show the master-policy banner in the reader's language instead of fixed English text.
 - A mistyped command (`notehop bakcup`) exits with an error instead of starting the server.
-
-### Copy edits ([#36](https://github.com/navi-crwn/NoteHop/pull/36))
-- The error for a missing note is worded in parallel with the other errors, and the Russian export text has its punctuation fixed.
 
 ### Hardening ([#35](https://github.com/navi-crwn/NoteHop/pull/35))
 - After signing in, `?next=` only follows paths on this site: a tab, line break or other control character, or a backslash, in the path sent the browser to another site (`/<tab>/host`). The server and the sign-in and vault scripts all refuse it now.
