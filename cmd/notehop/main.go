@@ -127,6 +127,10 @@ func main() {
 	addr := flag.String("addr", env("NOTEHOP_ADDR", ":8080"), "listen address")
 	dbPath := flag.String("db", env("NOTEHOP_DB", "notehop.db"), "SQLite database file")
 	flag.Parse()
+	if flag.NArg() > 0 { // a mistyped subcommand must not start the server
+		fmt.Fprintf(os.Stderr, "notehop: unknown command %q (commands: backup, new, get, takedown; or flags -addr, -db, -version)\n", flag.Arg(0))
+		os.Exit(2)
+	}
 	if *showVersion {
 		fmt.Println("notehop", version)
 		return
