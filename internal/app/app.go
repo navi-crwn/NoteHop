@@ -368,10 +368,16 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(status)
-	if err := a.pages[name].ExecuteTemplate(w, "base", d); err != nil {
+	// Render to memory first: a template error halfway must not leave the reader with half a page and a 200.
+	var buf bytes.Buffer
+	if err := a.pages[name].ExecuteTemplate(&buf, "base", d); err != nil {
 		log.Printf("render %s: %v", name, err)
+		w.Header().Del("Cache-Control")
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
 	}
+	w.WriteHeader(status)
+	_, _ = buf.WriteTo(w)
 }
 
 // page serves a static page; title and desc are catalog keys.
