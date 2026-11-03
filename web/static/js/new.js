@@ -127,26 +127,29 @@
       box.querySelector('.pick-ico use').setAttribute('href', label.querySelector('svg use').getAttribute('href'));
     });
   }
-  var picks = NH.$$('.pick', form), scrim = $('#scrim');
+  var picks = NH.$$('.pick', form), scrim = $('#scrim'), adv = $('#adv'), advBtn = $('#adv-btn');
   function phone() { return matchMedia('(max-width: 640px)').matches; }
   picks.forEach(function (d) {
     d.addEventListener('toggle', function () {
       if (d.open) picks.forEach(function (o) { if (o !== d) o.open = false; });
       var any = picks.filter(function (o) { return o.open; })[0];
-      // The drawer and the phone sheets dim the page; the small menus don't.
-      scrim.hidden = !any || (any.id !== 'adv' && !phone());
+      // The phone sheets dim the page; the small menus don't.
+      scrim.hidden = !any || !phone();
       document.body.classList.toggle('sheet-open', !!any && !scrim.hidden);
     });
   });
   function closePicks() { picks.forEach(function (d) { d.open = false; }); }
   scrim.addEventListener('click', closePicks);
-  $('#adv [data-close]').addEventListener('click', function () { $('#adv').open = false; $('#adv > summary').focus(); });
+  // "More" is a modal dialog: the browser handles Escape, focus and the page behind it (the close
+  // button and the backdrop are handled in app.js).
+  advBtn.addEventListener('click', function () { closePicks(); adv.showModal(); advBtn.setAttribute('aria-expanded', 'true'); });
+  adv.addEventListener('close', function () { advBtn.setAttribute('aria-expanded', 'false'); });
   document.addEventListener('keydown', function (e) {
     var open = picks.filter(function (d) { return d.open; })[0];
     if (e.key === 'Escape' && open) { open.open = false; open.querySelector('summary').focus(); }
   });
   document.addEventListener('pointerdown', function (e) {
-    picks.forEach(function (d) { if (d.open && d.id !== 'adv' && !d.contains(e.target)) d.open = false; });
+    picks.forEach(function (d) { if (d.open && !d.contains(e.target)) d.open = false; });
   });
   form.addEventListener('input', function (e) { if (e.target.type === 'datetime-local') summary(); });
 
@@ -341,9 +344,10 @@
   // ---------- first visit: a three-step tour (skippable, shown once) ----------
   function tour() {
     var steps = [['.editor-card', 'tour.1'], ['#opt-who', 'tour.2'], ['#create', 'tour.3']], i = 0;
-    var tip = NH.h('div.tour', { role: 'dialog', 'aria-live': 'polite' });
+    var tip = NH.h('div.tour', { role: 'dialog', 'aria-label': NH.t('tour.label'), 'aria-live': 'polite' });
     document.body.appendChild(tip);
-    function end() { tip.remove(); NH.store.set('nh_tour', '1'); window.removeEventListener('resize', show); }
+    function esc(e) { if (e.key === 'Escape') { NH.$$('.tour-target').forEach(function (x) { x.classList.remove('tour-target'); }); end(); } }
+    function end() { tip.remove(); NH.store.set('nh_tour', '1'); window.removeEventListener('resize', show); document.removeEventListener('keydown', esc); }
     function show() {
       var target = $(steps[i][0]);
       NH.$$('.tour-target').forEach(function (x) { x.classList.remove('tour-target'); });
@@ -364,6 +368,7 @@
     }
     show();
     window.addEventListener('resize', show);
+    document.addEventListener('keydown', esc);
   }
   if (!NH.store.get('nh_tour', '') && !NH.recent.all().length) tour();
   else $('#title').focus();

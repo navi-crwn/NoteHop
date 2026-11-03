@@ -467,6 +467,8 @@
     boxes.forEach(function (c, i) {
       var li = c.closest('li');
       if (li) li.classList.add('task');
+      // the item's text names the box for screen readers
+      if (li && !c.getAttribute('aria-label')) c.setAttribute('aria-label', li.textContent.trim().replace(/\s+/g, ' ').slice(0, 120));
       if (opts.checks && Object.prototype.hasOwnProperty.call(opts.checks, i)) c.checked = !!opts.checks[i];
       c.disabled = !opts.interactive;
       if (li) li.classList.toggle('done', c.checked);

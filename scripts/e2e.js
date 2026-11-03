@@ -24,7 +24,7 @@ function visitorURL(adminURL) {
   const u = new URL(adminURL); const f = new URLSearchParams(u.hash.slice(1));
   return BASE + u.pathname + '#k=' + f.get('k');
 }
-async function openAdv(p) { if (!(await p.$eval('#adv', d => d.open))) await p.click('#adv summary'); }
+async function openAdv(p) { if (!(await p.$eval('#adv', d => d.open))) await p.click('#adv-btn'); }
 async function create(p, { title = '', body = '', mode = 'read', pw = '', burn = '0', encrypt = true } = {}) {
   await p.goto(BASE + '/new');
   if (title) await p.fill('#title', title);
@@ -40,7 +40,7 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
 }
 
 // The More drawer covers the bar's right end; people close it before Create link.
-const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }));
+const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }); const a = document.getElementById('adv'); if (a && a.open) a.close(); });
 (async () => {
   const b = await chromium.launch();
 

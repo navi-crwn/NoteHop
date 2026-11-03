@@ -70,18 +70,18 @@
     var badgeText = title;
 
     var kids = [];
-    var badge = h('span.' + badgeClass, { style: 'margin-bottom:12px;display:inline-flex;align-items:center;gap:6px;' }, NH.icon(icon), badgeText);
+    var badge = h('span.gate-badge.' + badgeClass, NH.icon(icon), badgeText);
     kids.push(badge);
 
     if (meta.warning_reason) {
-      var noteBox = h('div.callout', { style: 'margin:14px 0;text-align:left;background:var(--card,#1a1d27);border-left:3px solid var(--accent,#a855f7);padding:10px 14px;border-radius:6px;' },
-        h('span.small.muted', { style: 'text-transform:uppercase;font-weight:600;display:block;margin-bottom:2px;' }, NH.t('gate.creator_note')),
+      var noteBox = h('div.callout.gate-note',
+        h('span.small.muted.gate-note-label', NH.t('gate.creator_note')),
         h('span', meta.warning_reason)
       );
       kids.push(noteBox);
     }
 
-    var remember = h('label', { style: 'display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted,#94a3b8);margin:16px 0;cursor:pointer;' },
+    var remember = h('label.gate-remember',
       h('input', { type: 'checkbox', id: 'gate-remember' }),
       NH.t('gate.remember_24h')
     );
@@ -112,7 +112,7 @@
       });
     });
 
-    var row = h('div.btn-row.center', { style: 'display:flex;gap:10px;justify-content:center;' }, backBtn, continueBtn);
+    var row = h('div.btn-row.center.gate-actions', backBtn, continueBtn);
     kids.push(remember, row);
 
     showState.apply(null, [icon, title, text].concat(kids));
@@ -332,7 +332,8 @@
     if (S.mode === 'edit') {
       $('#n-view').classList.add('hide');
       $('#n-edit').classList.remove('hide');
-      $('#n-title').classList.add('hide');
+      // the title is edited in the field below; the heading stays for screen readers
+      $('#n-title').classList.add('sr');
       var ti = $('#n-title-input');
       ti.classList.remove('hide');
       ed = NHEditor($('#n-edit [data-editor]'), {
@@ -707,6 +708,8 @@
     var enc = !!S.meta.encrypted, sw = $('#kind-switch');
     $('#kind-title').textContent = NH.t(enc ? 'convert.now_enc' : 'convert.now_basic');
     $('#kind-text').textContent = NH.t(enc ? 'convert.text_enc' : 'convert.text_basic');
+    // The key is in the link: only an encrypted note has the warning about where it gets pasted.
+    $('#key-hint').classList.toggle('hide', !enc);
     sw.textContent = NH.t(enc ? 'convert.to_basic' : 'convert.to_enc');
     sw.disabled = !!S.meta.frozen;
     sw.title = S.meta.frozen ? NH.t('err.snapshot_read_only') : '';

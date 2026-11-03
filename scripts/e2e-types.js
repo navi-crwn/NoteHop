@@ -36,7 +36,7 @@ async function readLink(p) {
 }
 
 // The More drawer covers the bar's right end; people close it before Create link.
-const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }));
+const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }); const a = document.getElementById('adv'); if (a && a.open) a.close(); });
 (async () => {
   const b = await chromium.launch(); const errs = [];
   const ctx = await b.newContext({ acceptDownloads: true, viewport: { width: 1280, height: 900 } });
@@ -163,7 +163,7 @@ const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]'
   await p.fill('#title', 'publik');
   await p.click('.ed-type-btn'); await p.click('.ed-type-list [data-type="code"]');
   await p.fill('.ed-src', '<script>alert(1)</script>');
-  await p.evaluate(() => { const d = document.getElementById('adv'); if (d) d.open = true; });
+  await p.evaluate(() => { const d = document.getElementById('adv'); if (d && !d.open) d.showModal(); });
   await p.evaluate(() => { const c = document.getElementById('encrypt'); c.checked = false; c.dispatchEvent(new Event('change', { bubbles: true })); });
   await closeMenus(p); await p.click('#create'); await p.waitForURL(/#k=/);
   const tok = new URL(p.url()).pathname.slice(1);

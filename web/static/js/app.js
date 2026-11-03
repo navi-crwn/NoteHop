@@ -194,14 +194,33 @@
   });
   var burger = document.getElementById('burger');
   if (burger) burger.addEventListener('click', function () { document.getElementById('nav').classList.toggle('open'); });
+  // Dropdown menus (language, account, "More" on a note): the button says whether its menu is open,
+  // Escape closes it and gives the focus back, and a menu that would run off the screen opens
+  // from the other edge of its button instead.
+  function closeMenus(except) {
+    NH.$$('.menu.open').forEach(function (m) { if (m !== except) { m.classList.remove('open'); m.firstElementChild.setAttribute('aria-expanded', 'false'); } });
+  }
   NH.$$('.menu').forEach(function (menu) {
-    menu.firstElementChild.addEventListener('click', function (e) {
+    var btn = menu.firstElementChild;
+    btn.setAttribute('aria-expanded', 'false');
+    btn.addEventListener('click', function (e) {
       e.stopPropagation();
-      NH.$$('.menu.open').forEach(function (m) { if (m !== menu) m.classList.remove('open'); });
-      menu.classList.toggle('open');
+      closeMenus(menu);
+      var open = menu.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(open));
+      menu.classList.remove('flip');
+      var list = menu.querySelector('.menu-list');
+      if (open && list) { var r = list.getBoundingClientRect(); if (r.left < 8 || r.right > innerWidth - 8) menu.classList.add('flip'); }
     });
   });
-  document.addEventListener('click', function () { NH.$$('.menu.open').forEach(function (m) { m.classList.remove('open'); }); });
+  document.addEventListener('click', function () { closeMenus(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    var open = document.querySelector('.menu.open');
+    if (!open) return;
+    closeMenus();
+    open.firstElementChild.focus();
+  });
   // Language: remember it in a cookie and reload in place, keeping the #key
   // part of note links (a plain ?lang= link would drop it).
   NH.$$('[data-lang]').forEach(function (a) {

@@ -87,7 +87,7 @@
 {{else}}
 <header class="nav" id="nav">
   <div class="wrap">
-    <a class="brand" href="/"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="28" height="28">{{.Site}}</a>
+    <a class="brand" href="/"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="28" height="28"><span class="brand-name">{{.Site}}</span></a>
     <nav class="nav-links" aria-label="{{.L.T "nav.main"}}">
       <a href="/new" {{if eq .Path "/new"}}aria-current="page"{{end}}>{{.L.T "nav.new"}}</a>
       <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}>{{.L.T "nav.mine"}}</a>
@@ -131,7 +131,7 @@
       <p class="muted small">{{.L.T "footer.tagline"}}</p>
     </div>
     <div class="foot-col">
-      <h4 class="foot-heading">{{.Site}}</h4>
+      <p class="foot-heading">{{.Site}}</p>
       <nav aria-label="{{.Site}}">
         <a href="/about">{{.L.T "footer.about"}}</a>
         <a href="/features">{{.L.T "features.title"}}</a>
@@ -143,30 +143,30 @@
       </nav>
     </div>
     <div class="foot-col">
-      <h4 class="foot-heading">Support</h4>
-      <nav aria-label="Support">
+      <p class="foot-heading" id="foot-support">{{.L.T "footer.support"}}</p>
+      <nav aria-labelledby="foot-support">
         <a href="/faq">{{.L.T "footer.faq"}}</a>
         <a href="/faq#dev">{{.L.T "footer.raw"}}</a>
         <a href="/contact">{{.L.T "contact.title"}}</a>
       </nav>
     </div>
     <div class="foot-col">
-      <h4 class="foot-heading">Policies</h4>
-      <nav aria-label="Policies">
+      <p class="foot-heading" id="foot-policies">{{.L.T "footer.policies"}}</p>
+      <nav aria-labelledby="foot-policies">
         <a href="/terms">{{.L.T "terms.title"}}</a>
         <a href="/privacy">{{.L.T "privacy.title"}}</a>
       </nav>
     </div>
     <div class="foot-col">
-      <h4 class="foot-heading">{{.L.T "family.foot"}}</h4>
-      <nav aria-label="HOP family">
+      <p class="foot-heading" id="foot-family">{{.L.T "family.foot"}}</p>
+      <nav aria-labelledby="foot-family">
         {{range .HopFamily}}<a href="{{.URL}}">{{.Name}}</a>{{end}}
       </nav>
     </div>
   </div>
   <div class="wrap foot-bottom">
     <p>© 2026 navi-crwn · MIT License</p>
-    <nav class="foot-langs" aria-label="Languages">
+    <nav class="foot-langs" aria-label="{{.L.T "footer.languages"}}">
       {{range .Langs}}<a href="?lang={{.Code}}" lang="{{.Code}}">{{.Name}}</a>
       {{end}}    </nav>
   </div>

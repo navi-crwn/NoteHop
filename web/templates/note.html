@@ -6,7 +6,7 @@
     <p class="muted">{{.L.T "note.opening"}}</p>
     <noscript>
       {{if not .GatePassed}}
-      <form method="POST" action="/gate/{{.Token}}" style="margin-top:16px;">
+      <form class="gate-form" method="POST" action="/gate/{{.Token}}">
         <h1>{{if eq .Warning "adult"}}{{.L.T "gate.adult_title"}}{{else}}{{.L.T "gate.sensitive_title"}}{{end}}</h1>
         <p class="muted">{{if eq .Warning "adult"}}{{.L.T "gate.adult_desc"}}{{else}}{{.L.T "gate.sensitive_desc"}}{{end}}</p>
         {{with .WarningReason}}<p>{{.}}</p>{{end}}
@@ -41,8 +41,8 @@
           <div class="live-people" id="live-people"></div>
           <span class="live-follow hide" id="live-follow"></span>
           <span class="live-tools">
-            <button type="button" class="btn sm ghost" id="live-present" aria-pressed="false"><svg><use href="#i-play"/></svg><span>{{.L.T "live.present"}}</span></button>
-            <button type="button" class="btn sm ghost" id="live-chat-btn"><svg><use href="#i-chat"/></svg><span>{{.L.T "live.chat"}}</span><span class="live-unread hide" id="live-unread"></span></button>
+            <button type="button" class="btn sm ghost" id="live-present" aria-pressed="false" aria-label="{{.L.T "live.present"}}"><svg><use href="#i-play"/></svg><span>{{.L.T "live.present"}}</span></button>
+            <button type="button" class="btn sm ghost" id="live-chat-btn" aria-label="{{.L.T "live.chat"}}"><svg><use href="#i-chat"/></svg><span>{{.L.T "live.chat"}}</span><span class="live-unread hide" id="live-unread"></span></button>
           </span>
         </div>
         <div class="note-actions" id="n-actions">
@@ -73,7 +73,7 @@
                   <button type="button" data-act="export-txt"><svg width="16" height="16"><use href="#i-plain"/></svg>{{.L.T "more.export_txt"}}</button>
                   <button type="button" data-act="print"><svg width="16" height="16"><use href="#i-print"/></svg>{{.L.T "more.print"}}</button>
                   <button type="button" data-act="redact" data-needs-key><svg width="16" height="16"><use href="#i-shield"/></svg>{{.L.T "more.redact"}}</button>
-                  <a class="hide" id="act-raw" target="_blank" rel="noopener"><svg width="16" height="16"><use href="#i-code"/></svg>Raw</a>
+                  <a class="hide" id="act-raw" target="_blank" rel="noopener"><svg width="16" height="16"><use href="#i-code"/></svg>{{.L.T "more.raw"}}</a>
                 </div>
               </details>
               <hr>
@@ -164,6 +164,7 @@
   <p class="muted small">{{.L.H "share.lead"}}</p>
   <h3 class="h-sub">{{.L.T "share.links_h"}}</h3>
   <ul class="link-list" id="link-list"></ul>
+  <p class="key-hint small hide" id="key-hint"><svg class="ico" aria-hidden="true"><use href="#i-key"/></svg><span>{{.L.T "share.key_hint"}}</span></p>
   <form class="add-link" id="add-link">
     <select id="new-mode" aria-label="{{.L.T "share.new_mode"}}">
       <option value="read">{{.L.T "mode.read"}}</option>

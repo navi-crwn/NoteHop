@@ -309,3 +309,10 @@ body[data-page=home] main::before { content: ""; position: absolute; inset: 0 0 
   .h-life, .h-tour { height: auto; }
   .h-life-pin, .h-tour-pin { position: static; height: auto; min-height: 0; }
 }
+
+/* touch screens: the tour's tabs and arrows are at least 44px */
+@media (max-width: 760px), (pointer: coarse) {
+  .h-tabs button { height: 44px; }
+  .h-tprev, .h-tnext { width: 44px; height: 44px; }
+  .h-chip, .h-q-opts label, .h-link { min-height: 44px; }
+}
