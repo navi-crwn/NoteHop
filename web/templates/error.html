@@ -2,7 +2,11 @@
 {{define "content"}}
 <section class="wrap narrow center gone">
   <div class="gone-art" aria-hidden="true"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="96" height="96"></div>
-  {{if .Msg}}
+  {{if .Fault}}
+  <h1>{{.L.T "error.fault_title"}}</h1>
+  <p class="muted">{{.L.T "error.fault_text"}}</p>
+  <a class="btn primary" href="/">{{.L.T "error.fault_home"}}</a>
+  {{else if .Msg}}
   <h1>{{.Title}}</h1>
   <p class="muted">{{.Msg}}</p>
   <a class="btn primary" href="/login">{{.L.T "error.back_login"}}</a>

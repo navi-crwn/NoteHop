@@ -276,6 +276,7 @@
       make.disabled = true;
       createNote({ title: N.title(), body: out.value, mode: 'read', encrypted: true }).then(function (n) {
         NH.copy(NH.noteURL(n.token, { k: n.k }), NH.t('redact.done'));
+        NH.toast(NH.t('copy.key_hint'));
         dlg.close();
       }, function (x) { make.disabled = false; NH.toast(x.message, 'err'); });
     });

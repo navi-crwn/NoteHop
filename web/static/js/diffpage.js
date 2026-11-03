@@ -23,6 +23,7 @@
     }).then(function (res) {
       NH.recent.add({ token: res.token, k: k, a: admin, t: title, created: Math.floor(Date.now() / 1000), expires: 0 });
       NH.copy(NH.noteURL(res.token, { k: k }), NH.t('diffpage.shared'));
+      NH.toast(NH.t('copy.key_hint'));
     }, function (x) { NH.toast(x.message, 'err'); });
   });
   run();

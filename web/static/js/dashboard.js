@@ -138,7 +138,11 @@
       if (r.k) {
         var copy = h('button.btn.sm', { type: 'button', title: NH.t('dash.copy_link', { mode: info.label }) }, NH.icon('copy'), NH.t('dash.link'));
         // A basic note's read link is just its address; the key matters for encrypted notes and for writing.
-        copy.addEventListener('click', function () { NH.copy(NH.noteURL(n.token, !n.encrypted && n.mode === 'read' ? {} : { k: r.k }), NH.t('js.link_copied')); });
+        copy.addEventListener('click', function () {
+          var keyed = n.encrypted || n.mode !== 'read';
+          NH.copy(NH.noteURL(n.token, keyed ? { k: r.k } : {}), NH.t('js.link_copied'));
+          if (keyed) NH.toast(NH.t('copy.key_hint'));
+        });
         acts.appendChild(copy);
       }
       var del = h('button.icon-btn.sm', { type: 'button', title: NH.t('common.delete'), 'aria-label': NH.t('dash.delete_note') }, NH.icon('trash'));

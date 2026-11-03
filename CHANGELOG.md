@@ -13,6 +13,10 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 - A sign-in ticket that says the account is suspended, banned or locked is refused before any local account is made or linked.
 - A page that fails while it renders now answers 500 instead of a 200 with half a page.
 - A mistyped command (`notehop bakcup`) exits with an error instead of starting the server.
+- A bug that panics in a handler now answers with an error page in the reader's language (or the JSON error for the API) and writes the panic to the log, instead of dropping the connection.
+- A report keeps a keyed hash of the reporter's address (made with a secret in the database) instead of a plain hash that could be reversed by trying every IPv4 address. Reports already stored keep their old value and stop counting toward the hourly limit after an hour.
+- Copying a link that holds a key from My notes, the diff page or the redaction dialog says that the link is the key. The embed's Open link no longer sends a referrer.
+- The privacy page says that a report's reason and message are stored readable and that the owner part of a link is sent to the server (stored as a hash).
 
 ### Hardening ([#35](https://github.com/navi-crwn/NoteHop/pull/35))
 - After signing in, `?next=` only follows paths on this site: a tab, line break or other control character, or a backslash, in the path sent the browser to another site (`/<tab>/host`). The server and the sign-in and vault scripts all refuse it now.
