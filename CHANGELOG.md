@@ -4,6 +4,8 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+- `install.sh --dry-run` no longer creates the data folder and `bin/`. It said nothing would be executed, and now nothing is.
+
 ## [1.0.0] - 2026-11-04
 
 The first stable release. NoteHop has been public since 2026-10-27; 1.0.0 is the point where the feature set below is treated as the baseline that later releases build on.
