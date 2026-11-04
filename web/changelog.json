@@ -1,9 +1,603 @@
 {
   "schema": 1,
   "sources": {
-    "NoteHop": "c37cf429aa277a1d46e0842541afad477839ab21"
+    "NoteHop": "7c88d84b29b3d8c0cb230265de3f466f5ce5fc34"
   },
   "entries": [
+    {
+      "kind": "tag",
+      "date": "2026-11-04T09:37:24+07:00",
+      "title": "v1.0.0",
+      "url": "https://github.com/navi-crwn/NoteHop/releases/tag/v1.0.0",
+      "id": "v1.0.0",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T09:37:24+07:00",
+      "title": "Merge pull request #40: Prepare the 1.0.0 release",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/7c88d84b29b3d8c0cb230265de3f466f5ce5fc34",
+      "id": "7c88d84b",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-04T02:37:24Z",
+      "title": "Prepare the 1.0.0 release",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/40",
+      "id": "#40",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T09:16:02+07:00",
+      "title": "Prepare the 1.0.0 release",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/9e153e6d4898d4a1e6cfc49a305325624f09ed4b",
+      "id": "9e153e6d",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-04T00:33:52Z",
+      "title": "Close live peers on delete, revoke and expiry; label toolbar buttons",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/39",
+      "id": "#39",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T07:33:51+07:00",
+      "title": "Merge pull request #39: Close live peers on delete, revoke and expiry; label toolbar buttons",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/63a86cd6ffcdccace1c60b3af04e019e9b4610d7",
+      "id": "63a86cd6",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-04T00:33:45Z",
+      "title": "Fix the More settings panel and sweep the interface for similar problems",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/38",
+      "id": "#38",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T07:33:44+07:00",
+      "title": "Merge pull request #38: Fix the More settings panel and sweep the interface for similar problems",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/f326dc8dab4a566b527af36aa51167a389723c43",
+      "id": "f326dc8d",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T03:04:43+07:00",
+      "title": "Close the remaining NoteHop audit findings",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/41f6c54753e34d768e8b639c467a02efdc20d04e",
+      "id": "41f6c547",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T02:54:07+07:00",
+      "title": "Leave the legal banner translation to the UI sweep PR so the two PRs merge in either order",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/46b2541049d03f868a2be2c21c87d176be2dd818",
+      "id": "46b25410",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T01:28:10+07:00",
+      "title": "Add the audit fixes to the changelog",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/8df463c0255862dca429da89a71b46b3b601432e",
+      "id": "8df463c0",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T01:27:53+07:00",
+      "title": "Reject an unknown command instead of starting the server",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/de91089d898eea596495688a7076d1676fe8c7dd",
+      "id": "de91089d",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T01:27:53+07:00",
+      "title": "Translate the master-policy banner on the privacy and terms pages",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/a89a14e4a67967d5df8390ce1179f2e50f8fa143",
+      "id": "a89a14e4",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T01:23:57+07:00",
+      "title": "Render a page to memory first so a template error gives a 500, not half a page",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/342299d011f2f8be9fd70d36a9147603669968da",
+      "id": "342299d0",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T01:23:25+07:00",
+      "title": "Refuse a sign-in ticket whose account status is not active",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/29febeb6d4b6bbd1e132d2a774a2e9093ea907ab",
+      "id": "29febeb6",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T01:23:02+07:00",
+      "title": "Strip note keys and owner tokens from report text and warn reporters not to paste them",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/9238414398c30cdd3555f76e3903a3181099620b",
+      "id": "92384143",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-03T18:46:22+07:00",
+      "title": "Close live peers when a note is deleted, a link is revoked or a note expires",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/96c3eb48ce441d37e4672870eca0eb96cb74ce3b",
+      "id": "96c3eb48",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-03T18:46:22+07:00",
+      "title": "Give the icon-only formatting buttons an accessible name",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/7b4baea2781410c23258deee6ce0cfdd8f0b21a2",
+      "id": "7b4baea2",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-03T15:48:38+07:00",
+      "title": "Changelog: More settings and interface sweep",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/84d6be9893f1306420b6e2174af7a829adcc2816",
+      "id": "84d6be98",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-03T15:47:36+07:00",
+      "title": "Fix the \"More settings\" panel and a sweep of interface problems",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/b5cebcf28bfc36dba0c3d18512e8dbdb156b8393",
+      "id": "b5cebcf2",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-03T00:35:21+07:00",
+      "title": "Merge pull request #37: Refresh READMEs, docs, changelog and screenshots",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/774a48a256bde24b968f56db7ebc2efc485861b6",
+      "id": "774a48a2",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-02T17:35:21Z",
+      "title": "Refresh READMEs, docs, changelog and screenshots",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/37",
+      "id": "#37",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-03T00:32:26+07:00",
+      "title": "Refresh READMEs, docs, changelog and screenshots",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/75d3d876e003897bb1938c8602a48966bf3fe375",
+      "id": "75d3d876",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T22:54:50+07:00",
+      "title": "Merge pull request #36: Copy edits: missing-note error, ru export punctuation",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/d166ed937cd7d2979445643ea37e0b058048eb75",
+      "id": "d166ed93",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-02T15:54:50Z",
+      "title": "Copy edits: missing-note error, ru export punctuation",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/36",
+      "id": "#36",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T22:37:44+07:00",
+      "title": "Copy edits: missing-note error parallelism, ru export punctuation",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/e1ecc447e230c7cf0175b9765e81b8727f0f0feb",
+      "id": "e1ecc447",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T20:01:10+07:00",
+      "title": "Merge pull request #35: Harden sign-in redirect, backups, account deletion and live rooms",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/704ecef1b0e4b5296b77d5a6e20c64195b5dde17",
+      "id": "704ecef1",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-02T13:01:10Z",
+      "title": "Harden sign-in redirect, backups, account deletion and live rooms",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/35",
+      "id": "#35",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T16:13:55+07:00",
+      "title": "License: name the copyright holder as in the other HOP repositories",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/3271d56b9e76fe864a996d13a4e0b08003b9f081",
+      "id": "3271d56b",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T16:12:39+07:00",
+      "title": "Changelog entry and a profile regression test",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/33a16d8bfa19cc305257231858788dcefa00a159",
+      "id": "33a16d8b",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T16:12:36+07:00",
+      "title": "Remove a note's attachments with the note, and release name holds with the account",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/e024408b09c86165b3ae800298ddcc27c1eee33c",
+      "id": "e024408b",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T16:12:36+07:00",
+      "title": "Make database backups private to their owner",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/3943ddab83d8687bd542218aa0ff4887b513c27f",
+      "id": "3943ddab",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T16:12:36+07:00",
+      "title": "Fix a live editing room being dropped under a joining peer",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/35ac38d6a47821569f5d18b80245abb58adfaef8",
+      "id": "35ac38d6",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T16:12:22+07:00",
+      "title": "Refuse control characters and backslashes in the post-login redirect",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/0618da425dca55e3ae413906598884e6620fe548",
+      "id": "0618da42",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T11:02:20+07:00",
+      "title": "Merge pull request #34: Installers, READMEs and documentation site in the nine languages",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/d25eec848cda930943b419b4d5811cb4f443980b",
+      "id": "d25eec84",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-02T04:02:20Z",
+      "title": "Installers, READMEs and documentation site in the nine languages",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/34",
+      "id": "#34",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T11:02:16+07:00",
+      "title": "Merge pull request #33: Nine languages: add de, rename zh/pt catalogs, remove Arabic and RTL",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/a341f703ab909c2c2ab9aa5416cd5e372cf890f9",
+      "id": "a341f703",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-02T04:02:16Z",
+      "title": "Nine languages: add de, rename zh/pt catalogs, remove Arabic and RTL",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/33",
+      "id": "#33",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-02T04:02:12Z",
+      "title": "Sync the shared home engine to HOP assets v2",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/32",
+      "id": "#32",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T11:02:11+07:00",
+      "title": "Merge pull request #32: Sync the shared home engine to HOP assets v2",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/1cd8451b49ed4c93c1f13cfaf8a63732be01cfba",
+      "id": "1cd8451b",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T11:02:06+07:00",
+      "title": "Merge pull request #31: Basic and encrypted notes, link names for basic notes, owner conversion, never indexed",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/1314922d866802a938074f65009442cb76169c84",
+      "id": "1314922d",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-02T04:02:06Z",
+      "title": "Basic and encrypted notes, link names for basic notes, owner conversion, never indexed",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/31",
+      "id": "#31",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T09:28:47+07:00",
+      "title": "Documentation site in the nine languages: zh-CN, de, id, ja, pt-BR, es, fr, ru; Arabic removed",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/4a117951c65b4ed5d9f80d56e1a28ae565287b61",
+      "id": "4a117951",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T03:48:01+07:00",
+      "title": "One-command installer, update and uninstall scripts; READMEs in the nine languages",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/9ca9d6dd0944457dca6492e43f99fd198d4f84ee",
+      "id": "9ca9d6dd",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T03:28:20+07:00",
+      "title": "Nine languages: zh-CN, de, id, ja, pt-BR, es, fr, ru and English; Arabic and right-to-left removed",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/093d79b9fdc0b23b35e8c7d9f2be346a398a9276",
+      "id": "093d79b9",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T02:54:07+07:00",
+      "title": "Merge remote-tracking branch 'origin/chore/hop-assets-v2' into feat/nine-languages",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/c9d453d3b8f3dc6efb66c007453420ee6dd88bd9",
+      "id": "c9d453d3",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T02:50:09+07:00",
+      "title": "Sync the shared home engine and the family manifest to HOP assets v2",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/a724884bc3adcebac71eb28e6ded071d7c9dddd5",
+      "id": "a724884b",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T02:49:12+07:00",
+      "title": "Basic and encrypted notes: choice on new note, link names only for basic, rename with Save, owner conversion, never indexed",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/0a184340c24eff632041ad11cdbb3736fa3bf719",
+      "id": "0a184340",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T01:58:17+07:00",
+      "title": "Merge pull request #30: Absolute avatar addresses, and keep plain-text pages out of the offline cache",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/8dfb86d7a6c231cc4ed6308a733cde6dfcf53c5e",
+      "id": "8dfb86d7",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-01T18:58:17Z",
+      "title": "Absolute avatar addresses, and keep plain-text pages out of the offline cache",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/30",
+      "id": "#30",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-02T01:39:21+07:00",
+      "title": "Make avatar addresses absolute and keep plain-text pages out of the offline cache",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/ca8d2e363ac7a911b4a737162916d2aa577ed969",
+      "id": "ca8d2e36",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-01T22:49:56+07:00",
+      "title": "Merge pull request #29: Dashboard chrome: sidebar with the HOP family, settings-type top bar, even footer",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/37ae11a2e71f8b1ff77020fdeabfa81f9080af93",
+      "id": "37ae11a2",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-01T15:49:56Z",
+      "title": "Dashboard chrome: sidebar with the HOP family, settings-type top bar, even footer",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/29",
+      "id": "#29",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-01T08:04:38+01:00",
+      "title": "Dashboard chrome: sidebar with the HOP family, settings-type top bar, even footer",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/a48dd0ed9f4a0c164e7850db6d4107af4d7bc0d7",
+      "id": "a48dd0ed",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-01T11:51:00+07:00",
+      "title": "Merge pull request #28: Sync the shared home module",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/641c1adffd410ffa49c77eb137e1208022930c09",
+      "id": "641c1adf",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-01T04:51:00Z",
+      "title": "Sync the shared home module",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/28",
+      "id": "#28",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-01T05:44:29+01:00",
+      "title": "Sync the shared home module",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/8dee6c65e2621abaa72493219872461df8a008e7",
+      "id": "8dee6c65",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-01T10:47:49+07:00",
+      "title": "Merge pull request #27: Shared HOP home module and attachment storage limits",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/60640cd9053f462513aae36934ac4265feb2a976",
+      "id": "60640cd9",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-01T03:47:49Z",
+      "title": "Shared HOP home module and attachment storage limits",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/27",
+      "id": "#27",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-01T04:27:34+01:00",
+      "title": "Shared HOP home module and attachment storage limits",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/dc8df9f5bea63bb1b48a229979c3fa57eaa3e667",
+      "id": "dc8df9f5",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-10-31T16:16:55Z",
+      "title": "fix: use jumping rabbit in the HOP family registry",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/26",
+      "id": "#26",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-10-31T23:16:54+07:00",
+      "title": "Merge pull request #26: fix: use jumping rabbit in the HOP family registry",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/440b10d9ef53a8ac8c6be66bfb92d48ba50310d6",
+      "id": "440b10d9",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-10-31T17:08:16+01:00",
+      "title": "fix: use jumping rabbit in the HOP family registry",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/b1906faa3e160f12d9e145f3d7406fcc480a379e",
+      "id": "b1906faa",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-10-31T20:08:13+07:00",
+      "title": "Merge pull request #25: feat: complete P5 family experience and product history",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/74de4eeaf485e3dcaa568b9f03dc4831464f66c7",
+      "id": "74de4eea",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-10-31T13:08:13Z",
+      "title": "feat: complete P5 family experience and product history",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/25",
+      "id": "#25",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-10-31T13:53:58+01:00",
+      "title": "feat: refine family experience, typography and product history",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/d0f2acb68b03ead27c9381b4b06e9a3ad82f5ba3",
+      "id": "d0f2acb6",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
     {
       "kind": "pr",
       "date": "2026-10-31T10:50:02Z",
@@ -17,8 +611,8 @@
       "kind": "commit",
       "date": "2026-10-31T17:50:01+07:00",
       "title": "Merge pull request #24: feat(gate): 3-level content warning gate before client decryption with zero-knowledge metadata",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/c37cf429aa277a1d46e0842541afad477839ab21",
-      "id": "c37cf429",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/b838a6c68c17d78604703322b94900f00ed069b5",
+      "id": "b838a6c6",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -35,8 +629,8 @@
       "kind": "commit",
       "date": "2026-10-31T17:49:58+07:00",
       "title": "Merge pull request #23: feat: bento features grid, uniform 4-column footer, and master terms binding (4.0.9-4.0.12)",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/ff6b658af3401011cef68c2a5e639d0a4b792de6",
-      "id": "ff6b658a",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/2971d0cedd6605724fc441db704b0b6d79815b20",
+      "id": "2971d0ce",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -44,8 +638,8 @@
       "kind": "commit",
       "date": "2026-10-31T17:47:28+07:00",
       "title": "Merge pull request #22: docs: 9-language Pages site and README updates (Phase 7)",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/43928fc13a65b17bb7b9870df3b311d0b9e4381b",
-      "id": "43928fc1",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/85be91264c3b928ef8b487ed67157105dbbe933e",
+      "id": "85be9126",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -61,18 +655,18 @@
     {
       "kind": "commit",
       "date": "2026-10-31T08:45:56+01:00",
-      "title": "feat: add theme-aware feature demos and homepage gallery",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/518be5e2cf52aa4d70b46f50c2ee6defa2d87366",
-      "id": "518be5e2",
+      "title": "fix: enforce content gates across read paths and no-JS confirmation",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/f997f1fd7069a15b0797e8c3443fbb3364d92afc",
+      "id": "f997f1fd",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
     {
       "kind": "commit",
       "date": "2026-10-31T08:45:56+01:00",
-      "title": "fix: enforce content gates across read paths and no-JS confirmation",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/163171d3a9c465ed9f0087960fba4021197da9f0",
-      "id": "163171d3",
+      "title": "feat: add theme-aware feature demos and homepage gallery",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/c28a43f1aac28a5aac1b78b332ea04eacb01bc0d",
+      "id": "c28a43f1",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -80,8 +674,8 @@
       "kind": "commit",
       "date": "2026-10-31T07:53:04+01:00",
       "title": "feat(gate): 3-level content warning gate before client decryption with zero-knowledge metadata",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/8a8f661103b9c9daf7aa9b09a54093b2b47c2471",
-      "id": "8a8f6611",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/864aa9ae13c38a459d21268375967785fb022720",
+      "id": "864aa9ae",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -89,8 +683,8 @@
       "kind": "commit",
       "date": "2026-10-31T07:07:48+01:00",
       "title": "feat(pages): bento features grid, uniform 4-column footer, and master terms binding",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/83830a7b24681a447cad4deef11a197a3c3549c3",
-      "id": "83830a7b",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/a42bfd936d7093e5d2b6991e3859330c09b1a165",
+      "id": "a42bfd93",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -98,8 +692,8 @@
       "kind": "commit",
       "date": "2026-10-31T06:08:27+01:00",
       "title": "docs: 9-language Pages site and README updates (Phase 7)",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/9267d894a183f688ef6023459b2d5ef068e13359",
-      "id": "9267d894",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/bffdc69e1023b20d80b06322bda534c7f679de52",
+      "id": "bffdc69e",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -107,8 +701,8 @@
       "kind": "commit",
       "date": "2026-10-31T10:13:23+07:00",
       "title": "Merge pull request #20: chore: PixelHop at pixel.hel.ink in the family table",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/7f584c83d6087202be7edef460e2c8ad674cfb90",
-      "id": "7f584c83",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/fd6b8edf916fde1888ba9595e13b47375d4fef06",
+      "id": "fd6b8edf",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -125,8 +719,8 @@
       "kind": "commit",
       "date": "2026-10-31T03:55:09+01:00",
       "title": "chore: PixelHop at pixel.hel.ink in the family table and the embedded asset manifest",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/e5d64af4d8a590d94de2020ec77099f8b08fa19a",
-      "id": "e5d64af4",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/ffb07b03f47a35fa014b7bdc2f3ac1a0bb8e3510",
+      "id": "ffb07b03",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -134,8 +728,8 @@
       "kind": "commit",
       "date": "2026-10-31T09:16:29+07:00",
       "title": "Merge pull request #18: docs: canonical HOP family table with a CI check",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/bdc81f762151bb87d710925d228b77295bb02680",
-      "id": "bdc81f76",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/6273a8373f3711b4b5a7f4be3d4f380b2fa44885",
+      "id": "6273a837",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -161,8 +755,8 @@
       "kind": "commit",
       "date": "2026-10-31T09:16:14+07:00",
       "title": "Merge pull request #19: feat: features and status pages, back links, GitHub contact links",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/07999cf98ea465accdf038cbddc153b7f6ce68d2",
-      "id": "07999cf9",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/cbe240dd98a881f42bebecfcb94dad69ce631d95",
+      "id": "cbe240dd",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -170,8 +764,8 @@
       "kind": "commit",
       "date": "2026-10-31T09:16:01+07:00",
       "title": "Merge pull request #17: feat: HOP family typography and family section",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/ce5ffc9ae9e9482c706e22c3d0512b6667202c24",
-      "id": "ce5ffc9a",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/85f892afca93e4fdd6d13c1ca46aab88ed45448f",
+      "id": "85f892af",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -188,8 +782,8 @@
       "kind": "commit",
       "date": "2026-10-31T09:15:43+07:00",
       "title": "Merge pull request #16: English is the default language for new visitors",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/0433e5a0ab8430631aa99e291e84b5f1c3753e6c",
-      "id": "0433e5a0",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/066f4a49dc25f3c852da9e15354112f555c1fb6e",
+      "id": "066f4a49",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -206,8 +800,8 @@
       "kind": "commit",
       "date": "2026-10-31T09:15:28+07:00",
       "title": "Merge pull request #15: docs: add SECURITY.md and issue templates",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/725fbd220a6790cbfe689baf85ec5b8dba18b450",
-      "id": "725fbd22",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/e0ebfbdc0ac1a39386ccbe56ee3671a6759006e3",
+      "id": "e0ebfbdc",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -224,8 +818,8 @@
       "kind": "commit",
       "date": "2026-10-30T18:52:19+01:00",
       "title": "feat: features and status pages, back links and GitHub contact links (U-06, U-07, U-10)",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/36ba3f99608f0193ce9e10947dfbce47a2ffe636",
-      "id": "36ba3f99",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/56adf30eedab8fd1a2202b4e95dce395f89be2d1",
+      "id": "56adf30e",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -233,8 +827,8 @@
       "kind": "commit",
       "date": "2026-10-30T18:34:05+01:00",
       "title": "docs: canonical HOP family table with a CI check (U-08)",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/f13df48a4976f7e55eaf587207b644c757539bbc",
-      "id": "f13df48a",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/55433afb9ff44a4ef936114076101d90847af6f1",
+      "id": "55433afb",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -242,8 +836,8 @@
       "kind": "commit",
       "date": "2026-10-30T18:27:31+01:00",
       "title": "feat: HOP family typography and family section",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/0e70c224464acdf829d2e82b018986d498782da3",
-      "id": "0e70c224",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/c203efc810bc3e11ab90069a04c815b8a604f805",
+      "id": "c203efc8",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -251,8 +845,8 @@
       "kind": "commit",
       "date": "2026-10-30T17:47:48+01:00",
       "title": "English is the default language for new visitors",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/e04a9ba0d478187bd3a1c73c76b38fed1b77af21",
-      "id": "e04a9ba0",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/9a7547dbf04adf8bea05ac05b34d9667def8b3df",
+      "id": "9a7547db",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -260,8 +854,8 @@
       "kind": "commit",
       "date": "2026-10-30T17:40:21+01:00",
       "title": "docs: add SECURITY.md and issue templates",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/5b7681813a2050597d977ba68725d6aa5923c3dd",
-      "id": "5b768181",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/295fb5480ba2244320ca93224f3520c31f320d09",
+      "id": "295fb548",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -278,8 +872,8 @@
       "kind": "commit",
       "date": "2026-10-30T11:17:28+07:00",
       "title": "Merge pull request #14: docs: update HOP family ecosystem cross-reference table",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/6d61334030ec5f1040395943cb76e4bff8e5fc83",
-      "id": "6d613340",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/c5fa28fc49b522ec8b88993eba1a83c69204a704",
+      "id": "c5fa28fc",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -287,8 +881,8 @@
       "kind": "commit",
       "date": "2026-10-29T20:30:54+01:00",
       "title": "docs: update HOP family ecosystem cross-reference table",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/8c6cf06866b52de9bedda9ae9b75a4774d994348",
-      "id": "8c6cf068",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/51765ef40a78381803219ef75bd9b66c67f250a7",
+      "id": "51765ef4",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -296,8 +890,8 @@
       "kind": "commit",
       "date": "2026-10-30T00:12:13+07:00",
       "title": "Merge pull request #13: ci: tambahkan workflow github actions untuk go vet dan go test (F-10)",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/41ed2bc717e98b777fea37f3c57bc09b9647c7df",
-      "id": "41ed2bc7",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/f32def41cfbfb1494de25566b594b093da795909",
+      "id": "f32def41",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -314,8 +908,8 @@
       "kind": "commit",
       "date": "2026-10-29T09:16:31+01:00",
       "title": "ci: tambahkan workflow github actions untuk go vet dan go test",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/7ac66a90bb61bfd5e8b5d4ae22fbd525d9c0b35e",
-      "id": "7ac66a90",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/f1b31e3719958ee4b592ccf2e042664d54a10e23",
+      "id": "f1b31e37",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -332,8 +926,8 @@
       "kind": "commit",
       "date": "2026-10-29T02:11:25+07:00",
       "title": "Merge pull request #12: GET /auth/sso/logout: NoteHop joins the account server's chained logout",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/6dd906cfd557143c667809552b8d57e6022df63f",
-      "id": "6dd906cf",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/81fd5d8636c921b5f010ec79810f7ba094948de0",
+      "id": "81fd5d86",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -341,8 +935,8 @@
       "kind": "commit",
       "date": "2026-10-28T20:05:50+01:00",
       "title": "GET /auth/sso/logout: NoteHop joins the account server's chained logout",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/098c2c591bb8d39093054c694a74202f18bcc603",
-      "id": "098c2c59",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/b995a6b1865dc00d3b7770016be21496dd9ae078",
+      "id": "b995a6b1",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -350,8 +944,8 @@
       "kind": "commit",
       "date": "2026-10-28T23:48:59+07:00",
       "title": "Merge pull request #11: Notes at /name; the short share domain only redirects",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/8624524e2b0a7bcf0d86a8860ab0f0efe2484d6a",
-      "id": "8624524e",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/956fdf65d7bbdb8440ab2ff56d0486cf2625b48f",
+      "id": "956fdf65",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -368,8 +962,8 @@
       "kind": "commit",
       "date": "2026-10-28T17:18:41+01:00",
       "title": "Notes at /name; the short domain only redirects",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/24dc78c6e2caf2932be65a66b71cc1ca6d8080e0",
-      "id": "24dc78c6",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/213e6751a99b7ee4335cb6aa762bd3a8cd50e4e9",
+      "id": "213e6751",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -386,8 +980,8 @@
       "kind": "commit",
       "date": "2026-10-28T23:01:47+07:00",
       "title": "Merge pull request #10: Short share links: share.example/TOKEN, old links land on the right domain",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/1348d8c09f0c6f4b6e2d6afab113e8140433a0f1",
-      "id": "1348d8c0",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/4b77d7ee22e9c45b4c92ddc52ebe20fe0fbb4c61",
+      "id": "4b77d7ee",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -395,8 +989,8 @@
       "kind": "commit",
       "date": "2026-10-28T16:44:37+01:00",
       "title": "Short share links: share.example/TOKEN, old links land on the right domain",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/aba9601357e5a7f3a2eb5c8ff34515dd80f41aaf",
-      "id": "aba96013",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/5c339ea57d1bd6a993e78bc29609bf7ee898f722",
+      "id": "5c339ea5",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -413,8 +1007,8 @@
       "kind": "commit",
       "date": "2026-10-28T18:42:30+07:00",
       "title": "Merge pull request #9: Simpler create page: full-width editor, settings bar under it",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/6aa89f3a707e8131b80c711c619bd28599b9e291",
-      "id": "6aa89f3a",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/c1ef6ad0843e41a2a14f98ad631b112b59dfa7d9",
+      "id": "c1ef6ad0",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -422,8 +1016,8 @@
       "kind": "commit",
       "date": "2026-10-28T12:39:31+01:00",
       "title": "Simpler create page: full-width editor, settings bar under it",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/49fc80297f84cbc8444c6d12a0571b21a5c7f0c5",
-      "id": "49fc8029",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/f7d7de176d362f551a8ee950e7a0a1a2907472dc",
+      "id": "f7d7de17",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -440,8 +1034,8 @@
       "kind": "commit",
       "date": "2026-10-28T10:33:31+07:00",
       "title": "Merge pull request #8: Control center API (HOP App Protocol), reader reports, account roles",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/29f463b442ab44baf50f4dbc225f4f9ec397c3f7",
-      "id": "29f463b4",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/5e0c21a2fc136e1737fb6c1db0c526e9ff27c261",
+      "id": "5e0c21a2",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -449,8 +1043,8 @@
       "kind": "commit",
       "date": "2026-10-27T21:42:23+01:00",
       "title": "Control center API (HOP App Protocol), reader reports, account roles",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/cb281d3b1b8f93deec02286d1c7a7f91f64ce3b4",
-      "id": "cb281d3b",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/cf89b5bf6e20cd88204ceb4f78252eeae40c3be3",
+      "id": "cf89b5bf",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -458,8 +1052,8 @@
       "kind": "commit",
       "date": "2026-10-28T03:15:25+07:00",
       "title": "Merge pull request #7: Docs in 9 languages, Hop family links, sample names per language",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/b5e136cc72d478c370ce1f88f7e40ced846da8d3",
-      "id": "b5e136cc",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/f5918ec59d0e4daadaa433eb5a2d4a5a35546938",
+      "id": "f5918ec5",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -476,8 +1070,8 @@
       "kind": "commit",
       "date": "2026-10-27T21:06:32+01:00",
       "title": "Docs in 9 languages, Hop family links, sample names per language",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/8a167bcb7e7d076bfb177e90259f27b761dc92ab",
-      "id": "8a167bcb",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/8d75a45b655099ed5844c0532017136805d13c82",
+      "id": "8d75a45b",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -494,8 +1088,8 @@
       "kind": "commit",
       "date": "2026-10-28T02:34:12+07:00",
       "title": "Merge pull request #6: Home page v2: 3D logo, scroll motion, pinned feature tour, GitHub numbers",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/fd74b97628641c8642f4bd6642b69e58fba1c4d9",
-      "id": "fd74b976",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/b1f99e1978fb3bb1423aca63081e9caa0551f08e",
+      "id": "b1f99e19",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -503,8 +1097,8 @@
       "kind": "commit",
       "date": "2026-10-27T20:32:23+01:00",
       "title": "Home page v2: 3D logo, scroll motion, pinned feature tour, GitHub numbers",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/3bc2721461d162e695932796d651fc60cd2f873c",
-      "id": "3bc27214",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/194c56cf53009df5ca1baf68ca8890cbefc6a246",
+      "id": "194c56cf",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -512,8 +1106,8 @@
       "kind": "commit",
       "date": "2026-10-28T01:32:10+07:00",
       "title": "Merge pull request #5: Web notes: HTML/CSS/JS files you can run, in a sandboxed frame",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/c2061b9f494749db79eee6e8e64fc663d1ccd2b7",
-      "id": "c2061b9f",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/a34716afa9f6baa545ead2504e4966a694ea675d",
+      "id": "a34716af",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -530,8 +1124,8 @@
       "kind": "commit",
       "date": "2026-10-27T19:26:51+01:00",
       "title": "Web notes: HTML/CSS/JS files you can run, in a sandboxed frame",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/127c4d950c1646554aa678ec1e6619891d633345",
-      "id": "127c4d95",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/73567ecee887f38098d1deb0ba43a58401b5f9ef",
+      "id": "73567ece",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -539,8 +1133,8 @@
       "kind": "commit",
       "date": "2026-10-28T00:59:23+07:00",
       "title": "Merge pull request #4: Recovery codes, password change, and optional AI writing help",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/091ba11cbb575495bf879a4e4c04c0a0cf014fb2",
-      "id": "091ba11c",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/f885feb2f078c68e9432927941e166808ee5db67",
+      "id": "f885feb2",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -557,8 +1151,8 @@
       "kind": "commit",
       "date": "2026-10-27T18:43:50+01:00",
       "title": "Recovery codes, password change, and optional AI writing help",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/b4d8a4afba35acb48a9c7f1b8bbdc478926a89d3",
-      "id": "b4d8a4af",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/e89b2a03ed49fcacf7666c194e2456031cce965f",
+      "id": "e89b2a03",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -566,8 +1160,8 @@
       "kind": "commit",
       "date": "2026-10-28T00:16:08+07:00",
       "title": "Merge pull request #3: Bring main up to date: audit fixes, note page layout, SSO, home page, note types",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/2f4e8995a69994fb50cd6fe0fcf82694e4ec307d",
-      "id": "2f4e8995",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/8aecec5a0608a98d90b194a100cdb85a5112ce5d",
+      "id": "8aecec5a",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -602,8 +1196,8 @@
       "kind": "commit",
       "date": "2026-10-27T23:35:13+07:00",
       "title": "Merge pull request #1: NoteHop: full roadmap incl. real-time, friendly UI in 9 languages, name rules + abuse mitigations, VPS deploy",
-      "url": "https://github.com/navi-crwn/NoteHop/commit/cde69c13b07d311a2d9186eca9f0b12d99a4f410",
-      "id": "cde69c13",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/dd4391a1eb2792078cd6714e3f342faf94992402",
+      "id": "dd4391a1",
       "app": "NoteHop",
       "repo": "NoteHop"
     },
@@ -699,7 +1293,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T10:48:18+00:00",
+      "date": "2026-10-27T10:48:18Z",
       "title": "Batch G: name rules, slug holds, site pages, abuse mitigations",
       "url": "https://github.com/navi-crwn/NoteHop/commit/6ef329926b29a7db5a0975c97642da09d2322d95",
       "id": "6ef32992",
@@ -708,7 +1302,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T10:06:02+00:00",
+      "date": "2026-10-27T10:06:02Z",
       "title": "Batch F: friendly interface, FAQ, French, language autodetect",
       "url": "https://github.com/navi-crwn/NoteHop/commit/7b694c2deafaf807f40289a7afc425c4d5bab453",
       "id": "7b694c2d",
@@ -717,7 +1311,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T09:24:53+00:00",
+      "date": "2026-10-27T09:24:53Z",
       "title": "Docs: goals and local setup guide; one-command browser test runner",
       "url": "https://github.com/navi-crwn/NoteHop/commit/88eca2f64d51173bf69980400dbc2cc45fcf26f7",
       "id": "88eca2f6",
@@ -726,7 +1320,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T08:57:43+00:00",
+      "date": "2026-10-27T08:57:43Z",
       "title": "Batch E: integrations",
       "url": "https://github.com/navi-crwn/NoteHop/commit/bfde7644f5a9769e518f2ae4c99c12ee60bd9db9",
       "id": "bfde7644",
@@ -735,7 +1329,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T08:35:04+00:00",
+      "date": "2026-10-27T08:35:04Z",
       "title": "CLI: notehop new / get with local encryption",
       "url": "https://github.com/navi-crwn/NoteHop/commit/c52a78bdcdd7afba64ee24e84dcbaddbc56c43da",
       "id": "c52a78bd",
@@ -744,7 +1338,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T08:34:53+00:00",
+      "date": "2026-10-27T08:34:53Z",
       "title": "Batch D: real-time collaboration and nearby devices",
       "url": "https://github.com/navi-crwn/NoteHop/commit/54182bb65b3f1ae082305d9e03ca5219dcd05505",
       "id": "54182bb6",
@@ -753,7 +1347,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T08:19:19+00:00",
+      "date": "2026-10-27T08:19:19Z",
       "title": "Batch C: encrypted 24-hour attachments",
       "url": "https://github.com/navi-crwn/NoteHop/commit/aa2ad1cbca76667a818693c1d7e0853ea6aff0ff",
       "id": "aa2ad1cb",
@@ -762,7 +1356,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T08:12:40+00:00",
+      "date": "2026-10-27T08:12:40Z",
       "title": "Batch B: server-backed note features",
       "url": "https://github.com/navi-crwn/NoteHop/commit/d712a1cc37b31f925502a30f8137654ab185c6c5",
       "id": "d712a1cc",
@@ -771,7 +1365,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T07:53:45+00:00",
+      "date": "2026-10-27T07:53:45Z",
       "title": "Batch A: note extras in the browser",
       "url": "https://github.com/navi-crwn/NoteHop/commit/4aff6a61453435af190ffde58d445d64932b9089",
       "id": "4aff6a61",
@@ -780,7 +1374,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T05:00:08+00:00",
+      "date": "2026-10-27T05:00:08Z",
       "title": "i18n: Chinese, Spanish, Arabic, Portuguese, Japanese, Russian",
       "url": "https://github.com/navi-crwn/NoteHop/commit/377186ba7722600fa1c9f6b9ad4a4b06829b1152",
       "id": "377186ba",
@@ -789,7 +1383,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:57:21+00:00",
+      "date": "2026-10-27T04:57:21Z",
       "title": "i18n: 8 languages with English as the default",
       "url": "https://github.com/navi-crwn/NoteHop/commit/ad857391601d3c85abed8129d4f2d20d4f77476b",
       "id": "ad857391",
@@ -798,7 +1392,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:42:04+00:00",
+      "date": "2026-10-27T04:42:04Z",
       "title": "Feature pills, advanced settings, and conflict rules",
       "url": "https://github.com/navi-crwn/NoteHop/commit/33825b644110886321eb5c361037039b2440112d",
       "id": "33825b64",
@@ -807,7 +1401,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:37:05+00:00",
+      "date": "2026-10-27T04:37:05Z",
       "title": "Time capsule: hold a note's content until a set time",
       "url": "https://github.com/navi-crwn/NoteHop/commit/bfb208480b7d9dc2a8b7ef035a650283b131a94d",
       "id": "bfb20848",
@@ -816,7 +1410,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:34:53+00:00",
+      "date": "2026-10-27T04:34:53Z",
       "title": "Note features: config column, hooks, worker jobs; scheduled lock",
       "url": "https://github.com/navi-crwn/NoteHop/commit/7d2179875cf3a00ddc466a1712ba1586df886114",
       "id": "7d217987",
@@ -825,7 +1419,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:31:08+00:00",
+      "date": "2026-10-27T04:31:08Z",
       "title": "Optional share domain for reader links (NOTEHOP_SHARE_URL)",
       "url": "https://github.com/navi-crwn/NoteHop/commit/ce0ebd08ea6d7eef6712a3adaa8709865c3f4390",
       "id": "ce0ebd08",
@@ -834,7 +1428,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:29:47+00:00",
+      "date": "2026-10-27T04:29:47Z",
       "title": "Link previews: OpenGraph tags, preview-bot page, og.png",
       "url": "https://github.com/navi-crwn/NoteHop/commit/84ecb960c02a152041732c3bca272700d357981b",
       "id": "84ecb960",
@@ -843,7 +1437,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:28:21+00:00",
+      "date": "2026-10-27T04:28:21Z",
       "title": "Editor: phone keyboard bar, copy per block, keep \"|\" in inserted text",
       "url": "https://github.com/navi-crwn/NoteHop/commit/24649f4abc9c152dd67e49386f538f8d5bcc2444",
       "id": "24649f4a",
@@ -852,7 +1446,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:25:18+00:00",
+      "date": "2026-10-27T04:25:18Z",
       "title": "Fix wrong password on burn notes; add browser e2e check",
       "url": "https://github.com/navi-crwn/NoteHop/commit/d5d3cc3f35404b6b48247688766d18f27d24df00",
       "id": "d5d3cc3f",
@@ -861,7 +1455,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:17:05+00:00",
+      "date": "2026-10-27T04:17:05Z",
       "title": "Add VPS deploy tooling: systemd units, install script, backups",
       "url": "https://github.com/navi-crwn/NoteHop/commit/f16fa287eca918f739de5ec62646606de76e85ca",
       "id": "f16fa287",
@@ -870,7 +1464,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:00:58+00:00",
+      "date": "2026-10-27T04:00:58Z",
       "title": "Add SSO sign-in with a vault phrase, and versioned DB migrations",
       "url": "https://github.com/navi-crwn/NoteHop/commit/e93142e39e3a323fefd220b563bf0dee78fc1a01",
       "id": "e93142e3",
