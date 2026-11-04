@@ -4,6 +4,7 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+- The report scrub also catches a key pasted with an escaped `#` (`%23k=`, `%23k%3D`) and a bare `k=...` or `a=...`. Reports already stored lose the key the next time the server starts; the rest of their text stays. Backups taken earlier still hold the old text until they age out.
 - `deploy/notehop.env.example` names every variable the program reads. A test keeps it that way.
 - CI builds use Go 1.27.3 (`go` line in `go.mod`), which has the fixes the 1.27.2 toolchain lacks.
 - `install.sh --dry-run` no longer creates the data folder and `bin/`. It said nothing would be executed, and now nothing is.
