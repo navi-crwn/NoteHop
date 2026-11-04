@@ -4,6 +4,18 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-04
+
+The first stable release. NoteHop has been public since 2026-10-27; 1.0.0 is the point where the feature set below is treated as the baseline that later releases build on.
+
+- Notes are encrypted in the browser by default. The key stays in the link after `#k=`, so the server stores ciphertext it cannot read. A basic (readable) note is the other choice, and the owner can convert a note either way.
+- One account for every HOP app: sign-in goes through HOP ID, and the hub tells NoteHop about profile changes, suspensions, deletions and revoked sessions, and NoteHop acts on them. Notes also work without an account.
+- The interface, the READMEs and the documentation site are in nine languages: English, 简体中文, Deutsch, Bahasa Indonesia, 日本語, Português (Brasil), Español, Français and Русский.
+- Self-hosting is one command (`install.sh`, with `update.sh` and `uninstall.sh`), and the app is a single Go binary with a SQLite database. Database migrations run at start (12 so far).
+- The 2026-11-04 audit fixes are included: reports no longer keep a note's key, a sign-in ticket for a suspended account is refused, and a page that fails to render answers 500.
+
+The sections below make up this release. The dated headings are the days the work landed, not separate versions.
+
 ### More settings and interface sweep ([#38](https://github.com/navi-crwn/NoteHop/pull/38))
 - "More settings" on the New note page lost four of its six groups to the page behind it (a stray closing tag). It is now a proper dialog: it scrolls inside, the head stays, Escape, the backdrop and the close button close it, focus returns to the button, and the page behind does not scroll.
 - The Share dialog of an encrypted note says the link is the key, in all nine languages.
@@ -157,3 +169,6 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 - Timed and private extras: time capsules, scheduled locks, decoy passwords, network allow lists, leak tracer, sign-off, version history.
 - Developer tools: `/raw`, the `notehop` CLI, mock API, webhooks in and out, SSH, Telegram bot, installable app (PWA).
 - Optional zero-knowledge accounts, single sign-on, 9 languages, name rules and abuse tools, VPS installer with daily backups.
+
+[Unreleased]: https://github.com/navi-crwn/NoteHop/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/navi-crwn/NoteHop/releases/tag/v1.0.0
