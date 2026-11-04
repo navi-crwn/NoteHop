@@ -11,10 +11,11 @@
   --line-2: rgba(255, 255, 255, .15);
   --text: #e8eaf0;
   --muted: #8c92a4;
-  --faint: #5d6375;
+  --faint: #80869a;
   --lime: #a3e635;
   --cyan: #22d3ee;
   --violet: #8b5cf6;
+  --violet-text: #a78bfa;
   --pink: #f472b6;
   --red: #f87171;
   --amber: #fbbf24;
@@ -30,7 +31,7 @@
   --display: var(--hop-font-display, var(--sans));
   --sans: var(--hop-font-body, ui-sans-serif), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: var(--hop-font-mono, ui-monospace), ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
-  --hl-kw: #c4b5fd; --hl-str: #a3e635; --hl-num: #fbbf24; --hl-fn: #22d3ee; --hl-com: #5d6375; --hl-attr: #f472b6;
+  --hl-kw: #c4b5fd; --hl-str: #a3e635; --hl-num: #fbbf24; --hl-fn: #22d3ee; --hl-com: #80869a; --hl-attr: #f472b6;
   --tc-orange: #fb923c; --tc-blue: #60a5fa; --tc-gray: #9ca3af;
   color-scheme: dark;
 }
@@ -38,13 +39,13 @@
 :root[data-theme="light"] {
   --bg: #f6f7fb; --bg-2: #eef0f6; --panel: #ffffff; --panel-2: #f3f4f9;
   --line: rgba(15, 18, 40, .09); --line-2: rgba(15, 18, 40, .18);
-  --text: #10121a; --muted: #5a6074; --faint: #8a90a2;
-  --lime: #65a30d; --cyan: #0891b2; --violet: #7c3aed; --pink: #db2777;
-  --red: #dc2626; --amber: #d97706; --green: #059669;
-  --on-accent: #ffffff;
+  --text: #10121a; --muted: #5a6074; --faint: #656b7e;
+  --lime: #65a30d; --cyan: #0891b2; --violet: #7c3aed; --violet-text: #7c3aed; --pink: #db2777;
+  --red: #dc2626; --amber: #b45309; --green: #047857;
+  --accent: #0e7490; --on-accent: #ffffff;
   --shadow: 0 20px 50px rgba(30, 30, 80, .12);
   --dot: rgba(15, 18, 40, .07);
-  --hl-kw: #7c3aed; --hl-str: #4d7c0f; --hl-num: #b45309; --hl-fn: #0e7490; --hl-com: #8a90a2; --hl-attr: #be185d; --tc-orange: #ea580c; --tc-blue: #2563eb; --tc-gray: #6b7280;
+  --hl-kw: #7c3aed; --hl-str: #3f6212; --hl-num: #b45309; --hl-fn: #0e7490; --hl-com: #656b7e; --hl-attr: #be185d; --tc-orange: #ea580c; --tc-blue: #2563eb; --tc-gray: #6b7280;
   color-scheme: light;
 }
 
@@ -52,13 +53,13 @@
   :root:not([data-theme="dark"]) {
     --bg: #f6f7fb; --bg-2: #eef0f6; --panel: #ffffff; --panel-2: #f3f4f9;
     --line: rgba(15, 18, 40, .09); --line-2: rgba(15, 18, 40, .18);
-    --text: #10121a; --muted: #5a6074; --faint: #8a90a2;
-    --lime: #65a30d; --cyan: #0891b2; --violet: #7c3aed; --pink: #db2777;
-    --red: #dc2626; --amber: #d97706; --green: #059669;
-    --on-accent: #ffffff;
+    --text: #10121a; --muted: #5a6074; --faint: #656b7e;
+    --lime: #65a30d; --cyan: #0891b2; --violet: #7c3aed; --violet-text: #7c3aed; --pink: #db2777;
+    --red: #dc2626; --amber: #b45309; --green: #047857;
+    --accent: #0e7490; --on-accent: #ffffff;
     --shadow: 0 20px 50px rgba(30, 30, 80, .12);
     --dot: rgba(15, 18, 40, .07);
-    --hl-kw: #7c3aed; --hl-str: #4d7c0f; --hl-num: #b45309; --hl-fn: #0e7490; --hl-com: #8a90a2; --hl-attr: #be185d; --tc-orange: #ea580c; --tc-blue: #2563eb; --tc-gray: #6b7280;
+    --hl-kw: #7c3aed; --hl-str: #3f6212; --hl-num: #b45309; --hl-fn: #0e7490; --hl-com: #656b7e; --hl-attr: #be185d; --tc-orange: #ea580c; --tc-blue: #2563eb; --tc-gray: #6b7280;
     color-scheme: light;
   }
 }
@@ -198,7 +199,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); width: 16
 .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: .78rem; font-weight: 650;
   background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
 .pill svg { width: 13px; height: 13px; }
-.pill.ok { color: var(--green); } .pill.warn { color: var(--amber); } .pill.bad { color: var(--red); } .pill.acc { color: var(--violet); }
+.pill.ok { color: var(--green); } .pill.warn { color: var(--amber); } .pill.bad { color: var(--red); } .pill.acc { color: var(--violet-text); }
 .kbd { display: inline-block; padding: 0 6px; border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 6px; font: .8rem var(--mono); }
 .eyebrow { display: inline-flex; gap: 8px; align-items: center; padding: 5px 12px 5px 6px; border-radius: 999px; border: 1px solid var(--line-2);
   background: var(--panel); font-size: .82rem; color: var(--muted); margin-bottom: 18px; }
@@ -382,7 +383,7 @@ details.spoiler[open] { padding-bottom: 4px; }
 .entry-form textarea { margin-bottom: 10px; }
 
 /* ---------- dialogs ---------- */
-.dlg { width: min(460px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto; padding: 20px 22px; border-radius: 18px;
+.dlg { width: min(460px, calc(100vw - 32px)); max-height: calc(100vh - 48px); max-height: calc(100dvh - 48px); overflow-y: auto; padding: 20px 22px; border-radius: 18px;
   border: 1px solid var(--line-2); background: var(--panel); color: var(--text); box-shadow: var(--shadow); }
 .dlg.wide { width: min(680px, calc(100vw - 32px)); }
 .dlg::backdrop { background: rgba(4, 5, 8, .6); backdrop-filter: blur(3px); }
@@ -399,6 +400,8 @@ details.spoiler[open] { padding-bottom: 4px; }
 @media (max-width: 560px) { .link-row { grid-template-columns: 1fr auto; } .link-url { grid-column: 1 / -1; grid-row: 2; } }
 .add-link { display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; gap: 8px; margin-bottom: 16px; }
 @media (max-width: 560px) { .add-link { grid-template-columns: 1fr; } }
+.key-hint { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 12px; color: var(--muted); }
+.key-hint svg { flex: none; width: 14px; height: 14px; margin-top: 3px; color: var(--accent); }
 .admin-box { display: flex; gap: 14px; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 12px;
   border: 1px solid color-mix(in srgb, var(--violet) 40%, transparent); background: color-mix(in srgb, var(--violet) 8%, transparent); }
 .admin-box p { margin: 2px 0 0; }
@@ -530,8 +533,8 @@ body.zen main { padding-top: 24px; }
 .bubble button:hover { background: var(--panel-2); }
 
 /* ---------- dashboard: groups & graph ---------- */
-.dash-tools { display: flex; gap: 8px; align-items: center; }
-.dash-tools .filter { flex: 1; margin: 0; }
+.dash-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.dash-tools .filter { flex: 1 1 200px; min-width: 0; margin: 0; }
 .groups { margin: 12px 0 14px; }
 .chip { padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--bg-2); color: var(--muted); font-family: inherit; font-size: .82rem; font-weight: 600; cursor: pointer; }
 .chip[aria-pressed="true"] { border-color: var(--accent); color: var(--text); background: color-mix(in srgb, var(--accent) 14%, var(--bg-2)); }
@@ -715,13 +718,13 @@ body.expert .seg-choice [data-tech]::after { display: none; }
   margin: 12px -14px 0; padding: 10px 14px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--panel-2) 55%, var(--panel)); }
 .share-bar #create { margin-inline-start: auto; height: 44px; }
 .pick { position: relative; }
-.pick > summary { list-style: none; gap: 7px; height: 40px; padding: 0 12px; }
+.pick > summary, .pick-more { list-style: none; gap: 7px; height: 40px; padding: 0 12px; }
 .pick > summary::-webkit-details-marker { display: none; }
-.pick > summary .pick-ico { width: 17px; height: 17px; color: var(--accent); }
+.pick > summary .pick-ico, .pick-more .pick-ico { width: 17px; height: 17px; color: var(--accent); }
 .pick > summary .dd { width: 13px; height: 13px; color: var(--faint); }
-.pick[open] > summary { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
-.pick .count { min-width: 19px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: 750 .72rem/19px var(--sans); text-align: center; }
-.pick-pop { position: absolute; bottom: calc(100% + 8px); inset-inline-start: 0; z-index: 41; width: 340px; max-height: min(520px, calc(100vh - 120px)); overflow: auto;
+.pick[open] > summary, .pick-more[aria-expanded="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.pick .count, .pick-more .count { min-width: 19px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: 750 .72rem/19px var(--sans); text-align: center; }
+.pick-pop { position: absolute; bottom: calc(100% + 8px); inset-inline-start: 0; z-index: 41; width: 340px; max-height: min(520px, calc(100vh - 120px)); max-height: min(520px, calc(100dvh - 120px)); overflow: auto;
   margin: 0; padding: 8px; border: 1px solid var(--line-2); border-radius: 14px; background: var(--panel); box-shadow: var(--shadow); min-width: 0; }
 .pick-pop legend { float: left; width: 100%; padding: 4px 6px 8px; font-size: .78rem; font-weight: 650; color: var(--faint); }
 .pick-pop .choice-grid { clear: both; gap: 2px; }
@@ -736,13 +739,24 @@ body.expert .seg-choice [data-tech]::after { display: none; }
 .share-foot { padding: 0 2px; }
 .share-foot .summary { margin: 10px 0 0; padding: 0; border: 0; background: none; color: var(--muted); }
 .share-foot .warn-text, .share-foot .alert { margin: 8px 0 0; }
-/* "More": a drawer from the side */
-.drawer { position: fixed; top: 0; bottom: 0; inset-inline-end: 0; z-index: 61; width: min(420px, 100vw); overflow: auto;
-  padding: 18px 22px 28px; background: var(--panel); border-inline-start: 1px solid var(--line-2); box-shadow: var(--shadow); }
-.drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.drawer-head h2 { margin: 0; font-size: 1.15rem; }
-.drawer > .hint { display: block; margin: 4px 0 6px; }
+/* "More": a modal <dialog>. A drawer at the side on wide screens, a sheet from the bottom on phones.
+   The head stays put, the body scrolls. Being in the top layer it needs no z-index, and the
+   browser traps focus, closes it on Escape and gives focus back to the button. */
+.drawer { position: fixed; inset-block: 0; inset-inline: auto 0; margin: 0; width: min(420px, 100vw); max-width: 100vw; height: 100vh; height: 100dvh; max-height: none;
+  padding: 0; overflow: hidden; border: 0; border-inline-start: 1px solid var(--line-2); border-radius: 0; background: var(--panel); color: var(--text); box-shadow: var(--shadow); }
+.drawer[open] { display: flex; flex-direction: column; }
+.drawer::backdrop { background: rgba(10, 12, 20, .45); }
+.drawer-head { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: calc(14px + env(safe-area-inset-top)) calc(22px + env(safe-area-inset-right)) 12px 22px; border-bottom: 1px solid var(--line); background: var(--panel); }
+.drawer-head h2 { margin: 0; font-size: 1.15rem; min-width: 0; overflow-wrap: anywhere; }
+.drawer-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 4px calc(22px + env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) 22px; }
+.drawer-body > .hint { display: block; margin: 8px 0 6px; }
 .drawer .adv-group:first-of-type { border-top: 0; }
+.cw-levels { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+.cw-reason { display: block; margin-top: 8px; }
+/* while a modal dialog is open the page behind it does not scroll */
+body:has(dialog:modal) { overflow: hidden; }
 /* the menus live inside the bar, so the bar rises above the dimmed page (and the site header) */
 .share-bar:has(.pick[open]) { z-index: 70; }
 .scrim { position: fixed; inset: 0; z-index: 65; background: rgba(10, 12, 20, .28); }
@@ -755,16 +769,19 @@ body.sheet-open { overflow: hidden; }
   .share-bar { position: fixed; left: 0; right: 0; bottom: 0; margin: 0; gap: 6px; padding: 8px 10px calc(10px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--line-2); background: var(--panel); box-shadow: 0 -8px 24px rgba(30, 30, 80, .08); }
   body[data-page=new] main { padding-bottom: 84px; }
-  .pick > summary { width: 44px; height: 44px; padding: 0; position: relative; }
-  .pick > summary .pick-ico { width: 20px; height: 20px; }
+  .pick > summary, .pick-more { width: 44px; height: 44px; padding: 0; position: relative; justify-content: center; }
+  .pick > summary .pick-ico, .pick-more .pick-ico { width: 20px; height: 20px; }
   .pick > summary .dd { display: none; }
-  .pick > summary .pick-val { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .pick .count { position: absolute; top: -6px; inset-inline-end: -6px; }
+  .pick > summary .pick-val, .pick-more .pick-val { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .pick .count, .pick-more .count { position: absolute; top: -6px; inset-inline-end: -6px; }
   .share-bar #create { flex: 1; height: 44px; padding: 0 12px; }
   /* every menu is a sheet from the bottom */
-  .pick-pop, .drawer { position: fixed; top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 82vh; z-index: 61;
+  .pick-pop { position: fixed; top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 82vh; max-height: 82dvh; z-index: 61;
     padding: 16px 16px calc(20px + env(safe-area-inset-bottom)); border: 0; border-radius: 20px 20px 0 0; box-shadow: 0 -20px 50px rgba(10, 12, 20, .22); }
-  .pick-pop::before, .drawer::before { content: ""; display: block; width: 40px; height: 5px; margin: -6px auto 10px; border-radius: 3px; background: var(--line-2); }
+  .pick-pop::before { content: ""; display: block; width: 40px; height: 5px; margin: -6px auto 10px; border-radius: 3px; background: var(--line-2); }
+  .drawer { inset: auto 0 0 0; width: auto; max-width: none; height: auto; max-height: 88vh; max-height: 88dvh; border: 0; border-radius: 20px 20px 0 0; box-shadow: 0 -20px 50px rgba(10, 12, 20, .22); }
+  .drawer-head { padding-inline: 16px; padding-top: 14px; }
+  .drawer-body { padding-inline: 16px; }
   .pick-pop legend { font-size: 1.05rem; font-weight: 700; color: var(--text); padding: 0 4px 8px; }
   .pick-pop .choice { padding: 12px 10px; }
 }
@@ -832,7 +849,7 @@ body.sheet-open { overflow: hidden; }
 #adv-pills .adv-group { border-top: 0; padding-top: 0; }
 #adv-pills .adv-group > h3 { display: none; }
 #share-adv .adv-faq { display: inline-block; margin-top: 10px; }
-#share-dlg { min-height: min(520px, calc(100vh - 48px)); }
+#share-dlg { min-height: min(520px, calc(100vh - 48px)); min-height: min(520px, calc(100dvh - 48px)); }
 
 /* phone: actions in a dock at the bottom, the menu as a sheet */
 .note-dock { display: none; }
@@ -853,7 +870,7 @@ body.sheet-open { overflow: hidden; }
   body.has-dock .toasts { bottom: 80px; }
   body.kbar-on .note-dock, body.zen .note-dock { display: none; }
   /* the menu opens from the dock as a bottom sheet; submenus fold open in place */
-  .more-menu.open .menu-list:not(.sub) { position: fixed; top: auto; left: 0; right: 0; bottom: 0; z-index: 70; max-height: 78vh; overflow-y: auto;
+  .more-menu.open .menu-list:not(.sub) { position: fixed; top: auto; left: 0; right: 0; bottom: 0; z-index: 70; max-height: 78vh; max-height: 78dvh; overflow-y: auto;
     border-radius: 20px 20px 0 0; padding: 14px 12px calc(16px + env(safe-area-inset-bottom)); }
   .more-menu.open::before { content: ""; position: fixed; inset: 0; z-index: 69; background: rgba(16, 18, 26, .38); }
   .menu-list.sub { position: static; box-shadow: none; border: 0; padding: 0 0 4px 26px; min-width: 0; }
@@ -944,7 +961,7 @@ body.sheet-open { overflow: hidden; }
 .fmt-seg button, .fmt-rows button { display: flex; align-items: center; justify-content: center; height: 38px; padding: 0 8px; border-radius: 9px; border: 1px solid var(--line-2); background: var(--panel-2); color: var(--text); font: 600 .85rem var(--sans); cursor: pointer; }
 .ctx-panel .fmt-seg button { border: 0; background: none; }
 .ctx-panel .fmt-seg button:hover, .ctx-panel .fmt-seg button:focus-visible { background: var(--panel-2); outline: none; }
-.fmt-sheet { position: fixed; inset: auto 0 0 0; width: 100%; max-width: none; margin: 0; border-radius: 20px 20px 0 0; max-height: 80vh; padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
+.fmt-sheet { position: fixed; inset: auto 0 0 0; width: 100%; max-width: none; margin: 0; border-radius: 20px 20px 0 0; max-height: 80vh; max-height: 80dvh; padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
 .fmt-sheet .fmt-row { grid-template-columns: repeat(6, 1fr); gap: 6px; border: 0; }
 .fmt-sheet .fmt-b { height: 44px; border: 1px solid var(--line-2); background: var(--panel-2); border-radius: 11px; }
 .fmt-sheet .fmt-sw { grid-template-columns: repeat(9, minmax(0, 1fr)); }
@@ -1278,3 +1295,83 @@ footer .footer-grid { display: grid; grid-template-columns: minmax(180px, 1.35fr
 .link-rename { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; }
 .link-rename .prefix { flex: 1 1 220px; min-width: 0; }
 @media (max-width: 560px) { .kind { grid-template-columns: minmax(0, 1fr); } .link-row.renaming { grid-template-columns: 1fr; } }
+
+/* ---------- sweep: small fixes found by checking every page at 360-1440px ---------- */
+/* Links inside a sentence need more than a colour to be told apart from the text around them. */
+:where(p, .lead, .center, .faint, .muted, .hint, .small) > a:not([class]), .contact-list a, .contact-card a { text-decoration: underline; text-underline-offset: 3px; }
+/* A long unbroken word in a title must wrap, not push the page sideways. */
+h1, h2, .note-title h1 { overflow-wrap: anywhere; }
+:not(pre) > code { overflow-wrap: anywhere; }
+/* Fields without a border or a shadow (the title, the editor) still show where the cursor is. */
+.title-input:focus-visible, .ed-src:focus-visible, .h-q-title:focus-visible, .h-q-body:focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 4px; border-radius: 6px; }
+.ed-src:focus-visible { outline-offset: -3px; }
+.legal-note { margin: 16px 0; padding: 14px 18px; border: 1px solid var(--accent); border-radius: 14px; background: color-mix(in srgb, var(--accent) 8%, var(--panel)); }
+.legal-note b { color: var(--accent); }
+.legal-note p { margin: 6px 0 0; font-size: .9rem; }
+.gate-form { margin-top: 16px; }
+/* Phones and touch screens: every control is at least 44px, as the guidelines ask. */
+@media (max-width: 760px), (pointer: coarse) {
+  .icon-btn { width: 44px; height: 44px; }
+  .btn, .btn.sm, .starter, .menu-list a, .menu-list button { min-height: 44px; }
+  .btn.icon-only { min-width: 44px; }
+  .back { display: inline-flex; align-items: center; min-height: 44px; }
+  input:not([type=checkbox]):not([type=radio]):not([type=range]), select { min-height: 44px; }
+  button.live-av { width: 44px; height: 44px; }
+  .ed-tools .icon-btn, .ed-tools .btn { min-width: 44px; min-height: 44px; }
+  .brand { min-height: 44px; }
+  .menu > button:not(.btn):not(.icon-btn) { display: grid; place-items: center; min-width: 44px; min-height: 44px; }
+  .seg button, .chip { min-height: 44px; }
+  .note-bar .note-meta { min-height: 44px; }
+  .note-bar .live-tools .btn { min-width: 44px; }
+  .gate-remember { min-height: 44px; }
+  .icon-btn.sm { width: 44px; height: 44px; }
+  /* 44px buttons would wrap the editor toolbar into four rows: it scrolls sideways in one */
+  .ed-tools { flex: 1 1 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .ed-tools::-webkit-scrollbar { display: none; }
+  .ed-tools > * { flex: none; }
+  .foot-col nav a, .foot-langs a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+  .md li.task > input { width: 24px; height: 24px; }
+}
+@media (max-width: 420px) {
+  /* the logo alone; the name stays for screen readers */
+  .brand { min-width: 44px; justify-content: center; }
+  .brand-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .nav .wrap { gap: 6px; }
+  .nav-r { gap: 4px; }
+}
+/* The bars fixed to the bottom must not cover the last lines of the page (the language links). */
+@media (max-width: 640px) {
+  body.has-dock .footer-columns { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+  body[data-page=new] .footer-columns { padding-bottom: calc(130px + env(safe-area-inset-bottom)); }
+}
+/* the content warning screen (note.js) */
+.gate-badge { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+.gate-note { margin: 14px 0; padding: 10px 14px; text-align: start; background: var(--panel-2); border-inline-start: 3px solid var(--accent); border-radius: 6px; }
+.gate-note-label { display: block; margin-bottom: 2px; text-transform: uppercase; font-weight: 600; }
+.gate-remember { display: inline-flex; align-items: center; gap: 8px; margin: 16px 0; font-size: .85rem; color: var(--muted); cursor: pointer; }
+.gate-actions { display: flex; gap: 10px; justify-content: center; }
+/* Menus never run off the screen: they scroll when they are taller than it, open from the other edge
+   when they are too wide for this one, and fill the width of a phone. Submenus fold open in place. */
+.menu-list { max-height: calc(100vh - 80px); max-height: calc(100dvh - 80px); overflow-y: auto; overscroll-behavior: contain; }
+.menu.flip > .menu-list { inset-inline-end: auto; inset-inline-start: 0; }
+.menu-list.sub { position: static; min-width: 0; padding: 0 0 4px 26px; border: 0; box-shadow: none; background: none; max-height: none; overflow: visible; }
+[dir=rtl] .menu-list.sub { padding: 0 26px 4px 0; }
+.menu-sub > summary::after, [dir=rtl] .menu-sub > summary::after { content: "⌄"; }
+@media (max-width: 560px) {
+  .nav .menu-list, .shell-top .menu-list { position: fixed; top: 64px; inset-inline: 8px; min-width: 0; }
+}
+.ed-type-list { max-height: min(420px, calc(100vh - 140px)); max-height: min(420px, calc(100dvh - 140px)); overflow-y: auto; }
+@media (max-width: 640px) {
+  .ed-type-list { position: fixed; inset: auto 8px calc(8px + env(safe-area-inset-bottom)) 8px; width: auto; max-height: 70dvh; z-index: 61; }
+}
+/* a toast on the compose page rises above the bar fixed to the bottom */
+@media (max-width: 640px) { body[data-page=new] .toasts { bottom: calc(130px + env(safe-area-inset-bottom)); } }
+/* A note loads after the page (fetched, then decrypted): keep the page one screen tall while it does,
+   so the footer is not pushed down in front of the reader when the text arrives. */
+.note-wrap { min-height: calc(100vh - 60px); min-height: calc(100dvh - 60px); }
+.note-body { min-height: 240px; }
+/* a phone on its side has little height: the site header scrolls away instead of taking a sixth of it */
+@media (max-height: 520px) and (orientation: landscape) { .nav { position: static; } }
+/* the boxes at the foot of the Share dialog (encrypted or basic, owner link) are separate boxes */
+.admin-box + .admin-box { margin-top: 10px; }
+.share-dlg .admin-box { margin-top: 10px; }

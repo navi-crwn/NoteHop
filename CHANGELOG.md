@@ -4,6 +4,13 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+### More settings and interface sweep ([#38](https://github.com/navi-crwn/NoteHop/pull/38))
+- "More settings" on the New note page lost four of its six groups to the page behind it (a stray closing tag). It is now a proper dialog: it scrolls inside, the head stays, Escape, the backdrop and the close button close it, focus returns to the button, and the page behind does not scroll.
+- The Share dialog of an encrypted note says the link is the key, in all nine languages.
+- No inline styles any more (the console errors on New note, Terms, Privacy and the content warning screen), `/TOKEN` links in the home tour, translated footer labels and notice on Terms and Privacy.
+- Readable contrast for links and faint text, names for checklist boxes and icon buttons, focus rings on the title and editor, 44 px controls and a one-row header on phones, menus that stay on screen, long titles that wrap, and less layout shift while a note loads.
+- `scripts/e2e-sweep.js` and `internal/app/ui_sweep_test.go` check these.
+
 ### Copy edits ([#36](https://github.com/navi-crwn/NoteHop/pull/36))
 - The error for a missing note is worded in parallel with the other errors, and the Russian export text has its punctuation fixed.
 

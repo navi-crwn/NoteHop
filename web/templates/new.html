@@ -85,11 +85,12 @@
             </div>
           </fieldset>
         </details>
-        <details class="pick pick-more" id="adv">
-          <summary class="btn ghost" title="{{.L.T "new.more_title"}}"><svg class="pick-ico"><use href="#i-sliders"/></svg><span class="pick-val">{{.L.T "new.more"}}</span><em class="count hide" id="adv-count"></em></summary>
-          <div class="drawer" role="dialog" aria-labelledby="adv-h">
-            <div class="drawer-head"><h2 id="adv-h">{{.L.T "new.more_title"}}</h2><button type="button" class="icon-btn" data-close title="{{.L.T "common.close"}}" aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
-            <p class="hint">{{.L.T "new.more_hint"}}</p>
+        <button type="button" class="btn ghost pick-more" id="adv-btn" aria-haspopup="dialog" aria-controls="adv" title="{{.L.T "new.more_title"}}"><svg class="pick-ico"><use href="#i-sliders"/></svg><span class="pick-val">{{.L.T "new.more"}}</span><em class="count hide" id="adv-count"></em></button>
+        <!-- a real modal dialog: it scrolls inside, traps focus, closes with Escape, the backdrop or its button -->
+        <dialog class="drawer" id="adv" aria-labelledby="adv-h" aria-describedby="adv-d">
+          <div class="drawer-head"><h2 id="adv-h">{{.L.T "new.more_title"}}</h2><button type="button" class="icon-btn" data-close title="{{.L.T "common.close"}}" aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
+          <div class="drawer-body">
+            <p class="hint" id="adv-d">{{.L.T "new.more_hint"}}</p>
             <div class="adv-group">
               <h3><svg class="ico"><use href="#i-clock"/></svg> {{.L.T "grp.time"}}</h3>
               <label class="toggle" data-tech="time capsule"><input type="checkbox" data-feature="capsule"><span><b>{{.L.T "feat.capsule"}}</b><small>{{.L.T "ex.capsule"}}</small></span></label>
@@ -128,7 +129,6 @@
                 <span class="hint">{{.L.T "new.decoy_hint"}}</span>
               </div>
             </div>
-            </div>
             <div class="adv-group">
               <h3><svg class="ico"><use href="#i-users"/></svg> {{.L.T "grp.together"}}</h3>
               <label class="toggle" data-tech="sign-off"><input type="checkbox" data-feature="signoff"><span><b>{{.L.T "feat.signoff"}}</b><small>{{.L.T "ex.signoff"}}</small></span></label>
@@ -138,11 +138,11 @@
               <h3><svg class="ico"><use href="#i-shield"/></svg> {{.L.T "feat.content_warning"}}</h3>
               <label class="toggle"><input type="checkbox" data-feature="warning" id="enable-warning"><span><b>{{.L.T "feat.content_warning"}}</b><small>{{.L.T "ex.content_warning"}}</small></span></label>
               <div class="feat hide" data-panel="warning">
-                <div class="radios" style="display:flex;flex-direction:column;gap:8px;margin:8px 0;">
+                <div class="radios cw-levels">
                   <label><input type="radio" name="cw_level" value="sensitive" checked> <b>{{.L.T "gate.sensitive_title"}}</b> <small class="muted">{{.L.T "gate.sensitive_sub"}}</small></label>
                   <label><input type="radio" name="cw_level" value="adult"> <b>{{.L.T "gate.adult_title"}}</b> <small class="muted">{{.L.T "gate.adult_sub"}}</small></label>
                 </div>
-                <label for="warning-reason" style="display:block;margin-top:8px;">{{.L.T "gate.reason_label"}}</label>
+                <label for="warning-reason" class="cw-reason">{{.L.T "gate.reason_label"}}</label>
                 <input type="text" id="warning-reason" maxlength="255" placeholder="{{.L.T "gate.reason_placeholder"}}">
               </div>
             </div>
@@ -157,7 +157,7 @@
               <a class="small" href="/faq">{{.L.T "new.faq_more"}}</a>
             </details>
           </div>
-        </details>
+        </dialog>
         <button class="btn primary lg" type="submit" id="create"><svg><use href="#i-share"/></svg><span>{{.L.T "new.create"}}</span></button>
       </div>
       <div class="share-foot">

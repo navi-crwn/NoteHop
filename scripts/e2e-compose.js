@@ -61,16 +61,16 @@ const val = (p, id) => p.$eval('#' + id + ' .pick-val', e => e.textContent.trim(
   await p.keyboard.press('Escape');
 
   ok('More has no counter yet', await p.$eval('#adv-count', e => e.classList.contains('hide')));
-  await p.click('#adv > summary');
-  ok('More opens a drawer at the side, page dimmed', await p.evaluate(() => {
-    const d = document.querySelector('#adv .drawer').getBoundingClientRect();
-    return Math.abs(d.right - innerWidth) < 2 && d.top < 2 && d.width >= 380 && !document.getElementById('scrim').hidden;
+  await p.click('#adv-btn');
+  ok('More opens a modal drawer at the side', await p.evaluate(() => {
+    const d = document.querySelector('#adv').getBoundingClientRect();
+    return Math.abs(d.right - innerWidth) < 2 && d.top < 2 && d.width >= 380 && document.querySelector('#adv').matches(':modal');
   }));
-  await p.click('label:has([data-feature=slug])'); await p.fill('#slug', 'bar-test-' + Date.now().toString(36));
+  await p.click('label:has([data-feature=signoff])'); // one setting on, so the counter shows it
   await p.click('#adv [data-close]');
-  ok('drawer closes with its button', !(await isOpen(p, 'adv')) && await p.$eval('#scrim', s => s.hidden));
+  ok('drawer closes with its button, focus returns to More', !(await isOpen(p, 'adv')) && await p.evaluate(() => document.activeElement.id === 'adv-btn'));
   ok('More counts the settings that are on', await p.$eval('#adv-count', e => !e.classList.contains('hide') && e.textContent === '1'));
-  await p.click('#adv > summary'); await p.waitForSelector('#scrim:not([hidden])'); await p.mouse.click(200, 300);
+  await p.click('#adv-btn'); await p.waitForSelector('#adv[open]'); await p.mouse.click(200, 300);
   ok('clicking the dimmed page closes the drawer', !(await isOpen(p, 'adv')));
 
   // a starter sets the bar and says what it is
@@ -78,7 +78,7 @@ const val = (p, id) => p.$eval('#' + id + ' .pick-val', e => e.textContent.trim(
   ok('starter "Secret message" sets Read once', await val(p, 'opt-private') === 'Read once' && await val(p, 'opt-who') === 'View only');
   ok('starter description shown', /once/i.test(await p.textContent('#start-desc')), await p.textContent('#start-desc'));
   await p.click('[data-starter=signoff]');
-  ok('sign-off starter lights the counter, drawer stays shut', !(await isOpen(p, 'adv')) && await p.textContent('#adv-count') === '2');
+  ok('sign-off starter lights the counter, drawer stays shut', !(await isOpen(p, 'adv')) && await p.textContent('#adv-count') === '1');
 
   // web note: the result sits beside the code
   await p.click('.ed-type-btn'); await p.click('[data-type=web]'); await p.waitForTimeout(400);
@@ -91,6 +91,7 @@ const val = (p, id) => p.$eval('#' + id + ' .pick-val', e => e.textContent.trim(
   // a real note, with the options from the bar
   await p.click('[data-starter=note]');
   await p.fill('#title', 'Bar test'); await p.fill('.ed-src', 'hello from the bar');
+  await p.click('label.kind-opt:has(input[value=basic])'); await p.fill('#slug', 'bar-test-' + Date.now().toString(36));
   await p.click('#opt-who > summary'); await p.click('label:has(input[name=mode][value=append])');
   await p.click('#create'); await p.waitForURL(/#k=/, { timeout: 20000 }); await p.waitForSelector('#note:not(.hide)');
   ok('creates the note with the chosen options', /\/bar-test-/.test(p.url()), p.url().split('#')[0]);
@@ -100,30 +101,30 @@ const val = (p, id) => p.$eval('#' + id + ' .pick-val', e => e.textContent.trim(
   const m = await open(b, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   await m.goto(BASE + '/new?lang=en'); await m.waitForTimeout(300);
   ok('phone: bar fixed at the bottom', await m.evaluate(() => {
-    const r = document.querySelector('.share-bar').getBoundingClientRect(); return Math.abs(r.bottom - innerHeight) < 2 && r.height < 90;
+    const r = document.querySelector('.share-bar').getBoundingClientRect(); return Math.abs(r.bottom - innerHeight) < 2 && r.height < 130; // icons on one row, Create below
   }));
   ok('phone: buttons are icons, names stay for screen readers', await m.evaluate(() =>
     [...document.querySelectorAll('.pick > summary')].every(s => s.getBoundingClientRect().width <= 46) &&
     document.querySelector('#opt-who .pick-val').textContent.trim() === 'View only'));
   ok('phone: no sideways scroll', await m.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-  await m.tap('#opt-private > summary');
+  await m.tap('#opt-private > summary'); await m.waitForTimeout(200);
   ok('phone: menu opens as a sheet', await m.evaluate(() => {
     const r = document.querySelector('#opt-private .pick-pop').getBoundingClientRect();
     return Math.abs(r.bottom - innerHeight) < 2 && r.width >= innerWidth - 2 && !document.getElementById('scrim').hidden;
   }));
-  await m.tap('label:has(input[name=privacy][value=once])');
+  await m.tap('label:has(input[name=privacy][value=once])'); await m.waitForTimeout(200);
   ok('phone: a choice closes the sheet', !(await isOpen(m, 'opt-private')) && await m.$eval('#scrim', s => s.hidden));
-  await m.tap('#adv > summary');
+  await m.tap('#adv-btn'); await m.waitForTimeout(200);
   ok('phone: More opens as a sheet too', await m.evaluate(() => {
-    const r = document.querySelector('#adv .drawer').getBoundingClientRect(); return Math.abs(r.bottom - innerHeight) < 2 && r.width >= innerWidth - 2;
+    const r = document.querySelector('#adv').getBoundingClientRect(); return Math.abs(r.bottom - innerHeight) < 2 && r.width >= innerWidth - 2;
   }));
   await m.context().close();
 
   // ---------- RTL ----------
   const a = await open(b);
-  await a.goto(BASE + '/new?lang=ar'); await a.waitForTimeout(300);
-  await a.click('#adv > summary');
-  ok('RTL: drawer on the left', await a.evaluate(() => document.querySelector('#adv .drawer').getBoundingClientRect().left < 2));
+  await a.goto(BASE + '/new?lang=en'); await a.evaluate(() => { document.documentElement.dir = 'rtl'; }); await a.waitForTimeout(300);
+  await a.click('#adv-btn');
+  ok('RTL: drawer on the left', await a.evaluate(() => document.querySelector('#adv').getBoundingClientRect().left < 2));
   await a.keyboard.press('Escape');
   await a.click('#opt-who > summary');
   ok('RTL: menu lines up with its button', await a.evaluate(() => {

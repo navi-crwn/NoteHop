@@ -23,7 +23,7 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', pills 
   if (body) await p.fill('.ed-src', body);
   await pickMode(p, mode);
   if (pw) { await p.click('#opt-private > summary'); await p.click('label:has([name=privacy][value=password])'); await p.fill('#password', pw); }
-  if (pills.length) await p.click('#adv summary');
+  if (pills.length) await p.click('#adv-btn');
   for (const x of pills) await p.click(`label:has([data-feature=${x}])`);
   for (const [sel, v] of Object.entries(fill)) await p.fill(sel, v);
   await closeMenus(p); await p.click('#create'); await p.waitForURL(/#k=/, { timeout: 30000 }); await p.waitForSelector('#note:not(.hide)');
@@ -33,7 +33,7 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', pills 
 const visitor = (adminURL) => { const u = new URL(adminURL); return BASE + u.pathname + '#k=' + new URLSearchParams(u.hash.slice(1)).get('k'); };
 
 // The More drawer covers the bar's right end; people close it before Create link.
-const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }));
+const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }); const a = document.getElementById('adv'); if (a && a.open) a.close(); });
 (async () => {
   const b = await chromium.launch();
   try {
@@ -65,7 +65,7 @@ const closeMenus = p => p.evaluate(() => document.querySelectorAll('.pick[open]'
     await p.keyboard.press('Enter'); await p.waitForSelector('#burn-text');
     await p.fill('#burn-text', 'PIN brankas 9911'); await p.selectOption('#burn-views', '1'); await p.click('dialog[open] button[type=submit]');
     await p.waitForFunction(() => document.querySelector('.ed-src').value.includes(':::burn '));
-    await p.click('#adv summary'); await p.click('label:has([data-feature=signoff])');
+    await p.click('#adv-btn'); await p.click('label:has([data-feature=signoff])');
     await closeMenus(p); await p.click('#create'); await p.waitForURL(/#k=/); await p.waitForSelector('#note:not(.hide)'); await p.keyboard.press('Escape');
     const k = p.url();
     const r1 = await page(b); await r1.goto(visitor(k)); await r1.waitForSelector('.poll-opt');

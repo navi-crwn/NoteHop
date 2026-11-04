@@ -144,7 +144,7 @@
   // ---------- feature tour ----------
   var MINI = {
     share: function (el) {
-      var L = [[NH.t('mode.read'), '', '/n/RFbN3uTvAH'], [NH.t('mode.edit'), ' w', '/n/k82LmQ0zPa'], [NH.t('mode.append'), ' a', '/n/team-notes-2026']];
+      var L = [[NH.t('mode.read'), '', '/RFbN3uTvAH'], [NH.t('mode.edit'), ' w', '/k82LmQ0zPa'], [NH.t('mode.append'), ' a', '/vT3nW8cYqd']];
       var col = h('div'), rows = L.map(function (l) { var d = h('div.mlink', h('span.mmode' + l[1].replace(' ', '.'), l[0]), h('code', { dir: 'ltr' }, l[2])); col.appendChild(d); return d; });
       var cv = h('canvas', { width: 25, height: 25, 'aria-hidden': 'true' });
       el.append(h('div.mshare', col, h('figure.mqr', cv, h('figcaption', NH.t('home.m_qr')))));
@@ -206,7 +206,7 @@
     dev: function (el) {
       var term = h('div.mterm'), host = location.host;
       el.appendChild(term);
-      var L = [['p', '$ notehop new -t "Server" < notes.txt'], ['o', 'https://' + host + '/n/qR7xP2mLzA#k=8f…  # ' + NH.t('home.m_d_1')], ['p', '$ curl ' + host + '/raw/server-status'],
+      var L = [['p', '$ notehop new -t "Server" < notes.txt'], ['o', 'https://' + host + '/qR7xP2mLzA#k=8f…  # ' + NH.t('home.m_d_1')], ['p', '$ curl ' + host + '/raw/server-status'],
         ['o', NH.t('home.m_d_2')], ['p', '$ curl ' + host + '/mock/menu/0/name'], ['o', JSON.stringify(NH.t('home.m_d_3'))]], li = 0, ci = 0, cur = null;
       return setInterval(function () {
         if (li >= L.length) { if (++ci > 30) { term.replaceChildren(); li = ci = 0; } return; }
