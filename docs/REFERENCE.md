@@ -62,7 +62,7 @@ When you add or change interface text, change it in all nine files in `web/i18n/
 
 ### Changelog
 
-`CHANGELOG.md` is written by hand, newest first, with an `[Unreleased]` section on top and one entry per pull request. `web/changelog.json` is different: it is a generated snapshot of the commit, tag and pull request history that the `/changelog` page shows, so do not edit it by hand. To refresh it, run this from a checkout where `origin/main` is up to date and `gh` is signed in:
+`CHANGELOG.md` is written by hand, newest first, with an `[Unreleased]` section on top and one entry per pull request. A release moves what is under `[Unreleased]` into a new `## [X.Y.Z] - date` section and gets the tag `vX.Y.Z`; the build takes its version from `git describe --tags`, so a build of the tagged commit shows `vX.Y.Z` on the Status page, in `notehop -version` and in `/hop/health`. A later commit shows `vX.Y.Z-N-g<hash>`, and a shallow clone (`install.sh` clones with `--depth 1`) that does not contain the tag shows the bare commit hash. `web/changelog.json` is different: it is a generated snapshot of the commit, tag and pull request history that the `/changelog` page shows, so do not edit it by hand. To refresh it, run this from a checkout where `origin/main` is up to date and `gh` is signed in:
 
 ```bash
 git fetch origin
