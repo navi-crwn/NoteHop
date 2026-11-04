@@ -10,6 +10,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -95,7 +96,10 @@ type App struct {
 	started   time.Time  // for /hop/health uptime
 	settings  sync.Map   // run-time settings from the control center (key → value), mirrors the settings table
 	uploadMu  sync.Mutex
-	space     func(string) (int64, int64)
+
+	reportKeyOnce sync.Once // reportKey is made on first use
+	reportKey     []byte
+	space         func(string) (int64, int64)
 }
 
 func New(cfg Config, d *db.DB) (*App, error) {
@@ -134,7 +138,7 @@ func New(cfg Config, d *db.DB) (*App, error) {
 // registers a listed name later stays an ordinary user.
 func (a *App) SeedAdmins() error { return a.db.SeedAdmins(a.cfg.Admins) }
 
-func (a *App) Handler() http.Handler { return a.secure(a.shareGate(a.mux)) }
+func (a *App) Handler() http.Handler { return a.secure(a.recoverer(a.shareGate(a.mux))) }
 
 // Janitor is the background worker: once a minute it deletes expired notes
 // and sessions and runs the jobs of note features, until ctx ends.
@@ -148,6 +152,7 @@ func (a *App) Janitor(ctx context.Context) {
 		} else if n > 0 {
 			log.Printf("janitor: removed %d expired note(s)", n)
 		}
+		a.dropGoneRooms()
 		a.limit.gc()
 		a.runJobs(ctx, time.Now())
 		select {
@@ -156,6 +161,20 @@ func (a *App) Janitor(ctx context.Context) {
 		case <-t.C:
 		}
 	}
+}
+
+// dropGoneRooms disconnects live peers whose note was deleted or has expired.
+// Deletes inside this process call it right away; the janitor calls it every
+// minute, which is also how expiry and a CLI takedown (another process) reach
+// peers that are already connected.
+func (a *App) dropGoneRooms() {
+	a.live.dropGone(func(id int64) bool {
+		n, err := a.db.NoteByID(id)
+		if err != nil {
+			return errors.Is(err, db.ErrNotFound)
+		}
+		return n.Expires > 0 && n.Expires <= time.Now().Unix()
+	})
 }
 
 func (a *App) routes() {
@@ -287,6 +306,7 @@ type pageData struct {
 	Links         []Link // related sites, from NOTEHOP_LINKS
 	Next          string // where to go after signing in
 	Msg           string // error page text; empty means "note not found"
+	Fault         bool   // the error page for a server fault (500)
 	Origin        string // scheme://host for absolute OpenGraph URLs
 	Main          string // main site, for admin links
 	Share         string // share domain, for links handed to readers (may be empty)
@@ -352,10 +372,20 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(status)
-	if err := a.pages[name].ExecuteTemplate(w, "base", d); err != nil {
+	// Render to memory first: a template error halfway must not leave the reader with half a page and a 200.
+	var buf bytes.Buffer
+	if err := a.pages[name].ExecuteTemplate(&buf, "base", d); err != nil {
 		log.Printf("render %s: %v", name, err)
+		w.Header().Del("Cache-Control")
+		if name == "error" {
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
+		a.serverError(w, r)
+		return
 	}
+	w.WriteHeader(status)
+	_, _ = buf.WriteTo(w)
 }
 
 // page serves a static page; title and desc are catalog keys.

@@ -276,6 +276,7 @@
       make.disabled = true;
       createNote({ title: N.title(), body: out.value, mode: 'read', encrypted: true }).then(function (n) {
         NH.copy(NH.noteURL(n.token, { k: n.k }), NH.t('redact.done'));
+        NH.toast(NH.t('copy.key_hint'));
         dlg.close();
       }, function (x) { make.disabled = false; NH.toast(x.message, 'err'); });
     });
@@ -293,7 +294,7 @@
     var form = h('form', { id: 'report-form' }, h('label.field', h('span', NH.t('report.reason')), sel), h('div.field', note), h('div.btn-row.end', send));
     dlg.append(
       h('div.dlg-head', h('h2', NH.t('report.title')), h('button.icon-btn', { type: 'button', 'data-close': '', 'aria-label': NH.t('common.close') }, NH.icon('x'))),
-      h('p.muted.small', NH.t('report.lead')), form);
+      h('p.muted.small', NH.t('report.lead')), h('p.muted.small', NH.t('report.key_warn')), form);
     document.body.appendChild(dlg);
     dlg.addEventListener('close', function () { dlg.remove(); });
     form.addEventListener('submit', function (e) {

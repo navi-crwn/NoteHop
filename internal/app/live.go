@@ -33,7 +33,8 @@ const (
 
 type livePeer struct {
 	id     int
-	write  bool // may change the document
+	token  string // the access link this connection came in through
+	write  bool   // may change the document
 	admin  bool
 	name   string
 	send   chan []byte
@@ -92,6 +93,39 @@ func (h *liveHub) leave(note int64, r *liveRoom, p *livePeer) {
 			r.mu.Unlock()
 		}
 		h.mu.Unlock()
+	}
+}
+
+// closePeers cancels the peers of one room that match (all of them when match
+// is nil). Cancelling wakes idle readers too; each handler then leaves the room.
+func (h *liveHub) closePeers(note int64, match func(*livePeer) bool) {
+	h.mu.Lock()
+	r := h.rooms[note]
+	h.mu.Unlock()
+	if r == nil {
+		return
+	}
+	r.mu.Lock()
+	peers := r.list()
+	r.mu.Unlock()
+	for _, p := range peers {
+		if match == nil || match(p) {
+			p.cancel()
+		}
+	}
+}
+
+// closeLink drops the connections that came in through a revoked access link.
+func (h *liveHub) closeLink(note int64, token string) {
+	h.closePeers(note, func(p *livePeer) bool { return p.token == token })
+}
+
+// dropGone closes every room whose note gone reports as deleted or expired.
+func (h *liveHub) dropGone(gone func(note int64) bool) {
+	for _, ri := range h.snapshot() {
+		if gone(ri.note) {
+			h.closePeers(ri.note, nil)
+		}
 	}
 }
 
@@ -228,10 +262,17 @@ func (a *App) apiLive(w http.ResponseWriter, r *http.Request) {
 		return x.can(modeEdit) && (x.admin || runBeforeWrite(x.note, time.Now(), x.ip) == nil)
 	}
 
-	p := &livePeer{write: canWrite(), admin: x.admin, send: make(chan []byte, 256), cancel: cancel}
+	p := &livePeer{token: x.link.Token, write: canWrite(), admin: x.admin, send: make(chan []byte, 256), cancel: cancel}
 	room, others, ok := a.live.join(n.ID, p)
 	if !ok {
 		c.Close(websocket.StatusTryAgainLater, "full")
+		return
+	}
+	// The note or this link can be deleted between the checks above and the
+	// join, after any close already ran. Look once more now that we are in.
+	if _, _, err := a.db.NoteByLink(x.link.Token); err != nil {
+		a.live.leave(n.ID, room, p)
+		c.Close(websocket.StatusPolicyViolation, "gone")
 		return
 	}
 	defer func() {

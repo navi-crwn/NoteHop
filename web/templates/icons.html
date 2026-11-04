@@ -83,13 +83,13 @@
     </div>
     </div>
     <div class="ed-tools" aria-label="{{.L.T "ed.insert"}}">
-      <button type="button" class="icon-btn sm" data-cmd="bold" title="{{.L.T "ed.bold"}}"><svg><use href="#i-bold"/></svg></button>
-      <button type="button" class="icon-btn sm" data-cmd="h2" title="{{.L.T "ed.heading"}}"><svg><use href="#i-heading"/></svg></button>
-      <button type="button" class="icon-btn sm" data-cmd="todo" title="{{.L.T "ed.todo"}}"><svg><use href="#i-check"/></svg></button>
-      <button type="button" class="icon-btn sm" data-cmd="code" title="{{.L.T "ed.code"}}"><svg><use href="#i-code"/></svg></button>
-      <button type="button" class="icon-btn sm" data-cmd="table" title="{{.L.T "ed.table"}}"><svg><use href="#i-table"/></svg></button>
-      <button type="button" class="icon-btn sm" data-cmd="spoiler" title="{{.L.T "ed.spoiler"}}"><svg><use href="#i-spoiler"/></svg></button>
-      <button type="button" class="icon-btn sm" data-cmd="locked" title="{{.L.T "ed.locked"}}"><svg><use href="#i-lock"/></svg></button>
+      <button type="button" class="icon-btn sm" data-cmd="bold" aria-label="{{.L.T "ed.bold"}}" title="{{.L.T "ed.bold"}}"><svg><use href="#i-bold"/></svg></button>
+      <button type="button" class="icon-btn sm" data-cmd="h2" aria-label="{{.L.T "ed.heading"}}" title="{{.L.T "ed.heading"}}"><svg><use href="#i-heading"/></svg></button>
+      <button type="button" class="icon-btn sm" data-cmd="todo" aria-label="{{.L.T "ed.todo"}}" title="{{.L.T "ed.todo"}}"><svg><use href="#i-check"/></svg></button>
+      <button type="button" class="icon-btn sm" data-cmd="code" aria-label="{{.L.T "ed.code"}}" title="{{.L.T "ed.code"}}"><svg><use href="#i-code"/></svg></button>
+      <button type="button" class="icon-btn sm" data-cmd="table" aria-label="{{.L.T "ed.table"}}" title="{{.L.T "ed.table"}}"><svg><use href="#i-table"/></svg></button>
+      <button type="button" class="icon-btn sm" data-cmd="spoiler" aria-label="{{.L.T "ed.spoiler"}}" title="{{.L.T "ed.spoiler"}}"><svg><use href="#i-spoiler"/></svg></button>
+      <button type="button" class="icon-btn sm" data-cmd="locked" aria-label="{{.L.T "ed.locked"}}" title="{{.L.T "ed.locked"}}"><svg><use href="#i-lock"/></svg></button>
     </div>
     <select class="ed-lang" aria-label="{{.L.T "type.lang"}}"><option value="">{{.L.T "type.lang_auto"}}</option></select>
     {{if ne .AI "off"}}<button type="button" class="btn sm ed-ai" data-ai="{{.AI}}"{{if .AICustom}} data-custom="1"{{end}} title="{{.L.T "ai.title"}}"><svg><use href="#i-spark"/></svg><span>AI</span></button>{{end}}

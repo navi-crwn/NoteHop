@@ -793,6 +793,7 @@ func (a *App) apiDeleteLink(w http.ResponseWriter, r *http.Request) {
 		log.Printf("unlink: %v", err)
 		apiErr(w, http.StatusInternalServerError, "err.link_delete_failed")
 	default:
+		a.live.closeLink(x.note.ID, r.PathValue("link"))
 		writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
 	}
 }
@@ -815,6 +816,7 @@ func (a *App) apiDelete(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInternalServerError, "err.delete_failed")
 		return
 	}
+	a.dropGoneRooms()
 	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
 }
 

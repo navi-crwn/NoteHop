@@ -3,8 +3,10 @@ package app
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net"
 	"net/http"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -30,6 +32,73 @@ func (a *App) cspFor(path string) string {
 	}
 	extra := strings.Join(append(append([]string{}, aiOrigins...), a.cfg.AIOrigins...), " ")
 	return strings.Replace(csp, "connect-src 'self'", "connect-src 'self' "+extra, 1)
+}
+
+// startedWriter remembers whether the response has begun, so a panic that
+// comes late is not answered with a second, mixed-up page.
+type startedWriter struct {
+	http.ResponseWriter
+	started bool
+}
+
+func (w *startedWriter) WriteHeader(code int) {
+	if code >= 200 {
+		w.started = true
+	}
+	w.ResponseWriter.WriteHeader(code)
+}
+
+func (w *startedWriter) Write(b []byte) (int, error) {
+	w.started = true
+	return w.ResponseWriter.Write(b)
+}
+
+func (w *startedWriter) Flush() {
+	w.started = true
+	http.NewResponseController(w.ResponseWriter).Flush()
+}
+
+// Unwrap lets http.ResponseController reach the real writer (live editing needs it).
+func (w *startedWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
+
+// recoverer turns a panic in a handler into a translated 500 page, or the
+// JSON error for the API, and logs it with a stack. Once the response has
+// started there is nothing to swap in, so the connection is cut instead of
+// ending as if the page were complete. net/http's own abort passes through.
+func (a *App) recoverer(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sw := &startedWriter{ResponseWriter: w}
+		defer func() {
+			v := recover()
+			if v == nil {
+				return
+			}
+			if v == http.ErrAbortHandler {
+				panic(v)
+			}
+			// The pattern, not the path: a note's link name is not for the log.
+			log.Printf("panic serving %s %s: %v\n%s", r.Method, r.Pattern, v, debug.Stack())
+			if sw.started {
+				panic(http.ErrAbortHandler)
+			}
+			a.serverError(sw, r)
+		}()
+		next.ServeHTTP(sw, r)
+	})
+}
+
+// serverError answers a fault on our side. It says nothing about the cause.
+func (a *App) serverError(w http.ResponseWriter, r *http.Request) {
+	if strings.HasPrefix(r.URL.Path, "/hop/") {
+		hopFail(w, http.StatusInternalServerError, "server_error", "something went wrong on the server")
+		return
+	}
+	if strings.HasPrefix(r.URL.Path, "/api/") {
+		apiErr(w, http.StatusInternalServerError, "err.internal")
+		return
+	}
+	w.Header().Del("Content-Length")
+	a.render(w, r, http.StatusInternalServerError, "error", pageData{Title: a.locale(w, r).T("title.server_error"), Fault: true, NoIndex: true})
 }
 
 // secure adds security headers, rejects cross-site writes and rate-limits the API.

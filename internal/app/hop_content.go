@@ -210,6 +210,9 @@ func (a *App) hopNoteAction(w http.ResponseWriter, r *http.Request, body []byte)
 		hopServerErr(w, "note action "+q.Action, err)
 		return
 	}
+	if q.Action == "delete" || q.Action == "takedown" {
+		a.dropGoneRooms()
+	}
 	a.audit(r, q.Action, "note:"+strconv.FormatInt(n.ID, 10), map[string]any{"reason": clip(q.Reason, 500), "params": q.Params, "result": res})
 	hopOK(w, res)
 }
@@ -354,6 +357,7 @@ func (a *App) hopReportAction(w http.ResponseWriter, r *http.Request, body []byt
 				hopServerErr(w, "report takedown", err)
 				return
 			}
+			a.dropGoneRooms()
 			res["deleted"], res["hold_days"] = true, 365
 		} else {
 			res["deleted"] = false // already gone

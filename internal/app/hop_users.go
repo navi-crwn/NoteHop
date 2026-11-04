@@ -94,6 +94,7 @@ func (a *App) userAction(u *db.User, q actionReq) (map[string]any, error) {
 		return map[string]any{"revoked": true}, a.db.DeleteOtherSessions(u.ID, "")
 	case "delete_notes":
 		n, err := a.db.DeleteNotesByOwner(u.ID)
+		a.dropGoneRooms()
 		return map[string]any{"deleted_notes": n}, err
 	case "purge":
 		return a.purgeUser(u)
@@ -119,6 +120,7 @@ func (a *App) userAction(u *db.User, q actionReq) (map[string]any, error) {
 // account itself. This is what account.deleted asks for.
 func (a *App) purgeUser(u *db.User) (map[string]any, error) {
 	notes, err := a.db.DeleteNotesByOwner(u.ID)
+	a.dropGoneRooms()
 	if err != nil {
 		return nil, err
 	}

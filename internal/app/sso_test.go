@@ -307,3 +307,35 @@ func TestSSOChainedLogout(t *testing.T) {
 		t.Fatalf("still signed in after logout: %d", code)
 	}
 }
+
+// A ticket that says the account is not active is refused even when the signature is good,
+// and no local account is created for it (the hub never issues one, this is defence in depth).
+func TestSSOTicketStatusClaim(t *testing.T) {
+	srv := newSSOApp(t, true)
+	n := time.Now().Unix()
+	for _, status := range []string{"suspended", "banned", "locked"} {
+		c := noRedirect(t, srv)
+		state := ssoStart(t, c, "/dashboard")
+		tk := signTicket(ssoTicket{Sub: "77" + status, Aud: "notehop", Email: status + "@example.com", Status: status, State: state, Jti: randToken(16), Iat: n, Exp: n + 120}, testSecret)
+		if code, _ := ssoCallback(t, c, tk); code != http.StatusForbidden {
+			t.Errorf("status=%s: %d, want 403", status, code)
+		}
+		res, err := c.hc.Get(srv.URL + "/api/me")
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		if res.StatusCode == http.StatusOK {
+			t.Errorf("status=%s: a session was opened", status)
+		}
+	}
+	// active and absent (older servers) still sign in
+	for _, status := range []string{"active", ""} {
+		c := noRedirect(t, srv)
+		state := ssoStart(t, c, "/dashboard")
+		tk := signTicket(ssoTicket{Sub: "88" + status, Aud: "notehop", Email: "ok" + status + "@example.com", Status: status, State: state, Jti: randToken(16), Iat: n, Exp: n + 120}, testSecret)
+		if code, _ := ssoCallback(t, c, tk); code != http.StatusSeeOther {
+			t.Errorf("status=%q: %d, want 303", status, code)
+		}
+	}
+}

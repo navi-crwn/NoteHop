@@ -35,13 +35,13 @@
     // One level only: an embed inside an embed stays a link.
     NHMD.renderAs(body, e.type, e.body, { noEmbed: true, copy: false });
     box.replaceChildren(h('div.embed-head', NH.icon('link'), h('b', e.title || NH.t('common.untitled')),
-      h('a.embed-open', { href: box.dataset.src, target: '_blank', rel: 'noopener' }, NH.t('embed.open'))), body);
+      h('a.embed-open', { href: box.dataset.src, target: '_blank', rel: 'noopener noreferrer nofollow' }, NH.t('embed.open'))), body);
   }
 
   function embed(box, opts) {
     var ref = parse(box.dataset.src);
     if (!ref || opts.noEmbed) {
-      box.replaceChildren(h('a', { href: box.dataset.src, target: '_blank', rel: 'noopener noreferrer' }, NH.icon('link'), box.dataset.src || NH.t('embed.bad')));
+      box.replaceChildren(h('a', { href: box.dataset.src, target: '_blank', rel: 'noopener noreferrer nofollow' }, NH.icon('link'), box.dataset.src || NH.t('embed.bad')));
       return;
     }
     var e = embeds[ref.token];
