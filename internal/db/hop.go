@@ -426,6 +426,37 @@ func (d *DB) AddReport(r *Report) error {
 	return nil
 }
 
+// RewriteReportNotes passes every stored report text through clean and saves the
+// ones it changed, returning how many.
+func (d *DB) RewriteReportNotes(clean func(string) string) (int, error) {
+	rows, err := d.Query(`SELECT id, note FROM reports WHERE note <> ''`)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+	changed := map[int64]string{}
+	for rows.Next() {
+		var id int64
+		var note string
+		if err := rows.Scan(&id, &note); err != nil {
+			return 0, err
+		}
+		if c := clean(note); c != note {
+			changed[id] = c
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return 0, err
+	}
+	rows.Close()
+	for id, note := range changed {
+		if _, err := d.Exec(`UPDATE reports SET note = ? WHERE id = ?`, note, id); err != nil {
+			return 0, err
+		}
+	}
+	return len(changed), nil
+}
+
 // ReportsFrom counts reports one address sent since `since`, for the limit.
 func (d *DB) ReportsFrom(ipHash string, since int64) (int, error) {
 	var n int

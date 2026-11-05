@@ -32,10 +32,17 @@ func (p *wsPeer) stillWorks() bool {
 
 func liveRoomsGone(t *testing.T, a *App) {
 	t.Helper()
+	liveRoomsLeft(t, a, 0)
+}
+
+// liveRoomsLeft waits for the count to settle: a closed peer's connection ends the
+// moment it is cancelled, and its handler leaves the room just after that.
+func liveRoomsLeft(t *testing.T, a *App, want int) {
+	t.Helper()
 	deadline := time.Now().Add(3 * time.Second)
-	for a.live.count() != 0 {
+	for a.live.count() != want {
 		if time.Now().After(deadline) {
-			t.Fatalf("%d live room(s) still open", a.live.count())
+			t.Fatalf("%d live room(s) open, want %d", a.live.count(), want)
 		}
 		time.Sleep(20 * time.Millisecond)
 	}
@@ -116,9 +123,7 @@ func TestLiveJanitorClosesExpiredRoomOnly(t *testing.T) {
 	if !reader.serverClosed() || !writer.serverClosed() {
 		t.Fatal("peers of an expired note are still connected")
 	}
-	if got := a.live.count(); got != 1 {
-		t.Fatalf("rooms: %d", got)
-	}
+	liveRoomsLeft(t, a, 1)
 	if !keptWriter.stillWorks() {
 		t.Fatal("room of a valid note was closed")
 	}

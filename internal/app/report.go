@@ -31,8 +31,10 @@ const (
 // A note's key and owner token live in the link's #fragment (#k=…, #a=…). A
 // reporter who pastes the full link would hand them to whoever reads the queue,
 // and the control center forwards report text on. The report already carries
-// the link token, so the key part is dropped before the text is stored.
-var keyFragment = regexp.MustCompile(`(?i)([#&?;])(k|a)(?:=|%3d)[A-Za-z0-9_%-]{8,}`)
+// the link token, so the key part is dropped before the text is stored. The
+// separators may be percent-encoded (%23k=, %23k%3D, also encoded twice), and a
+// pasted key may stand alone (k=…), but "task=…" is not one.
+var keyFragment = regexp.MustCompile(`(?i)(^|[^a-z0-9_]|%(?:25)*(?:23|26|3f|3b))(k|a)(?:=|%(?:25)*3d)[A-Za-z0-9_%-]{8,}`)
 
 func scrubKeyFragments(s string) string { return keyFragment.ReplaceAllString(s, "${1}${2}=[removed]") }
 

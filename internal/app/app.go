@@ -144,6 +144,12 @@ func (a *App) Handler() http.Handler { return a.secure(a.recoverer(a.shareGate(a
 // and sessions and runs the jobs of note features, until ctx ends.
 func (a *App) Janitor(ctx context.Context) {
 	go a.runWatch(ctx)
+	// Reports stored before the scrub knew a spelling; a clean row is not written.
+	if n, err := a.db.RewriteReportNotes(scrubKeyFragments); err != nil {
+		log.Printf("janitor: %v", err)
+	} else if n > 0 {
+		log.Printf("janitor: removed note keys from %d report(s)", n)
+	}
 	t := time.NewTicker(time.Minute)
 	defer t.Stop()
 	for {

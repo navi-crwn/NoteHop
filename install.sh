@@ -255,10 +255,10 @@ fi
 
 # --- 6. Install --------------------------------------------------------------------
 hdr "Installing"
-mkdir -p "$DATA"
+[ "$DRY" = 1 ] || mkdir -p "$DATA"
 VERSION="$(git describe --tags --always --dirty 2>/dev/null || echo dev)"
 if [ "$RUN" != docker ]; then
-  mkdir -p bin
+  [ "$DRY" = 1 ] || mkdir -p bin
   step "Building NoteHop $VERSION" env CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=$VERSION" -o bin/notehop ./cmd/notehop
 fi
 
