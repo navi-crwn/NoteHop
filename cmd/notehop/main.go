@@ -39,6 +39,28 @@ func envInt(key string, def int) int {
 }
 
 // envList reads "a, b,c" as lowercase names.
+// envListOr is envList with a default for an unset variable; set it empty
+// ("NOTEHOP_NOTES_CLIENTS=") to turn the list off.
+func envListOr(key, def string) []string {
+	if _, set := os.LookupEnv(key); !set {
+		os.Setenv(key, def)
+		defer os.Unsetenv(key)
+	}
+	return envList(key)
+}
+
+// ownSecrets reads HOP_SSO_SECRET_<APP> for each app that has one (32+ chars).
+func ownSecrets(apps []string) map[string]string {
+	out := map[string]string{}
+	for _, app := range apps {
+		key := "HOP_SSO_SECRET_" + strings.ToUpper(strings.ReplaceAll(app, "-", "_"))
+		if v := os.Getenv(key); len(v) >= 32 {
+			out[app] = v
+		}
+	}
+	return out
+}
+
 func envList(key string) []string {
 	var out []string
 	for _, v := range strings.Split(os.Getenv(key), ",") {
@@ -165,6 +187,8 @@ func main() {
 		Reserved:       envList("NOTEHOP_RESERVED"),
 		Contact:        env("NOTEHOP_CONTACT", ""),
 		HopClients:     envList("NOTEHOP_HOP_CLIENTS"),
+		NotesClients:   envListOr("NOTEHOP_NOTES_CLIENTS", "biohop"),
+		NotesSecrets:   ownSecrets(envListOr("NOTEHOP_NOTES_CLIENTS", "biohop")),
 		SSHAddr:        env("NOTEHOP_SSH_ADDR", ""),
 		Version:        version,
 	}
