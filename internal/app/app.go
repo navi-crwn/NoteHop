@@ -46,18 +46,20 @@ type Config struct {
 	StoragePath    string // filesystem holding SQLite, including its WAL
 	MinFreeMB      int
 	MinFreePercent int
-	FilesPerIPMB   int      // attachments one address may upload per 24 hours; 0 = no limit
-	AI             string   // writing help: "on" (on-device + own API key), "device" (on-device only), "off"
-	GitHub         string   // "owner/name" of the source repository, for the home page's numbers; "-" hides them
-	AIOrigins      []string // extra API origins for "Other" (OpenAI-compatible) providers, e.g. a company proxy
-	PrivateHooks   bool     // let Watch webhooks reach private/loopback addresses (and plain http)
-	TelegramToken  string   // bot token from @BotFather; empty turns the bot off
-	Admins         []string // usernames given the admin role at start, if those accounts exist (NOTEHOP_ADMINS)
-	Reserved       []string // extra reserved names, e.g. upcoming campaigns
-	Contact        string   // shown on /contact: an email address or URL
-	HopClients     []string // apps that may call /hop/* with the SSO secret: the control center and the account server
-	SSHAddr        string   // where SSH for public notes listens; empty = off (reported to the control center only)
-	Version        string   // build version, for /hop/health
+	FilesPerIPMB   int               // attachments one address may upload per 24 hours; 0 = no limit
+	AI             string            // writing help: "on" (on-device + own API key), "device" (on-device only), "off"
+	GitHub         string            // "owner/name" of the source repository, for the home page's numbers; "-" hides them
+	AIOrigins      []string          // extra API origins for "Other" (OpenAI-compatible) providers, e.g. a company proxy
+	PrivateHooks   bool              // let Watch webhooks reach private/loopback addresses (and plain http)
+	TelegramToken  string            // bot token from @BotFather; empty turns the bot off
+	Admins         []string          // usernames given the admin role at start, if those accounts exist (NOTEHOP_ADMINS)
+	Reserved       []string          // extra reserved names, e.g. upcoming campaigns
+	Contact        string            // shown on /contact: an email address or URL
+	HopClients     []string          // apps that may call /hop/* with the SSO secret: the control center and the account server
+	NotesClients   []string          // HOP apps that may list a member's public notes (GET /api/v1/me/notes): BioHop's note picker
+	NotesSecrets   map[string]string // a notes client's own HOP_SSO_SECRET_<APP>, when the family keeps one secret per app
+	SSHAddr        string            // where SSH for public notes listens; empty = off (reported to the control center only)
+	Version        string            // build version, for /hop/health
 }
 
 // Link is a related site shown in the footer (NOTEHOP_LINKS="Name=https://…").
@@ -272,6 +274,7 @@ func (a *App) routes() {
 	m.HandleFunc("POST /api/logout", a.apiLogout)
 	m.HandleFunc("GET /api/me", a.apiMe)
 	m.HandleFunc("GET /api/me/notes", a.apiMyNotes)
+	m.HandleFunc("GET /api/v1/me/notes", a.apiMyNotesForApp) // signed, server to server (mynotes.go)
 	m.HandleFunc("POST /api/vault", a.apiVault)
 	m.HandleFunc("POST /api/me/recovery", a.apiSetRecovery)
 	m.HandleFunc("POST /api/me/secret", a.apiChangeSecret)
