@@ -213,6 +213,23 @@ Die Tests laufen mit `go test -race ./...` und `./scripts/e2e-all.sh`.
 
 <a id="family"></a>
 
+## Selbst hosten
+
+<!-- self-hosting:start -->
+Alles, was NoteHop braucht, liegt in öffentlichen Repositorys: kein privates Repository, kein Token und kein hel.ink-Konto. Details stehen in der Familienanleitung: [docs/self-hosting.md](https://github.com/navi-crwn/HEL.ink/blob/main/docs/self-hosting.md) (Englisch).
+
+| Baustein | Für NoteHop | Wozu |
+| --- | --- | --- |
+| [HEL.ink](https://github.com/navi-crwn/HEL.ink) (Hub, HOP ID) | Optional: ergänzt „Mit HOP ID anmelden“ | Konten und Anmeldung für alle Apps |
+| [Imperium](https://github.com/navi-crwn/Imperium) | Optional | Admin-Panel für die ganze Familie; braucht den Hub |
+| Familien-Schriften und -Kacheln | Nichts zu installieren: kommen von `hel.ink/hop-assets` | Ohne hel.ink: Systemschriften, keine schwebenden Kacheln |
+
+- **Reihenfolge**: NoteHop allein mit `./install.sh`. Für die Anmeldung mit HOP ID zuerst der [Hub](https://github.com/navi-crwn/HEL.ink): `./install.sh --hub new` installiert einen daneben.
+- **Mindest-Einstellungen**: `NOTEHOP_BASE_URL`; mit Hub: `NOTEHOP_SSO_URL`, `NOTEHOP_SSO_CLIENT=notehop`, `NOTEHOP_SSO_SECRET`.
+- **Allein oder in der Familie**: NoteHop läuft allein mit eigenen Konten. Mit einem Hub kann man sich zusätzlich mit HOP ID anmelden und überall zugleich abmelden.
+- **Ohne Imperium**: NoteHop läuft weiter; Notizen sperrst du mit `notehop takedown` und `notehop backup` auf dem Server.
+<!-- self-hosting:end -->
+
 ## Die Hop-Familie
 
 NoteHop gehört zur HOP-Familie datenschutzfreundlicher, selbst betreibbarer Open-Source-Apps.
@@ -227,5 +244,5 @@ NoteHop gehört zur HOP-Familie datenschutzfreundlicher, selbst betreibbarer Ope
 | **PixelHop** | [pixel.hel.ink](https://pixel.hel.ink) · `p.hel.ink/…` | [navi-crwn/PixelHop](https://github.com/navi-crwn/PixelHop) | Image hosting with albums and direct links. |
 | **NoteHop** | [note.hel.ink](https://note.hel.ink) · `n.hel.ink/…` | [navi-crwn/NoteHop](https://github.com/navi-crwn/NoteHop) | Encrypted notes you share with a link. |
 | **FileHop** | [file.hel.ink](https://file.hel.ink) | [navi-crwn/FileHop](https://github.com/navi-crwn/FileHop) | Convert files in your browser; nothing is uploaded. |
-| **Imperium** | private (owner only) | private | The HOP control panel. |
+| **Imperium** | not public-facing: optional, for admins | [navi-crwn/Imperium](https://github.com/navi-crwn/Imperium) | The HOP control panel. |
 <!-- hop-family:end -->

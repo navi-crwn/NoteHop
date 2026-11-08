@@ -213,6 +213,23 @@ docker run -d -p 127.0.0.1:8090:8080 -v notehop:/data -e NOTEHOP_BASE_URL=https:
 
 <a id="family"></a>
 
+## 自行托管
+
+<!-- self-hosting:start -->
+NoteHop 所需的一切都在公开仓库中：不需要私有仓库、令牌或 hel.ink 账户。详细说明见家族指南：[docs/self-hosting.md](https://github.com/navi-crwn/HEL.ink/blob/main/docs/self-hosting.md)（英文）。
+
+| 组件 | 对 NoteHop 而言 | 作用 |
+| --- | --- | --- |
+| [HEL.ink](https://github.com/navi-crwn/HEL.ink) (中心，HOP ID) | 可选：增加“使用 HOP ID 登录” | 所有应用的账户与登录 |
+| [Imperium](https://github.com/navi-crwn/Imperium) | 可选 | 整个家族的管理面板；需要中心 |
+| 家族字体与浮动图块 | 无需安装：从 `hel.ink/hop-assets` 加载 | 无法访问 hel.ink 时：使用系统字体，没有浮动图块 |
+
+- **安装顺序**：用 `./install.sh` 单独安装 NoteHop。如需 HOP ID 登录，先装[中心](https://github.com/navi-crwn/HEL.ink)：`./install.sh --hub new` 会在旁边装一个。
+- **最少设置**：`NOTEHOP_BASE_URL`; 连接中心时: `NOTEHOP_SSO_URL`, `NOTEHOP_SSO_CLIENT=notehop`, `NOTEHOP_SSO_SECRET`。
+- **单独运行或加入家族**：NoteHop 可带自己的账户单独运行。连接中心后，用户还可以用 HOP ID 登录，并一次退出所有应用。
+- **没有 Imperium 时**：NoteHop 照常运行；下架笔记可用 服务器上的 `notehop takedown` 和 `notehop backup`。
+<!-- self-hosting:end -->
+
 ## HOP 家族
 
 NoteHop 是 HOP 家族的一员，这是一组尊重隐私、可自托管的开源应用。
@@ -227,5 +244,5 @@ NoteHop 是 HOP 家族的一员，这是一组尊重隐私、可自托管的开�
 | **PixelHop** | [pixel.hel.ink](https://pixel.hel.ink) · `p.hel.ink/…` | [navi-crwn/PixelHop](https://github.com/navi-crwn/PixelHop) | Image hosting with albums and direct links. |
 | **NoteHop** | [note.hel.ink](https://note.hel.ink) · `n.hel.ink/…` | [navi-crwn/NoteHop](https://github.com/navi-crwn/NoteHop) | Encrypted notes you share with a link. |
 | **FileHop** | [file.hel.ink](https://file.hel.ink) | [navi-crwn/FileHop](https://github.com/navi-crwn/FileHop) | Convert files in your browser; nothing is uploaded. |
-| **Imperium** | private (owner only) | private | The HOP control panel. |
+| **Imperium** | not public-facing: optional, for admins | [navi-crwn/Imperium](https://github.com/navi-crwn/Imperium) | The HOP control panel. |
 <!-- hop-family:end -->
