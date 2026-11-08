@@ -5,6 +5,7 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 ## Unreleased
 
 ### Fixed
+- `GET /api/me/notes` names a basic note from its own text (`title`), so the dashboard can show it when the owner blob is empty or the vault is closed; an encrypted note keeps an empty title without the key. Each row links through the note's first read-only link when it has one. `POST /api/n/{token}/claim` also lets the owner seal the key of a note already in the account whose blob is empty (made while the vault was closed).
 - A decoy password now answers exactly as the note does to a stranger, even on the owner link and in the owner's signed-in browser: no Owner badge, no editor, no link list and no "someone opened the decoy" report. Until now the owner's own page gave the decoy away, which is the one situation it exists for. A decoy opening still spends a view like a real one, so a view counter can't tell them apart either; the settings now say so.
 
 ### Changed

@@ -375,8 +375,13 @@ func (d *DB) BurnKeys(noteID int64) (map[string]BurnKey, error) {
 // ---------- claiming and configs ----------
 
 // Claim gives an ownerless note to a user (notes made before signing in).
+// Claim puts a guest note into an account. The same account may also claim a
+// note it already owns but whose blob is empty (made while its vault was
+// closed): that seals the key into the vault at last, so the dashboard can
+// open the note again. A note in another account is never moved.
 func (d *DB) Claim(noteID, userID int64, blob string) error {
-	return deleted(d.Exec(`UPDATE notes SET owner_id = ?, owner_blob = ? WHERE id = ? AND owner_id IS NULL`, userID, blob, noteID))
+	return deleted(d.Exec(`UPDATE notes SET owner_id = ?, owner_blob = ? WHERE id = ?
+		AND (owner_id IS NULL OR (owner_id = ? AND owner_blob = ''))`, userID, blob, noteID, userID))
 }
 
 // NotesWithConfig lists notes whose config mentions key, for worker jobs.

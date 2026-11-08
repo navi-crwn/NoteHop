@@ -131,7 +131,7 @@ Everything is JSON. Headers: `X-Admin` (owner token), `X-Write` (proof of the ke
 | `POST /api/n/{token}/votes` | X-Write | `{poll, option, voter}` for `:::poll` blocks; `voter` is a random browser ID, one vote per voter (can be changed), at most 20 new voters per network |
 | `POST /api/n/{token}/burns` · `…/burns/{id}/reveal` | owner / X-Write | `:::burn` blocks: the block's key is stored apart, opened once, then deleted |
 | `PUT` · `DELETE /api/n/{token}/decoy` | owner | Decoy password: a second ciphertext; its openings are logged for the owner |
-| `POST /api/n/{token}/claim` | account owner + X-Admin | Move a guest note into the account |
+| `POST /api/n/{token}/claim` | account owner + X-Admin | Move a guest note into the account, or seal the key of a note already in this account whose `owner_blob` is empty (made while the vault was closed); 409 for a note in another account |
 | `POST /api/n/{token}/links` · `DELETE …/links/{t}` | owner | Add / turn off a link |
 | `PUT /api/n/{token}/links/{link}` | owner, basic notes | Rename a link `{slug}`; the old name is held for the owner for 90 days |
 | `POST /api/n/{token}/convert` | owner + X-Admin | Change a note between basic and encrypted `{to: "basic"\|"encrypted", content, version}`; the browser prepares `content`. Refused when the note has entries, suggestions, a decoy, burn blocks, an inbox or sign-offs, or is a frozen copy |
@@ -148,7 +148,8 @@ Everything is JSON. Headers: `X-Admin` (owner token), `X-Write` (proof of the ke
 | `GET /raw/{token}` | anyone | Plain text (basic notes only) |
 | `GET /@{username}` | anyone | Public profile (the basic notes its owner picked) |
 | `GET /api/repo` | anyone | GitHub numbers for the home page (cached for an hour): `{repo, url, stars, forks, issues, license, pushed, langs, weeks}`. 404 when `NOTEHOP_GITHUB=-`, 503 before the first successful fetch |
-| `POST /api/register` · `/api/login` · `/api/logout`, `GET /api/me`, `GET /api/me/notes` | | Accounts |
+| `POST /api/register` · `/api/login` · `/api/logout`, `GET /api/me` | | Accounts |
+| `GET /api/me/notes` | account | Dashboard rows: `token` (the note's first read-only link, else its first link), `mode`, `blob` (the owner's vault-sealed title and keys, opaque to the server), `encrypted`, `title` (basic notes only: the plain-text title the server can read anyway, so a note with an empty blob still has a name; always `""` for an encrypted note), counters and times |
 | `GET /auth/sso` · `GET /auth/sso/callback` | | Single sign-on (HMAC ticket, `aud`, `state` + `nh_sso` cookie, one-time `jti`) |
 | `POST /api/vault` | SSO account | `{check}`: store the vault phrase check the first time (201), or verify it (200 / 401). The answer includes `vault_wrap` |
 | `POST /api/me/recovery` | account | `{current, codes:[{proof, wrap}]×8}`: replace all recovery codes (needs the current secret) |

@@ -346,7 +346,8 @@ func (a *App) apiVote(w http.ResponseWriter, r *http.Request) {
 
 // ---------- claiming ----------
 
-// apiClaim puts a note made before signing in into the signed-in account.
+// apiClaim puts a note made before signing in into the signed-in account, or
+// seals the key of a note already in the account whose blob is still empty.
 // Needs the admin link (proof of ownership) and a vault-sealed blob.
 func (a *App) apiClaim(w http.ResponseWriter, r *http.Request) {
 	x, ok := a.access(w, r)
