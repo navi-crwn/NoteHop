@@ -143,3 +143,25 @@ func TestMyNotesOwnSecretAndOff(t *testing.T) {
 		t.Fatalf("no notes clients configured: %d %v", code, env)
 	}
 }
+
+func TestMyNotesPickerSecret(t *testing.T) {
+	picker := strings.Repeat("p", 40)
+	own := strings.Repeat("b", 40)
+	srv, _, _ := hopApp(t, Config{NotesClients: []string{"biohop"}, NotesSecrets: map[string]string{"biohop": own}, PickerSecret: picker})
+	ssoUser(t, srv, "41", "ana@example.com", nil)
+	if code, _ := notesCall(t, srv, "biohop", picker, "41", "/api/v1/me/notes"); code != 200 {
+		t.Fatalf("picker secret: %d", code)
+	}
+	if code, _ := notesCall(t, srv, "biohop", own, "41", "/api/v1/me/notes"); code != 200 {
+		t.Fatalf("the app's own secret keeps working during the move: %d", code)
+	}
+	if code, _ := notesCall(t, srv, "biohop", testSecret, "41", "/api/v1/me/notes"); code != 401 {
+		t.Fatalf("the shared SSO secret is not accepted when the app has its own: %d", code)
+	}
+
+	short, _, _ := hopApp(t, Config{NotesClients: []string{"biohop"}, PickerSecret: "short"})
+	ssoUser(t, short, "41", "ana@example.com", nil)
+	if code, _ := notesCall(t, short, "biohop", "short", "41", "/api/v1/me/notes"); code != 401 {
+		t.Fatalf("a short picker secret must not verify anything: %d", code)
+	}
+}

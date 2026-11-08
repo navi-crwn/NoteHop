@@ -189,6 +189,7 @@ func main() {
 		HopClients:     envList("NOTEHOP_HOP_CLIENTS"),
 		NotesClients:   envListOr("NOTEHOP_NOTES_CLIENTS", "biohop"),
 		NotesSecrets:   ownSecrets(envListOr("NOTEHOP_NOTES_CLIENTS", "biohop")),
+		PickerSecret:   env("HOP_PICKER_SECRET", ""),
 		SSHAddr:        env("NOTEHOP_SSH_ADDR", ""),
 		Version:        version,
 	}
