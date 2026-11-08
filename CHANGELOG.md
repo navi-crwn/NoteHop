@@ -5,6 +5,7 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 ## Unreleased
 
 ### Added
+- FileHop (file.hel.ink), the sixth HOP app, is in the HOP family list: the dashboard sidebar, the app switcher and the footer (from the bundled asset manifest), the README family table in all nine languages, and the family table on the documentation site.
 - `GET /api/v1/me/notes` for the note picker in the other HOP apps (BioHop's "Choose from NoteHop"). Only an app named in `NOTEHOP_NOTES_CLIENTS` (default `biohop`, empty turns it off) may call it, server to server, signed with the HOP App Protocol (its own `HOP_SSO_SECRET_<APP>` when it has one, else `NOTEHOP_SSO_SECRET`) and with `X-HOP-Actor` set to the member's HOP ID. It lists that member's public notes that have a read-only link, newest first, `{ok, data: {items: [{id, title, url, updated}], next}}`, with `?q=` on the title, `?limit=` up to 50 and a cursor. Never listed: encrypted notes (the key stays in the member's browser, and a keyless link shows visitors nothing), notes shared only with an edit, append, check or suggest link (a public page would hand those rights to everyone), notes with a content warning, burn-after-reading notes, expired notes and notes a feature holds back before reading. A browser session cannot use the route.
 
 ## [Unreleased]
