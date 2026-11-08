@@ -4,6 +4,9 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## Unreleased
 
+### Changed
+- HOP family assets move to hop-assets v4: FileHop's new pixel mark in the family list, the app switcher and the footer (bundled manifest), and the copied home engine with FileHop's matching 3D map. `scripts/sync-hop-assets.sh` copies from v4.
+
 ### Security
 - `HOP_PICKER_SECRET` (32+ characters) verifies `GET /api/v1/me/notes` with a secret the hub never uses. Until now NoteHop had to hold BioHop's sign-in secret (`HOP_SSO_SECRET_BIOHOP`) to verify the note picker, so a leak here could forge a hub ticket for BioHop. It is accepted next to the older secrets while the family moves; once BioHop signs with it (navi-crwn/BioHop `fix/picker-secret`), remove `HOP_SSO_SECRET_BIOHOP` from this server.
 
