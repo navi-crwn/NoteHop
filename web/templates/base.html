@@ -48,7 +48,7 @@
     </nav>
     <p class="shell-label">{{.L.T "dash.family"}}</p>
     <nav class="shell-nav shell-family" aria-label="{{.L.T "dash.family"}}">
-      {{range .HopFamily}}<a href="{{.URL}}"><img src="{{(index .Icons "mark").URL}}" alt="" width="18" height="18" loading="lazy">{{if eq .Slug "hub"}}HOP ID{{else}}{{.Name}}{{end}}<svg class="out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M8 7h9v9"/></svg></a>{{end}}
+      {{range .HopFamily}}<a href="{{if $.Hub}}{{$.Hub}}/{{if eq .Slug "hub"}}dashboard{{else}}apps/{{.Slug}}{{end}}{{else}}{{.URL}}{{end}}"><img src="{{(index .Icons "mark").URL}}" alt="" width="18" height="18" loading="lazy">{{if eq .Slug "hub"}}HOP ID{{else}}{{.Name}}{{end}}<svg class="out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M8 7h9v9"/></svg></a>{{end}}
     </nav>
     <p class="shell-side-foot"><a href="/changelog">{{.L.T "changelog.title"}}</a> · <a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a></p>
   </aside>

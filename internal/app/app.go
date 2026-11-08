@@ -307,6 +307,7 @@ type pageData struct {
 	Mode          string
 	SSO           bool // show "Continue with <SSOName>"
 	SSOName       string
+	Hub           string   // the account server, when SSO is on: the family sidebar opens other apps through its launcher
 	SSOVia        []Link   // provider buttons, from NOTEHOP_SSO_PROVIDERS
 	AI            string   // writing help mode (Config.AI), for the editor
 	AICustom      bool     // operator allowed extra AI origins
@@ -360,6 +361,7 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	}
 	if d.SSO {
 		d.SSOVia = a.cfg.SSOProviders
+		d.Hub = strings.TrimRight(a.cfg.SSOURL, "/")
 	}
 	d.Origin = a.origin(r)
 	d.Main, d.Share = a.cfg.BaseURL, a.shareURL()

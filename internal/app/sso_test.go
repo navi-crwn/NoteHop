@@ -339,3 +339,34 @@ func TestSSOTicketStatusClaim(t *testing.T) {
 		}
 	}
 }
+
+// Signed in through the hub, the family sidebar opens every other app through the hub's
+// launcher (/apps/{slug}), which signs the person in there too. The bare app address
+// would land them signed out in an app they have not used yet.
+func TestSSOFamilyLinksOpenThroughHub(t *testing.T) {
+	srv := newSSOApp(t, true)
+	c := noRedirect(t, srv)
+	state := ssoStart(t, c, "/dashboard")
+	if code, _ := ssoCallback(t, c, ticketFor("42", state)); code != http.StatusSeeOther {
+		t.Fatalf("callback: %d", code)
+	}
+	resp, err := c.hc.Get(c.srv.URL + "/dashboard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	b, _ := io.ReadAll(resp.Body)
+	parts := strings.SplitN(string(b), `class="shell-nav shell-family"`, 2)
+	if resp.StatusCode != 200 || len(parts) != 2 {
+		t.Fatalf("dashboard: %d, sidebar found: %v", resp.StatusCode, len(parts) == 2)
+	}
+	side, _, _ := strings.Cut(parts[1], "</nav>")
+	for _, want := range []string{`href="https://accounts.test/dashboard"`, `href="https://accounts.test/apps/linkhop"`, `href="https://accounts.test/apps/filehop"`} {
+		if !strings.Contains(side, want) {
+			t.Errorf("family sidebar lacks %s", want)
+		}
+	}
+	if strings.Contains(side, `href="https://file.hel.ink"`) {
+		t.Error("family sidebar links FileHop by its bare address")
+	}
+}
