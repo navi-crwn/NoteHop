@@ -213,6 +213,23 @@ docker run -d -p 127.0.0.1:8090:8080 -v notehop:/data -e NOTEHOP_BASE_URL=https:
 
 <a id="family"></a>
 
+## セルフホスティング
+
+<!-- self-hosting:start -->
+NoteHop に必要なものはすべて公開リポジトリにあります。非公開リポジトリ、トークン、hel.ink のアカウントは不要です。詳しくはファミリーガイド [docs/self-hosting.md](https://github.com/navi-crwn/HEL.ink/blob/main/docs/self-hosting.md)（英語）を参照してください。
+
+| 構成要素 | NoteHop にとって | 役割 |
+| --- | --- | --- |
+| [HEL.ink](https://github.com/navi-crwn/HEL.ink) (ハブ、HOP ID) | 任意：「HOP ID でサインイン」を追加 | すべてのアプリのアカウントとサインイン |
+| [Imperium](https://github.com/navi-crwn/Imperium) | 任意 | ファミリー全体の管理パネル。ハブが必要 |
+| ファミリーのフォントとタイル | インストール不要：`hel.ink/hop-assets` から読み込み | hel.ink がなければシステムフォント、浮遊タイルなし |
+
+- **インストール順**：NoteHop は `./install.sh` だけで動きます。HOP ID でのサインインには先に[ハブ](https://github.com/navi-crwn/HEL.ink)を。`./install.sh --hub new` が隣にインストールします。
+- **最小限の設定**：`NOTEHOP_BASE_URL`; ハブ利用時: `NOTEHOP_SSO_URL`, `NOTEHOP_SSO_CLIENT=notehop`, `NOTEHOP_SSO_SECRET`。
+- **単体かファミリーか**：NoteHop は独自のアカウントで単体で動きます。ハブがあれば HOP ID でサインインでき、全アプリから一度にサインアウトできます。
+- **Imperium なしの場合**：NoteHop はそのまま動きます。ノートの削除には サーバー上の `notehop takedown` と `notehop backup` を使います。
+<!-- self-hosting:end -->
+
 ## Hop ファミリー
 
 NoteHop は、プライバシーを尊重し、自分で運用できるオープンソースアプリの HOP ファミリーの一員です。
@@ -227,5 +244,5 @@ NoteHop は、プライバシーを尊重し、自分で運用できるオープ
 | **PixelHop** | [pixel.hel.ink](https://pixel.hel.ink) · `p.hel.ink/…` | [navi-crwn/PixelHop](https://github.com/navi-crwn/PixelHop) | Image hosting with albums and direct links. |
 | **NoteHop** | [note.hel.ink](https://note.hel.ink) · `n.hel.ink/…` | [navi-crwn/NoteHop](https://github.com/navi-crwn/NoteHop) | Encrypted notes you share with a link. |
 | **FileHop** | [file.hel.ink](https://file.hel.ink) | [navi-crwn/FileHop](https://github.com/navi-crwn/FileHop) | Convert files in your browser; nothing is uploaded. |
-| **Imperium** | private (owner only) | private | The HOP control panel. |
+| **Imperium** | not public-facing: optional, for admins | [navi-crwn/Imperium](https://github.com/navi-crwn/Imperium) | The HOP control panel. |
 <!-- hop-family:end -->

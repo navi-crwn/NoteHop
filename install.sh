@@ -21,6 +21,9 @@ warn() { printf ' %s!%s %s\n' "$Y" "$Z" "$*" >&2; }
 bad()  { printf ' %s✗%s %s\n' "$R" "$Z" "$*" >&2; }
 die()  { bad "$*"; exit 1; }
 have() { command -v "$1" >/dev/null 2>&1; }
+# PHP_BIN: the PHP that runs the hub's artisan, chosen as the hub installer does: PHP_BIN from the
+# environment, else php8.3 when it is installed, else php.
+if [ -z "${PHP_BIN:-}" ]; then if have php8.3; then PHP_BIN=php8.3; else PHP_BIN=php; fi; fi
 
 YES=0; DRY=0; STAR=ask; INTERACTIVE=0
 [ -t 0 ] && INTERACTIVE=1
@@ -248,7 +251,7 @@ if [ "$HUB" = new ]; then
   if [ "$DRY" = 0 ]; then
     # NoteHop signs in with its own secret and callback from the hub's app registry: add its row there.
     HUB_SECRET="$(rand_hex 32)"
-    (cd "$HUB_DIR" && HOP_APP_SECRET="$HUB_SECRET" HOP_APP_URL="$URL" php artisan tinker --execute='App\Models\HopApp::updateOrCreate(["slug" => "notehop"], ["name" => "NoteHop", "url" => getenv("HOP_APP_URL"), "callback_path" => "/auth/sso/callback", "start_path" => "/auth/sso", "status" => "active", "secret" => getenv("HOP_APP_SECRET"), "icon" => "note", "color" => "emerald", "sort_order" => 40]);' >/dev/null 2>&1) && ok "Registered NoteHop in the hub's app registry" || die "Could not register NoteHop at the hub"
+    (cd "$HUB_DIR" && HOP_APP_SECRET="$HUB_SECRET" HOP_APP_URL="$URL" "$PHP_BIN" artisan tinker --execute='App\Models\HopApp::updateOrCreate(["slug" => "notehop"], ["name" => "NoteHop", "url" => getenv("HOP_APP_URL"), "callback_path" => "/auth/sso/callback", "start_path" => "/auth/sso", "status" => "active", "secret" => getenv("HOP_APP_SECRET"), "capabilities" => ["admin_api", "events", "metrics", "zero_knowledge"], "icon" => "note", "color" => "emerald", "sort_order" => 40]); echo "hop-registered";' 2>&1 | grep "^hop-registered$" >/dev/null) && ok "Registered NoteHop in the hub's app registry" || die "Could not register NoteHop at the hub"
   fi
   hdr "Back to NoteHop"
 fi
@@ -287,7 +290,7 @@ fi
 
 if [ "$HUB" = new ] && [ "$DRY" = 0 ] && [ -f "$HUB_DIR/.env" ]; then
   set_env "$HUB_DIR/.env" NOTEHOP_URL "$URL"; set_env "$HUB_DIR/.env" NOTEHOP_ENABLED true
-  (cd "$HUB_DIR" && php artisan config:clear >/dev/null 2>&1 && php artisan optimize >/dev/null 2>&1) && ok "Registered NoteHop in the hub's list of apps"
+  (cd "$HUB_DIR" && "$PHP_BIN" artisan config:clear >/dev/null 2>&1 && "$PHP_BIN" artisan optimize >/dev/null 2>&1) && ok "Registered NoteHop in the hub's list of apps"
 fi
 
 # --- 7. Run scripts ---------------------------------------------------------------------
