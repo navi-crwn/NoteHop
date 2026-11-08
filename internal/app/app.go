@@ -58,6 +58,7 @@ type Config struct {
 	HopClients     []string          // apps that may call /hop/* with the SSO secret: the control center and the account server
 	NotesClients   []string          // HOP apps that may list a member's public notes (GET /api/v1/me/notes): BioHop's note picker
 	NotesSecrets   map[string]string // a notes client's own HOP_SSO_SECRET_<APP>, when the family keeps one secret per app
+	PickerSecret   string            // HOP_PICKER_SECRET: verifies picker calls with a secret the hub never uses (32+ chars)
 	SSHAddr        string            // where SSH for public notes listens; empty = off (reported to the control center only)
 	Version        string            // build version, for /hop/health
 }

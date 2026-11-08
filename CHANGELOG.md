@@ -4,6 +4,9 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## Unreleased
 
+### Security
+- `HOP_PICKER_SECRET` (32+ characters) verifies `GET /api/v1/me/notes` with a secret the hub never uses. Until now NoteHop had to hold BioHop's sign-in secret (`HOP_SSO_SECRET_BIOHOP`) to verify the note picker, so a leak here could forge a hub ticket for BioHop. It is accepted next to the older secrets while the family moves; once BioHop signs with it (navi-crwn/BioHop `fix/picker-secret`), remove `HOP_SSO_SECRET_BIOHOP` from this server.
+
 ### Added
 - `GET /api/v1/me/notes` for the note picker in the other HOP apps (BioHop's "Choose from NoteHop"). Only an app named in `NOTEHOP_NOTES_CLIENTS` (default `biohop`, empty turns it off) may call it, server to server, signed with the HOP App Protocol (its own `HOP_SSO_SECRET_<APP>` when it has one, else `NOTEHOP_SSO_SECRET`) and with `X-HOP-Actor` set to the member's HOP ID. It lists that member's public notes that have a read-only link, newest first, `{ok, data: {items: [{id, title, url, updated}], next}}`, with `?q=` on the title, `?limit=` up to 50 and a cursor. Never listed: encrypted notes (the key stays in the member's browser, and a keyless link shows visitors nothing), notes shared only with an edit, append, check or suggest link (a public page would hand those rights to everyone), notes with a content warning, burn-after-reading notes, expired notes and notes a feature holds back before reading. A browser session cannot use the route.
 

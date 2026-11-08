@@ -173,11 +173,19 @@ func (a *App) notesCaller(w http.ResponseWriter, r *http.Request) *db.User {
 	return u
 }
 
-// notesSecrets verify a notes client: its own HOP_SSO_SECRET_<APP> when the
-// family keeps one secret per app, else the SSO secret.
+// notesSecrets verify a notes client: HOP_PICKER_SECRET when set (a secret
+// the hub never uses), then the app's own HOP_SSO_SECRET_<APP> when the
+// family keeps one secret per app, else the SSO secret. The older secrets are
+// accepted while the family moves; once every picker signs with
+// HOP_PICKER_SECRET, HOP_SSO_SECRET_<APP> should be removed from this server,
+// because it is that app's sign-in secret.
 func (a *App) notesSecrets(app string) []string {
-	if own, ok := a.cfg.NotesSecrets[app]; ok && len(own) >= 32 {
-		return []string{own}
+	var s []string
+	if len(a.cfg.PickerSecret) >= 32 {
+		s = append(s, a.cfg.PickerSecret)
 	}
-	return []string{a.cfg.SSOSecret}
+	if own, ok := a.cfg.NotesSecrets[app]; ok && len(own) >= 32 {
+		return append(s, own)
+	}
+	return append(s, a.cfg.SSOSecret)
 }
