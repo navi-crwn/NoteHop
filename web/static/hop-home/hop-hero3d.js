@@ -44,8 +44,8 @@
     biohop: ['.#######.', '#########', '##wwwww##', '#########', '##wwwww##', '#########', '##www####', '#########', '.#######.'],
     // the PixelHop mark: the pixel rabbit
     pixelhop: ['.#....#.', '.#....#.', '.##..##.', '.######.', '##.##.##', '########', '########', '.######.'],
-    // the FileHop mark (v3): a document with a folded corner and a white arrow down
-    filehop: ['######..', '#######.', '###ww###', '###ww###', '#wwwwww#', '##wwww##', '###ww###', '########']
+    // the FileHop mark (v4): a document with a folded corner and a white arrow down
+    filehop: ['######..', '###ww##.', '###ww###', '###ww###', '#wwwwww#', '##wwww##', '###ww###', '########']
   };
   // the LinkHop mark: a rabbit head, two tall ears over a ring-shaped face
   MAPS.linkhop = ['..#...#..', '..#...#..', '..#...#..', '..#####..', '.##...##.', '##.....##', '##.....##', '.##...##.', '..#####..'];
