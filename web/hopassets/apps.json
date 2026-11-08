@@ -229,6 +229,25 @@
       }
     },
     {
+      "slug": "filehop",
+      "name": "FileHop",
+      "tagline": "Convert files in your browser; nothing is uploaded.",
+      "url": "https://file.hel.ink",
+      "color": "#f59e0b",
+      "public": true,
+      "repo": "https://github.com/navi-crwn/FileHop",
+      "icons": {
+        "mark": {
+          "url": "https://hel.ink/hop-assets/v2/apps/filehop/mark.svg",
+          "integrity": "sha384-bGHMLildqg/L8Da/PkMko8uFHKL7jTlluiGhdMFEJDfEEXv08j0hGeqiVD/pybMW"
+        },
+        "favicon": {
+          "url": "https://hel.ink/hop-assets/v2/apps/filehop/mark.svg",
+          "integrity": "sha384-bGHMLildqg/L8Da/PkMko8uFHKL7jTlluiGhdMFEJDfEEXv08j0hGeqiVD/pybMW"
+        }
+      }
+    },
+    {
       "slug": "imperium",
       "name": "Imperium",
       "tagline": "The HOP control panel.",
