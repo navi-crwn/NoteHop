@@ -268,7 +268,7 @@
   "decoy.off": "Désactivé. Un second mot de passe ouvre un texte anodin au lieu de la vraie note, et vous verrez ici quand il a été utilisé.",
   "decoy.on": "Activé. Personne n’a encore utilisé le mot de passe leurre.",
   "decoy.saved": "Leurre enregistré",
-  "decoy.used": "Quelqu’un a ouvert le leurre {n} fois, la dernière {time}.",
+  "decoy.used": "Quelqu’un a ouvert le leurre {n}×, la dernière fois {time}.",
   "diff.folded": "{n} lignes inchangées",
   "diff.same": "Aucune différence.",
   "diff.stats": "+{added} −{removed} lignes",
@@ -1527,5 +1527,6 @@
   "share.rename_cancel": "Annuler",
   "share.renamed": "Lien renommé",
   "dash.g_encrypted": "Chiffrées",
-  "dash.g_basic": "Basiques"
+  "dash.g_basic": "Basiques",
+  "decoy.counts": "Une ouverture avec le mot de passe leurre compte comme une vraie : avec une limite d’ouvertures, chacune consomme une vue, pour qu’on ne puisse pas les distinguer."
 }

@@ -268,7 +268,7 @@
   "decoy.off": "Mati. Sandi kedua membuka teks biasa, bukan catatan asli, dan Anda bisa melihat di sini kapan dipakai.",
   "decoy.on": "Aktif. Belum ada yang memakai password pengalih.",
   "decoy.saved": "Pengalih disimpan",
-  "decoy.used": "Seseorang membuka teks pengalih {n} kali, terakhir {time}.",
+  "decoy.used": "Seseorang membuka teks pengalih {n}×, terakhir {time}.",
   "diff.folded": "{n} baris tidak berubah",
   "diff.same": "Tidak ada perbedaan.",
   "diff.stats": "+{added} −{removed} baris",
@@ -1527,5 +1527,6 @@
   "share.rename_cancel": "Batal",
   "share.renamed": "Tautan diganti namanya",
   "dash.g_encrypted": "Terenkripsi",
-  "dash.g_basic": "Dasar"
+  "dash.g_basic": "Dasar",
+  "decoy.counts": "Pembukaan dengan kata sandi pengalih dihitung seperti pembukaan asli: bila ada batas buka, setiap kali memakai satu jatah, supaya keduanya tidak bisa dibedakan."
 }

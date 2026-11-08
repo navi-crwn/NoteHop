@@ -268,7 +268,7 @@
   "decoy.off": "Desactivado. Una segunda contraseña abre un texto inofensivo en lugar de la nota real, y aquí verás cuándo se usó.",
   "decoy.on": "Activado. Nadie ha usado aún la contraseña señuelo.",
   "decoy.saved": "Señuelo guardado",
-  "decoy.used": "Alguien abrió el señuelo {n} veces, la última {time}.",
+  "decoy.used": "Alguien abrió el señuelo {n}×, la última vez {time}.",
   "diff.folded": "{n} líneas sin cambios",
   "diff.same": "No hay diferencias.",
   "diff.stats": "+{added} −{removed} líneas",
@@ -1527,5 +1527,6 @@
   "share.rename_cancel": "Cancelar",
   "share.renamed": "Enlace renombrado",
   "dash.g_encrypted": "Cifradas",
-  "dash.g_basic": "Básicas"
+  "dash.g_basic": "Básicas",
+  "decoy.counts": "Abrir con la contraseña señuelo cuenta como una apertura real: con un límite de aperturas, cada una gasta una vista, para que no se distingan."
 }

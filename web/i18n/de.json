@@ -268,7 +268,7 @@
   "decoy.off": "Aus. Ein zweites Passwort öffnet harmlosen Text statt der echten Notiz, und hier siehst du, wann es benutzt wurde.",
   "decoy.on": "Ein. Bisher hat niemand das Köder-Passwort benutzt.",
   "decoy.saved": "Köder gespeichert",
-  "decoy.used": "Jemand hat den Köder {n}-mal geöffnet, zuletzt {time}.",
+  "decoy.used": "Jemand hat den Köder {n}× geöffnet, zuletzt {time}.",
   "diff.folded": "{n} unveränderte Zeilen",
   "diff.same": "Keine Unterschiede.",
   "diff.stats": "+{added} −{removed} Zeilen",
@@ -1527,5 +1527,6 @@
   "share.rename_cancel": "Abbrechen",
   "share.renamed": "Link umbenannt",
   "dash.g_encrypted": "Verschlüsselt",
-  "dash.g_basic": "Einfach"
+  "dash.g_basic": "Einfach",
+  "decoy.counts": "Ein Öffnen mit dem Köder-Passwort zählt wie ein echtes: bei einem Öffnungslimit verbraucht jedes eine Ansicht, damit beide nicht zu unterscheiden sind."
 }

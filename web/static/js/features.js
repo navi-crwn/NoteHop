@@ -115,6 +115,7 @@
         row.appendChild(h('button.btn.sm', { type: 'submit' }, NH.t('common.save')));
         f.form.append(h('label', NH.t(f.label) + (f.unit ? ' (' + NH.t(f.unit) + ')' : '')), row);
       }
+      if (f.kind === 'decoy') f.form.appendChild(h('span.hint', NH.t('decoy.counts')));
       f.form.appendChild(f.hint);
       forms.appendChild(f.form);
 

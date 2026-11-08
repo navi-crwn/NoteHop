@@ -268,7 +268,7 @@
   "decoy.off": "Off. A second password opens harmless text instead of the real note, and you’ll see here when it was used.",
   "decoy.on": "On. Nobody has used the decoy password yet.",
   "decoy.saved": "Decoy saved",
-  "decoy.used": "Someone opened the decoy {n} times, last {time}.",
+  "decoy.used": "Someone opened the decoy {n}×, last {time}.",
   "diff.folded": "{n} unchanged lines",
   "diff.same": "No differences.",
   "diff.stats": "+{added} −{removed} lines",
@@ -1527,5 +1527,6 @@
   "share.rename_cancel": "Cancel",
   "share.renamed": "Link renamed",
   "dash.g_encrypted": "Encrypted",
-  "dash.g_basic": "Basic"
+  "dash.g_basic": "Basic",
+  "decoy.counts": "A decoy opening counts like a real one: with a view limit, each one uses up a view, so the two can’t be told apart."
 }

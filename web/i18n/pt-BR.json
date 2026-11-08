@@ -268,7 +268,7 @@
   "decoy.off": "Desativado. Uma segunda senha abre um texto inofensivo no lugar da nota real, e você vê aqui quando ela foi usada.",
   "decoy.on": "Ativado. Ninguém usou a senha isca ainda.",
   "decoy.saved": "Isca salva",
-  "decoy.used": "Alguém abriu a isca {n} vezes, a última {time}.",
+  "decoy.used": "Alguém abriu o texto falso {n}×, a última vez {time}.",
   "diff.folded": "{n} linhas sem alteração",
   "diff.same": "Nenhuma diferença.",
   "diff.stats": "+{added} −{removed} linhas",
@@ -1527,5 +1527,6 @@
   "share.rename_cancel": "Cancelar",
   "share.renamed": "Link renomeado",
   "dash.g_encrypted": "Criptografadas",
-  "dash.g_basic": "Básicas"
+  "dash.g_basic": "Básicas",
+  "decoy.counts": "Abrir com a senha falsa conta como uma abertura real: com limite de aberturas, cada uma gasta uma visualização, para que não dê para distinguir as duas."
 }

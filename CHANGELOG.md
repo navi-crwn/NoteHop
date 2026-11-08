@@ -4,6 +4,9 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## Unreleased
 
+### Fixed
+- A decoy password now answers exactly as the note does to a stranger, even on the owner link and in the owner's signed-in browser: no Owner badge, no editor, no link list and no "someone opened the decoy" report. Until now the owner's own page gave the decoy away, which is the one situation it exists for. A decoy opening still spends a view like a real one, so a view counter can't tell them apart either; the settings now say so.
+
 ### Changed
 - HOP family assets move to hop-assets v4: FileHop's new pixel mark in the family list, the app switcher and the footer (bundled manifest), and the copied home engine with FileHop's matching 3D map. `scripts/sync-hop-assets.sh` copies from v4.
 

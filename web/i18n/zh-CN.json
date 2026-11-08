@@ -268,7 +268,7 @@
   "decoy.off": "未开启。第二个密码会打开一段无害的文字，而不是真正的笔记，你会在这里看到它何时被使用。",
   "decoy.on": "已开启。还没有人使用过诱饵密码。",
   "decoy.saved": "诱饵已保存",
-  "decoy.used": "有人打开了诱饵 {n} 次，最近一次在 {time}。",
+  "decoy.used": "有人打开了诱饵内容 {n} 次，最近一次 {time}。",
   "diff.folded": "{n} 行未更改",
   "diff.same": "没有差异。",
   "diff.stats": "+{added} −{removed} 行",
@@ -1527,5 +1527,6 @@
   "share.rename_cancel": "取消",
   "share.renamed": "链接已重命名",
   "dash.g_encrypted": "已加密",
-  "dash.g_basic": "基础"
+  "dash.g_basic": "基础",
+  "decoy.counts": "用诱饵密码打开同样计为一次打开：设有打开次数上限时，每次都会用掉一次，这样两者无法区分。"
 }
