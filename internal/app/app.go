@@ -334,6 +334,7 @@ type pageData struct {
 	HopFamily     []familyApp  // the other public HOP apps
 	HopPublicApps []familyApp
 	Back          bool            // inner page: show "Back to NoteHop"
+	UI            string          // "clean" when the optional Clean style is on (cookie hop_ui), else empty
 	Dash          bool            // the signed-in dashboard shell (sidebar, settings-type top bar)
 	MiniFoot      bool            // a working page: one line of footer instead of the columns
 	Reminders     map[string]bool // reminder cards due on the dashboard, by key (reminders.go)
@@ -363,6 +364,7 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	}
 	// In the shell the sidebar is the way back, so those pages have no "Back to NoteHop" row.
 	d.Dash = d.User != nil && dashPages[name]
+	d.UI = uiStyle(r)
 	d.Back = backPages[name] && !d.Dash
 	d.MiniFoot = miniFootPages[name]
 	if name == "home" || name == "features" {
@@ -622,4 +624,13 @@ func (a *App) manifest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/manifest+json")
 	w.Header().Set("Cache-Control", "public, max-age=3600")
 	w.Write(b)
+}
+
+// uiStyle reads the family cookie hop_ui (written by the hub's settings, shared on .hel.ink): "clean" turns the
+// optional Clean style on, anything else keeps the original HOP look.
+func uiStyle(r *http.Request) string {
+	if c, err := r.Cookie("hop_ui"); err == nil && c.Value == "clean" {
+		return "clean"
+	}
+	return ""
 }

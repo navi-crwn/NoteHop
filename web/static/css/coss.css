@@ -1,21 +1,22 @@
-/* coss-style surfaces (same values as the hub pilot): flat neutral background, solid cards with a 1 px low-contrast
+/* Optional "Clean" style (coss surfaces). Every rule is scoped under :root[data-ui="clean"], set from the hop_ui cookie
+   (see uiStyle in app.go); without it the original HOP look is untouched. coss-style surfaces (same values as the hub pilot): flat neutral background, solid cards with a 1 px low-contrast
    border and a barely-there shadow, a flat sidebar and top bar divided by hairlines. Loaded after app.css and
    shell.css; it only changes token values and surface rules, never markup or class names. */
-:root {
+:root[data-ui="clean"] {
   --bg: #0a0a0c; --bg-2: #0a0a0c; --panel: #141418; --panel-2: #1c1c22;
   --line: rgba(255, 255, 255, .09); --line-2: rgba(255, 255, 255, .16);
   --coss-card-shadow: none; --coss-frame: rgba(255, 255, 255, .03); --coss-hover: rgba(255, 255, 255, .05);
   --shadow: 0 8px 24px rgba(0, 0, 0, .4);
   --dot: transparent;
 }
-:root[data-theme="light"] {
+:root[data-ui="clean"][data-theme="light"] {
   --bg: #f7f7f8; --bg-2: #f7f7f8; --panel: #ffffff; --panel-2: #f1f1f3;
   --line: rgba(0, 0, 0, .09); --line-2: rgba(0, 0, 0, .16);
   --coss-card-shadow: 0 1px 2px rgba(0, 0, 0, .04); --coss-frame: rgba(0, 0, 0, .035); --coss-hover: rgba(0, 0, 0, .04);
   --shadow: 0 8px 24px rgba(0, 0, 0, .1);
 }
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
+  :root[data-ui="clean"]:not([data-theme="dark"]) {
     --bg: #f7f7f8; --bg-2: #f7f7f8; --panel: #ffffff; --panel-2: #f1f1f3;
     --line: rgba(0, 0, 0, .09); --line-2: rgba(0, 0, 0, .16);
     --coss-card-shadow: 0 1px 2px rgba(0, 0, 0, .04); --coss-frame: rgba(0, 0, 0, .035); --coss-hover: rgba(0, 0, 0, .04);
@@ -24,57 +25,63 @@
 }
 
 /* Background: flat, no pixel grid, no gradient. */
-body::before { display: none; }
-.shell { background: none; }
+:root[data-ui="clean"] body::before { display: none; }
+:root[data-ui="clean"] .shell { background: none; }
 
 /* Cards and banners: solid, bordered. */
-.card, .banner, .editor-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--hop-card-radius); box-shadow: var(--coss-card-shadow); }
-.banner { border-color: var(--line); }
-.banner.warn { border-color: color-mix(in srgb, var(--amber) 45%, transparent); }
-.banner.info { border-color: color-mix(in srgb, var(--cyan) 40%, transparent); }
+:root[data-ui="clean"] .card,
+:root[data-ui="clean"] .banner,
+:root[data-ui="clean"] .editor-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--hop-card-radius); box-shadow: var(--coss-card-shadow); }
+:root[data-ui="clean"] .banner { border-color: var(--line); }
+:root[data-ui="clean"] .banner.warn { border-color: color-mix(in srgb, var(--amber) 45%, transparent); }
+:root[data-ui="clean"] .banner.info { border-color: color-mix(in srgb, var(--cyan) 40%, transparent); }
 
 /* Public header: flat bar with a hairline. */
-.nav { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--bg); }
-.nav-links a { border-radius: 8px; font-weight: 500; }
-.nav-links a:hover, .nav-links a[aria-current] { background: var(--coss-hover); }
+:root[data-ui="clean"] .nav { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--bg); }
+:root[data-ui="clean"] .nav-links a { border-radius: 8px; font-weight: 500; }
+:root[data-ui="clean"] .nav-links a:hover,
+:root[data-ui="clean"] .nav-links a[aria-current] { background: var(--coss-hover); }
 
 /* Dashboard shell: flat sidebar and top bar divided by hairlines. */
-.shell-side { inset: 0 auto 0 0; width: var(--side); border-width: 0 1px 0 0; border-radius: 0; background: var(--bg); box-shadow: none; }
-.shell-top { top: 0; height: 56px; margin: 0; padding: 0 16px; border-width: 0 0 1px; border-radius: 0; background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; }
-.shell-body main { padding: 24px 16px 12px; }
-.shell-nav a { min-height: 36px; padding: 0 10px; border-radius: 8px; font-size: .875rem; font-weight: 500; }
-.shell-nav a:hover { background: var(--coss-hover); }
-.shell-nav a[aria-current="page"] { background: var(--coss-hover); box-shadow: none; }
-.shell-label { font-size: .75rem; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--muted); }
-.shell-foot { margin: 8px 0 0; padding: 18px 16px; }
+:root[data-ui="clean"] .shell-side { inset: 0 auto 0 0; width: var(--side); border-width: 0 1px 0 0; border-radius: 0; background: var(--bg); box-shadow: none; }
+:root[data-ui="clean"] .shell-top { top: 0; height: 56px; margin: 0; padding: 0 16px; border-width: 0 0 1px; border-radius: 0; background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; }
+:root[data-ui="clean"] .shell-body main { padding: 24px 16px 12px; }
+:root[data-ui="clean"] .shell-nav a { min-height: 36px; padding: 0 10px; border-radius: 8px; font-size: .875rem; font-weight: 500; }
+:root[data-ui="clean"] .shell-nav a:hover { background: var(--coss-hover); }
+:root[data-ui="clean"] .shell-nav a[aria-current="page"] { background: var(--coss-hover); box-shadow: none; }
+:root[data-ui="clean"] .shell-label { font-size: .75rem; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--muted); }
+:root[data-ui="clean"] .shell-foot { margin: 8px 0 0; padding: 18px 16px; }
 @media (max-width: 1023px) {
-  .shell-side { width: min(300px, calc(100vw - 24px)); border-width: 0 1px 0 0; }
+  :root[data-ui="clean"] .shell-side { width: min(300px, calc(100vw - 24px)); border-width: 0 1px 0 0; }
 }
 
 /* My notes: one solid card, rows divided by hairlines, row hover. */
-.note-list { gap: 0; background: var(--panel); border: 1px solid var(--line); border-radius: var(--hop-card-radius); box-shadow: var(--coss-card-shadow); overflow: hidden; }
-.note-list > li { border: 0; border-radius: 0; background: transparent; }
-.note-list > li + li { border-top: 1px solid var(--line); }
-.note-list > li.note-row:hover { background: var(--coss-frame); }
-.note-list > li.muted { padding: 14px; }
-.note-list .empty { border: 0; border-radius: 0; }
-.note-link b, .note-meta, .note-row time, .kbd { font-variant-numeric: tabular-nums; }
-.mode-ico { border-radius: 8px; background: var(--coss-frame); }
+:root[data-ui="clean"] .note-list { gap: 0; background: var(--panel); border: 1px solid var(--line); border-radius: var(--hop-card-radius); box-shadow: var(--coss-card-shadow); overflow: hidden; }
+:root[data-ui="clean"] .note-list > li { border: 0; border-radius: 0; background: transparent; }
+:root[data-ui="clean"] .note-list > li + li { border-top: 1px solid var(--line); }
+:root[data-ui="clean"] .note-list > li.note-row:hover { background: var(--coss-frame); }
+:root[data-ui="clean"] .note-list > li.muted { padding: 14px; }
+:root[data-ui="clean"] .note-list .empty { border: 0; border-radius: 0; }
+:root[data-ui="clean"] .note-link b,
+:root[data-ui="clean"] .note-meta,
+:root[data-ui="clean"] .note-row time,
+:root[data-ui="clean"] .kbd { font-variant-numeric: tabular-nums; }
+:root[data-ui="clean"] .mode-ico { border-radius: 8px; background: var(--coss-frame); }
 
 /* Vault banner stays prominent: the state line is a solid bordered strip. */
-.vault-state { padding: 10px 14px; margin: 0 0 16px; border: 1px solid var(--line); border-radius: var(--hop-card-radius); background: var(--panel); box-shadow: var(--coss-card-shadow); }
+:root[data-ui="clean"] .vault-state { padding: 10px 14px; margin: 0 0 16px; border: 1px solid var(--line); border-radius: var(--hop-card-radius); background: var(--panel); box-shadow: var(--coss-card-shadow); }
 
 /* Badges: 6 px radius, for real status only. Chips stay chips (they are functional filters). */
-.pill { border-radius: 6px; height: 20px; padding: 0 7px; font-size: .75rem; font-weight: 500; }
-.dlg-tabs button { font-weight: 500; }
+:root[data-ui="clean"] .pill { border-radius: 6px; height: 20px; padding: 0 7px; font-size: .75rem; font-weight: 500; }
+:root[data-ui="clean"] .dlg-tabs button { font-weight: 500; }
 
 /* Controls read as inputs on solid cards. */
-.btn:not(.primary):not(.danger) { background-color: var(--panel); box-shadow: 0 1px 1px rgba(0, 0, 0, .04); }
-:root[data-theme="dark"] .btn:not(.primary):not(.danger) { box-shadow: none; }
-.btn:not(.primary):not(.danger):hover { background-color: var(--coss-hover); }
+:root[data-ui="clean"] .btn:not(.primary):not(.danger) { background-color: var(--panel); box-shadow: 0 1px 1px rgba(0, 0, 0, .04); }
+:root[data-ui="clean"][data-theme="dark"] .btn:not(.primary):not(.danger) { box-shadow: none; }
+:root[data-ui="clean"] .btn:not(.primary):not(.danger):hover { background-color: var(--coss-hover); }
 
 /* Footer strip: logo + "Hop Easy Link". */
-.coss-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 12px; font-size: .875rem; color: var(--muted); }
-.coss-brand img { width: 28px; height: 28px; }
-.coss-brand b { color: var(--text); font-weight: 600; }
-.footer-mini .coss-brand { justify-content: flex-start; margin: 0; }
+:root[data-ui="clean"] .coss-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 12px; font-size: .875rem; color: var(--muted); }
+:root[data-ui="clean"] .coss-brand img { width: 28px; height: 28px; }
+:root[data-ui="clean"] .coss-brand b { color: var(--text); font-weight: 600; }
+:root[data-ui="clean"] .footer-mini .coss-brand { justify-content: flex-start; margin: 0; }

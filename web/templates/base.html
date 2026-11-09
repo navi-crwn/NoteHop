@@ -1,5 +1,5 @@
 {{define "base"}}<!doctype html>
-<html lang="{{.L.Code}}" dir="{{.L.Dir}}">
+<html lang="{{.L.Code}}" dir="{{.L.Dir}}"{{if eq .UI "clean"}} data-ui="clean"{{end}}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -82,7 +82,7 @@
     </header>
     <main id="main">{{template "mainbody" .}}</main>
     <footer class="shell-foot">
-      <p class="coss-brand">{{range .HopFamily}}{{if eq .Slug "hub"}}<img src="{{(index .Icons "mark").URL}}" alt="" width="28" height="28">{{end}}{{end}}<b>Hop Easy Link</b></p>
+      {{if eq .UI "clean"}}<p class="coss-brand">{{range .HopFamily}}{{if eq .Slug "hub"}}<img src="{{(index .Icons "mark").URL}}" alt="" width="28" height="28">{{end}}{{end}}<b>Hop Easy Link</b></p>{{end}}
       <nav aria-label="{{.Site}}">
         <a href="/about">{{.L.T "footer.about"}}</a><a href="/faq">{{.L.T "footer.faq"}}</a><a href="/status">{{.L.T "status.title"}}</a><a href="/terms">{{.L.T "terms.title"}}</a><a href="/privacy">{{.L.T "privacy.title"}}</a><a href="/contact">{{.L.T "contact.title"}}</a>
       </nav>
@@ -142,7 +142,7 @@
 {{if .MiniFoot}}
 <footer class="footer-mini">
   <div class="wrap">
-    <p class="coss-brand">{{range .HopFamily}}{{if eq .Slug "hub"}}<img src="{{(index .Icons "mark").URL}}" alt="" width="28" height="28">{{end}}{{end}}<b>Hop Easy Link</b></p>
+    {{if eq .UI "clean"}}<p class="coss-brand">{{range .HopFamily}}{{if eq .Slug "hub"}}<img src="{{(index .Icons "mark").URL}}" alt="" width="28" height="28">{{end}}{{end}}<b>Hop Easy Link</b></p>{{end}}
     <p>© 2026 navi-crwn · MIT License</p>
     <nav aria-label="{{.Site}}">
       <a href="/about">{{.L.T "footer.about"}}</a><a href="/faq">{{.L.T "nav.faq"}}</a><a href="/privacy">{{.L.T "privacy.title"}}</a><a href="/terms">{{.L.T "terms.title"}}</a><a href="/status">{{.L.T "status.title"}}</a><a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a>

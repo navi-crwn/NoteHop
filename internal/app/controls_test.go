@@ -2,6 +2,8 @@ package app
 
 import (
 	"io/fs"
+	"net/http"
+	"net/http/httptest"
 	"regexp"
 	"strings"
 	"testing"
@@ -69,5 +71,17 @@ func TestControlStandardTokens(t *testing.T) {
 	odd := regexp.MustCompile(`(?m)^\.(btn|icon-btn|chip|starter|prefix|seg)(\.[a-z-]+)* \{[^}]*border-radius: (\d+px|999px)`)
 	if m := odd.FindString(css); m != "" {
 		t.Errorf("a control rule sets its own radius: %s", strings.SplitN(m, "{", 2)[0])
+	}
+}
+
+func TestUIStyleCookie(t *testing.T) {
+	for _, tc := range []struct{ cookie, want string }{{"", ""}, {"clean", "clean"}, {"hop", ""}, {"Clean", ""}, {"x", ""}} {
+		r := httptest.NewRequest("GET", "/", nil)
+		if tc.cookie != "" {
+			r.AddCookie(&http.Cookie{Name: "hop_ui", Value: tc.cookie})
+		}
+		if got := uiStyle(r); got != tc.want {
+			t.Errorf("hop_ui=%q: got %q, want %q", tc.cookie, got, tc.want)
+		}
 	}
 }
