@@ -28,7 +28,7 @@ async function create(p, { title, body, mode = 'read', slug = '' }) {
     await p.check(`input[name=mode][value=${mode}]`, { force: true });
   }
   if (slug) {
-    await p.click('label.kind-opt:has(input[value=basic])'); await p.fill('#slug', slug); // only a basic note can have a link name
+    await p.click('#opt-kind > summary'); await p.click('label:has(input[name=kind][value=basic])'); await p.fill('#slug', slug); // only a basic note can have a link name
   }
   await p.click('#create'); await p.waitForURL(/#k=/, { timeout: 20000 }); await p.waitForSelector('#note:not(.hide)');
   await p.keyboard.press('Escape');

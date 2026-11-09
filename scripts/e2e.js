@@ -30,9 +30,9 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
   if (title) await p.fill('#title', title);
   if (body) await p.fill('.ed-src', body);
   await pickMode(p, mode);
-  if (!encrypt) { await openAdv(p); await p.click('#expert-box summary'); await p.click('label:has(#encrypt)'); }
-  if (pw) { await p.click('#opt-private > summary'); await p.click('label:has([name=privacy][value=password])'); await p.fill('#password', pw); }
-  if (burn !== '0') { await openAdv(p); if (!(await p.isChecked('[data-feature=burn]'))) await p.click('label:has([data-feature=burn])'); await p.selectOption('#burn', burn); }
+  if (!encrypt) { await p.click('#opt-kind > summary'); await p.click('label:has(input[name=kind][value=basic])'); }
+  if (pw) { await p.click('#opt-password > summary'); await p.click('label:has(input[data-feature=password])'); await p.fill('#password', pw); }
+  if (burn !== '0') { await p.click('#opt-opens > summary'); await p.click('label:has(input[name=opens][value="' + burn + '"])'); }
   await closeMenus(p); await p.click('#create');
   await p.waitForURL(/#k=/, { timeout: 20000 });
   await p.waitForSelector('#note:not(.hide)', { timeout: 20000 });
@@ -240,8 +240,8 @@ const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open
     await m.screenshot({ path: OUT + '/m-note-visitor.png', fullPage: true });
     // Smallest common phone: the settings bar and Create link fit on one line.
     await m.setViewportSize({ width: 320, height: 700 }); await m.goto(BASE + '/new'); await m.waitForTimeout(300);
-    const spill = await m.$$eval('.pick > summary, .share-bar #create', xs => xs.filter(s => s.getBoundingClientRect().right > innerWidth || s.scrollWidth > s.clientWidth + 1).map(s => s.textContent.trim()));
-    ok('Mobile: 320px settings bar fits', spill.length === 0, JSON.stringify(spill));
+    const fit = await m.$$eval('.pick > summary, #create', xs => ({ create: xs.filter(s => s.id === 'create').length, spill: xs.filter(s => s.getBoundingClientRect().right > innerWidth || s.scrollWidth > s.clientWidth + 1).map(s => s.textContent.trim()) }));
+    ok('Mobile: 320px settings bar fits', fit.create === 1 && fit.spill.length === 0, JSON.stringify(fit));
   } catch (e) { ok('Mobile flow', false, e.message.split('\n')[0]); }
 
   await b.close();

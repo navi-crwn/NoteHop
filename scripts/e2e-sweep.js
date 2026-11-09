@@ -29,7 +29,7 @@ const contrast = (p, sel, prop, bgSel) => p.evaluate(([sel, prop, bgSel]) => {
 async function create(p, { title, body, basic, slug }) {
   await p.goto(BASE + '/new?lang=en');
   await p.fill('#title', title); await p.fill('.ed-src', body);
-  if (basic) { await p.click('label.kind-opt:has(input[value=basic])'); await p.fill('#slug', slug); }
+  if (basic) { await p.click('#opt-kind > summary'); await p.click('label:has(input[name=kind][value=basic])'); await p.fill('#slug', slug); }
   await p.click('#create'); await p.waitForURL(/#k=/, { timeout: 20000, waitUntil: 'commit' }); await p.waitForTimeout(1500);
   const u = new URL(p.url()); return { owner: p.url(), view: BASE + u.pathname + '#k=' + u.hash.match(/k=([^&]+)/)[1] };
 }
@@ -44,7 +44,14 @@ async function create(p, { title, body, basic, slug }) {
     await p.goto(BASE + '/new?lang=de'); await p.waitForTimeout(300);
     await p.click('#adv-btn'); await p.waitForTimeout(250);
     ok(name + ': More is a modal dialog', await p.$eval('#adv', d => d.open && d.matches(':modal')));
-    ok(name + ': every settings group is inside it', await p.evaluate(() => { const d = document.getElementById('adv'); const g = [...document.querySelectorAll('.adv-group')]; return g.length >= 6 && g.every(x => d.contains(x)); }));
+    ok(name + ': every settings group is inside it', await p.evaluate(() => {
+      const d = document.getElementById('adv');
+      const g = [...document.querySelectorAll('.adv-group')];
+      // the five groups: time (capsule, lock), together (sign-off), content
+      // warning, device (remember) and expert — checked by identity, not count
+      const required = ['[data-feature=capsule]', '[data-feature=lock]', '[data-feature=signoff]', '[data-feature=warning]', '#remember', '#expert-box'];
+      return g.length >= 5 && g.every(x => d.contains(x)) && required.every(s => !!d.querySelector(s));
+    }));
     ok(name + ': it fits the screen', await p.$eval('#adv', d => { const r = d.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight + 1 && r.left >= 0 && r.right <= innerWidth + 1; }));
     ok(name + ': the page behind does not scroll', await p.evaluate(() => getComputedStyle(document.body).overflow === 'hidden'));
     ok(name + ': the body of the panel scrolls, the last group can be reached', await p.evaluate(() => {
@@ -82,7 +89,7 @@ async function create(p, { title, body, basic, slug }) {
     ok(w + 'px: header stays on one row', await m.$eval('.nav', n => n.getBoundingClientRect().height < 70));
     await m.evaluate(() => window.scrollTo(0, 1e6)); await m.waitForTimeout(200);
     ok(w + 'px: the bar at the bottom does not cover the language links', await m.evaluate(() => {
-      const bar = document.querySelector('.share-bar').getBoundingClientRect(), l = [...document.querySelectorAll('.foot-langs a')].pop().getBoundingClientRect(); return l.bottom <= bar.top + 1;
+      const bar = document.getElementById('create').getBoundingClientRect(), l = [...document.querySelectorAll('.foot-langs a')].pop().getBoundingClientRect(); return l.bottom <= bar.top + 1;
     }));
     await m.context().close();
   }

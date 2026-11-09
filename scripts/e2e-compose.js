@@ -30,8 +30,8 @@ const val = (p, id) => p.$eval('#' + id + ' .pick-val', e => e.textContent.trim(
     const ed = document.querySelector('.editor-card').getBoundingClientRect();
     return ed.width >= document.getElementById('compose').getBoundingClientRect().width - 2 && !document.querySelector('aside.options');
   }));
-  ok('bar shows the chosen options', await val(p, 'opt-who') === 'View only' && await val(p, 'opt-private') === 'Normal' && await val(p, 'opt-until') === 'Always',
-    [await val(p, 'opt-who'), await val(p, 'opt-private'), await val(p, 'opt-until')].join('/'));
+  ok('bar shows the chosen options', await val(p, 'opt-who') === 'Readers: View only' && await val(p, 'opt-kind') === 'Type: Encrypted' && await val(p, 'opt-password') === 'Password: none' && await val(p, 'opt-until') === 'Delete: never' && await val(p, 'opt-opens') === 'Opens: no limit',
+    [await val(p, 'opt-who'), await val(p, 'opt-kind'), await val(p, 'opt-password'), await val(p, 'opt-until'), await val(p, 'opt-opens')].join('/'));
   ok('menus start closed', !(await isOpen(p, 'opt-who')) && !(await isOpen(p, 'adv')));
 
   await p.click('#opt-who > summary');
@@ -39,25 +39,25 @@ const val = (p, id) => p.$eval('#' + id + ' .pick-val', e => e.textContent.trim(
     const pop = document.querySelector('#opt-who .pick-pop').getBoundingClientRect(), btn = document.querySelector('#opt-who > summary').getBoundingClientRect();
     return pop.height > 50 && pop.bottom <= btn.top;
   }));
-  await p.click('#opt-private > summary');
-  ok('only one menu open at a time', !(await isOpen(p, 'opt-who')) && await isOpen(p, 'opt-private'));
+  await p.click('#opt-password > summary');
+  ok('only one menu open at a time', !(await isOpen(p, 'opt-who')) && await isOpen(p, 'opt-password'));
   await p.keyboard.press('Escape');
-  ok('Escape closes the menu', !(await isOpen(p, 'opt-private')));
+  ok('Escape closes the menu', !(await isOpen(p, 'opt-password')));
 
   await p.click('#opt-who > summary'); await p.click('label:has(input[name=mode][value=edit])');
-  ok('a choice closes its menu and updates the button', !(await isOpen(p, 'opt-who')) && await val(p, 'opt-who') === 'Can write');
+  ok('a choice closes its menu and updates the button', !(await isOpen(p, 'opt-who')) && await val(p, 'opt-who') === 'Readers: Can write');
   ok('button icon follows the choice', await p.$eval('#opt-who .pick-ico use', u => u.getAttribute('href')) === '#i-edit');
 
-  await p.click('#opt-private > summary'); await p.click('label:has(input[name=privacy][value=password])');
-  ok('password choice keeps the menu open for the password', await isOpen(p, 'opt-private') && await p.isVisible('#password'));
+  await p.click('#opt-password > summary'); await p.click('label:has(input[data-feature=password])');
+  ok('password choice keeps the menu open for the password', await isOpen(p, 'opt-password') && await p.isVisible('#password'));
   await p.click('.title-input');
-  ok('clicking outside closes the menu', !(await isOpen(p, 'opt-private')));
-  await p.click('#opt-private > summary'); await p.click('label:has(input[name=privacy][value=normal])');
+  ok('clicking outside closes the menu', !(await isOpen(p, 'opt-password')));
+  await p.click('#opt-password > summary'); await p.click('label:has(input[data-feature=password])'); // password off again
 
   await p.click('#opt-until > summary'); await p.click('label:has(input[name=until][value=other])');
   ok('"Other…" asks for a duration', await isOpen(p, 'opt-until') && await p.isVisible('#expires'));
   await p.selectOption('#expires', '3600');
-  ok('the button names the duration', await val(p, 'opt-until') === '1 hour', await val(p, 'opt-until'));
+  ok('the button names the duration', await val(p, 'opt-until') === 'Delete: 1 hour', await val(p, 'opt-until'));
   await p.keyboard.press('Escape');
 
   ok('More has no counter yet', await p.$eval('#adv-count', e => e.classList.contains('hide')));
@@ -74,24 +74,25 @@ const val = (p, id) => p.$eval('#' + id + ' .pick-val', e => e.textContent.trim(
   ok('clicking the dimmed page closes the drawer', !(await isOpen(p, 'adv')));
 
   // a starter sets the bar and says what it is
+  await p.click('#start-more > summary');
   await p.click('[data-starter=secret]');
-  ok('starter "Secret message" sets Read once', await val(p, 'opt-private') === 'Read once' && await val(p, 'opt-who') === 'View only');
-  ok('starter description shown', /once/i.test(await p.textContent('#start-desc')), await p.textContent('#start-desc'));
+  ok('starter "Secret message" sets one view and encrypts', await val(p, 'opt-opens') === 'Opens: 1×' && await val(p, 'opt-kind') === 'Type: Encrypted' && await val(p, 'opt-who') === 'Readers: View only');
+  ok('starter description shown', /once/i.test(await p.textContent('[data-starter=secret] small')), await p.textContent('[data-starter=secret] small'));
+  await p.click('#start-more > summary');
   await p.click('[data-starter=signoff]');
   ok('sign-off starter lights the counter, drawer stays shut', !(await isOpen(p, 'adv')) && await p.textContent('#adv-count') === '1');
 
   // web note: the result sits beside the code
-  await p.click('.ed-type-btn'); await p.click('[data-type=web]'); await p.waitForTimeout(400);
+  await p.click('[data-starter=web]'); await p.waitForTimeout(400);
   ok('web note: result beside the code', await p.evaluate(() => {
     const src = document.querySelector('.ed-src').getBoundingClientRect(), run = document.querySelector('.wr-run').getBoundingClientRect();
     return run.left >= src.right - 2 && Math.abs(run.top - src.top) < 80;
   }));
-  await p.click('.ed-type-btn'); await p.click('[data-type=doc]');
 
   // a real note, with the options from the bar
   await p.click('[data-starter=note]');
   await p.fill('#title', 'Bar test'); await p.fill('.ed-src', 'hello from the bar');
-  await p.click('label.kind-opt:has(input[value=basic])'); await p.fill('#slug', 'bar-test-' + Date.now().toString(36));
+  await p.click('#opt-kind > summary'); await p.click('label:has(input[name=kind][value=basic])'); await p.fill('#slug', 'bar-test-' + Date.now().toString(36));
   await p.click('#opt-who > summary'); await p.click('label:has(input[name=mode][value=append])');
   await p.click('#create'); await p.waitForURL(/#k=/, { timeout: 20000 }); await p.waitForSelector('#note:not(.hide)');
   ok('creates the note with the chosen options', /\/bar-test-/.test(p.url()), p.url().split('#')[0]);
@@ -100,20 +101,21 @@ const val = (p, id) => p.$eval('#' + id + ' .pick-val', e => e.textContent.trim(
   // ---------- phone ----------
   const m = await open(b, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   await m.goto(BASE + '/new?lang=en'); await m.waitForTimeout(300);
-  ok('phone: bar fixed at the bottom', await m.evaluate(() => {
-    const r = document.querySelector('.share-bar').getBoundingClientRect(); return Math.abs(r.bottom - innerHeight) < 2 && r.height < 130; // icons on one row, Create below
+  ok('phone: Create button fixed at the bottom', await m.evaluate(() => {
+    const btn = document.getElementById('create'), r = btn.getBoundingClientRect();
+    return getComputedStyle(btn).position === 'fixed' && r.bottom <= innerHeight && r.bottom > innerHeight - 48 && r.height >= 44;
   }));
-  ok('phone: buttons are icons, names stay for screen readers', await m.evaluate(() =>
-    [...document.querySelectorAll('.pick > summary')].every(s => s.getBoundingClientRect().width <= 46) &&
-    document.querySelector('#opt-who .pick-val').textContent.trim() === 'View only'));
+  ok('phone: chips are finger-sized and say their value', await m.evaluate(() =>
+    [...document.querySelectorAll('.pick > summary')].every(s => s.getBoundingClientRect().height >= 44) &&
+    document.querySelector('#opt-who .pick-val').textContent.trim() === 'Readers: View only'));
   ok('phone: no sideways scroll', await m.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-  await m.tap('#opt-private > summary'); await m.waitForTimeout(200);
+  await m.tap('#opt-opens > summary'); await m.waitForTimeout(200);
   ok('phone: menu opens as a sheet', await m.evaluate(() => {
-    const r = document.querySelector('#opt-private .pick-pop').getBoundingClientRect();
+    const r = document.querySelector('#opt-opens .pick-pop').getBoundingClientRect();
     return Math.abs(r.bottom - innerHeight) < 2 && r.width >= innerWidth - 2 && !document.getElementById('scrim').hidden;
   }));
-  await m.tap('label:has(input[name=privacy][value=once])'); await m.waitForTimeout(200);
-  ok('phone: a choice closes the sheet', !(await isOpen(m, 'opt-private')) && await m.$eval('#scrim', s => s.hidden));
+  await m.tap('label:has(input[name=opens][value=1])'); await m.waitForTimeout(200);
+  ok('phone: a choice closes the sheet', !(await isOpen(m, 'opt-opens')) && await m.$eval('#scrim', s => s.hidden));
   await m.tap('#adv-btn'); await m.waitForTimeout(200);
   ok('phone: More opens as a sheet too', await m.evaluate(() => {
     const r = document.querySelector('#adv').getBoundingClientRect(); return Math.abs(r.bottom - innerHeight) < 2 && r.width >= innerWidth - 2;
