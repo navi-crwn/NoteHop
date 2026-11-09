@@ -3,7 +3,7 @@
 
 Run from a checkout: python3 scripts/build-changelog.py --repo HEL.ink
 Use --family /path/to/checkouts in the hub to aggregate the five public apps.
-Requires git and authenticated gh with read access. Never reads working files.
+Requires git and authenticated gh with read access (fetches origin/main first). Never reads working files.
 """
 import argparse
 import datetime
@@ -27,6 +27,8 @@ def display_title(title):
 
 
 def history(root, repo):
+    # origin/main is a local ref: without a fetch a stale clone silently drops every newer commit and PR.
+    command(["git", "fetch", "--quiet", "--tags", "--prune", "origin", "main"], root)
     revision = command(["git", "rev-parse", "origin/main"], root).strip()
     raw = command(["git", "log", "origin/main", "--format=%H%x1f%cI%x1f%s%x1e"], root)
     commits = []

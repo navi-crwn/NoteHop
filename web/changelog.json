@@ -1,9 +1,468 @@
 {
   "schema": 1,
   "sources": {
-    "NoteHop": "7c88d84b29b3d8c0cb230265de3f466f5ce5fc34"
+    "NoteHop": "7e706d1653cf99d6c65225039baa37d5c3ff77b5"
   },
   "entries": [
+    {
+      "kind": "commit",
+      "date": "2026-11-10T03:58:56+07:00",
+      "title": "Merge pull request #49: Dashboard and vault states, decoy on the owner link, new-note layout",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/7e706d1653cf99d6c65225039baa37d5c3ff77b5",
+      "id": "7e706d16",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-09T20:58:56Z",
+      "title": "Dashboard and vault states, decoy on the owner link, new-note layout",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/49",
+      "id": "#49",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T21:42:15+01:00",
+      "title": "Changelog: one [Unreleased] block",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/4cbd9cb9bf3332dda1dda9dd4e11583c41ba74aa",
+      "id": "4cbd9cb9",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T21:31:46+01:00",
+      "title": "UI: make the coss surfaces an optional Clean style (cookie hop_ui)",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/008fdbcfa2e828a3f5efa9cd9c00481abd221056",
+      "id": "008fdbcf",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T20:22:31+01:00",
+      "title": "UI: coss surfaces for the dashboard shell, note list, editor frame, auth and footer",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/323332114fe67f1f27100ae3dd3698162aa7993c",
+      "id": "32333211",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T14:00:16+01:00",
+      "title": "Browser suites: fix the remapped selectors, accept the shared dialogs, two phone fixes",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/f54d93d29ed753926eda9e45701fa79475ca7afb",
+      "id": "f54d93d2",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T13:44:42+01:00",
+      "title": "Control standard test: check the control rule itself, not what sits inside it",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/b41e09ca333fc5ff645e00c475bdfd79f48162c0",
+      "id": "b41e09ca",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T13:43:16+01:00",
+      "title": "Controls: the HOP control standard (one radius, one height scale, capped fields)",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/368bc5c314611815e48f1614e7bb62a75ce2af07",
+      "id": "368bc5c3",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T13:29:51+01:00",
+      "title": "Reminder card for recovery codes, hidden for a week at a time",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/892304d4f35b64e3e9d1c85d55b2a01914478b45",
+      "id": "892304d4",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T16:51:21+07:00",
+      "title": "test: align browser scenarios with compose option controls",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/9bc41dd15be7c016c1c295f2bb355bcf35aef6c0",
+      "id": "9bc41dd1",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T05:01:50+01:00",
+      "title": "Shared dialogs from hop-assets v5 in place of confirm() and prompt()",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/5230c436fe25f25418af3c1a96300153355518b2",
+      "id": "5230c436",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T04:55:32+01:00",
+      "title": "Drawers and menus: Escape closes them and the focus comes back",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/2d425941b05a035999bc83913567b6c14f281e6b",
+      "id": "2d425941",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T04:54:07+01:00",
+      "title": "New note: one row of chips, one setting per chip, the editor first",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/b321af31482d80b7017c31a20cc30a464e72e91e",
+      "id": "b321af31",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T04:42:30+01:00",
+      "title": "Sign-in form and small copy: say what is true",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/21e893c8a9f3c5983343efc54f3a1f36746087cc",
+      "id": "21e893c8",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T04:37:01+01:00",
+      "title": "My notes: honest vault states, fallbacks for every row, a way out of each",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/1da66db5095be3a531dd3b6c4ccb6e3e821b5570",
+      "id": "1da66db5",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T19:39:18+01:00",
+      "title": "My notes: name basic notes on the server, prefer the read link, let the owner seal a missing key",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/ec15f5a8c87183fd1e086f5c35129ac928640b6b",
+      "id": "ec15f5a8",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T19:35:42+01:00",
+      "title": "Decoy: answer like a stranger would see it, even for the owner",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/d5aa5eb8ecd46d101f77a73650fb0410ffbddec2",
+      "id": "d5aa5eb8",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-08T10:08:30Z",
+      "title": "Move to hop-assets v4 (FileHop pixel mark)",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/48",
+      "id": "#48",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T17:08:29+07:00",
+      "title": "Merge pull request #48: Move to hop-assets v4 (FileHop pixel mark)",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/65ee158d1435b76926138dc67dd2e1084e9f1fe9",
+      "id": "65ee158d",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T17:08:13+07:00",
+      "title": "Merge pull request #47: Register the app correctly at a new hub; add a Self-hosting section",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/9ff5c5cf1f762986aa91c44f291b40bfaeefc408",
+      "id": "9ff5c5cf",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-08T10:08:13Z",
+      "title": "Register the app correctly at a new hub; add a Self-hosting section",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/47",
+      "id": "#47",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T17:07:56+07:00",
+      "title": "Merge pull request #46: Open other HOP apps through the hub launcher from the family list",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/21eef72e90a34daa25e0ccd26f0a3ffa88f99dab",
+      "id": "21eef72e",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-08T10:07:56Z",
+      "title": "Open other HOP apps through the hub launcher from the family list",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/46",
+      "id": "#46",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T10:28:37+01:00",
+      "title": "Add a Self-hosting section to every README",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/db938d77a5ae1ef993a045e48afb0398f3dd3f10",
+      "id": "db938d77",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T10:23:18+01:00",
+      "title": "Move to hop-assets v4: FileHop's pixel mark in the family list",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/1949b1e408d3789a41a6ae7eb1528fffadc9228a",
+      "id": "1949b1e4",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T10:19:26+01:00",
+      "title": "Run the hub's artisan with the hub's PHP and check the registry write",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/8d53b26c122e5255f52a40b3896eee2ded05178e",
+      "id": "8d53b26c",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T10:15:23+01:00",
+      "title": "Open other HOP apps through the hub launcher from the family list",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/d23649e3fba2930a792c5fae705fafbab8a15ad2",
+      "id": "d23649e3",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T10:13:36+01:00",
+      "title": "Register the app at a new hub with the capabilities it needs",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/c674af15a6586e89c5e29796efc23918ca3d0f66",
+      "id": "c674af15",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T14:45:52+07:00",
+      "title": "Merge pull request #45: Add FileHop to the HOP family lists",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/ff3c0c2f952f227568cf1d22b882ede92ec902f1",
+      "id": "ff3c0c2f",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-08T07:45:52Z",
+      "title": "Add FileHop to the HOP family lists",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/45",
+      "id": "#45",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T08:36:50+01:00",
+      "title": "Bundle the rebuilt hop-assets v3 manifest (HEL.ink #54)",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/aaf9bae2d01392c4c482816b56bf6b4667e1dc90",
+      "id": "aaf9bae2",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T14:20:54+07:00",
+      "title": "Move to hop-assets v3",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/cd527b855c7a1b20385b59dc4590bca4cd927b53",
+      "id": "cd527b85",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T14:02:16+07:00",
+      "title": "Merge pull request #44: Verify the note picker with HOP_PICKER_SECRET, not BioHop's sign-in secret",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/219635baaecd0035bce5ed5cc7a408c1262458f2",
+      "id": "219635ba",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-08T07:02:16Z",
+      "title": "Verify the note picker with HOP_PICKER_SECRET, not BioHop's sign-in secret",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/44",
+      "id": "#44",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T13:55:30+07:00",
+      "title": "Expect six public apps in the family switcher",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/ed62d6cc11928e961746b4dc82f1ed7c45c2cbc5",
+      "id": "ed62d6cc",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T13:52:57+07:00",
+      "title": "Add FileHop to the README family table, the docs site and the changelog",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/c70fcc694ad21e1d9ae8a877fd87c1cf8124afab",
+      "id": "c70fcc69",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T13:52:57+07:00",
+      "title": "List FileHop in the bundled HOP asset manifest",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/600f989b4a22d217791771160098a6c0eb3ccea5",
+      "id": "600f989b",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T07:13:09+01:00",
+      "title": "Verify the note picker with HOP_PICKER_SECRET, not BioHop's sign-in secret",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/84dd84529900838ffe3eed6711d6a201520332ec",
+      "id": "84dd8452",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-08T05:29:17Z",
+      "title": "List a member's public notes for the HOP pickers at GET /api/v1/me/notes",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/43",
+      "id": "#43",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T12:29:16+07:00",
+      "title": "Merge pull request #43: List a member's public notes for the HOP pickers at GET /api/v1/me/notes",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/a4f2959c2e8718ac5a7a7fcdf4425ea5e4d13977",
+      "id": "a4f2959c",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-08T05:56:03+01:00",
+      "title": "List a member's public notes for the HOP pickers at GET /api/v1/me/notes",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/42a81536f5ca497c463b2e1b621025d6074f1a4d",
+      "id": "42a81536",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-05T12:17:04+07:00",
+      "title": "Merge pull request #42: Fix audit findings: report scrub, flaky test, dry run",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/7779bff57142fe485565c882cd7b4fe689511dd1",
+      "id": "7779bff5",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-05T05:17:04Z",
+      "title": "Fix audit findings: report scrub, flaky test, dry run",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/42",
+      "id": "#42",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T14:58:06+01:00",
+      "title": "Wait for live rooms to settle in the expiry test",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/fe65cae9985b6a59b9befe3626a1042eb378ee0c",
+      "id": "fe65cae9",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T14:56:15+01:00",
+      "title": "Scrub every spelling of a note key from reports, including stored ones",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/54f496e7c931da9e78e1152a7cda449a6201b11b",
+      "id": "54f496e7",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T14:53:01+01:00",
+      "title": "Name every variable the program reads in the example env file",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/4488de23150e040d1a9de1bf90a73d6881969208",
+      "id": "4488de23",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T14:51:56+01:00",
+      "title": "Require Go 1.27.3",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/7cd2cd457ee88ac2d821fda680bb4470cff6a292",
+      "id": "7cd2cd45",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T14:50:54+01:00",
+      "title": "Create nothing during an install dry run",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/22560840bfdffa6a86c79a801fa32c22ad2fd6ed",
+      "id": "22560840",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T10:00:08+07:00",
+      "title": "Merge pull request #41: Rebuild the changelog snapshot after the 1.0.0 tag",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/5a1252acb5ad53eaa77f360e5e87c7ed550dccfa",
+      "id": "5a1252ac",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-04T03:00:08Z",
+      "title": "Rebuild the changelog snapshot after the 1.0.0 tag",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/41",
+      "id": "#41",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-04T09:47:53+07:00",
+      "title": "Rebuild the changelog snapshot after the 1.0.0 tag",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/859c6774e31397fabe4e7f644bb2a0bd82c2cb69",
+      "id": "859c6774",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
     {
       "kind": "tag",
       "date": "2026-11-04T09:37:24+07:00",
@@ -1293,7 +1752,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T10:48:18Z",
+      "date": "2026-10-27T10:48:18+00:00",
       "title": "Batch G: name rules, slug holds, site pages, abuse mitigations",
       "url": "https://github.com/navi-crwn/NoteHop/commit/6ef329926b29a7db5a0975c97642da09d2322d95",
       "id": "6ef32992",
@@ -1302,7 +1761,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T10:06:02Z",
+      "date": "2026-10-27T10:06:02+00:00",
       "title": "Batch F: friendly interface, FAQ, French, language autodetect",
       "url": "https://github.com/navi-crwn/NoteHop/commit/7b694c2deafaf807f40289a7afc425c4d5bab453",
       "id": "7b694c2d",
@@ -1311,7 +1770,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T09:24:53Z",
+      "date": "2026-10-27T09:24:53+00:00",
       "title": "Docs: goals and local setup guide; one-command browser test runner",
       "url": "https://github.com/navi-crwn/NoteHop/commit/88eca2f64d51173bf69980400dbc2cc45fcf26f7",
       "id": "88eca2f6",
@@ -1320,7 +1779,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T08:57:43Z",
+      "date": "2026-10-27T08:57:43+00:00",
       "title": "Batch E: integrations",
       "url": "https://github.com/navi-crwn/NoteHop/commit/bfde7644f5a9769e518f2ae4c99c12ee60bd9db9",
       "id": "bfde7644",
@@ -1329,7 +1788,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T08:35:04Z",
+      "date": "2026-10-27T08:35:04+00:00",
       "title": "CLI: notehop new / get with local encryption",
       "url": "https://github.com/navi-crwn/NoteHop/commit/c52a78bdcdd7afba64ee24e84dcbaddbc56c43da",
       "id": "c52a78bd",
@@ -1338,7 +1797,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T08:34:53Z",
+      "date": "2026-10-27T08:34:53+00:00",
       "title": "Batch D: real-time collaboration and nearby devices",
       "url": "https://github.com/navi-crwn/NoteHop/commit/54182bb65b3f1ae082305d9e03ca5219dcd05505",
       "id": "54182bb6",
@@ -1347,7 +1806,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T08:19:19Z",
+      "date": "2026-10-27T08:19:19+00:00",
       "title": "Batch C: encrypted 24-hour attachments",
       "url": "https://github.com/navi-crwn/NoteHop/commit/aa2ad1cbca76667a818693c1d7e0853ea6aff0ff",
       "id": "aa2ad1cb",
@@ -1356,7 +1815,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T08:12:40Z",
+      "date": "2026-10-27T08:12:40+00:00",
       "title": "Batch B: server-backed note features",
       "url": "https://github.com/navi-crwn/NoteHop/commit/d712a1cc37b31f925502a30f8137654ab185c6c5",
       "id": "d712a1cc",
@@ -1365,7 +1824,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T07:53:45Z",
+      "date": "2026-10-27T07:53:45+00:00",
       "title": "Batch A: note extras in the browser",
       "url": "https://github.com/navi-crwn/NoteHop/commit/4aff6a61453435af190ffde58d445d64932b9089",
       "id": "4aff6a61",
@@ -1374,7 +1833,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T05:00:08Z",
+      "date": "2026-10-27T05:00:08+00:00",
       "title": "i18n: Chinese, Spanish, Arabic, Portuguese, Japanese, Russian",
       "url": "https://github.com/navi-crwn/NoteHop/commit/377186ba7722600fa1c9f6b9ad4a4b06829b1152",
       "id": "377186ba",
@@ -1383,7 +1842,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:57:21Z",
+      "date": "2026-10-27T04:57:21+00:00",
       "title": "i18n: 8 languages with English as the default",
       "url": "https://github.com/navi-crwn/NoteHop/commit/ad857391601d3c85abed8129d4f2d20d4f77476b",
       "id": "ad857391",
@@ -1392,7 +1851,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:42:04Z",
+      "date": "2026-10-27T04:42:04+00:00",
       "title": "Feature pills, advanced settings, and conflict rules",
       "url": "https://github.com/navi-crwn/NoteHop/commit/33825b644110886321eb5c361037039b2440112d",
       "id": "33825b64",
@@ -1401,7 +1860,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:37:05Z",
+      "date": "2026-10-27T04:37:05+00:00",
       "title": "Time capsule: hold a note's content until a set time",
       "url": "https://github.com/navi-crwn/NoteHop/commit/bfb208480b7d9dc2a8b7ef035a650283b131a94d",
       "id": "bfb20848",
@@ -1410,7 +1869,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:34:53Z",
+      "date": "2026-10-27T04:34:53+00:00",
       "title": "Note features: config column, hooks, worker jobs; scheduled lock",
       "url": "https://github.com/navi-crwn/NoteHop/commit/7d2179875cf3a00ddc466a1712ba1586df886114",
       "id": "7d217987",
@@ -1419,7 +1878,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:31:08Z",
+      "date": "2026-10-27T04:31:08+00:00",
       "title": "Optional share domain for reader links (NOTEHOP_SHARE_URL)",
       "url": "https://github.com/navi-crwn/NoteHop/commit/ce0ebd08ea6d7eef6712a3adaa8709865c3f4390",
       "id": "ce0ebd08",
@@ -1428,7 +1887,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:29:47Z",
+      "date": "2026-10-27T04:29:47+00:00",
       "title": "Link previews: OpenGraph tags, preview-bot page, og.png",
       "url": "https://github.com/navi-crwn/NoteHop/commit/84ecb960c02a152041732c3bca272700d357981b",
       "id": "84ecb960",
@@ -1437,7 +1896,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:28:21Z",
+      "date": "2026-10-27T04:28:21+00:00",
       "title": "Editor: phone keyboard bar, copy per block, keep \"|\" in inserted text",
       "url": "https://github.com/navi-crwn/NoteHop/commit/24649f4abc9c152dd67e49386f538f8d5bcc2444",
       "id": "24649f4a",
@@ -1446,7 +1905,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:25:18Z",
+      "date": "2026-10-27T04:25:18+00:00",
       "title": "Fix wrong password on burn notes; add browser e2e check",
       "url": "https://github.com/navi-crwn/NoteHop/commit/d5d3cc3f35404b6b48247688766d18f27d24df00",
       "id": "d5d3cc3f",
@@ -1455,7 +1914,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:17:05Z",
+      "date": "2026-10-27T04:17:05+00:00",
       "title": "Add VPS deploy tooling: systemd units, install script, backups",
       "url": "https://github.com/navi-crwn/NoteHop/commit/f16fa287eca918f739de5ec62646606de76e85ca",
       "id": "f16fa287",
@@ -1464,7 +1923,7 @@
     },
     {
       "kind": "commit",
-      "date": "2026-10-27T04:00:58Z",
+      "date": "2026-10-27T04:00:58+00:00",
       "title": "Add SSO sign-in with a vault phrase, and versioned DB migrations",
       "url": "https://github.com/navi-crwn/NoteHop/commit/e93142e39e3a323fefd220b563bf0dee78fc1a01",
       "id": "e93142e3",
