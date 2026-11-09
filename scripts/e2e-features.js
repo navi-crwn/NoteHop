@@ -18,7 +18,7 @@ async function pickMode(p, m) { await p.evaluate(() => { ['opt-who', 'more-modes
 (async () => {
   const b = await chromium.launch(); const errs = [];
   const ctx = (await b.newContext({ permissions: ['clipboard-read', 'clipboard-write'], acceptDownloads: true }).then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }));
-  const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message)); p.on('dialog', d => d.accept());
+  const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message)); require('./e2e-dialogs')(p);
   p.on('console', m => { if (m.type() === 'error' && !/40[134]/.test(m.text())) errs.push('console: ' + m.text()); });
   // account so wiki + dashboard work
   await p.goto(BASE + '/register'); await p.fill('#username', USER); await p.fill('#password', 'katasandi-panjang'); await p.fill('#password2', 'katasandi-panjang');

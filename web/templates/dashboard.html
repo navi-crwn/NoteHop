@@ -2,13 +2,23 @@
 {{define "content"}}
 <section class="wrap">
   <div class="page-head">
-    <div><h1>{{.L.T "title.dashboard"}}</h1><p class="muted">{{.L.T "dash.lead"}}</p></div>
+    <div><h1>{{.L.T "title.dashboard"}}</h1><p class="muted" id="dash-lead">{{.L.T "dash.lead"}}</p></div>
     <div class="btn-row"><a class="btn" href="/security"><svg><use href="#i-key"/></svg>{{.L.T "sec.title"}}</a><a class="btn primary" href="/new"><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a></div>
   </div>
+  <!-- the vault: open or locked in this browser, and the way to change that (dashboard.js fills these) -->
+  <div class="vault-state" id="vault-state" aria-live="polite"></div>
   <div class="alert info hide" id="vault-locked">{{if .User.SSOID}}{{.L.H "dash.locked_sso"}}{{else}}{{.L.H "dash.locked_password"}}{{end}}</div>
+  <div class="alert warn hide claim" id="vault-mismatch"></div>
+  <!-- a reminder, not a status: it can be hidden for a week (hop-ui.js adds the button) and is gone once the codes exist -->
+  {{if index .Reminders "recovery-codes"}}<section class="alert info remind" data-hop-remind="recovery-codes" data-hop-remind-url="/api/me/reminders/dismiss" aria-labelledby="remind-rec-h">
+    <svg><use href="#i-key"/></svg>
+    <div class="remind-body"><b id="remind-rec-h">{{.L.T "remind.recovery_h"}}</b><p>{{if .User.SSOID}}{{.L.T "remind.recovery_p_sso"}}{{else}}{{.L.T "remind.recovery_p"}}{{end}}</p><a class="btn sm" href="/security">{{.L.T "sec.make"}}</a></div>
+  </section>{{end}}
   <div class="alert info hide claim" id="claim"></div>
+  <div class="alert info hide claim" id="reseal"></div>
+  <div class="alert info hide claim" id="nokey"></div>
   <div class="dash-tools">
-    <input type="search" id="filter" class="filter" placeholder="{{.L.T "dash.search"}}" aria-label="{{.L.T "dash.search"}}">
+    <label class="search"><svg><use href="#i-search"/></svg><input type="search" id="filter" class="filter" placeholder="{{.L.T "dash.search"}}" aria-label="{{.L.T "dash.search"}}"></label>
     <button type="button" class="btn sm" id="graph-btn"><svg><use href="#i-share"/></svg>{{.L.T "dash.graph"}}</button>
     <button type="button" class="btn sm" id="export-btn" title="{{.L.T "dash.export_hint"}}"><svg><use href="#i-download"/></svg>{{.L.T "dash.export"}}</button>
     <label class="btn sm" id="import-btn" title="{{.L.T "dash.import_hint"}}"><svg><use href="#i-plus"/></svg>{{.L.T "dash.import"}}<input type="file" accept=".json,application/json" class="hide" id="import-file"></label>
@@ -23,6 +33,7 @@
     <button type="button" class="chip" data-group="timed" aria-pressed="false">{{.L.T "dash.g_timed"}}</button>
     <button type="button" class="chip" data-group="snapshots" aria-pressed="false">{{.L.T "dash.g_snapshots"}}</button>
     <button type="button" class="chip" data-group="archived" aria-pressed="false">{{.L.T "dash.g_archived"}}</button>
+    <button type="button" class="chip" data-group="device" aria-pressed="false">{{.L.T "dash.g_device"}}</button>
   </div>
   <ul class="note-list" id="mine"><li class="muted">{{.L.T "common.loading"}}</li></ul>
 </section>

@@ -14,6 +14,17 @@ var backPages = map[string]bool{
 	"status": true, "diff": true, "nearby": true, "security": true, "recover": true, "offline": true,
 }
 
+// dashPages get the signed-in dashboard chrome (sidebar with this app's menu
+// and the HOP family, settings-type top bar) when someone is signed in.
+var dashPages = map[string]bool{"dashboard": true, "vault": true, "new": true, "security": true}
+
+// miniFootPages are the pages people work on: one line of footer instead of
+// the five columns, which stay on the pages that present NoteHop.
+var miniFootPages = map[string]bool{
+	"new": true, "note": true, "diff": true, "nearby": true, "login": true, "register": true,
+	"vault": true, "security": true, "recover": true, "profile": true, "offline": true, "error": true,
+}
+
 // liveStatus is what /status shows: answered by this server, right now.
 type liveStatus struct {
 	Version string

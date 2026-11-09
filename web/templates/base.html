@@ -1,5 +1,5 @@
 {{define "base"}}<!doctype html>
-<html lang="{{.L.Code}}" dir="{{.L.Dir}}">
+<html lang="{{.L.Code}}" dir="{{.L.Dir}}"{{if eq .UI "clean"}} data-ui="clean"{{end}}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -22,14 +22,17 @@
 <link rel="apple-touch-icon" href="/static/img/icon-192.png">
 {{with .HopFonts}}<link rel="preconnect" href="https://hel.ink" crossorigin>
 <link rel="stylesheet" href="{{.URL}}" integrity="{{.Integrity}}" crossorigin="anonymous">{{end}}
+{{with .HopUI}}<link rel="stylesheet" href="{{.CSS.URL}}"{{with .CSS.Integrity}} integrity="{{.}}"{{end}} crossorigin="anonymous">
+<script src="{{.JS.URL}}" integrity="{{.JS.Integrity}}" crossorigin="anonymous" defer></script>{{end}}
 <link rel="stylesheet" href="/static/css/app.css?v={{.Asset}}">
 {{block "head" .}}{{end}}
 <script src="/static/js/theme.js?v={{.Asset}}"></script>
 <link rel="stylesheet" href="/static/css/family-switcher.css?v={{.Asset}}">
 {{if .Dash}}<link rel="stylesheet" href="/static/css/shell.css?v={{.Asset}}">{{end}}
+<link rel="stylesheet" href="/static/css/coss.css?v={{.Asset}}">
 <script src="/static/js/family-switcher.js?v={{.Asset}}" defer></script>
 </head>
-<body data-page="{{block "page" .}}{{end}}"{{with .Token}} data-token="{{.}}"{{end}}{{with .Mode}} data-mode="{{.}}"{{end}}{{if .User}} data-user="{{.User.Username}}"{{end}}{{with .Main}} data-main="{{.}}"{{end}}{{with .Share}} data-share="{{.}}"{{end}}>
+<body data-page="{{block "page" .}}{{end}}"{{with .Token}} data-token="{{.}}"{{end}}{{with .Mode}} data-mode="{{.}}"{{end}}{{if .User}} data-user="{{.User.Username}}"{{end}}{{if and .User .User.SSOID}} data-sso="1"{{end}}{{with .Main}} data-main="{{.}}"{{end}}{{with .Share}} data-share="{{.}}"{{end}}>
 <a class="skip" href="#main">{{.L.T "nav.skip"}}</a>
 {{template "icons"}}
 {{if .Dash}}
@@ -39,7 +42,7 @@
     <a class="shell-brand" href="/"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="32" height="32"><span>{{.Site}}</span></a>
     <nav class="shell-nav" aria-label="{{.L.T "nav.main"}}">
       <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}><svg><use href="#i-grid"/></svg>{{.L.T "nav.mine"}}</a>
-      <a href="/new"><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a>
+      <a href="/new" {{if eq .Path "/new"}}aria-current="page"{{end}}><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a>
       <a href="/security" {{if eq .Path "/security"}}aria-current="page"{{end}}><svg><use href="#i-key"/></svg>{{.L.T "sec.title"}}</a>
       <a href="/nearby"><svg><use href="#i-phone"/></svg>{{.L.T "nearby.title"}}</a>
       <a href="/diff"><svg><use href="#i-sliders"/></svg>{{.L.T "diffpage.title"}}</a>
@@ -57,7 +60,7 @@
       <button class="icon-btn shell-burger" id="shell-burger" type="button" aria-label="{{.L.T "nav.menu"}}" aria-controls="shell-side" aria-expanded="false"><svg><use href="#i-menu"/></svg></button>
       <p class="shell-title">{{if .Title}}{{.Title}}{{else}}{{.L.T "nav.mine"}}{{end}}</p>
       <div class="shell-tools">
-        {{if ne .Path "/dashboard"}}<a class="btn primary sm" href="/new"><svg><use href="#i-plus"/></svg><span>{{.L.T "nav.new"}}</span></a>{{end}}
+        {{if and (ne .Path "/dashboard") (ne .Path "/new")}}<a class="btn primary sm" href="/new"><svg><use href="#i-plus"/></svg><span>{{.L.T "nav.new"}}</span></a>{{end}}
         <div class="menu lang-menu" id="lang-menu">
           <button type="button" class="icon-btn" aria-haspopup="true" aria-label="{{.L.T "nav.language"}}" title="{{.L.T "nav.language"}}"><svg><use href="#i-globe"/></svg></button>
           <div class="menu-list">{{$cur := .L.Code}}{{range .Langs}}
@@ -69,6 +72,8 @@
           <button type="button" aria-haspopup="true" aria-label="{{.L.T "nav.account_menu"}}"><span class="avatar">{{slice .User.Username 0 1}}</span></button>
           <div class="menu-list">
             <div class="who">{{.L.T "nav.signed_in_as"}}<br><b>@{{.User.Username}}</b></div>
+            <button type="button" class="hide" id="menu-vault"><svg width="16" height="16"><use href="#i-key"/></svg><span></span></button>
+            {{if and .Hub .User.SSOID}}<a href="{{.Hub}}/dashboard"><svg width="16" height="16"><use href="#i-link"/></svg>{{.L.T "nav.hop_id"}}</a>{{end}}
             <a href="/security"><svg width="16" height="16"><use href="#i-key"/></svg>{{.L.T "sec.title"}}</a>
             <button type="button" id="logout"><svg width="16" height="16"><use href="#i-out"/></svg>{{.L.T "nav.sign_out"}}</button>
           </div>
@@ -77,6 +82,7 @@
     </header>
     <main id="main">{{template "mainbody" .}}</main>
     <footer class="shell-foot">
+      {{if eq .UI "clean"}}<p class="coss-brand">{{range .HopFamily}}{{if eq .Slug "hub"}}<img src="{{(index .Icons "mark").URL}}" alt="" width="28" height="28">{{end}}{{end}}<b>Hop Easy Link</b></p>{{end}}
       <nav aria-label="{{.Site}}">
         <a href="/about">{{.L.T "footer.about"}}</a><a href="/faq">{{.L.T "footer.faq"}}</a><a href="/status">{{.L.T "status.title"}}</a><a href="/terms">{{.L.T "terms.title"}}</a><a href="/privacy">{{.L.T "privacy.title"}}</a><a href="/contact">{{.L.T "contact.title"}}</a>
       </nav>
@@ -91,10 +97,17 @@
     <nav class="nav-links" aria-label="{{.L.T "nav.main"}}">
       <a href="/new" {{if eq .Path "/new"}}aria-current="page"{{end}}>{{.L.T "nav.new"}}</a>
       <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}>{{.L.T "nav.mine"}}</a>
-      <a href="/about" {{if eq .Path "/about"}}aria-current="page"{{end}}>{{.L.T "nav.about"}}</a>
-      <a href="/faq" {{if eq .Path "/faq"}}aria-current="page"{{end}}>{{.L.T "nav.faq"}}</a>
+      <a href="/diff" {{if eq .Path "/diff"}}aria-current="page"{{end}}>{{.L.T "diffpage.title"}}</a>
+      <a href="/nearby" {{if eq .Path "/nearby"}}aria-current="page"{{end}}>{{.L.T "nearby.title"}}</a>
     </nav>
     <div class="nav-r">
+      <div class="menu" id="help-menu">
+        <button type="button" class="icon-btn" aria-haspopup="true" aria-label="{{.L.T "nav.help"}}" title="{{.L.T "nav.help"}}"><svg><use href="#i-help"/></svg></button>
+        <div class="menu-list">
+          <a href="/about" {{if eq .Path "/about"}}aria-current="page"{{end}}><svg width="16" height="16"><use href="#i-doc"/></svg>{{.L.T "nav.about"}}</a>
+          <a href="/faq" {{if eq .Path "/faq"}}aria-current="page"{{end}}><svg width="16" height="16"><use href="#i-chat"/></svg>{{.L.T "nav.faq"}}</a>
+        </div>
+      </div>
       <details class="family-switcher" data-family-switcher>
         <summary class="icon-btn" aria-label="{{.L.T "family.foot"}}" title="{{.L.T "family.foot"}}"><svg><use href="#i-grid"/></svg></summary>
         <nav aria-label="{{.L.T "family.foot"}}">{{range .HopPublicApps}}<a href="{{.URL}}" {{if eq .Slug "notehop"}}aria-current="true"{{end}}><img src="{{(index .Icons "mark").URL}}" width="32" height="32" alt="" loading="lazy">{{.Name}}</a>{{end}}</nav>
@@ -112,6 +125,8 @@
         <div class="menu-list">
           <div class="who">{{.L.T "nav.signed_in_as"}}<br><b>@{{.User.Username}}</b></div>
           <a href="/dashboard"><svg width="16" height="16"><use href="#i-grid"/></svg>{{.L.T "nav.mine"}}</a>
+          <button type="button" class="hide" id="menu-vault"><svg width="16" height="16"><use href="#i-key"/></svg><span></span></button>
+          {{if and .Hub .User.SSOID}}<a href="{{.Hub}}/dashboard"><svg width="16" height="16"><use href="#i-link"/></svg>{{.L.T "nav.hop_id"}}</a>{{end}}
           <a href="/security"><svg width="16" height="16"><use href="#i-key"/></svg>{{.L.T "sec.title"}}</a>
           <button type="button" id="logout"><svg width="16" height="16"><use href="#i-out"/></svg>{{.L.T "nav.sign_out"}}</button>
         </div>
@@ -124,6 +139,17 @@
   </div>
 </header>
 <main id="main">{{template "mainbody" .}}</main>
+{{if .MiniFoot}}
+<footer class="footer-mini">
+  <div class="wrap">
+    {{if eq .UI "clean"}}<p class="coss-brand">{{range .HopFamily}}{{if eq .Slug "hub"}}<img src="{{(index .Icons "mark").URL}}" alt="" width="28" height="28">{{end}}{{end}}<b>Hop Easy Link</b></p>{{end}}
+    <p>© 2026 navi-crwn · MIT License</p>
+    <nav aria-label="{{.Site}}">
+      <a href="/about">{{.L.T "footer.about"}}</a><a href="/faq">{{.L.T "nav.faq"}}</a><a href="/privacy">{{.L.T "privacy.title"}}</a><a href="/terms">{{.L.T "terms.title"}}</a><a href="/status">{{.L.T "status.title"}}</a><a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</footer>
+{{else}}
 <footer class="footer-columns">
   <div class="wrap footer-grid">
     <div class="foot-col foot-brand">
@@ -171,6 +197,7 @@
       {{end}}    </nav>
   </div>
 </footer>
+{{end}}
 {{end}}
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <script src="/i18n/{{.L.Code}}.js?v={{.Asset}}"></script>

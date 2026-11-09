@@ -196,5 +196,11 @@ func (a *App) apiMyNotes(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInternalServerError, "err.load_notes_failed")
 		return
 	}
+	// A basic note is named from its own text, which the server can read
+	// anyway; an encrypted note's title lives only in the vault blob.
+	for i := range notes {
+		notes[i].Title = publicTitle(&db.Note{Encrypted: notes[i].Encrypted, Content: notes[i].Content})
+		notes[i].Content = ""
+	}
 	writeJSON(w, http.StatusOK, map[string]any{"notes": notes})
 }

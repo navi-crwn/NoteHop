@@ -173,7 +173,7 @@
           var del = h('button.icon-btn.sm', { type: 'button', title: NH.t('web.delete'), 'aria-label': NH.t('web.delete') + ' ' + f.n }, NH.icon('trash'));
           del.addEventListener('click', function () {
             if (o.files().length < 2) return NH.toast(NH.t('web.last_file'), 'err');
-            if (confirm(NH.t('web.delete_confirm', { name: f.n }))) o.remove(i);
+            NH.confirm(NH.t('web.delete_confirm', { name: f.n }), { danger: true, subject: f.n, anchor: del }).then(function (ok) { if (ok) o.remove(i); });
           });
           row.append(ren, del);
         }
@@ -189,7 +189,9 @@
         }
         kids.push(h('div.wr-tpl', h('p.wr-h', NH.t('web.templates')), Object.keys(TPL).map(function (t) {
           var b = h('button', { type: 'button' }, NH.t('web.tpl_' + t));
-          b.addEventListener('click', function () { if (confirm(NH.t('web.tpl_confirm'))) o.template(t); });
+          b.addEventListener('click', function () {
+            NH.confirm(NH.t('web.tpl_confirm'), { anchor: b }).then(function (ok) { if (ok) o.template(t); });
+          });
           return b;
         })));
       }

@@ -13,7 +13,7 @@ async function pickMode(p, m) { await p.evaluate(() => { ['opt-who', 'more-modes
 async function page(b, opts) {
   const ctx = (await b.newContext(Object.assign({ permissions: ['clipboard-read', 'clipboard-write'] }, opts || {})).then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }));
   const p = await ctx.newPage();
-  p.on('pageerror', e => errs.push(e.message)); p.on('dialog', d => d.accept());
+  p.on('pageerror', e => errs.push(e.message)); require('./e2e-dialogs')(p);
   p.on('console', m => { if (m.type() === 'error' && !/status of 4\d\d/.test(m.text())) errs.push(m.text()); });
   return p;
 }
@@ -22,10 +22,17 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', pills 
   if (title) await p.fill('#title', title);
   if (body) await p.fill('.ed-src', body);
   await pickMode(p, mode);
-  if (pw) { await p.click('#opt-private > summary'); await p.click('label:has([name=privacy][value=password])'); await p.fill('#password', pw); }
-  if (pills.length) await p.click('#adv-btn');
-  for (const x of pills) await p.click(`label:has([data-feature=${x}])`);
+  if (pw) { await p.click('#opt-password > summary'); await p.click('label:has(input[data-feature=password])'); await p.fill('#password', pw); }
+  // The decoy switch and its fields live in the password chip, and opening
+  // "Other settings" closes the chips: configure the decoy first.
+  if (pills.includes('decoy')) {
+    if (!(await p.$eval('#opt-password', d => d.open))) await p.click('#opt-password > summary');
+    await p.click('label:has(input[data-feature=decoy])');
+  }
   for (const [sel, v] of Object.entries(fill)) await p.fill(sel, v);
+  const more = pills.filter(x => x !== 'decoy');
+  if (more.length) await p.click('#adv-btn');
+  for (const x of more) await p.click(`label:has([data-feature=${x}])`);
   await closeMenus(p); await p.click('#create'); await p.waitForURL(/#k=/, { timeout: 30000 }); await p.waitForSelector('#note:not(.hide)');
   await p.keyboard.press('Escape');
   return p.url();

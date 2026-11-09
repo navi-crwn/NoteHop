@@ -344,12 +344,13 @@
   }
   function setStatus(t) { $('#live-status').textContent = t; }
   function rename() {
-    var v = prompt(NH.t('live.rename'), nick);
-    if (!v || !v.trim()) return;
-    nick = v.trim().slice(0, 40);
-    NH.store.set('nh_nick', nick);
-    announce();
-    drawPeers();
+    NH.prompt({ title: NH.t('live.rename'), value: nick, maxlength: 40 }).then(function (v) {
+      if (!v || !v.trim()) return;
+      nick = v.trim().slice(0, 40);
+      NH.store.set('nh_nick', nick);
+      announce();
+      drawPeers();
+    });
   }
 
   // ---------- chat (never stored) ----------

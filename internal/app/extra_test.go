@@ -169,6 +169,48 @@ func TestDecoy(t *testing.T) {
 	}
 }
 
+// The decoy must look exactly like the real note does to a stranger, even on
+// the owner link and in the owner's signed-in browser: that is the situation
+// it exists for. A decoy opening spends a view like a real one, so a view
+// counter can't tell the two apart either.
+func TestDecoyHidesItselfFromTheOwner(t *testing.T) {
+	_, _, c := newAppDB(t)
+	if code, _, raw := c.do("POST", "/api/register", map[string]string{"username": "owner1", "auth": key()}, nil); code != 200 && code != 201 {
+		t.Fatalf("register: %d %s", code, raw)
+	}
+	decoyWrite := key()
+	n := c.create(map[string]any{"password": true, "salt": key(), "mode": "edit",
+		"decoy": map[string]any{"content": fakeCipher("harmless"), "write": decoyWrite}})
+	for name, hdr := range map[string]map[string]string{
+		"owner link, signed in":  {"X-Write": decoyWrite, "X-Admin": n.admin},
+		"reader link, signed in": {"X-Write": decoyWrite},
+	} {
+		code, m, raw := c.do("POST", "/api/n/"+n.token+"/open", nil, hdr)
+		if code != 200 || m["content"] != fakeCipher("harmless") || m["mode"] != "read" || m["admin"] != false || m["owned"] != false {
+			t.Fatalf("%s: %d %s", name, code, raw)
+		}
+		for _, k := range []string{"decoy", "links", "snapshots", "parent", "suggestions", "last_open", "ip_allow", "inbox", "watch", "watch_key"} {
+			if _, leaked := m[k]; leaked {
+				t.Errorf("%s: the decoy answer leaks %q", name, k)
+			}
+		}
+	}
+	// The real password on the owner link still gives the owner everything, including the decoy report.
+	_, m, _ := c.do("POST", "/api/n/"+n.token+"/open", nil, map[string]string{"X-Write": n.write, "X-Admin": n.admin})
+	if m["admin"] != true || m["owned"] != true || m["mode"] != "edit" || m["decoy"] == nil {
+		t.Fatalf("real open: %v", m)
+	}
+	if got := m["decoy"].(map[string]any)["opened"].(float64); got != 2 {
+		t.Fatalf("decoy opened = %v, want 2", got)
+	}
+	// With a view limit the decoy spends a view, like the real note would.
+	b := c.create(map[string]any{"password": true, "salt": key(), "mode": "read", "max_views": 3,
+		"decoy": map[string]any{"content": fakeCipher("harmless"), "write": decoyWrite}})
+	if _, m, _ := c.do("POST", "/api/n/"+b.token+"/open", nil, map[string]string{"X-Write": decoyWrite}); m["views"].(float64) != 1 || m["max_views"].(float64) != 3 {
+		t.Fatalf("decoy view count: %v", m)
+	}
+}
+
 func TestBurnBlocks(t *testing.T) {
 	_, _, c := newAppDB(t)
 	bk := key()

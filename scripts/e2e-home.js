@@ -122,12 +122,12 @@ const visiblePanel = p => p.evaluate(() => [...document.querySelectorAll('.h-pan
   ok('phone: arrows switch the group', await selected(m) === 3);
   await m.context().close();
 
-  // ---------- Arabic ----------
+  // ---------- a language that is not shipped (Arabic): English, left to right ----------
   const a = await open(b, { locale: 'ar' });
   await a.goto(BASE + '/?lang=ar'); await a.waitForTimeout(500);
-  ok('Arabic: right to left, no sideways scroll', await a.evaluate(() => document.documentElement.dir === 'rtl' && document.documentElement.scrollWidth <= innerWidth));
+  ok('Arabic asked for: English, left to right, no sideways scroll', await a.evaluate(() => document.documentElement.dir === 'ltr' && document.documentElement.lang === 'en' && document.documentElement.scrollWidth <= innerWidth));
   await scrub(a, '#h-life', .5);
-  ok('Arabic: the link chip stays inside the picture', await a.evaluate(() => { const s = document.querySelector('.h-scene').getBoundingClientRect(), c = document.getElementById('h-chiplink').getBoundingClientRect(); return c.left >= s.left && c.right <= s.right; }));
+  ok('Arabic asked for: the link chip stays inside the picture', await a.evaluate(() => { const s = document.querySelector('.h-scene').getBoundingClientRect(), c = document.getElementById('h-chiplink').getBoundingClientRect(); return c.left >= s.left && c.right <= s.right; }));
   await a.context().close();
 
   // ---------- reduce motion ----------

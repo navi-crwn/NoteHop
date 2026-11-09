@@ -375,8 +375,13 @@ func (d *DB) BurnKeys(noteID int64) (map[string]BurnKey, error) {
 // ---------- claiming and configs ----------
 
 // Claim gives an ownerless note to a user (notes made before signing in).
+// Claim puts a guest note into an account. The same account may also claim a
+// note it already owns but whose blob is empty (made while its vault was
+// closed): that seals the key into the vault at last, so the dashboard can
+// open the note again. A note in another account is never moved.
 func (d *DB) Claim(noteID, userID int64, blob string) error {
-	return deleted(d.Exec(`UPDATE notes SET owner_id = ?, owner_blob = ? WHERE id = ? AND owner_id IS NULL`, userID, blob, noteID))
+	return deleted(d.Exec(`UPDATE notes SET owner_id = ?, owner_blob = ? WHERE id = ?
+		AND (owner_id IS NULL OR (owner_id = ? AND owner_blob = ''))`, userID, blob, noteID, userID))
 }
 
 // NotesWithConfig lists notes whose config mentions key, for worker jobs.
@@ -480,4 +485,24 @@ func (d *DB) ConvertNote(id, baseVersion int64, encrypted bool, content string) 
 		return 0, err
 	}
 	return v, tx.Commit()
+}
+
+// ---------- reminder cards ----------
+
+// DismissReminder records that a member hid a reminder card just now; hiding
+// it again later moves the time forward.
+func (d *DB) DismissReminder(userID int64, key string) error {
+	_, err := d.Exec(`INSERT INTO reminders (user_id, key, dismissed_at) VALUES (?, ?, ?)
+		ON CONFLICT(user_id, key) DO UPDATE SET dismissed_at = excluded.dismissed_at`, userID, key, now())
+	return err
+}
+
+// ReminderDismissedAt is when the member last hid that card, 0 when never.
+func (d *DB) ReminderDismissedAt(userID int64, key string) (int64, error) {
+	var at int64
+	err := d.QueryRow(`SELECT dismissed_at FROM reminders WHERE user_id = ? AND key = ?`, userID, key).Scan(&at)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, nil
+	}
+	return at, err
 }

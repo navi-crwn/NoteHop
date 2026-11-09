@@ -50,7 +50,8 @@ func TestTemplatesAreBalanced(t *testing.T) {
 	}
 }
 
-// All the "More settings" groups live inside the dialog, and nothing of them outside.
+// All the "Other settings" groups live inside the dialog, and nothing of them outside. A setting with a
+// chip of its own (type, password, deletion, view limit, readers) is not in the dialog a second time.
 func TestMoreSettingsAreAllInTheDialog(t *testing.T) {
 	s := templates(t)["new.html"]
 	a := strings.Index(s, `<dialog class="drawer" id="adv"`)
@@ -59,8 +60,16 @@ func TestMoreSettingsAreAllInTheDialog(t *testing.T) {
 		t.Fatal(`new.html: "More settings" must be a <dialog id="adv">`)
 	}
 	in, out := strings.Count(s[a:b], `class="adv-group`), strings.Count(s[:a], `class="adv-group`)+strings.Count(s[b:], `class="adv-group`)
-	if in < 6 || out != 0 {
-		t.Errorf("settings groups: %d inside the dialog (want at least 6), %d outside (want 0)", in, out)
+	if in < 5 || out != 0 {
+		t.Errorf("settings groups: %d inside the dialog (want at least 5), %d outside (want 0)", in, out)
+	}
+	for _, once := range []string{`data-feature="password"`, `id="password"`, `data-feature="decoy"`, `data-feature="burn"`, `data-feature="expires"`, `id="expires"`, `name="opens" value="10"`} {
+		if n := strings.Count(s, once); n != 1 {
+			t.Errorf("new.html: %s appears %d times (one setting, one place)", once, n)
+		}
+		if strings.Contains(s[a:b], once) {
+			t.Errorf("new.html: %s is in the dialog; it has a chip of its own", once)
+		}
 	}
 }
 

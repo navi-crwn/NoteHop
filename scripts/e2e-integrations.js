@@ -16,13 +16,13 @@ async function page(ctx) {
   const p = await ctx.newPage();
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (m.type() === 'error' && !/status of (4\d\d|503)|Failed to load resource/.test(m.text())) errs.push(m.text()); });
-  p.on('dialog', d => d.accept());
+  require('./e2e-dialogs')(p);
   return p;
 }
 async function create(p, title, body, opts = {}) {
   await p.goto(BASE + '/new');
   await p.fill('#title', title); await p.fill('.ed-src', body);
-  if (opts.public) await p.click('label.kind-opt:has(input[value=basic])'); // a basic note: readable on the server
+  if (opts.public) { await p.click('#opt-kind > summary'); await p.click('label:has(input[name=kind][value=basic])'); } // a basic note: readable on the server
   await closeMenus(p); await p.click('#create'); await p.waitForURL(/#k=/); await p.waitForSelector('#note:not(.hide)');
   await p.keyboard.press('Escape');
   return p.url();

@@ -74,9 +74,7 @@ func (a *App) openDecoy(w http.ResponseWriter, r *http.Request, x access, poll b
 			log.Printf("decoy opened: %v", err)
 		}
 	}
-	m := a.meta(r, x)
-	m.Mode = modeRead // whoever holds the decoy password must not find a working editor
-	resp := openResp{metaResp: m, Content: d.Content, Checks: json.RawMessage("{}"), Entries: []db.Entry{}}
+	resp := openResp{metaResp: a.meta(r, x).asReader(), Content: d.Content, Checks: json.RawMessage("{}"), Entries: []db.Entry{}}
 	if burnable && n.Views >= n.MaxViews {
 		resp.Burned = true
 		if err := a.db.DeleteNote(n.ID); err != nil {
@@ -85,6 +83,21 @@ func (a *App) openDecoy(w http.ResponseWriter, r *http.Request, x access, poll b
 	}
 	writeJSON(w, http.StatusOK, resp)
 	return true
+}
+
+// asReader strips everything a stranger with the reader link would not get.
+// The decoy has to look exactly like the real note does to that stranger,
+// even when the request carries the owner link or the owner's session:
+// whoever forces the owner to open the note on the owner's own device must
+// not see an Owner badge, an editor, the link list or "someone opened the
+// decoy", or the decoy has given itself away.
+func (m metaResp) asReader() metaResp {
+	m.Mode = modeRead
+	m.Admin, m.Owned = false, false
+	m.Links, m.Snapshots, m.Parent = nil, nil, ""
+	m.IPAllow, m.LastOpen, m.Suggestions, m.Decoy = nil, 0, 0, nil
+	m.Watch, m.WatchKey, m.Inbox = "", "", ""
+	return m
 }
 
 func (a *App) apiSetDecoy(w http.ResponseWriter, r *http.Request) {
@@ -333,7 +346,8 @@ func (a *App) apiVote(w http.ResponseWriter, r *http.Request) {
 
 // ---------- claiming ----------
 
-// apiClaim puts a note made before signing in into the signed-in account.
+// apiClaim puts a note made before signing in into the signed-in account, or
+// seals the key of a note already in the account whose blob is still empty.
 // Needs the admin link (proof of ownership) and a vault-sealed blob.
 func (a *App) apiClaim(w http.ResponseWriter, r *http.Request) {
 	x, ok := a.access(w, r)

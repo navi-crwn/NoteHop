@@ -37,5 +37,8 @@
   .shell-burger { display: inline-grid; }
   .shell-body { margin-inline-start: 0; }
   .shell-tools .btn.primary span { display: none; }
+  .shell-tools .btn.primary { width: var(--hop-ctl-h); min-width: var(--hop-ctl-h); padding: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .shell-side { transition: none; } }
+@media (max-width: 760px), (pointer: coarse) { .shell-tools .btn.primary { min-width: 44px; } }
+@media (max-width: 760px) and (max-width: 1023px), (pointer: coarse) and (max-width: 1023px) { .shell-tools .btn.primary { width: 44px; } }

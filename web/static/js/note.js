@@ -146,7 +146,7 @@
     var handoff = null;
     try { handoff = sessionStorage.getItem('nh_pw_' + token); sessionStorage.removeItem('nh_pw_' + token); } catch (x) {}
     if (handoff && !errMsg) return unlock(handoff).catch(function () { askPassword(''); });
-    var input = h('input', { type: 'password', placeholder: NH.t('feat.password'), 'aria-label': NH.t('note.password_label'), autocomplete: 'off', required: true });
+    var input = h('input', { type: 'password', placeholder: NH.t('note.pw_placeholder'), 'aria-label': NH.t('note.password_label'), autocomplete: 'off', required: true });
     var err = h('p.locked-err', errMsg || '');
     var btn = h('button.btn.primary', { type: 'submit' }, NH.icon('unlock'), NH.t('vault.open_btn'));
     var form = h('form.pw-form', input, btn);
@@ -614,11 +614,13 @@
       if (S.meta.admin && !S.meta.frozen) {
         var del = h('button.icon-btn.sm', { type: 'button', title: NH.t('entry.delete'), 'aria-label': NH.t('entry.delete') }, NH.icon('trash'));
         del.addEventListener('click', function () {
-          if (!confirm(NH.t('entry.confirm_delete', { name: e.n || NH.t('entry.anon') }))) return;
-          api('DELETE', '/entries/' + e.id).then(function () {
-            S.entries = S.entries.filter(function (x) { return x.id !== e.id; });
-            drawEntries();
-          }, function (x) { NH.toast(x.message, 'err'); });
+          NH.confirm(NH.t('entry.confirm_delete', { name: e.n || NH.t('entry.anon') }), { danger: true, anchor: del }).then(function (ok) {
+            if (!ok) return;
+            api('DELETE', '/entries/' + e.id).then(function () {
+              S.entries = S.entries.filter(function (x) { return x.id !== e.id; });
+              drawEntries();
+            }, function (x) { NH.toast(x.message, 'err'); });
+          });
         });
         head.appendChild(del);
       }
@@ -669,8 +671,9 @@
     if (deletable) {
       var del = h('button.icon-btn.sm', { type: 'button', title: NH.t('share.delete_link'), 'aria-label': NH.t('share.delete_link') }, NH.icon('trash'));
       del.addEventListener('click', function () {
-        if (!confirm(NH.t('share.confirm_delete', { link: '/' + l.token }))) return;
-        api('DELETE', '/links/' + encodeURIComponent(l.token)).then(openShare, function (x) { NH.toast(x.message, 'err'); });
+        NH.confirm(NH.t('share.confirm_delete', { link: '/' + l.token }), { danger: true, ok: NH.t('share.delete_link'), anchor: del }).then(function (ok) {
+          if (ok) api('DELETE', '/links/' + encodeURIComponent(l.token)).then(openShare, function (x) { NH.toast(x.message, 'err'); });
+        });
       });
       row.lastChild.appendChild(del);
     }
@@ -717,7 +720,10 @@
   function convertNote() {
     var toEnc = !S.meta.encrypted;
     if (!A || !K || !S.keys) return NH.toast(NH.t('convert.need_key'), 'err');
-    if (!confirm(NH.t(toEnc ? 'convert.confirm_enc' : 'convert.confirm_basic'))) return;
+    NH.confirm(NH.t(toEnc ? 'convert.confirm_enc' : 'convert.confirm_basic'), { ok: NH.t(toEnc ? 'convert.to_enc' : 'convert.to_basic'), anchor: $('#kind-switch') })
+      .then(function (ok) { if (ok) convertNow(toEnc); });
+  }
+  function convertNow(toEnc) {
     var sw = $('#kind-switch');
     sw.disabled = true;
     if (ed && S.dirty) saveNow();
@@ -797,24 +803,27 @@
 
   function freeze() {
     if (ed && S.dirty) saveNow();
-    if (!confirm(NH.t('freeze.confirm'))) return;
     var go = function () {
       api('POST', '/freeze').then(function (l) {
         NH.copy(shareURL(l.token), NH.t('freeze.done'));
         openShare();
       }, function (x) { NH.toast(x.message, 'err'); });
     };
-    // Wait for an in-flight save so the snapshot has the latest text.
-    (function wait() { if (S.saving || S.dirty) setTimeout(wait, 200); else go(); })();
+    NH.confirm(NH.t('freeze.confirm'), { ok: NH.t('note.freeze') }).then(function (ok) {
+      // Wait for an in-flight save so the snapshot has the latest text.
+      if (ok) (function wait() { if (S.saving || S.dirty) setTimeout(wait, 200); else go(); })();
+    });
   }
 
   function removeNote() {
-    if (!confirm(NH.t('note.confirm_delete'))) return;
-    S.dirty = false;
-    api('DELETE', '').then(function () {
-      NH.recent.remove(token);
-      location.href = '/';
-    }, function (x) { NH.toast(x.message, 'err'); });
+    NH.confirm(NH.t('note.confirm_delete'), { danger: true, subject: currentTitle() || '/' + token }).then(function (ok) {
+      if (!ok) return;
+      S.dirty = false;
+      api('DELETE', '').then(function () {
+        NH.recent.remove(token);
+        location.href = '/';
+      }, function (x) { NH.toast(x.message, 'err'); });
+    });
   }
 
   window.addEventListener('hashchange', function () { location.reload(); });

@@ -34,9 +34,19 @@ func TestHopFamilyTypography(t *testing.T) {
 		t.Error("the switcher must list all six apps and identify NoteHop")
 	}
 	csp := res.Header.Get("Content-Security-Policy")
-	for _, d := range []string{"script-src 'self';", "style-src 'self' https://hel.ink;", "font-src 'self' https://hel.ink;"} {
+	for _, d := range []string{"script-src 'self' https://hel.ink;", "style-src 'self' https://hel.ink;", "font-src 'self' https://hel.ink;"} {
 		if !strings.Contains(csp, d) {
 			t.Errorf("CSP lacks %q: %s", d, csp)
+		}
+	}
+	// The shared dialogs: one script from hel.ink, pinned by its hash, and its stylesheet.
+	ui := hopUI()
+	if ui == nil || !strings.HasPrefix(ui.JS.Integrity, "sha384-") {
+		t.Fatal("the bundled manifest must list ui_css and ui_js (with integrity); a sync that drops them turns the dialogs back into the browser's own")
+	}
+	for _, want := range []string{`<script src="` + ui.JS.URL + `" integrity="` + ui.JS.Integrity + `" crossorigin="anonymous" defer></script>`, `href="` + ui.CSS.URL + `"`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the page lacks %s", want)
 		}
 	}
 }

@@ -17,7 +17,7 @@ async function open(b) {
   const p = await c.newPage();
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (m.type() === 'error' && !/status of 404/.test(m.text())) errs.push(p.url() + ' :: ' + m.text()); });
-  p.on('dialog', d => d.accept());
+  require('./e2e-dialogs')(p);
   return p;
 }
 async function create(p, { title, body, mode = 'read', slug = '' }) {
@@ -28,7 +28,7 @@ async function create(p, { title, body, mode = 'read', slug = '' }) {
     await p.check(`input[name=mode][value=${mode}]`, { force: true });
   }
   if (slug) {
-    await p.click('label.kind-opt:has(input[value=basic])'); await p.fill('#slug', slug); // only a basic note can have a link name
+    await p.click('#opt-kind > summary'); await p.click('label:has(input[name=kind][value=basic])'); await p.fill('#slug', slug); // only a basic note can have a link name
   }
   await p.click('#create'); await p.waitForURL(/#k=/, { timeout: 20000 }); await p.waitForSelector('#note:not(.hide)');
   await p.keyboard.press('Escape');

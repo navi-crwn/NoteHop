@@ -112,7 +112,7 @@ const wait = (p, fn, arg, t) => p.waitForFunction(fn, arg, { timeout: t || 10000
     await w.click('#create'); await w.waitForURL(/#k=/); await w.waitForSelector('#note:not(.hide)');
     await w.keyboard.press('Escape');
     const wu = new URL(w.url());
-    const rd = await page(b); rd.on('dialog', d => d.accept());
+    const rd = await page(b); require('./e2e-dialogs')(rd);
     await rd.goto(BASE + wu.pathname + '#k=' + new URLSearchParams(wu.hash.slice(1)).get('k'));
     await rd.waitForSelector('.locked-form');
     await rd.fill('.locked-form input', '2468'); await rd.click('.locked-form button');

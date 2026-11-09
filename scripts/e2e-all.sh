@@ -7,6 +7,11 @@
 set -u
 cd "$(dirname "$0")/.."
 PORT="${PORT:-8099}"
+# Never point these suites at a port something else is listening on: they register accounts and create notes.
+if command -v ss >/dev/null 2>&1 && ss -ltn 2>/dev/null | grep -q "[:.]$PORT "; then
+	echo "port $PORT is already in use; choose a free one with PORT=..." >&2
+	exit 1
+fi
 TMP="$(mktemp -d)"
 BIN="$TMP/notehop"
 trap 'kill "$PID" 2>/dev/null; rm -rf "$TMP"' EXIT

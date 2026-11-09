@@ -189,6 +189,10 @@ var migrations = []string{
 	`ALTER TABLE files ADD COLUMN scope TEXT NOT NULL DEFAULT '';
 	CREATE INDEX files_scope ON files(scope, expires);
 	CREATE TABLE file_drafts (scope TEXT PRIMARY KEY, note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE);`,
+	// 13: reminder cards a member has hidden (one row per account and card).
+	// IF NOT EXISTS: running it against a database that already has the table changes nothing.
+	`CREATE TABLE IF NOT EXISTS reminders (user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, key TEXT NOT NULL,
+		dismissed_at INTEGER NOT NULL, PRIMARY KEY (user_id, key));`,
 }
 
 // migrate applies pending migrations, each in its own transaction together
@@ -840,12 +844,17 @@ func (d *DB) Recover(userID int64, slot int, sso bool, hash, vaultWrap string) e
 }
 
 // OwnedNote is a dashboard row. Blob is the owner's vault-encrypted
-// {title, key, admin} — the server can't read it.
+// {title, key, admin} — the server can't read it. Title is filled for a
+// basic note only (its text is readable here anyway: /raw prints it), so
+// the dashboard can still name the note when the blob is empty or the
+// vault is closed; an encrypted note's title stays empty without the key.
 type OwnedNote struct {
 	Token     string `json:"token"`
 	Mode      string `json:"mode"`
 	Blob      string `json:"blob"`
 	Encrypted bool   `json:"encrypted"`
+	Title     string `json:"title"`
+	Content   string `json:"-"` // basic notes only, for the title; never sent
 	Frozen    bool   `json:"frozen"`
 	Views     int64  `json:"views"`
 	MaxViews  int64  `json:"max_views"`
@@ -856,8 +865,12 @@ type OwnedNote struct {
 }
 
 func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
-	rows, err := d.Query(`SELECT l.token, l.mode, n.owner_blob, n.encrypted, n.frozen, n.views, n.max_views, n.expires, n.created, n.updated, n.last_open
-		FROM notes n JOIN links l ON l.token = (SELECT token FROM links WHERE note_id = n.id ORDER BY rowid LIMIT 1)
+	// The row's link is the note's first read-only link when it has one: a
+	// basic note is shown through it without a key, so it must not be a link
+	// that could write. Only when every link can write is the first one used.
+	rows, err := d.Query(`SELECT l.token, l.mode, n.owner_blob, n.encrypted, CASE WHEN n.encrypted THEN '' ELSE n.content END,
+			n.frozen, n.views, n.max_views, n.expires, n.created, n.updated, n.last_open
+		FROM notes n JOIN links l ON l.token = (SELECT token FROM links WHERE note_id = n.id ORDER BY (mode <> 'read'), rowid LIMIT 1)
 		WHERE n.owner_id = ? AND (n.expires = 0 OR n.expires > ?) ORDER BY n.updated DESC LIMIT 500`, userID, now())
 	if err != nil {
 		return nil, err
@@ -866,7 +879,7 @@ func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
 	out := []OwnedNote{}
 	for rows.Next() {
 		var o OwnedNote
-		if err := rows.Scan(&o.Token, &o.Mode, &o.Blob, &o.Encrypted, &o.Frozen, &o.Views, &o.MaxViews, &o.Expires, &o.Created, &o.Updated, &o.LastOpen); err != nil {
+		if err := rows.Scan(&o.Token, &o.Mode, &o.Blob, &o.Encrypted, &o.Content, &o.Frozen, &o.Views, &o.MaxViews, &o.Expires, &o.Created, &o.Updated, &o.LastOpen); err != nil {
 			return nil, err
 		}
 		out = append(out, o)

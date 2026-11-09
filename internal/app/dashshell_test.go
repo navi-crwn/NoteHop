@@ -37,6 +37,13 @@ func TestDashboardShell(t *testing.T) {
 			t.Errorf("top bar lacks %s", want)
 		}
 	}
+	// The vault: its state line, the banners that explain a locked row and offer the way out, the
+	// "On this device" group, and the lock/unlock entry in the account menu.
+	for _, want := range []string{`id="vault-state"`, `id="vault-locked"`, `id="vault-mismatch"`, `id="reseal"`, `id="nokey"`, `data-group="device"`, `id="menu-vault"`, `id="dash-lead"`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("dashboard lacks %s", want)
+		}
+	}
 	if pub := get("/about"); strings.Contains(pub, `class="shell-side"`) || !strings.Contains(pub, `class="footer-columns"`) {
 		t.Error("public pages keep the public chrome")
 	}

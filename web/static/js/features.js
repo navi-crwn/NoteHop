@@ -115,6 +115,7 @@
         row.appendChild(h('button.btn.sm', { type: 'submit' }, NH.t('common.save')));
         f.form.append(h('label', NH.t(f.label) + (f.unit ? ' (' + NH.t(f.unit) + ')' : '')), row);
       }
+      if (f.kind === 'decoy') f.form.appendChild(h('span.hint', NH.t('decoy.counts')));
       f.form.appendChild(f.hint);
       forms.appendChild(f.form);
 
@@ -253,10 +254,12 @@
   $('#history-restore').addEventListener('click', function () {
     var v = hist.list[+$('#history-range').value];
     loadVersion(v).then(function (d) {
-      if (!confirm(NH.t('history.confirm', { n: v.version }))) return;
-      N.setText(d.t || '', d.b || '');
-      $('#history-dlg').close();
-      NH.toast(NH.t('history.restored'), 'ok');
+      return NH.confirm(NH.t('history.confirm', { n: v.version }), { ok: NH.t('history.restore') }).then(function (ok) {
+        if (!ok) return;
+        N.setText(d.t || '', d.b || '');
+        $('#history-dlg').close();
+        NH.toast(NH.t('history.restored'), 'ok');
+      });
     });
   });
 

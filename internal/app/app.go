@@ -275,7 +275,8 @@ func (a *App) routes() {
 	m.HandleFunc("POST /api/logout", a.apiLogout)
 	m.HandleFunc("GET /api/me", a.apiMe)
 	m.HandleFunc("GET /api/me/notes", a.apiMyNotes)
-	m.HandleFunc("GET /api/v1/me/notes", a.apiMyNotesForApp) // signed, server to server (mynotes.go)
+	m.HandleFunc("POST /api/me/reminders/dismiss", a.apiDismissReminder) // reminder cards (reminders.go)
+	m.HandleFunc("GET /api/v1/me/notes", a.apiMyNotesForApp)             // signed, server to server (mynotes.go)
 	m.HandleFunc("POST /api/vault", a.apiVault)
 	m.HandleFunc("POST /api/me/recovery", a.apiSetRecovery)
 	m.HandleFunc("POST /api/me/secret", a.apiChangeSecret)
@@ -329,11 +330,15 @@ type pageData struct {
 	Contact       string       // operator contact for /contact
 	ContactHref   string       // mailto: for an address, the URL otherwise
 	HopFonts      *familyAsset // HOP family stylesheet on hel.ink, with its SRI hash
+	HopUI         *hopUIAssets // shared dialogs and reminder cards on hel.ink (nil: native dialogs)
 	HopFamily     []familyApp  // the other public HOP apps
 	HopPublicApps []familyApp
-	Back          bool        // inner page: show "Back to NoteHop"
-	Dash          bool        // the signed-in dashboard shell (sidebar, settings-type top bar)
-	Status        *liveStatus // /status only
+	Back          bool            // inner page: show "Back to NoteHop"
+	UI            string          // "clean" when the optional Clean style is on (cookie hop_ui), else empty
+	Dash          bool            // the signed-in dashboard shell (sidebar, settings-type top bar)
+	MiniFoot      bool            // a working page: one line of footer instead of the columns
+	Reminders     map[string]bool // reminder cards due on the dashboard, by key (reminders.go)
+	Status        *liveStatus     // /status only
 	Changelog     *changePage
 }
 
@@ -354,8 +359,14 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.L, d.Langs = a.locale(w, r), i18n.Langs
 	d.SSO, d.SSOName, d.Links = a.cfg.SSOEnabled(), a.cfg.SSOName, a.cfg.Links
 	d.AI, d.AICustom, d.Repo = a.cfg.aiMode(), len(a.cfg.AIOrigins) > 0, a.cfg.repo()
-	d.Back = backPages[name]
-	d.Dash = d.User != nil && (name == "dashboard" || name == "vault")
+	if d.User == nil {
+		d.User = a.currentUser(r)
+	}
+	// In the shell the sidebar is the way back, so those pages have no "Back to NoteHop" row.
+	d.Dash = d.User != nil && dashPages[name]
+	d.UI = uiStyle(r)
+	d.Back = backPages[name] && !d.Dash
+	d.MiniFoot = miniFootPages[name]
 	if name == "home" || name == "features" {
 		d.TourGroups, d.TourItems = []string{"share", "private", "together", "blocks", "dev", "web"}, []int{1, 2, 3, 4, 5, 6}
 	}
@@ -367,6 +378,7 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.Main, d.Share = a.cfg.BaseURL, a.shareURL()
 	d.LinkHost = strings.TrimPrefix(strings.TrimPrefix(cmp.Or(d.Share, d.Origin), "https://"), "http://")
 	d.HopFonts, d.HopFamily = hopFonts(), hopFamily("notehop")
+	d.HopUI = hopUI()
 	d.HopPublicApps = hopFamily("")
 	d.Contact = a.cfg.Contact
 	if d.Contact != "" {
@@ -378,9 +390,6 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.Clipper = clipper(d.Origin)
 	if d.Next == "" {
 		d.Next = safeNext(r.URL.Query().Get("next"))
-	}
-	if d.User == nil {
-		d.User = a.currentUser(r)
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
@@ -421,7 +430,8 @@ func (a *App) dashboardPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login?next=/dashboard", http.StatusSeeOther)
 		return
 	}
-	a.render(w, r, http.StatusOK, "dashboard", pageData{Title: a.locale(w, r).T("title.dashboard"), User: u, NoIndex: true})
+	due := map[string]bool{remindRecovery: a.reminderDue(u, remindRecovery, a.recoveryStatus(u).Left == 0, time.Now())}
+	a.render(w, r, http.StatusOK, "dashboard", pageData{Title: a.locale(w, r).T("title.dashboard"), User: u, NoIndex: true, Reminders: due})
 }
 
 // profileOrNote serves /@name as a profile and /TOKEN as a note page. Site
@@ -614,4 +624,13 @@ func (a *App) manifest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/manifest+json")
 	w.Header().Set("Cache-Control", "public, max-age=3600")
 	w.Write(b)
+}
+
+// uiStyle reads the family cookie hop_ui (written by the hub's settings, shared on .hel.ink): "clean" turns the
+// optional Clean style on, anything else keeps the original HOP look.
+func uiStyle(r *http.Request) string {
+	if c, err := r.Cookie("hop_ui"); err == nil && c.Value == "clean" {
+		return "clean"
+	}
+	return ""
 }

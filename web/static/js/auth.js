@@ -17,7 +17,13 @@
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     err.classList.add('hide');
-    var username = $('#username').value.trim().toLowerCase(), password = $('#password').value;
+    var typed = $('#username').value.trim(), username = typed.toLowerCase(), password = $('#password').value;
+    // An email address typed here belongs to the account server, not to this form: say so
+    // instead of answering with the username rule.
+    if (typed.indexOf('@') !== -1) {
+      var hub = form.dataset.ssoName;
+      return fail(hub ? NH.t('auth.email_not_here', { name: hub }) : NH.t('err.bad_username'));
+    }
     if (kind === 'register' && password !== $('#password2').value) return fail(NH.t('js.password_mismatch'));
     if (!NHC.available) return fail(NH.t('js.no_webcrypto'));
     btn.disabled = true;

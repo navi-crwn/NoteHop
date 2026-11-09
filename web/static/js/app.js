@@ -114,6 +114,26 @@
     return Promise.resolve();
   };
 
+  // Questions and name prompts use the HOP family's shared dialogs (hop-ui.js from hel.ink, see
+  // base.html) and fall back to the browser's own when that script is not there: offline,
+  // blocked, or not deployed yet. Both answer with a Promise.
+  //   NH.confirm(text | {title, message}, {danger, subject, ok, anchor}) → true / false
+  //   NH.prompt({title, label, value, maxlength})                        → the text, or null
+  // A plain text is split after its first sentence: the question is the title, the rest the message.
+  function parts(text) {
+    var m = /^(.*?(?:[?？。!！]|\.(?=\s)))\s*([\s\S]*)$/.exec(String(text));
+    return m && m[2] ? { title: m[1], message: m[2] } : { title: String(text) };
+  }
+  NH.confirm = function (text, opts) {
+    var o = Object.assign(typeof text === 'string' ? parts(text) : text, opts || {});
+    if (window.HopUI && HopUI.confirm) return HopUI.confirm(o);
+    return Promise.resolve(window.confirm([o.title, o.message].filter(Boolean).join('\n\n')));
+  };
+  NH.prompt = function (opts) {
+    if (window.HopUI && HopUI.prompt) return HopUI.prompt(opts);
+    return Promise.resolve(window.prompt(opts.title || opts.label || '', opts.value || ''));
+  };
+
   NH.store = {
     get: function (k, def) { try { var v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); } catch (e) { return def; } },
     set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
@@ -192,8 +212,16 @@
     root.dataset.theme = dark ? 'light' : 'dark';
     try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
   });
-  var burger = document.getElementById('burger');
-  if (burger) burger.addEventListener('click', function () { document.getElementById('nav').classList.toggle('open'); });
+  var burger = document.getElementById('burger'), nav = document.getElementById('nav');
+  function setNav(open) { nav.classList.toggle('open', open); burger.setAttribute('aria-expanded', String(open)); }
+  if (burger && nav) {
+    burger.setAttribute('aria-expanded', 'false');
+    burger.addEventListener('click', function (e) { e.stopPropagation(); setNav(!nav.classList.contains('open')); });
+    document.addEventListener('click', function (e) { if (nav.classList.contains('open') && !e.target.closest('.nav-links')) setNav(false); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && nav.classList.contains('open')) { setNav(false); burger.focus(); }
+    });
+  }
   // Dropdown menus (language, account, "More" on a note): the button says whether its menu is open,
   // Escape closes it and gives the focus back, and a menu that would run off the screen opens
   // from the other edge of its button instead.
@@ -235,6 +263,20 @@
     NH.store.del('nh_vault');
     NH.api('POST', '/api/logout', {}).finally(function () { location.href = '/'; });
   });
+  // The vault in the account menu: the key stays in this browser until Sign out
+  // or "Lock"; "Unlock" asks for it again (the vault page for a HOP ID account,
+  // the sign-in page for a local one) and comes back here.
+  var mv = document.getElementById('menu-vault');
+  if (mv && document.body.dataset.user) {
+    var vaultOpen = !!NH.store.get('nh_vault', null), sso = document.body.dataset.sso === '1';
+    mv.querySelector('span').textContent = NH.t(vaultOpen ? 'nav.vault_lock' : 'nav.vault_unlock');
+    mv.querySelector('use').setAttribute('href', vaultOpen ? '#i-lock' : '#i-unlock');
+    mv.classList.remove('hide');
+    mv.addEventListener('click', function () {
+      if (vaultOpen) { NH.store.del('nh_vault'); location.reload(); return; }
+      location.href = (sso ? '/vault' : '/login') + '?next=' + encodeURIComponent(location.pathname);
+    });
+  }
   document.addEventListener('click', function (e) {
     var c = e.target.closest('[data-close]');
     if (c) { var d = c.closest('dialog'); if (d) d.close(); }
