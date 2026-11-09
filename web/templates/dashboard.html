@@ -2,11 +2,16 @@
 {{define "content"}}
 <section class="wrap">
   <div class="page-head">
-    <div><h1>{{.L.T "title.dashboard"}}</h1><p class="muted">{{.L.T "dash.lead"}}</p></div>
+    <div><h1>{{.L.T "title.dashboard"}}</h1><p class="muted" id="dash-lead">{{.L.T "dash.lead"}}</p></div>
     <div class="btn-row"><a class="btn" href="/security"><svg><use href="#i-key"/></svg>{{.L.T "sec.title"}}</a><a class="btn primary" href="/new"><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a></div>
   </div>
+  <!-- the vault: open or locked in this browser, and the way to change that (dashboard.js fills these) -->
+  <div class="vault-state" id="vault-state" aria-live="polite"></div>
   <div class="alert info hide" id="vault-locked">{{if .User.SSOID}}{{.L.H "dash.locked_sso"}}{{else}}{{.L.H "dash.locked_password"}}{{end}}</div>
+  <div class="alert warn hide claim" id="vault-mismatch"></div>
   <div class="alert info hide claim" id="claim"></div>
+  <div class="alert info hide claim" id="reseal"></div>
+  <div class="alert info hide claim" id="nokey"></div>
   <div class="dash-tools">
     <input type="search" id="filter" class="filter" placeholder="{{.L.T "dash.search"}}" aria-label="{{.L.T "dash.search"}}">
     <button type="button" class="btn sm" id="graph-btn"><svg><use href="#i-share"/></svg>{{.L.T "dash.graph"}}</button>
@@ -23,6 +28,7 @@
     <button type="button" class="chip" data-group="timed" aria-pressed="false">{{.L.T "dash.g_timed"}}</button>
     <button type="button" class="chip" data-group="snapshots" aria-pressed="false">{{.L.T "dash.g_snapshots"}}</button>
     <button type="button" class="chip" data-group="archived" aria-pressed="false">{{.L.T "dash.g_archived"}}</button>
+    <button type="button" class="chip" data-group="device" aria-pressed="false">{{.L.T "dash.g_device"}}</button>
   </div>
   <ul class="note-list" id="mine"><li class="muted">{{.L.T "common.loading"}}</li></ul>
 </section>

@@ -589,9 +589,18 @@ svg.graph a:hover circle { fill: var(--violet); }
 .poll-n { font-size: .82rem; color: var(--muted); white-space: nowrap; }
 .burnblk { margin: 0 0 1em; padding: 12px 14px; border: 1px dashed color-mix(in srgb, var(--red) 50%, transparent); border-radius: 12px; }
 .decoy-row { display: grid; gap: 6px; flex: 1; }
-.claim { display: flex; gap: 10px; align-items: center; }
+.claim { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .claim svg { width: 18px; height: 18px; flex: none; }
+.claim span { flex: 1 1 240px; min-width: 0; }
 .claim .btn { margin-inline-start: auto; }
+.alert.warn { border-color: color-mix(in srgb, var(--amber) 45%, transparent); background: color-mix(in srgb, var(--amber) 9%, transparent); }
+/* the vault line under the dashboard title: open or locked here, and the button that changes it */
+.vault-state { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: -6px 0 14px; font-size: .9rem; color: var(--muted); }
+.vault-state > svg { width: 16px; height: 16px; flex: none; color: var(--accent); }
+.vault-state span { flex: 1 1 200px; min-width: 0; }
+.vault-state .btn { margin-inline-start: auto; }
+.note-link b.locked-title { color: var(--muted); font-weight: 600; }
+.note-list .device-hint { padding: 0 2px 4px; }
 
 /* ---------- live collaboration ---------- */
 .live-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }

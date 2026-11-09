@@ -235,6 +235,20 @@
     NH.store.del('nh_vault');
     NH.api('POST', '/api/logout', {}).finally(function () { location.href = '/'; });
   });
+  // The vault in the account menu: the key stays in this browser until Sign out
+  // or "Lock"; "Unlock" asks for it again (the vault page for a HOP ID account,
+  // the sign-in page for a local one) and comes back here.
+  var mv = document.getElementById('menu-vault');
+  if (mv && document.body.dataset.user) {
+    var vaultOpen = !!NH.store.get('nh_vault', null), sso = document.body.dataset.sso === '1';
+    mv.querySelector('span').textContent = NH.t(vaultOpen ? 'nav.vault_lock' : 'nav.vault_unlock');
+    mv.querySelector('use').setAttribute('href', vaultOpen ? '#i-lock' : '#i-unlock');
+    mv.classList.remove('hide');
+    mv.addEventListener('click', function () {
+      if (vaultOpen) { NH.store.del('nh_vault'); location.reload(); return; }
+      location.href = (sso ? '/vault' : '/login') + '?next=' + encodeURIComponent(location.pathname);
+    });
+  }
   document.addEventListener('click', function (e) {
     var c = e.target.closest('[data-close]');
     if (c) { var d = c.closest('dialog'); if (d) d.close(); }
