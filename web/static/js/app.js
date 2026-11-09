@@ -192,8 +192,16 @@
     root.dataset.theme = dark ? 'light' : 'dark';
     try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
   });
-  var burger = document.getElementById('burger');
-  if (burger) burger.addEventListener('click', function () { document.getElementById('nav').classList.toggle('open'); });
+  var burger = document.getElementById('burger'), nav = document.getElementById('nav');
+  function setNav(open) { nav.classList.toggle('open', open); burger.setAttribute('aria-expanded', String(open)); }
+  if (burger && nav) {
+    burger.setAttribute('aria-expanded', 'false');
+    burger.addEventListener('click', function (e) { e.stopPropagation(); setNav(!nav.classList.contains('open')); });
+    document.addEventListener('click', function (e) { if (nav.classList.contains('open') && !e.target.closest('.nav-links')) setNav(false); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && nav.classList.contains('open')) { setNav(false); burger.focus(); }
+    });
+  }
   // Dropdown menus (language, account, "More" on a note): the button says whether its menu is open,
   // Escape closes it and gives the focus back, and a menu that would run off the screen opens
   // from the other edge of its button instead.

@@ -885,6 +885,10 @@ body.sheet-open { overflow: hidden; }
 
 /* share dialog: one popup, one tab at a time */
 .dlg-tabs { display: flex; gap: 2px; margin: 4px -4px 14px; padding: 0 4px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+@media (max-width: 640px) {
+  .dlg-tabs { padding-inline-end: 32px; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); }
+  [dir=rtl] .dlg-tabs { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); }
+}
 .dlg-tabs button { display: inline-flex; align-items: center; gap: 6px; padding: 9px 11px; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; color: var(--muted); font: inherit; font-size: .9rem; font-weight: 650; white-space: nowrap; cursor: pointer; }
 .dlg-tabs button svg { width: 15px; height: 15px; }
 .dlg-tabs button[aria-selected=true] { color: var(--text); border-color: var(--accent); }
