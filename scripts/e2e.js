@@ -17,7 +17,7 @@ async function newPage(b, opts) {
   const p = await ctx.newPage();
   p.on('console', m => { if (m.type() === 'error') errs.push(p.url() + ' :: ' + m.text()); });
   p.on('pageerror', e => errs.push(p.url() + ' :: ' + e.message));
-  p.on('dialog', d => d.accept());
+  require('./e2e-dialogs')(p);
   return p;
 }
 function visitorURL(adminURL) {
@@ -240,7 +240,7 @@ const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open
     await m.screenshot({ path: OUT + '/m-note-visitor.png', fullPage: true });
     // Smallest common phone: the settings bar and Create link fit on one line.
     await m.setViewportSize({ width: 320, height: 700 }); await m.goto(BASE + '/new'); await m.waitForTimeout(300);
-    const fit = await m.$$eval('.pick > summary, #create', xs => ({ create: xs.filter(s => s.id === 'create').length, spill: xs.filter(s => s.getBoundingClientRect().right > innerWidth || s.scrollWidth > s.clientWidth + 1).map(s => s.textContent.trim()) }));
+    const fit = await m.$$eval('.chips .pick > summary, #adv-btn, #create', xs => ({ create: xs.filter(s => s.id === 'create').length, spill: xs.filter(s => s.getBoundingClientRect().right > innerWidth || s.scrollWidth > s.clientWidth + 1).map(s => s.textContent.trim()) }));
     ok('Mobile: 320px settings bar fits', fit.create === 1 && fit.spill.length === 0, JSON.stringify(fit));
   } catch (e) { ok('Mobile flow', false, e.message.split('\n')[0]); }
 

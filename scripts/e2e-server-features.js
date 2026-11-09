@@ -13,7 +13,7 @@ async function pickMode(p, m) { await p.evaluate(() => { ['opt-who', 'more-modes
 async function page(b, opts) {
   const ctx = (await b.newContext(Object.assign({ permissions: ['clipboard-read', 'clipboard-write'] }, opts || {})).then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }));
   const p = await ctx.newPage();
-  p.on('pageerror', e => errs.push(e.message)); p.on('dialog', d => d.accept());
+  p.on('pageerror', e => errs.push(e.message)); require('./e2e-dialogs')(p);
   p.on('console', m => { if (m.type() === 'error' && !/status of 4\d\d/.test(m.text())) errs.push(m.text()); });
   return p;
 }

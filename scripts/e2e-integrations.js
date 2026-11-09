@@ -16,7 +16,7 @@ async function page(ctx) {
   const p = await ctx.newPage();
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (m.type() === 'error' && !/status of (4\d\d|503)|Failed to load resource/.test(m.text())) errs.push(m.text()); });
-  p.on('dialog', d => d.accept());
+  require('./e2e-dialogs')(p);
   return p;
 }
 async function create(p, title, body, opts = {}) {

@@ -17,7 +17,7 @@ async function open(b, opts) {
   const p = await c.newPage();
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (m.type() === 'error' && !/status of (40[134]|503)|net::ERR_/.test(m.text())) errs.push(p.url() + ' :: ' + m.text()); });
-  p.on('dialog', d => d.accept());
+  require('./e2e-dialogs')(p);
   return p;
 }
 const contrast = (p, sel, prop, bgSel) => p.evaluate(([sel, prop, bgSel]) => {
@@ -88,8 +88,8 @@ async function create(p, { title, body, basic, slug }) {
     ok(w + 'px: header buttons are at least 44px', await m.evaluate(() => [...document.querySelectorAll('.nav .icon-btn, .nav-r .btn')].filter(e => e.getBoundingClientRect().width > 0).every(e => { const r = e.getBoundingClientRect(); return r.width >= 43.5 && r.height >= 43.5; })));
     ok(w + 'px: header stays on one row', await m.$eval('.nav', n => n.getBoundingClientRect().height < 70));
     await m.evaluate(() => window.scrollTo(0, 1e6)); await m.waitForTimeout(200);
-    ok(w + 'px: the bar at the bottom does not cover the language links', await m.evaluate(() => {
-      const bar = document.getElementById('create').getBoundingClientRect(), l = [...document.querySelectorAll('.foot-langs a')].pop().getBoundingClientRect(); return l.bottom <= bar.top + 1;
+    ok(w + 'px: the button at the bottom does not cover the last footer link', await m.evaluate(() => {
+      const bar = document.getElementById('create').getBoundingClientRect(), l = [...document.querySelectorAll('.footer-mini a')].pop().getBoundingClientRect(); return l.bottom <= bar.top + 1;
     }));
     await m.context().close();
   }

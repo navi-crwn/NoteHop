@@ -14,7 +14,7 @@ async function open(b, opts) {
   const p = await c.newPage();
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
-  p.on('dialog', d => d.accept());
+  require('./e2e-dialogs')(p);
   return p;
 }
 const isOpen = (p, id) => p.$eval('#' + id, d => d.open);
@@ -114,7 +114,7 @@ const val = (p, id) => p.$eval('#' + id + ' .pick-val', e => e.textContent.trim(
     const r = document.querySelector('#opt-opens .pick-pop').getBoundingClientRect();
     return Math.abs(r.bottom - innerHeight) < 2 && r.width >= innerWidth - 2 && !document.getElementById('scrim').hidden;
   }));
-  await m.tap('label:has(input[name=opens][value=1])'); await m.waitForTimeout(200);
+  await m.tap('label:has(input[name=opens][value="1"])'); await m.waitForTimeout(200);
   ok('phone: a choice closes the sheet', !(await isOpen(m, 'opt-opens')) && await m.$eval('#scrim', s => s.hidden));
   await m.tap('#adv-btn'); await m.waitForTimeout(200);
   ok('phone: More opens as a sheet too', await m.evaluate(() => {

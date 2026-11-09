@@ -33,8 +33,8 @@ async function readLink(p) {
   // Errors thrown by the code under test are expected; the app's own are not.
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { const u = (m.location() || {}).url || ''; if (m.type() === 'error' && !u.includes('/run') && !/Content Security Policy|40[0-9]|noSuchFn|example\.com|Unsafe attempt to initiate navigation/.test(m.text())) errs.push('console: ' + m.text()); });
-  p.on('dialog', d => d.accept());
-  const net = []; p.on('request', r => { if (!r.url().startsWith(BASE)) net.push(r.url()); });
+  require('./e2e-dialogs')(p);
+  const net = []; p.on('request', r => { if (!r.url().startsWith(BASE) && !r.url().startsWith('https://hel.ink/hop-assets/')) net.push(r.url()); }); // family fonts and dialogs are static files
 
   await p.goto(BASE + '/new');
   await p.fill('#title', 'Belanja web');
@@ -89,6 +89,7 @@ async function readLink(p) {
   ok('rename', (await p.$$eval('.wr-files .wr-name', xs => xs.map(x => x.textContent))).includes('more.css'));
   await p.hover('.wr-file:has-text("more.css")');
   await p.click('.wr-file:has-text("more.css") [aria-label^="Delete"]');
+  await p.waitForFunction(() => document.querySelectorAll('.wr-file').length === 3, null, { timeout: 5000 }).catch(() => {});
   ok('delete', (await p.$$('.wr-file')).length === 3);
   // Ctrl+Enter runs; Tab indents like a code note
   await p.click('.wr-file:has-text("app.js") .wr-open');

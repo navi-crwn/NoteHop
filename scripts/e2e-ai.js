@@ -15,7 +15,7 @@ const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers
   const p = await ctx.newPage();
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (m.type() === 'error' && !/40[0-9]|Failed to load resource/.test(m.text())) errs.push('console: ' + m.text()); });
-  p.on('dialog', d => d.accept());
+  require('./e2e-dialogs')(p);
   const toNoteHop = []; p.on('request', r => { if (r.url().startsWith(BASE)) toNoteHop.push(r.url() + ' ' + (r.postData() || '') + ' ' + JSON.stringify(r.headers())); });
 
   // the provider, answered here
@@ -117,7 +117,7 @@ const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers
     window.Rewriter = { availability: async () => 'downloadable', create: async () => ({ rewrite: async t => t.toUpperCase(), destroy() {} }) };
   });
   const q = await dctx.newPage(); q.on('pageerror', e => errs.push('device: ' + e.message));
-  const net = []; q.on('request', r => { if (!r.url().startsWith(BASE)) net.push(r.url()); });
+  const net = []; q.on('request', r => { if (!r.url().startsWith(BASE) && !r.url().startsWith('https://hel.ink/hop-assets/')) net.push(r.url()); }); // family fonts and dialogs are static files
   await q.goto(BASE + '/new');
   await q.fill('.ed-src', 'Catatan rapat hari ini.');
   await q.click('.ed-ai');

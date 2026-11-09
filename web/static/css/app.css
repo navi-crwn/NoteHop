@@ -284,7 +284,7 @@ details.adv[open] > summary::before { content: "▾ "; }
 /* ---------- editor ---------- */
 .editor { border: 1px solid var(--line); border-radius: 13px; background: var(--bg-2); }
 .ed-bar { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 8px; border-bottom: 1px solid var(--line); }
-.seg { display: inline-flex; box-sizing: border-box; height: var(--hop-ctl-h-sm); padding: 2px; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--hop-ctl-radius); }
+.seg { display: inline-flex; box-sizing: border-box; min-height: var(--hop-ctl-h-sm); padding: 2px; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--hop-ctl-radius); }
 .seg button { border: 0; background: none; color: var(--muted); font: 600 13px var(--sans); padding: 0 11px; border-radius: var(--hop-ctl-radius-sm); cursor: pointer; white-space: nowrap; }
 .seg button[aria-selected="true"] { background: var(--panel); color: var(--text); box-shadow: 0 1px 3px rgba(0, 0, 0, .2); }
 .ed-tools { display: flex; gap: 4px; flex-wrap: wrap; }
@@ -876,7 +876,7 @@ body.sheet-open { overflow: hidden; }
   .compose .starters { margin: 0 -10px 10px; padding: 0 10px 2px; width: calc(100% + 20px); }
   /* the chips keep their words and wrap; the Create button stays at the bottom of the screen */
   .chips { gap: 6px; margin-inline: -10px; padding-inline: 10px; }
-  .chip-btn { padding: 0 10px; gap: 6px; }
+  .chip-btn { padding: 0 9px; gap: 5px; font-size: 13px; }
   .create-row #create { position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 30; width: auto; height: 44px; margin: 0; box-shadow: 0 10px 30px rgba(10, 12, 20, .35); }
   body[data-page=new] main { padding-bottom: 84px; }
   body.kbar-on .create-row #create { display: none; }

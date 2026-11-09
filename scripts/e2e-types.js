@@ -41,7 +41,7 @@ const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open
   const b = await chromium.launch(); const errs = [];
   const ctx = await b.newContext({ acceptDownloads: true, viewport: { width: 1280, height: 900 } });
   await ctx.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} });
-  const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message)); p.on('dialog', d => d.accept());
+  const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message)); require('./e2e-dialogs')(p);
   p.on('console', m => { if (m.type() === 'error' && !/40[134]/.test(m.text())) errs.push('console: ' + m.text()); });
 
   // ---------- Document: the right-click menu ----------
@@ -97,6 +97,7 @@ const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open
   // switching a styled Document to Plain asks, then drops the styles
   await p.fill('.ed-src', 'Ada [warna]{.red} di sini\n:::center\ntengah\n:::');
   await p.click('.ed-type-btn'); await p.click('.ed-type-list [data-type="plain"]');
+  await p.waitForFunction(() => document.querySelector('[data-editor]').dataset.type === 'plain', null, { timeout: 5000 }).catch(() => {});
   ok('to Plain drops styles', (await val(p)) === 'Ada warna di sini\ntengah', JSON.stringify(await val(p)));
   ok('Plain hides Markdown tools', !(await p.isVisible('.ed-tools')) && !(await p.isVisible('.seg')));
   await rightClick(p, 0, 3);
@@ -163,8 +164,7 @@ const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open
   await p.fill('#title', 'publik');
   await p.click('.ed-type-btn'); await p.click('.ed-type-list [data-type="code"]');
   await p.fill('.ed-src', '<script>alert(1)</script>');
-  await p.evaluate(() => { const d = document.getElementById('adv'); if (d && !d.open) d.showModal(); });
-  await p.evaluate(() => { const c = document.getElementById('encrypt'); c.checked = false; c.dispatchEvent(new Event('change', { bubbles: true })); });
+  await p.click('#opt-kind > summary'); await p.click('label:has(input[name=kind][value=basic])');
   await closeMenus(p); await p.click('#create'); await p.waitForURL(/#k=/);
   const tok = new URL(p.url()).pathname.slice(1);
   const raw = await fetch(BASE + '/raw/' + tok);
