@@ -370,3 +370,21 @@ func TestSSOFamilyLinksOpenThroughHub(t *testing.T) {
 		t.Error("family sidebar links FileHop by its bare address")
 	}
 }
+
+// Signing out a HOP ID account goes through the account server and asks it to
+// come back to this app; a local account just signs out.
+func TestSSOSignOutReturnsToApp(t *testing.T) {
+	srv := newSSOApp(t, true)
+	c := noRedirect(t, srv)
+	state := ssoStart(t, c, "/")
+	if code, _ := ssoCallback(t, c, ticketFor("42", state)); code != http.StatusSeeOther {
+		t.Fatalf("login: %d", code)
+	}
+	code, m, _ := c.do("POST", "/api/logout", map[string]any{}, nil)
+	if want := "https://accounts.test/logout?return=" + url.QueryEscape("https://note.test/"); code != 200 || m["next"] != want {
+		t.Fatalf("logout: %d %v, want next %q", code, m, want)
+	}
+	if code, _, _ := c.do("GET", "/api/me", nil, nil); code != 401 {
+		t.Fatalf("still signed in: %d", code)
+	}
+}

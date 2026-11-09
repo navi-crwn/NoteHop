@@ -261,7 +261,7 @@
   var logout = document.getElementById('logout');
   if (logout) logout.addEventListener('click', function () {
     NH.store.del('nh_vault');
-    NH.api('POST', '/api/logout', {}).finally(function () { location.href = '/'; });
+    NH.api('POST', '/api/logout', {}).then(function (d) { location.href = (d && d.next) || '/'; }, function () { location.href = '/'; });
   });
   // The vault in the account menu: the key stays in this browser until Sign out
   // or "Lock"; "Unlock" asks for it again (the vault page for a HOP ID account,
