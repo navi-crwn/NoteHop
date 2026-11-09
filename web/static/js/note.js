@@ -146,7 +146,7 @@
     var handoff = null;
     try { handoff = sessionStorage.getItem('nh_pw_' + token); sessionStorage.removeItem('nh_pw_' + token); } catch (x) {}
     if (handoff && !errMsg) return unlock(handoff).catch(function () { askPassword(''); });
-    var input = h('input', { type: 'password', placeholder: NH.t('feat.password'), 'aria-label': NH.t('note.password_label'), autocomplete: 'off', required: true });
+    var input = h('input', { type: 'password', placeholder: NH.t('note.pw_placeholder'), 'aria-label': NH.t('note.password_label'), autocomplete: 'off', required: true });
     var err = h('p.locked-err', errMsg || '');
     var btn = h('button.btn.primary', { type: 'submit' }, NH.icon('unlock'), NH.t('vault.open_btn'));
     var form = h('form.pw-form', input, btn);
