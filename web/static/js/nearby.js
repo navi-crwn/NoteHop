@@ -189,12 +189,13 @@
   }
 
   $('#nb-rename').addEventListener('click', function () {
-    var v = prompt(NH.t('live.rename'), name);
-    if (!v || !v.trim()) return;
-    name = v.trim().slice(0, 40);
-    NH.store.set('nh_nick', name);
-    $('#nb-name').textContent = name;
-    hi();
+    NH.prompt({ title: NH.t('live.rename'), value: name, maxlength: 40 }).then(function (v) {
+      if (!v || !v.trim()) return;
+      name = v.trim().slice(0, 40);
+      NH.store.set('nh_nick', name);
+      $('#nb-name').textContent = name;
+      hi();
+    });
   });
   // ---------- pairing code ----------
   // Devices only see each other when they use the same code (and network):

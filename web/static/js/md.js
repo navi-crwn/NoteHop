@@ -442,14 +442,16 @@
       var btn = NH.h('button.btn.sm', { type: 'button', disabled: !opts.onReveal }, NH.icon('eye'), NH.t('md.burn_reveal'));
       var note = NH.h('span.locked-err', NH.t('md.burn_left', { n: left }));
       btn.addEventListener('click', function () {
-        if (!confirm(NH.t(left <= 1 ? 'md.burn_confirm_last' : 'md.burn_confirm', { n: left }))) return;
-        btn.disabled = true;
-        opts.onReveal(id).then(function (r) {
-          return NHC.blockOpen(r.key, box.dataset.payload).then(function (text) {
-            opened['b' + box.dataset.payload] = { text: text, left: r.left };
-            showBurned(box, text, r.left);
-          });
-        }).catch(function (x) { box.replaceChildren(head, NH.h('p.faint', x.message || NH.t('md.burn_gone'))); });
+        NH.confirm(NH.t(left <= 1 ? 'md.burn_confirm_last' : 'md.burn_confirm', { n: left }), { ok: NH.t('md.burn_reveal'), anchor: btn }).then(function (ok) {
+          if (!ok) return;
+          btn.disabled = true;
+          opts.onReveal(id).then(function (r) {
+            return NHC.blockOpen(r.key, box.dataset.payload).then(function (text) {
+              opened['b' + box.dataset.payload] = { text: text, left: r.left };
+              showBurned(box, text, r.left);
+            });
+          }).catch(function (x) { box.replaceChildren(head, NH.h('p.faint', x.message || NH.t('md.burn_gone'))); });
+        });
       });
       box.replaceChildren(head, NH.h('div.locked-form', btn, note));
     });

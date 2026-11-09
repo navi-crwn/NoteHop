@@ -114,6 +114,26 @@
     return Promise.resolve();
   };
 
+  // Questions and name prompts use the HOP family's shared dialogs (hop-ui.js from hel.ink, see
+  // base.html) and fall back to the browser's own when that script is not there: offline,
+  // blocked, or not deployed yet. Both answer with a Promise.
+  //   NH.confirm(text | {title, message}, {danger, subject, ok, anchor}) → true / false
+  //   NH.prompt({title, label, value, maxlength})                        → the text, or null
+  // A plain text is split after its first sentence: the question is the title, the rest the message.
+  function parts(text) {
+    var m = /^(.*?(?:[?？。!！]|\.(?=\s)))\s*([\s\S]*)$/.exec(String(text));
+    return m && m[2] ? { title: m[1], message: m[2] } : { title: String(text) };
+  }
+  NH.confirm = function (text, opts) {
+    var o = Object.assign(typeof text === 'string' ? parts(text) : text, opts || {});
+    if (window.HopUI && HopUI.confirm) return HopUI.confirm(o);
+    return Promise.resolve(window.confirm([o.title, o.message].filter(Boolean).join('\n\n')));
+  };
+  NH.prompt = function (opts) {
+    if (window.HopUI && HopUI.prompt) return HopUI.prompt(opts);
+    return Promise.resolve(window.prompt(opts.title || opts.label || '', opts.value || ''));
+  };
+
   NH.store = {
     get: function (k, def) { try { var v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); } catch (e) { return def; } },
     set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },

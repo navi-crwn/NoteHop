@@ -77,6 +77,14 @@
     "hero_filehop_dark": {
       "url": "https://hel.ink/hop-assets/v4/home/filehop-dark.webp",
       "integrity": "sha384-sQehmbNpKfXLEGZzV7HP5pGrrBefreVGKLT68qTKsyqhvFd6cYRq0YyG8fj8bMbS"
+    },
+    "ui_css": {
+      "url": "https://hel.ink/hop-assets/v5/hop-ui.css",
+      "integrity": "sha384-wfq/3oTQ0jQYJQZHY7wgY3KoulTamoM2OHTwsb4boVF+dUy7JdPUurlLswZEXSt1"
+    },
+    "ui_js": {
+      "url": "https://hel.ink/hop-assets/v5/hop-ui.js",
+      "integrity": "sha384-IDcwQXxUXNwfC3GDCIJqMuOMHaY/SCZUaezF7ZhL4Els1pk5yrUMyml00NObV0fq"
     }
   },
   "apps": [

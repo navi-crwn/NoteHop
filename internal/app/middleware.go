@@ -16,7 +16,8 @@ import (
 
 // https://hel.ink serves the HOP family fonts and app marks: styles, fonts and
 // images only. Scripts stay 'self', so notes are never exposed to another origin.
-const csp = "default-src 'self'; script-src 'self'; style-src 'self' https://hel.ink; img-src 'self' data: blob: https://hel.ink; media-src 'self' blob:; " +
+// script-src names hel.ink for one file: the family's hop-ui.js, loaded with an SRI hash (base.html).
+const csp = "default-src 'self'; script-src 'self' https://hel.ink; style-src 'self' https://hel.ink; img-src 'self' data: blob: https://hel.ink; media-src 'self' blob:; " +
 	"connect-src 'self'; font-src 'self' https://hel.ink; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 
 // aiOrigins are the AI providers a reader can bring their own key for (ai.js).

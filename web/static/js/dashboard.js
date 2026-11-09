@@ -215,13 +215,16 @@
       }
       var del = h('button.icon-btn.sm', { type: 'button', title: NH.t('common.delete'), 'aria-label': NH.t('dash.delete_note') }, NH.icon('trash'));
       del.addEventListener('click', function () {
-        if (!confirm(NH.t('dash.confirm_delete', { title: name(r) || '/' + n.token }))) return;
-        NH.api('DELETE', '/api/n/' + encodeURIComponent(n.token), undefined, r.a ? { 'X-Admin': r.a } : {}).then(function () {
-          rows = rows.filter(function (x) { return x !== r; });
-          NH.recent.remove(n.token);
-          NH.toast(NH.t('dash.deleted'), 'ok');
-          draw();
-        }, function (x) { NH.toast(x.message, 'err'); });
+        // The question and the red button both name the note: by title, or by its address when it has none here.
+        NH.confirm(NH.t('dash.confirm_delete', { title: name(r) || '/' + n.token }), { danger: true, subject: name(r) || '/' + n.token, anchor: del }).then(function (ok) {
+          if (!ok) return;
+          NH.api('DELETE', '/api/n/' + encodeURIComponent(n.token), undefined, r.a ? { 'X-Admin': r.a } : {}).then(function () {
+            rows = rows.filter(function (x) { return x !== r; });
+            NH.recent.remove(n.token);
+            NH.toast(NH.t('dash.deleted'), 'ok');
+            draw();
+          }, function (x) { NH.toast(x.message, 'err'); });
+        });
       });
       acts.appendChild(del);
       return h('li.note-row', h('span.mode-ico', { title: info.label }, NH.icon(n.frozen ? 'snow' : info.icon)), link, acts);
@@ -315,26 +318,28 @@
     file.text().then(function (txt) {
       var data = JSON.parse(txt);
       if (!data || data.format !== 'notehop-export' || !Array.isArray(data.notes)) throw new Error(NH.t('dash.import_bad'));
-      if (!confirm(NH.t('dash.import_confirm', { n: data.notes.length }))) return;
-      // One at a time: new notes, new keys, encrypted here like any new note.
-      return data.notes.slice(0, 500).reduce(function (p, n) {
-        return p.then(function (count) {
-          var k = NHC.newKey(), admin = NHC.newKey(), title = String(n.title || '').slice(0, 200);
-          return NHC.noteKeys(k, '', '').then(function (keys) {
-            // A note type from the backup is kept only if it is one we know.
-            var y = n.type && (n.type.y === 'plain' || n.type.y === 'code') ? { y: n.type.y, l: String(n.type.l || '').slice(0, 32) } : {};
-            if (y.y === 'plain') delete y.l;
-            return Promise.all([NHC.codec(true, keys.aes).encode(Object.assign({ t: title, b: String(n.body || '') }, y)), vault ? vault.seal({ t: title, k: k, a: admin, p: '' }) : '']).then(function (r) {
-              return NH.api('POST', '/api/notes', { encrypted: true, password: false, salt: '', content: r[0], mode: 'read', admin: admin, write: keys.write, owner_blob: r[1] });
-            });
-          }).then(function () { return count + 1; }, function () { return count; });
-        });
-      }, Promise.resolve(0)).then(function (count) {
-        NH.toast(NH.t('dash.imported', { n: count }), 'ok');
-        reload();
-      });
+      return NH.confirm(NH.t('dash.import_confirm', { n: data.notes.length }), { ok: NH.t('dash.import') }).then(function (ok) { return ok ? importNotes(data.notes) : null; });
     }).catch(function (x) { NH.toast(x.message || NH.t('dash.import_bad'), 'err'); });
   });
+  // One at a time: new notes, new keys, encrypted here like any new note.
+  function importNotes(notes) {
+    return notes.slice(0, 500).reduce(function (p, n) {
+      return p.then(function (count) {
+        var k = NHC.newKey(), admin = NHC.newKey(), title = String(n.title || '').slice(0, 200);
+        return NHC.noteKeys(k, '', '').then(function (keys) {
+          // A note type from the backup is kept only if it is one we know.
+          var y = n.type && (n.type.y === 'plain' || n.type.y === 'code') ? { y: n.type.y, l: String(n.type.l || '').slice(0, 32) } : {};
+          if (y.y === 'plain') delete y.l;
+          return Promise.all([NHC.codec(true, keys.aes).encode(Object.assign({ t: title, b: String(n.body || '') }, y)), vault ? vault.seal({ t: title, k: k, a: admin, p: '' }) : '']).then(function (r) {
+            return NH.api('POST', '/api/notes', { encrypted: true, password: false, salt: '', content: r[0], mode: 'read', admin: admin, write: keys.write, owner_blob: r[1] });
+          });
+        }).then(function () { return count + 1; }, function () { return count; });
+      });
+    }, Promise.resolve(0)).then(function (count) {
+      NH.toast(NH.t('dash.imported', { n: count }), 'ok');
+      reload();
+    });
+  }
 
   // ---------- keys this device holds for notes the account lacks ----------
   // Each note is claimed with the owner link this browser remembers. A note

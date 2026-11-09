@@ -332,46 +332,53 @@
     if (burns.length && !encrypted) return fail(NH.t('rule.burn_block_e2e'));
     var decoyPw = on('decoy') ? $('#decoy-password').value : '';
     if (on('decoy') && (!decoyPw || decoyPw === password)) return fail(NH.t('new.need_decoy'), $('#decoy-password'));
-    if (!encrypted && NH.leaksKeys(title + '\n' + body) && !confirm(NH.t('warn.public_keys'))) return;
     var mode = form.querySelector('[name=mode]:checked').value;
-    var k = NHC.newKey(), admin = NHC.newKey(), salt = password ? NHC.newSalt() : '';
-    var decoy = null;
-    btn.disabled = true;
+    // A basic note with a private key in its text: ask first, then send.
+    if (!encrypted && NH.leaksKeys(title + '\n' + body)) {
+      return NH.confirm(NH.t('warn.public_keys'), { ok: NH.t('new.create_public'), anchor: btn }).then(function (ok) { if (ok) create(); });
+    }
+    create();
 
-    NHC.noteKeys(k, password, salt).then(function (keys) {
-      var codec = NHC.codec(encrypted, keys.aes), vault = NHC.vault();
-      return Promise.all([
-        codec.encode(Object.assign({ t: title, b: body }, ed.fields())),
-        vault ? vault.seal({ t: title, k: k, a: admin, p: password }) : '',
-        decoyPw ? NHC.decoy(k, decoyPw, salt, { t: title, b: $('#decoy-text').value }, { t: title, b: body }) : null
-      ]).then(function (r) {
-        decoy = r[2];
-        var cw = 'none', wr = '';
-        if (on('warning')) {
-          var cwEl = form.querySelector('[name=cw_level]:checked');
-          cw = cwEl ? cwEl.value : 'sensitive';
-          wr = ($('#warning-reason') ? $('#warning-reason').value : '').trim();
-        }
-        return NH.api('POST', '/api/notes', {
-          encrypted: encrypted, password: !!password, salt: salt, content: r[0], mode: mode,
-          upload_draft: $('[data-editor]').dataset.uploadDraft,
-          slug: encrypted ? '' : slug.value.trim(), expires_in: expiresIn, max_views: on('burn') ? views() : 0,
-          open_at: openAt, lock_at: lockAt, admin: admin, write: keys.write, owner_blob: r[1],
-          burns: burns, sign_off: on('signoff'), decoy: decoy,
-          content_warning: cw, warning_reason: wr
+    function create() {
+      var k = NHC.newKey(), admin = NHC.newKey(), salt = password ? NHC.newSalt() : '';
+      var decoy = null;
+      btn.disabled = true;
+
+      NHC.noteKeys(k, password, salt).then(function (keys) {
+        var codec = NHC.codec(encrypted, keys.aes), vault = NHC.vault();
+        return Promise.all([
+          codec.encode(Object.assign({ t: title, b: body }, ed.fields())),
+          vault ? vault.seal({ t: title, k: k, a: admin, p: password }) : '',
+          decoyPw ? NHC.decoy(k, decoyPw, salt, { t: title, b: $('#decoy-text').value }, { t: title, b: body }) : null
+        ]).then(function (r) {
+          decoy = r[2];
+          var cw = 'none', wr = '';
+          if (on('warning')) {
+            var cwEl = form.querySelector('[name=cw_level]:checked');
+            cw = cwEl ? cwEl.value : 'sensitive';
+            wr = ($('#warning-reason') ? $('#warning-reason').value : '').trim();
+          }
+          return NH.api('POST', '/api/notes', {
+            encrypted: encrypted, password: !!password, salt: salt, content: r[0], mode: mode,
+            upload_draft: $('[data-editor]').dataset.uploadDraft,
+            slug: encrypted ? '' : slug.value.trim(), expires_in: expiresIn, max_views: on('burn') ? views() : 0,
+            open_at: openAt, lock_at: lockAt, admin: admin, write: keys.write, owner_blob: r[1],
+            burns: burns, sign_off: on('signoff'), decoy: decoy,
+            content_warning: cw, warning_reason: wr
+          });
         });
-      });
-    }).then(function (res) {
-      submitted = true;
-      // With the vault closed the key did not go into the account: this device's list is then the
-      // only place that still has it (My notes offers to save it), so it is kept whatever the switch says.
-      if ($('#remember').checked || (document.body.dataset.user && !NHC.vault())) {
-        NH.recent.add({ token: res.token, k: k, a: admin, t: title, created: Math.floor(Date.now() / 1000), expires: res.expires, p: !!password });
-      }
-      // Hand the password to the next page without putting it in the URL.
-      if (password) try { sessionStorage.setItem('nh_pw_' + res.token, password); } catch (x) {}
-      location.href = NH.noteURL(res.token, { k: k, a: admin, new: '1' });
-    }).catch(function (x) { fail(x.message || NH.t('err.create_failed')); });
+      }).then(function (res) {
+        submitted = true;
+        // With the vault closed the key did not go into the account: this device's list is then the
+        // only place that still has it (My notes offers to save it), so it is kept whatever the switch says.
+        if ($('#remember').checked || (document.body.dataset.user && !NHC.vault())) {
+          NH.recent.add({ token: res.token, k: k, a: admin, t: title, created: Math.floor(Date.now() / 1000), expires: res.expires, p: !!password });
+        }
+        // Hand the password to the next page without putting it in the URL.
+        if (password) try { sessionStorage.setItem('nh_pw_' + res.token, password); } catch (x) {}
+        location.href = NH.noteURL(res.token, { k: k, a: admin, new: '1' });
+      }).catch(function (x) { fail(x.message || NH.t('err.create_failed')); });
+    }
   });
 
   window.addEventListener('beforeunload', function (e) {
@@ -395,7 +402,9 @@
   }
   if (recentBox) {
     $('#recent-clear').addEventListener('click', function () {
-      if (confirm(NH.t('new.forget_confirm'))) { NH.recent.clear(); drawRecent(); }
+      NH.confirm(NH.t('new.forget_confirm'), { danger: true, ok: NH.t('new.forget_all'), anchor: this }).then(function (ok) {
+        if (ok) { NH.recent.clear(); drawRecent(); }
+      });
     });
     drawRecent();
   }

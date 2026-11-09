@@ -199,15 +199,20 @@
     setView(NH.store.get('nh_view', innerWidth >= 1100 ? 'split' : 'write'));
 
     // ---------- note type ----------
-    function setType(t, quiet) {
+    function setType(t, quiet, asked) {
       var y = t && (t.y === 'plain' || t.y === 'code' || t.y === 'web') ? t.y : 'doc';
-      if (y !== 'doc' && type === 'doc' && !quiet && STYLED.test(ta.value)) {
-        if (!confirm(NH.t('type.strip_confirm', { type: NH.t('type.' + y) }))) return;
-        ta.focus();
-        ta.select();
-        var plain = unstyle(ta.value);
-        if (!document.execCommand('insertText', false, plain)) ta.value = plain;
-        ta.setSelectionRange(0, 0);
+      if (y !== 'doc' && type === 'doc' && !quiet && !asked && STYLED.test(ta.value)) {
+        // Asked in a dialog; on yes the styling is taken out and the switch runs again.
+        NH.confirm(NH.t('type.strip_confirm', { type: NH.t('type.' + y) })).then(function (ok) {
+          if (!ok) return;
+          ta.focus();
+          ta.select();
+          var plain = unstyle(ta.value);
+          if (!document.execCommand('insertText', false, plain)) ta.value = plain;
+          ta.setSelectionRange(0, 0);
+          setType(t, quiet, true);
+        });
+        return;
       }
       var view = NH.store.get('nh_view', innerWidth >= 1100 ? 'split' : 'write');
       // Web: the text becomes files (and back to one text when leaving).
