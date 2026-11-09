@@ -2,7 +2,7 @@
 
 What changed in NoteHop, newest first. Each entry links to its pull request.
 
-## Unreleased
+## [Unreleased]
 
 ### Fixed
 - Drawers and menus close with Escape and hand the focus back: the dashboard drawer (the focus goes into it when it opens, and its links leave the tab order while it is closed on a small screen) and the public header's menu on phones, which also closes on a tap outside. The Share dialog's tabs fade at the edge on a phone, to show that they scroll.
@@ -18,6 +18,10 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 - The new-note page is one editor and one row of settings. The editor is ready to type in (the cursor is in it on a computer; the starters are presets above it, with Code and Web among them and the rarer ones under "More"). Under it, one chip per setting, each reading "name: value": Type, Password, Delete, Opens, Readers. The password has its own chip, with the second (decoy) password right under it; the view limit has its own ("Opens: 10×") instead of hiding the password field under "Read once". Nothing is in two places any more: "Other settings" holds only what has no chip (open later, stop changes, signing, content warning, remember on this device), and whatever is on there shows as a chip too. A setting that can't be used says why in its own menu, with the button that changes it; an error opens the menu of the field it is about. The sentence about what the link will do sits next to the Create button. Signed in with the vault locked, the page says so before the note is made, with a way to unlock that keeps the draft.
 - Signed in, New note and Security use the same chrome as My notes (sidebar with the HOP family, no app grid in the top bar). The public header carries New note, My notes, Compare texts and Nearby devices; How it works and the FAQ are behind one help button. Working pages (new note, a note, compare, nearby, sign-in) end in a one-line footer; the five-column footer stays on the pages that present NoteHop. On phones the settings wrap as labelled chips and the Create button stays at the bottom of the screen.
 - HOP family assets move to hop-assets v4: FileHop's new pixel mark in the family list, the app switcher and the footer (bundled manifest), and the copied home engine with FileHop's matching 3D map. `scripts/sync-hop-assets.sh` copies from v4.
+- The report scrub also catches a key pasted with an escaped `#` (`%23k=`, `%23k%3D`) and a bare `k=...` or `a=...`. Reports already stored lose the key the next time the server starts; the rest of their text stays. Backups taken earlier still hold the old text until they age out.
+- `deploy/notehop.env.example` names every variable the program reads. A test keeps it that way.
+- CI builds use Go 1.27.3 (`go` line in `go.mod`), which has the fixes the 1.27.2 toolchain lacks.
+- `install.sh --dry-run` no longer creates the data folder and `bin/`. It said nothing would be executed, and now nothing is.
 
 ### Security
 - `HOP_PICKER_SECRET` (32+ characters) verifies `GET /api/v1/me/notes` with a secret the hub never uses. Until now NoteHop had to hold BioHop's sign-in secret (`HOP_SSO_SECRET_BIOHOP`) to verify the note picker, so a leak here could forge a hub ticket for BioHop. It is accepted next to the older secrets while the family moves; once BioHop signs with it (navi-crwn/BioHop `fix/picker-secret`), remove `HOP_SSO_SECRET_BIOHOP` from this server.
@@ -27,13 +31,6 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 - FileHop (file.hel.ink), the sixth HOP app, is in the HOP family list: the dashboard sidebar, the app switcher and the footer (from the bundled asset manifest), the README family table in all nine languages, and the family table on the documentation site.
 - The HOP family assets move to hop-assets v3, which adds FileHop: the bundled manifest, the copied home engine (`web/static/hop-home/`, with the FileHop 3D mark), `scripts/sync-hop-assets.sh` and the documentation site's font link. In the HOP family section, an app the 3D engine has no block map for keeps its flat mark instead of falling back to the NoteHop logo.
 - `GET /api/v1/me/notes` for the note picker in the other HOP apps (BioHop's "Choose from NoteHop"). Only an app named in `NOTEHOP_NOTES_CLIENTS` (default `biohop`, empty turns it off) may call it, server to server, signed with the HOP App Protocol (its own `HOP_SSO_SECRET_<APP>` when it has one, else `NOTEHOP_SSO_SECRET`) and with `X-HOP-Actor` set to the member's HOP ID. It lists that member's public notes that have a read-only link, newest first, `{ok, data: {items: [{id, title, url, updated}], next}}`, with `?q=` on the title, `?limit=` up to 50 and a cursor. Never listed: encrypted notes (the key stays in the member's browser, and a keyless link shows visitors nothing), notes shared only with an edit, append, check or suggest link (a public page would hand those rights to everyone), notes with a content warning, burn-after-reading notes, expired notes and notes a feature holds back before reading. A browser session cannot use the route.
-
-## [Unreleased]
-
-- The report scrub also catches a key pasted with an escaped `#` (`%23k=`, `%23k%3D`) and a bare `k=...` or `a=...`. Reports already stored lose the key the next time the server starts; the rest of their text stays. Backups taken earlier still hold the old text until they age out.
-- `deploy/notehop.env.example` names every variable the program reads. A test keeps it that way.
-- CI builds use Go 1.27.3 (`go` line in `go.mod`), which has the fixes the 1.27.2 toolchain lacks.
-- `install.sh --dry-run` no longer creates the data folder and `bin/`. It said nothing would be executed, and now nothing is.
 
 ## [1.0.0] - 2026-11-04
 
