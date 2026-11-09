@@ -5,6 +5,7 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 ## [Unreleased]
 
 ### Fixed
+- The footer no longer repeats the language list (the language menu is in the top bar); the copyright line is right-aligned, centred on phones.
 - The changelog page lists every merged pull request again: the snapshot is rebuilt from a freshly fetched main, and `make check-changelog` fails when merged PRs are missing from it.
 - Drawers and menus close with Escape and hand the focus back: the dashboard drawer (the focus goes into it when it opens, and its links leave the tab order while it is closed on a small screen) and the public header's menu on phones, which also closes on a tap outside. The Share dialog's tabs fade at the edge on a phone, to show that they scroll.
 - The local sign-in form says what it takes: a NoteHop username chosen at sign-up here, not an email address. An email typed into it gets a sentence that points at "Continue with HOP" instead of the username rule. Nothing about accounts or sign-in changes.
