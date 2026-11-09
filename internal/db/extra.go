@@ -486,3 +486,23 @@ func (d *DB) ConvertNote(id, baseVersion int64, encrypted bool, content string) 
 	}
 	return v, tx.Commit()
 }
+
+// ---------- reminder cards ----------
+
+// DismissReminder records that a member hid a reminder card just now; hiding
+// it again later moves the time forward.
+func (d *DB) DismissReminder(userID int64, key string) error {
+	_, err := d.Exec(`INSERT INTO reminders (user_id, key, dismissed_at) VALUES (?, ?, ?)
+		ON CONFLICT(user_id, key) DO UPDATE SET dismissed_at = excluded.dismissed_at`, userID, key, now())
+	return err
+}
+
+// ReminderDismissedAt is when the member last hid that card, 0 when never.
+func (d *DB) ReminderDismissedAt(userID int64, key string) (int64, error) {
+	var at int64
+	err := d.QueryRow(`SELECT dismissed_at FROM reminders WHERE user_id = ? AND key = ?`, userID, key).Scan(&at)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, nil
+	}
+	return at, err
+}

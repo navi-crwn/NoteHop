@@ -9,6 +9,11 @@
   <div class="vault-state" id="vault-state" aria-live="polite"></div>
   <div class="alert info hide" id="vault-locked">{{if .User.SSOID}}{{.L.H "dash.locked_sso"}}{{else}}{{.L.H "dash.locked_password"}}{{end}}</div>
   <div class="alert warn hide claim" id="vault-mismatch"></div>
+  <!-- a reminder, not a status: it can be hidden for a week (hop-ui.js adds the button) and is gone once the codes exist -->
+  {{if index .Reminders "recovery-codes"}}<section class="alert info remind" data-hop-remind="recovery-codes" data-hop-remind-url="/api/me/reminders/dismiss" aria-labelledby="remind-rec-h">
+    <svg><use href="#i-key"/></svg>
+    <div class="remind-body"><b id="remind-rec-h">{{.L.T "remind.recovery_h"}}</b><p>{{if .User.SSOID}}{{.L.T "remind.recovery_p_sso"}}{{else}}{{.L.T "remind.recovery_p"}}{{end}}</p><a class="btn sm" href="/security">{{.L.T "sec.make"}}</a></div>
+  </section>{{end}}
   <div class="alert info hide claim" id="claim"></div>
   <div class="alert info hide claim" id="reseal"></div>
   <div class="alert info hide claim" id="nokey"></div>

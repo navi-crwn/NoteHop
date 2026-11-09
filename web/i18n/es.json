@@ -1585,5 +1585,8 @@
   "start.web_d": "Una pequeña página de HTML, CSS y JavaScript que se ejecuta en un sandbox.",
   "start.more": "Más",
   "new.vault_closed": "Tu bóveda no está abierta en este navegador. La nota se guardará en tu cuenta, pero Mis notas no podrá abrirla hasta que su clave se guarde en la bóveda; mientras tanto este dispositivo conserva la clave.",
-  "nav.help": "Ayuda"
+  "nav.help": "Ayuda",
+  "remind.recovery_h": "Aún sin códigos de recuperación",
+  "remind.recovery_p": "Sin ellos, olvidar la contraseña significa que la lista de tus notas no podrá abrirse de nuevo, ni siquiera por nosotros.",
+  "remind.recovery_p_sso": "Sin ellos, olvidar la clave de bóveda significa que la lista de tus notas no podrá abrirse de nuevo, ni siquiera por nosotros."
 }

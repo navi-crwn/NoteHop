@@ -1585,5 +1585,8 @@
   "start.web_d": "Eine kleine Seite aus HTML, CSS und JavaScript, die in einer Sandbox läuft.",
   "start.more": "Mehr",
   "new.vault_closed": "Dein Tresor ist in diesem Browser nicht geöffnet. Die Notiz wird in deinem Konto gespeichert, aber „Meine Notizen“ kann sie erst öffnen, wenn ihr Schlüssel im Tresor gespeichert ist; bis dahin behält dieses Gerät den Schlüssel.",
-  "nav.help": "Hilfe"
+  "nav.help": "Hilfe",
+  "remind.recovery_h": "Noch keine Wiederherstellungscodes",
+  "remind.recovery_p": "Ohne sie lässt sich die Liste deiner Notizen nach einem vergessenen Passwort nicht mehr öffnen, auch nicht von uns.",
+  "remind.recovery_p_sso": "Ohne sie lässt sich die Liste deiner Notizen nach einem vergessenen Tresorschlüssel nicht mehr öffnen, auch nicht von uns."
 }

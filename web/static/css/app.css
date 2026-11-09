@@ -598,6 +598,13 @@ svg.graph a:hover circle { fill: var(--violet); }
 .vault-state .btn { margin-inline-start: auto; }
 .note-link b.locked-title { color: var(--muted); font-weight: 600; }
 .note-list .device-hint { padding: 0 2px 4px; }
+/* a reminder card: what is still to do and the way there; hop-ui.js puts its "Hide" button in the top corner */
+.remind { display: flex; gap: 10px; align-items: flex-start; }
+.remind > svg { width: 18px; height: 18px; flex: none; margin-top: 2px; }
+.remind-body { display: grid; gap: 6px; min-width: 0; justify-items: start; }
+.remind-body p { margin: 0; color: var(--muted); }
+.remind.hop-remind { padding-inline-end: 56px; }
+@media (min-width: 640px) { .remind.hop-remind { padding-inline-end: 200px; } }
 
 /* ---------- live collaboration ---------- */
 .live-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }

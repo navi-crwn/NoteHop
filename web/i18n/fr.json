@@ -1585,5 +1585,8 @@
   "start.web_d": "Une petite page HTML, CSS et JavaScript qui s’exécute dans un bac à sable.",
   "start.more": "Plus",
   "new.vault_closed": "Votre coffre n’est pas ouvert dans ce navigateur. La note sera enregistrée dans votre compte, mais Mes notes ne pourra l’ouvrir qu’une fois sa clé enregistrée dans le coffre ; en attendant, cet appareil garde la clé.",
-  "nav.help": "Aide"
+  "nav.help": "Aide",
+  "remind.recovery_h": "Pas encore de codes de récupération",
+  "remind.recovery_p": "Sans eux, un mot de passe oublié signifie que la liste de vos notes ne pourra plus être ouverte, même par nous.",
+  "remind.recovery_p_sso": "Sans eux, une clé du coffre oubliée signifie que la liste de vos notes ne pourra plus être ouverte, même par nous."
 }

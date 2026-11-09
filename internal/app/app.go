@@ -275,7 +275,8 @@ func (a *App) routes() {
 	m.HandleFunc("POST /api/logout", a.apiLogout)
 	m.HandleFunc("GET /api/me", a.apiMe)
 	m.HandleFunc("GET /api/me/notes", a.apiMyNotes)
-	m.HandleFunc("GET /api/v1/me/notes", a.apiMyNotesForApp) // signed, server to server (mynotes.go)
+	m.HandleFunc("POST /api/me/reminders/dismiss", a.apiDismissReminder) // reminder cards (reminders.go)
+	m.HandleFunc("GET /api/v1/me/notes", a.apiMyNotesForApp)             // signed, server to server (mynotes.go)
 	m.HandleFunc("POST /api/vault", a.apiVault)
 	m.HandleFunc("POST /api/me/recovery", a.apiSetRecovery)
 	m.HandleFunc("POST /api/me/secret", a.apiChangeSecret)
@@ -332,10 +333,11 @@ type pageData struct {
 	HopUI         *hopUIAssets // shared dialogs and reminder cards on hel.ink (nil: native dialogs)
 	HopFamily     []familyApp  // the other public HOP apps
 	HopPublicApps []familyApp
-	Back          bool        // inner page: show "Back to NoteHop"
-	Dash          bool        // the signed-in dashboard shell (sidebar, settings-type top bar)
-	MiniFoot      bool        // a working page: one line of footer instead of the columns
-	Status        *liveStatus // /status only
+	Back          bool            // inner page: show "Back to NoteHop"
+	Dash          bool            // the signed-in dashboard shell (sidebar, settings-type top bar)
+	MiniFoot      bool            // a working page: one line of footer instead of the columns
+	Reminders     map[string]bool // reminder cards due on the dashboard, by key (reminders.go)
+	Status        *liveStatus     // /status only
 	Changelog     *changePage
 }
 
@@ -426,7 +428,8 @@ func (a *App) dashboardPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login?next=/dashboard", http.StatusSeeOther)
 		return
 	}
-	a.render(w, r, http.StatusOK, "dashboard", pageData{Title: a.locale(w, r).T("title.dashboard"), User: u, NoIndex: true})
+	due := map[string]bool{remindRecovery: a.reminderDue(u, remindRecovery, a.recoveryStatus(u).Left == 0, time.Now())}
+	a.render(w, r, http.StatusOK, "dashboard", pageData{Title: a.locale(w, r).T("title.dashboard"), User: u, NoIndex: true, Reminders: due})
 }
 
 // profileOrNote serves /@name as a profile and /TOKEN as a note page. Site

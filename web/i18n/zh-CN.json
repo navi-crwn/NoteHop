@@ -1585,5 +1585,8 @@
   "start.web_d": "在沙盒中运行的 HTML、CSS 和 JavaScript 小页面。",
   "start.more": "更多",
   "new.vault_closed": "保险库未在此浏览器中打开。笔记会保存到你的账户，但在密钥存入保险库之前，“我的笔记”无法打开它；在此期间密钥保留在此设备上。",
-  "nav.help": "帮助"
+  "nav.help": "帮助",
+  "remind.recovery_h": "还没有恢复码",
+  "remind.recovery_p": "没有恢复码，一旦忘记密码，你的笔记列表将无法再打开，我们也无能为力。",
+  "remind.recovery_p_sso": "没有恢复码，一旦忘记保险库密钥，你的笔记列表将无法再打开，我们也无能为力。"
 }

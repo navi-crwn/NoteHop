@@ -1585,5 +1585,8 @@
   "start.web_d": "Uma pequena página de HTML, CSS e JavaScript que roda em sandbox.",
   "start.more": "Mais",
   "new.vault_closed": "Seu cofre não está aberto neste navegador. A nota será salva na sua conta, mas Minhas notas só poderá abri-la depois que a chave for salva no cofre; até então este dispositivo guarda a chave.",
-  "nav.help": "Ajuda"
+  "nav.help": "Ajuda",
+  "remind.recovery_h": "Ainda sem códigos de recuperação",
+  "remind.recovery_p": "Sem eles, esquecer a senha significa que a lista das suas notas não poderá mais ser aberta, nem por nós.",
+  "remind.recovery_p_sso": "Sem eles, esquecer a chave do cofre significa que a lista das suas notas não poderá mais ser aberta, nem por nós."
 }

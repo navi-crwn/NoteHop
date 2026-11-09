@@ -1585,5 +1585,8 @@
   "start.web_d": "A small page of HTML, CSS and JavaScript that runs in a sandbox.",
   "start.more": "More",
   "new.vault_closed": "Your vault isn’t open in this browser. The note will be saved to your account, but My notes can’t open it until its key is saved in the vault; this device keeps the key meanwhile.",
-  "nav.help": "Help"
+  "nav.help": "Help",
+  "remind.recovery_h": "No recovery codes yet",
+  "remind.recovery_p": "Without them, a forgotten password means the list of your notes can’t be opened again, not even by us.",
+  "remind.recovery_p_sso": "Without them, a forgotten vault key means the list of your notes can’t be opened again, not even by us."
 }

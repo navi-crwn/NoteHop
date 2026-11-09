@@ -1585,5 +1585,8 @@
   "start.web_d": "Halaman kecil HTML, CSS, dan JavaScript yang berjalan di sandbox.",
   "start.more": "Lainnya",
   "new.vault_closed": "Brankasmu belum dibuka di browser ini. Catatan akan tersimpan di akunmu, tetapi Catatanku belum bisa membukanya sampai kuncinya disimpan di brankas; sementara itu kuncinya ada di perangkat ini.",
-  "nav.help": "Bantuan"
+  "nav.help": "Bantuan",
+  "remind.recovery_h": "Belum ada kode pemulihan",
+  "remind.recovery_p": "Tanpa kode itu, lupa kata sandi berarti daftar catatanmu tidak bisa dibuka lagi, bahkan oleh kami.",
+  "remind.recovery_p_sso": "Tanpa kode itu, lupa kunci brankas berarti daftar catatanmu tidak bisa dibuka lagi, bahkan oleh kami."
 }

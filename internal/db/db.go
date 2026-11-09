@@ -189,6 +189,10 @@ var migrations = []string{
 	`ALTER TABLE files ADD COLUMN scope TEXT NOT NULL DEFAULT '';
 	CREATE INDEX files_scope ON files(scope, expires);
 	CREATE TABLE file_drafts (scope TEXT PRIMARY KEY, note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE);`,
+	// 13: reminder cards a member has hidden (one row per account and card).
+	// IF NOT EXISTS: running it against a database that already has the table changes nothing.
+	`CREATE TABLE IF NOT EXISTS reminders (user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, key TEXT NOT NULL,
+		dismissed_at INTEGER NOT NULL, PRIMARY KEY (user_id, key));`,
 }
 
 // migrate applies pending migrations, each in its own transaction together
