@@ -4,6 +4,8 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-10
+
 ### Fixed
 - Drawers and menus close with Escape and hand the focus back: the dashboard drawer (the focus goes into it when it opens, and its links leave the tab order while it is closed on a small screen) and the public header's menu on phones, which also closes on a tap outside. The Share dialog's tabs fade at the edge on a phone, to show that they scroll.
 - The local sign-in form says what it takes: a NoteHop username chosen at sign-up here, not an email address. An email typed into it gets a sentence that points at "Continue with HOP" instead of the username rule. Nothing about accounts or sign-in changes.
