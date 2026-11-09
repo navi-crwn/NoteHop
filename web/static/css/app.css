@@ -208,9 +208,6 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); width: 16
 /* ---------- compose ---------- */
 /* One column: a row of starters, the editor at full width (web notes get
    their result beside the code), and one bar of settings under it. */
-.compose-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 4px 0 6px; }
-.compose-head h1 { margin: 0; font-size: 1.5rem; letter-spacing: -.02em; }
-.start-desc { margin: 0 2px 14px; }
 .editor-card { padding: 14px; }
 .title-input { height: auto !important; border: 0 !important; background: transparent !important; box-shadow: none !important;
   font-size: 1.5rem !important; font-weight: 750; letter-spacing: -.02em; padding: 6px 8px !important; margin-bottom: 6px; }
@@ -719,22 +716,29 @@ body.expert .seg-choice [data-tech]::after { display: none; }
 .seg-choice label { flex: 1 1 0; }
 .seg-choice span { white-space: normal; line-height: 1.25; padding: 7px 6px; border-radius: 9px; font-size: .82rem; }
 
-/* ---------- compose: the settings bar under the editor ----------
-   Each setting is a <details>: the button shows what is chosen, the menu
-   opens upwards with the choices and what they mean. "More" opens a drawer
-   at the side. On phones the buttons are icons and every menu is a sheet. */
-.share-bar { position: sticky; bottom: 0; z-index: 25; display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
-  margin: 12px -14px 0; padding: 10px 14px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--panel-2) 55%, var(--panel)); }
-.share-bar #create { margin-inline-start: auto; height: 44px; }
+/* ---------- compose: one row of chips under the editor ----------
+   One setting, one chip. A chip reads "name: value" and opens a small menu
+   above it (a sheet from the bottom on phones). "Other settings" opens a
+   drawer; whatever is switched on there shows up as a chip of its own. */
+.compose .starters { margin: 2px 0 12px; }
 .pick { position: relative; }
-.pick > summary, .pick-more { list-style: none; gap: 7px; height: 40px; padding: 0 12px; }
+.pick > summary { list-style: none; }
 .pick > summary::-webkit-details-marker { display: none; }
-.pick > summary .pick-ico, .pick-more .pick-ico { width: 17px; height: 17px; color: var(--accent); }
-.pick > summary .dd { width: 13px; height: 13px; color: var(--faint); }
-.pick[open] > summary, .pick-more[aria-expanded="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
-.pick .count, .pick-more .count { min-width: 19px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: 750 .72rem/19px var(--sans); text-align: center; }
-.pick-pop { position: absolute; bottom: calc(100% + 8px); inset-inline-start: 0; z-index: 41; width: 340px; max-height: min(520px, calc(100vh - 120px)); max-height: min(520px, calc(100dvh - 120px)); overflow: auto;
+.chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px -14px 0; padding: 12px 14px 0; border-top: 1px solid var(--line); }
+.extra-chips { display: contents; }
+.chip-btn { gap: 7px; height: 38px; padding: 0 12px; font-size: .86rem; font-weight: 600; max-width: 100%; min-width: 0; }
+.chip-btn .pick-ico { width: 16px; height: 16px; flex: none; color: var(--muted); }
+.chip-btn .dd { width: 13px; height: 13px; flex: none; color: var(--faint); }
+.chip-btn .pick-val { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.chip-btn:active { transform: scale(.97); }
+.pick.is-set > .chip-btn, .chip-btn.is-set { border-color: color-mix(in srgb, var(--accent) 55%, var(--line-2)); background: color-mix(in srgb, var(--accent) 10%, var(--panel)); }
+.pick.is-set > .chip-btn .pick-ico, .chip-btn.is-set .pick-ico { color: var(--accent); }
+.pick[open] > summary, .chip-btn[aria-expanded="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.chip-btn .count { min-width: 19px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: 750 .72rem/19px var(--sans); font-variant-numeric: tabular-nums; text-align: center; }
+.pick-pop { position: absolute; bottom: calc(100% + 8px); inset-inline-start: 0; z-index: 41; width: 340px; max-width: calc(100vw - 16px); max-height: min(520px, calc(100vh - 120px)); max-height: min(520px, calc(100dvh - 120px)); overflow: auto;
   margin: 0; padding: 8px; border: 1px solid var(--line-2); border-radius: 14px; background: var(--panel); box-shadow: var(--shadow); min-width: 0; }
+.pick.flip > .pick-pop { inset-inline-start: auto; inset-inline-end: 0; }
+.pick.down > .pick-pop { bottom: auto; top: calc(100% + 8px); }
 .pick-pop legend { float: left; width: 100%; padding: 4px 6px 8px; font-size: .78rem; font-weight: 650; color: var(--faint); }
 .pick-pop .choice-grid { clear: both; gap: 2px; }
 .pick-pop .choice { border-color: transparent; padding: 9px 10px; }
@@ -743,12 +747,35 @@ body.expert .seg-choice [data-tech]::after { display: none; }
 .pick-pop .choice:has(input:checked)::after { content: ""; flex: none; width: 9px; height: 15px; margin: 2px 4px 0 auto; border: solid var(--accent); border-width: 0 2px 2px 0; transform: rotate(45deg); }
 .pick-pop .more-modes { margin: 4px 0 0; padding-top: 6px; border-top: 1px solid var(--line); }
 .pick-pop .more-modes > summary { padding: 4px 10px; margin: 0; }
-.pick-pop .feat { margin: 8px 4px 4px; }
+.pick-pop > .toggle { clear: both; padding: 8px 6px; }
+.pick-pop .feat { clear: both; margin: 8px 4px 4px; }
+.pick-pop .feat .toggle { display: flex; margin: 10px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font-weight: inherit; }
+.pick-pop .feat .toggle::after { top: 16px; }
+.pick-pop .feat textarea { width: 100%; background: var(--panel); }
+.pick-pop .feat [data-panel] label { margin-top: 8px; }
+.pick-pop .pop-hint { display: block; clear: both; padding: 8px 6px 2px; }
 .pick-pop small, .drawer small { font-weight: 400; }
+/* why a setting can't be used here, in its own menu, with the button that changes it */
+.rule-note { clear: both; display: grid; gap: 8px; margin: 2px 4px 8px; padding: 10px 12px; border: 1px dashed var(--line-2); border-radius: 10px; font-size: .84rem; color: var(--muted); }
+.rule-note .btn { justify-self: start; }
+/* the starters' "More": the same menu, opening downwards */
+.starters .pick > summary .dd { width: 13px; height: 13px; color: var(--faint); }
+.starters .pick.is-set > summary { border-color: var(--accent); color: var(--text); background: color-mix(in srgb, var(--accent) 12%, var(--panel)); }
+.start-pop { bottom: auto; top: calc(100% + 8px); width: 290px; display: grid; gap: 2px; }
+.start-item { display: flex; gap: 10px; align-items: flex-start; width: 100%; padding: 9px 10px; border: 0; border-radius: var(--radius-sm); background: none; color: var(--text); font: inherit; text-align: start; cursor: pointer; }
+.start-item:hover { background: var(--panel-2); }
+.start-item[aria-pressed=true] { background: color-mix(in srgb, var(--accent) 11%, var(--panel)); }
+.start-item svg { width: 18px; height: 18px; flex: none; margin-top: 2px; color: var(--accent); }
+.start-item span { display: grid; gap: 2px; }
+.start-item b { font-size: .92rem; }
+.start-item small { color: var(--muted); font-size: .78rem; line-height: 1.35; }
 .share-foot { padding: 0 2px; }
-.share-foot .summary { margin: 10px 0 0; padding: 0; border: 0; background: none; color: var(--muted); }
-.share-foot .warn-text, .share-foot .alert { margin: 8px 0 0; }
-/* "More": a modal <dialog>. A drawer at the side on wide screens, a sheet from the bottom on phones.
+.share-foot .warn-text, .share-foot .alert { margin: 10px 0 0; }
+/* what the link will do, read before the click */
+.create-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 12px; }
+.create-row .summary { flex: 1 1 320px; min-width: 0; margin: 0; padding: 0; border: 0; background: none; color: var(--muted); font-size: .86rem; line-height: 1.5; }
+.create-row #create { margin-inline-start: auto; height: 44px; }
+/* "Other settings": a modal <dialog>. A drawer at the side on wide screens, a sheet from the bottom on phones.
    The head stays put, the body scrolls. Being in the top layer it needs no z-index, and the
    browser traps focus, closes it on Escape and gives focus back to the button. */
 .drawer { position: fixed; inset-block: 0; inset-inline: auto 0; margin: 0; width: min(420px, 100vw); max-width: 100vw; height: 100vh; height: 100dvh; max-height: none;
@@ -766,28 +793,36 @@ body.expert .seg-choice [data-tech]::after { display: none; }
 .cw-reason { display: block; margin-top: 8px; }
 /* while a modal dialog is open the page behind it does not scroll */
 body:has(dialog:modal) { overflow: hidden; }
-/* the menus live inside the bar, so the bar rises above the dimmed page (and the site header) */
-.share-bar:has(.pick[open]) { z-index: 70; }
+/* an open menu rises above the dimmed page (and the site header) */
+.chips:has(.pick[open]), .starters:has(.pick[open]) { position: relative; z-index: 70; }
 .scrim { position: fixed; inset: 0; z-index: 65; background: rgba(10, 12, 20, .28); }
 body.sheet-open { overflow: hidden; }
 .scrim[hidden] { display: none; }
+/* one line of footer on the pages people work on */
+.footer-mini { padding: 14px 0; font-size: .82rem; color: var(--faint); }
+.footer-mini .wrap { align-items: center; }
+.footer-mini p { margin: 0; }
 @media (max-width: 640px) {
-  .compose-head h1 { font-size: 1.25rem; }
   /* the starters scroll sideways, so the editor stays near the top */
   .starters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -14px; padding: 0 14px 2px; width: calc(100% + 28px); }
-  .share-bar { position: fixed; left: 0; right: 0; bottom: 0; margin: 0; gap: 6px; padding: 8px 10px calc(10px + env(safe-area-inset-bottom));
-    border-top: 1px solid var(--line-2); background: var(--panel); box-shadow: 0 -8px 24px rgba(30, 30, 80, .08); }
+  .starters::-webkit-scrollbar { display: none; }
+  /* narrow gutters and a shorter editor: the settings are on the first screen, two chips to a row */
+  body[data-page=new] .shell-body main { padding-inline: 4px; }
+  body[data-page=new] main .wrap { padding-inline: 10px; }
+  body[data-page=new] .editor-card { padding: 10px; }
+  body[data-page=new] .ed-body, body[data-page=new] .ed-src { min-height: 200px; }
+  .compose .starters { margin: 0 -10px 10px; padding: 0 10px 2px; width: calc(100% + 20px); }
+  /* the chips keep their words and wrap; the Create button stays at the bottom of the screen */
+  .chips { gap: 6px; margin-inline: -10px; padding-inline: 10px; }
+  .chip-btn { height: 44px; padding: 0 10px; gap: 6px; }
+  .create-row #create { position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 30; height: 48px; margin: 0; box-shadow: 0 10px 30px rgba(10, 12, 20, .35); }
   body[data-page=new] main { padding-bottom: 84px; }
-  .pick > summary, .pick-more { width: 44px; height: 44px; padding: 0; position: relative; justify-content: center; }
-  .pick > summary .pick-ico, .pick-more .pick-ico { width: 20px; height: 20px; }
-  .pick > summary .dd { display: none; }
-  .pick > summary .pick-val, .pick-more .pick-val { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .pick .count, .pick-more .count { position: absolute; top: -6px; inset-inline-end: -6px; }
-  .share-bar #create { flex: 1; height: 44px; padding: 0 12px; }
+  body.kbar-on .create-row #create { display: none; }
   /* every menu is a sheet from the bottom */
-  .pick-pop { position: fixed; top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 82vh; max-height: 82dvh; z-index: 61;
+  .pick-pop, .start-pop { position: fixed; top: auto; left: 0; right: 0; bottom: 0; width: auto; max-width: none; max-height: 82vh; max-height: 82dvh; z-index: 61;
     padding: 16px 16px calc(20px + env(safe-area-inset-bottom)); border: 0; border-radius: 20px 20px 0 0; box-shadow: 0 -20px 50px rgba(10, 12, 20, .22); }
   .pick-pop::before { content: ""; display: block; width: 40px; height: 5px; margin: -6px auto 10px; border-radius: 3px; background: var(--line-2); }
+  .start-pop::before { justify-self: center; }
   .drawer { inset: auto 0 0 0; width: auto; max-width: none; height: auto; max-height: 88vh; max-height: 88dvh; border: 0; border-radius: 20px 20px 0 0; box-shadow: 0 -20px 50px rgba(10, 12, 20, .22); }
   .drawer-head { padding-inline: 16px; padding-top: 14px; }
   .drawer-body { padding-inline: 16px; }
@@ -1338,7 +1373,7 @@ h1, h2, .note-title h1 { overflow-wrap: anywhere; }
   .ed-tools { flex: 1 1 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .ed-tools::-webkit-scrollbar { display: none; }
   .ed-tools > * { flex: none; }
-  .foot-col nav a, .foot-langs a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+  .foot-col nav a, .foot-langs a, .footer-mini nav a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
   .md li.task > input { width: 24px; height: 24px; }
 }
 @media (max-width: 420px) {
@@ -1351,7 +1386,7 @@ h1, h2, .note-title h1 { overflow-wrap: anywhere; }
 /* The bars fixed to the bottom must not cover the last lines of the page (the language links). */
 @media (max-width: 640px) {
   body.has-dock .footer-columns { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
-  body[data-page=new] .footer-columns { padding-bottom: calc(130px + env(safe-area-inset-bottom)); }
+  body.has-dock .footer-mini, body[data-page=new] .footer-mini, body[data-page=new] .shell-foot { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
 }
 /* the content warning screen (note.js) */
 .gate-badge { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; }
@@ -1374,7 +1409,7 @@ h1, h2, .note-title h1 { overflow-wrap: anywhere; }
   .ed-type-list { position: fixed; inset: auto 8px calc(8px + env(safe-area-inset-bottom)) 8px; width: auto; max-height: 70dvh; z-index: 61; }
 }
 /* a toast on the compose page rises above the bar fixed to the bottom */
-@media (max-width: 640px) { body[data-page=new] .toasts { bottom: calc(130px + env(safe-area-inset-bottom)); } }
+@media (max-width: 640px) { body[data-page=new] .toasts { bottom: calc(84px + env(safe-area-inset-bottom)); } }
 /* A note loads after the page (fetched, then decrypted): keep the page one screen tall while it does,
    so the footer is not pushed down in front of the reader when the text arrives. */
 .note-wrap { min-height: calc(100vh - 60px); min-height: calc(100dvh - 60px); }

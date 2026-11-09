@@ -39,7 +39,7 @@
     <a class="shell-brand" href="/"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="32" height="32"><span>{{.Site}}</span></a>
     <nav class="shell-nav" aria-label="{{.L.T "nav.main"}}">
       <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}><svg><use href="#i-grid"/></svg>{{.L.T "nav.mine"}}</a>
-      <a href="/new"><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a>
+      <a href="/new" {{if eq .Path "/new"}}aria-current="page"{{end}}><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a>
       <a href="/security" {{if eq .Path "/security"}}aria-current="page"{{end}}><svg><use href="#i-key"/></svg>{{.L.T "sec.title"}}</a>
       <a href="/nearby"><svg><use href="#i-phone"/></svg>{{.L.T "nearby.title"}}</a>
       <a href="/diff"><svg><use href="#i-sliders"/></svg>{{.L.T "diffpage.title"}}</a>
@@ -57,7 +57,7 @@
       <button class="icon-btn shell-burger" id="shell-burger" type="button" aria-label="{{.L.T "nav.menu"}}" aria-controls="shell-side" aria-expanded="false"><svg><use href="#i-menu"/></svg></button>
       <p class="shell-title">{{if .Title}}{{.Title}}{{else}}{{.L.T "nav.mine"}}{{end}}</p>
       <div class="shell-tools">
-        {{if ne .Path "/dashboard"}}<a class="btn primary sm" href="/new"><svg><use href="#i-plus"/></svg><span>{{.L.T "nav.new"}}</span></a>{{end}}
+        {{if and (ne .Path "/dashboard") (ne .Path "/new")}}<a class="btn primary sm" href="/new"><svg><use href="#i-plus"/></svg><span>{{.L.T "nav.new"}}</span></a>{{end}}
         <div class="menu lang-menu" id="lang-menu">
           <button type="button" class="icon-btn" aria-haspopup="true" aria-label="{{.L.T "nav.language"}}" title="{{.L.T "nav.language"}}"><svg><use href="#i-globe"/></svg></button>
           <div class="menu-list">{{$cur := .L.Code}}{{range .Langs}}
@@ -93,10 +93,17 @@
     <nav class="nav-links" aria-label="{{.L.T "nav.main"}}">
       <a href="/new" {{if eq .Path "/new"}}aria-current="page"{{end}}>{{.L.T "nav.new"}}</a>
       <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}>{{.L.T "nav.mine"}}</a>
-      <a href="/about" {{if eq .Path "/about"}}aria-current="page"{{end}}>{{.L.T "nav.about"}}</a>
-      <a href="/faq" {{if eq .Path "/faq"}}aria-current="page"{{end}}>{{.L.T "nav.faq"}}</a>
+      <a href="/diff" {{if eq .Path "/diff"}}aria-current="page"{{end}}>{{.L.T "diffpage.title"}}</a>
+      <a href="/nearby" {{if eq .Path "/nearby"}}aria-current="page"{{end}}>{{.L.T "nearby.title"}}</a>
     </nav>
     <div class="nav-r">
+      <div class="menu" id="help-menu">
+        <button type="button" class="icon-btn" aria-haspopup="true" aria-label="{{.L.T "nav.help"}}" title="{{.L.T "nav.help"}}"><svg><use href="#i-help"/></svg></button>
+        <div class="menu-list">
+          <a href="/about" {{if eq .Path "/about"}}aria-current="page"{{end}}><svg width="16" height="16"><use href="#i-doc"/></svg>{{.L.T "nav.about"}}</a>
+          <a href="/faq" {{if eq .Path "/faq"}}aria-current="page"{{end}}><svg width="16" height="16"><use href="#i-chat"/></svg>{{.L.T "nav.faq"}}</a>
+        </div>
+      </div>
       <details class="family-switcher" data-family-switcher>
         <summary class="icon-btn" aria-label="{{.L.T "family.foot"}}" title="{{.L.T "family.foot"}}"><svg><use href="#i-grid"/></svg></summary>
         <nav aria-label="{{.L.T "family.foot"}}">{{range .HopPublicApps}}<a href="{{.URL}}" {{if eq .Slug "notehop"}}aria-current="true"{{end}}><img src="{{(index .Icons "mark").URL}}" width="32" height="32" alt="" loading="lazy">{{.Name}}</a>{{end}}</nav>
@@ -128,6 +135,16 @@
   </div>
 </header>
 <main id="main">{{template "mainbody" .}}</main>
+{{if .MiniFoot}}
+<footer class="footer-mini">
+  <div class="wrap">
+    <p>© 2026 navi-crwn · MIT License</p>
+    <nav aria-label="{{.Site}}">
+      <a href="/about">{{.L.T "footer.about"}}</a><a href="/faq">{{.L.T "nav.faq"}}</a><a href="/privacy">{{.L.T "privacy.title"}}</a><a href="/terms">{{.L.T "terms.title"}}</a><a href="/status">{{.L.T "status.title"}}</a><a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</footer>
+{{else}}
 <footer class="footer-columns">
   <div class="wrap footer-grid">
     <div class="foot-col foot-brand">
@@ -175,6 +192,7 @@
       {{end}}    </nav>
   </div>
 </footer>
+{{end}}
 {{end}}
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <script src="/i18n/{{.L.Code}}.js?v={{.Asset}}"></script>

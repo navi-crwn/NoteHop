@@ -333,6 +333,7 @@ type pageData struct {
 	HopPublicApps []familyApp
 	Back          bool        // inner page: show "Back to NoteHop"
 	Dash          bool        // the signed-in dashboard shell (sidebar, settings-type top bar)
+	MiniFoot      bool        // a working page: one line of footer instead of the columns
 	Status        *liveStatus // /status only
 	Changelog     *changePage
 }
@@ -354,8 +355,13 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.L, d.Langs = a.locale(w, r), i18n.Langs
 	d.SSO, d.SSOName, d.Links = a.cfg.SSOEnabled(), a.cfg.SSOName, a.cfg.Links
 	d.AI, d.AICustom, d.Repo = a.cfg.aiMode(), len(a.cfg.AIOrigins) > 0, a.cfg.repo()
-	d.Back = backPages[name]
-	d.Dash = d.User != nil && (name == "dashboard" || name == "vault")
+	if d.User == nil {
+		d.User = a.currentUser(r)
+	}
+	// In the shell the sidebar is the way back, so those pages have no "Back to NoteHop" row.
+	d.Dash = d.User != nil && dashPages[name]
+	d.Back = backPages[name] && !d.Dash
+	d.MiniFoot = miniFootPages[name]
 	if name == "home" || name == "features" {
 		d.TourGroups, d.TourItems = []string{"share", "private", "together", "blocks", "dev", "web"}, []int{1, 2, 3, 4, 5, 6}
 	}
@@ -378,9 +384,6 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.Clipper = clipper(d.Origin)
 	if d.Next == "" {
 		d.Next = safeNext(r.URL.Query().Get("next"))
-	}
-	if d.User == nil {
-		d.User = a.currentUser(r)
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
