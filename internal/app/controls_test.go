@@ -64,8 +64,9 @@ func TestControlStandardTokens(t *testing.T) {
 			t.Errorf("app.css lacks %q", want)
 		}
 	}
-	// No pill-shaped or odd-radius buttons and inputs: a radius on these rules is the token.
-	odd := regexp.MustCompile(`(?m)^\.(btn|icon-btn|chip|starter|prefix|seg)[^{\n]*\{[^}]*border-radius: (\d+px|999px)`)
+	// No pill-shaped or odd-radius buttons and inputs: a radius on these rules (the control itself, with or
+	// without a modifier class, not something inside it such as a counter badge) is the token.
+	odd := regexp.MustCompile(`(?m)^\.(btn|icon-btn|chip|starter|prefix|seg)(\.[a-z-]+)* \{[^}]*border-radius: (\d+px|999px)`)
 	if m := odd.FindString(css); m != "" {
 		t.Errorf("a control rule sets its own radius: %s", strings.SplitN(m, "{", 2)[0])
 	}
