@@ -29,6 +29,7 @@
 <script src="/static/js/theme.js?v={{.Asset}}"></script>
 <link rel="stylesheet" href="/static/css/family-switcher.css?v={{.Asset}}">
 {{if .Dash}}<link rel="stylesheet" href="/static/css/shell.css?v={{.Asset}}">{{end}}
+<link rel="stylesheet" href="/static/css/coss.css?v={{.Asset}}">
 <script src="/static/js/family-switcher.js?v={{.Asset}}" defer></script>
 </head>
 <body data-page="{{block "page" .}}{{end}}"{{with .Token}} data-token="{{.}}"{{end}}{{with .Mode}} data-mode="{{.}}"{{end}}{{if .User}} data-user="{{.User.Username}}"{{end}}{{if and .User .User.SSOID}} data-sso="1"{{end}}{{with .Main}} data-main="{{.}}"{{end}}{{with .Share}} data-share="{{.}}"{{end}}>
@@ -81,6 +82,7 @@
     </header>
     <main id="main">{{template "mainbody" .}}</main>
     <footer class="shell-foot">
+      <p class="coss-brand">{{range .HopFamily}}{{if eq .Slug "hub"}}<img src="{{(index .Icons "mark").URL}}" alt="" width="28" height="28">{{end}}{{end}}<b>Hop Easy Link</b></p>
       <nav aria-label="{{.Site}}">
         <a href="/about">{{.L.T "footer.about"}}</a><a href="/faq">{{.L.T "footer.faq"}}</a><a href="/status">{{.L.T "status.title"}}</a><a href="/terms">{{.L.T "terms.title"}}</a><a href="/privacy">{{.L.T "privacy.title"}}</a><a href="/contact">{{.L.T "contact.title"}}</a>
       </nav>
@@ -140,6 +142,7 @@
 {{if .MiniFoot}}
 <footer class="footer-mini">
   <div class="wrap">
+    <p class="coss-brand">{{range .HopFamily}}{{if eq .Slug "hub"}}<img src="{{(index .Icons "mark").URL}}" alt="" width="28" height="28">{{end}}{{end}}<b>Hop Easy Link</b></p>
     <p>© 2026 navi-crwn · MIT License</p>
     <nav aria-label="{{.Site}}">
       <a href="/about">{{.L.T "footer.about"}}</a><a href="/faq">{{.L.T "nav.faq"}}</a><a href="/privacy">{{.L.T "privacy.title"}}</a><a href="/terms">{{.L.T "terms.title"}}</a><a href="/status">{{.L.T "status.title"}}</a><a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a>
