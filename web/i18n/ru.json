@@ -599,6 +599,7 @@
   "footer.label": "Подвал",
   "footer.raw": "Для разработчиков",
   "footer.tagline": "зашифрованные заметки, которыми можно делиться",
+  "footer.part_of": "Часть {name}",
   "more.raw": "Исходный текст",
   "footer.support": "Помощь",
   "footer.policies": "Правила",

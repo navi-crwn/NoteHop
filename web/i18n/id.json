@@ -599,6 +599,7 @@
   "footer.label": "Footer",
   "footer.raw": "Untuk developer",
   "footer.tagline": "catatan terenkripsi yang bisa dibagikan",
+  "footer.part_of": "Bagian dari {name}",
   "more.raw": "Teks mentah",
   "footer.support": "Bantuan",
   "footer.policies": "Kebijakan",

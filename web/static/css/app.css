@@ -864,6 +864,8 @@ body.sheet-open { overflow: hidden; }
 .footer-mini { padding: 14px 0; font-size: .82rem; color: var(--faint); }
 .footer-mini .wrap { align-items: center; }
 .footer-mini p { margin: 0; }
+.footer-mini .wrap { flex-wrap: wrap; }
+.footer-mini .part-of { flex: 0 0 100%; padding: 0 0 10px; }
 @media (max-width: 640px) {
   /* the starters scroll sideways, so the editor stays near the top */
   .starters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -14px; padding: 0 14px 2px; width: calc(100% + 28px); }
@@ -1371,6 +1373,11 @@ body.wr-full-on { overflow: hidden; }
 .bento-card li { margin: 6px 0; font-size: 0.92rem; }
 
 /* Modern Columnar Footer */
+.part-of { display: flex; align-items: center; gap: 8px; width: fit-content; padding: 22px 0 16px; font-size: 13px; line-height: 20px; color: var(--muted); text-decoration: none; }
+.part-of img { width: 20px; height: 20px; display: block; }
+.part-of b { font-weight: 400; color: var(--text); }
+.part-of:hover b { text-decoration: underline; }
+.shell-foot .part-of { margin: 0 auto 10px; padding: 0; }
 footer .footer-grid { display: grid; grid-template-columns: minmax(180px, 1.35fr) repeat(4, minmax(0, 1fr)); align-items: start; gap: 28px 24px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
 .foot-col { display: flex; flex-direction: column; gap: 8px; }
 .foot-heading { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text); margin: 0 0 4px; font-weight: 700; }

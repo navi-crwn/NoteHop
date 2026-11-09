@@ -599,6 +599,7 @@
   "footer.label": "フッター",
   "footer.raw": "開発者向け",
   "footer.tagline": "共有できる暗号化ノート",
+  "footer.part_of": "{name} の一員",
   "more.raw": "生テキスト",
   "footer.support": "サポート",
   "footer.policies": "ポリシー",
