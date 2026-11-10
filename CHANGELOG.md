@@ -6,6 +6,10 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ### Added
 - A cap on notes created without an account: `NOTEHOP_GUEST_NOTES_IP` (default 200 per address per day, `0` turns it off). People who are signed in are never counted. Over the cap the API answers 429 with a message in all nine languages; the value shows in the control center's settings.
+- The documentation site lists PayHop in the family table, in all nine languages.
+
+### Fixed
+- Switching HOP ID account at the hub no longer leaves the previous account signed in here. A session the hub has not confirmed in the last 5 minutes is re-checked once, quietly, when a page loads (`prompt=none`): same account carries on, another account replaces the session, no hub session ends it (public pages stay open as a guest, the dashboard asks to sign in). Nothing is redirected when the hub is down, from the note editor or a note link, or from a page with unsaved text; password accounts are not affected. Signing in again always ends the session the browser held before. Sessions gain a `verified_at` column (idempotent migration).
 
 ### Changed
 - The names `secret`, `embargo` and `send` are reserved alongside `vault` and `pay`.
