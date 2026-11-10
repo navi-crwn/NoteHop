@@ -154,12 +154,20 @@ func (a *App) startSession(w http.ResponseWriter, u *db.User) {
 }
 
 func (a *App) apiLogout(w http.ResponseWriter, r *http.Request) {
+	u := a.currentUser(r)
 	if c, err := r.Cookie(sessionCookie); err == nil {
 		_ = a.db.DeleteSession(hashHex(c.Value))
 	}
 	http.SetCookie(w, &http.Cookie{Name: sessionCookie, Value: "", Path: "/", MaxAge: -1, HttpOnly: true,
 		Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode})
-	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+	out := map[string]any{"ok": true}
+	if u != nil && u.SSOID != "" {
+		// A HOP ID account signs out of the whole family and comes back here.
+		if next := a.hubLogoutURL(); next != "" {
+			out["next"] = next
+		}
+	}
+	writeJSON(w, http.StatusOK, out)
 }
 
 func (a *App) currentUser(r *http.Request) *db.User {

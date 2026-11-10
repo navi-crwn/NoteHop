@@ -1,7 +1,7 @@
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -s -w -X main.version=$(VERSION)
 
-.PHONY: build test linux run clean
+.PHONY: check-changelog build test linux run clean
 
 build:
 	CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/notehop ./cmd/notehop
@@ -20,3 +20,5 @@ run:
 
 clean:
 	rm -rf bin
+check-changelog: ## fail when merged PRs are missing from web/changelog.json (needs gh)
+	python3 scripts/check-changelog.py

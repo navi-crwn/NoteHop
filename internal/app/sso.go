@@ -368,6 +368,17 @@ func (a *App) apiVault(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"created": false, "vault_wrap": u.VaultWrap})
 }
 
+// hubLogoutURL is where a signed-out HOP ID account goes next: the account
+// server's logout, told to return to this app's home once the chain is done.
+// Empty when single sign-on or the public address is not configured.
+func (a *App) hubLogoutURL() string {
+	hub, home := strings.TrimRight(a.cfg.SSOURL, "/"), strings.TrimRight(a.cfg.BaseURL, "/")
+	if hub == "" || home == "" {
+		return ""
+	}
+	return hub + "/logout?return=" + url.QueryEscape(home+"/")
+}
+
 // ssoLogout is a step of the account server's chained logout: signing out
 // there (or in another app of the family) sends the browser through every
 // app's logout address in turn, so a session here does not outlive the others.

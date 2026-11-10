@@ -599,6 +599,7 @@
   "footer.label": "页脚",
   "footer.raw": "开发者",
   "footer.tagline": "可分享的加密笔记",
+  "footer.part_of": "{name} 的一部分",
   "more.raw": "原始文本",
   "footer.support": "帮助",
   "footer.policies": "政策",

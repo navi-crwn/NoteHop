@@ -599,6 +599,7 @@
   "footer.label": "Pie de página",
   "footer.raw": "Para desarrolladores",
   "footer.tagline": "notas cifradas que puedes compartir",
+  "footer.part_of": "Parte de {name}",
   "more.raw": "Texto sin formato",
   "footer.support": "Ayuda",
   "footer.policies": "Políticas",

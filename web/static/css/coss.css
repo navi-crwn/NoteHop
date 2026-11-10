@@ -81,7 +81,3 @@
 :root[data-ui="clean"] .btn:not(.primary):not(.danger):hover { background-color: var(--coss-hover); }
 
 /* Footer strip: logo + "Hop Easy Link". */
-:root[data-ui="clean"] .coss-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 12px; font-size: .875rem; color: var(--muted); }
-:root[data-ui="clean"] .coss-brand img { width: 28px; height: 28px; }
-:root[data-ui="clean"] .coss-brand b { color: var(--text); font-weight: 600; }
-:root[data-ui="clean"] .footer-mini .coss-brand { justify-content: flex-start; margin: 0; }
