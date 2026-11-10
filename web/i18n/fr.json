@@ -426,6 +426,8 @@
   "err.sso_cookie": "La connexion a pris trop de temps ou a été ouverte dans un autre navigateur. Veuillez réessayer.",
   "err.sso_failed": "Impossible de vous connecter. Veuillez réessayer.",
   "err.sso_ticket": "Ce lien de connexion n’est plus valide. Veuillez réessayer.",
+  "err.sso_hub_down": "Ta connexion HOP ID ne peut pas être confirmée pour le moment, car le serveur de comptes ne répond pas. Réessaie dans quelques minutes.",
+  "err.sso_recheck": "Nous n’avons pas pu confirmer ta connexion HOP ID. Vérifie que les cookies sont autorisés pour ce site, puis réessaie dans un instant.",
   "err.too_large": "La note est trop volumineuse.",
   "err.username_reserved": "Ce nom d’utilisateur est réservé. Choisissez-en un autre.",
   "err.username_taken": "Ce nom d’utilisateur est déjà pris.",

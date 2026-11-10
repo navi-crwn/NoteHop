@@ -426,6 +426,8 @@
   "err.sso_cookie": "O login demorou demais ou foi aberto em outro navegador. Tente de novo.",
   "err.sso_failed": "Não foi possível fazer seu login. Tente de novo.",
   "err.sso_ticket": "Este link de login não é mais válido. Tente de novo.",
+  "err.sso_hub_down": "Não dá para confirmar seu login do HOP ID agora porque o servidor de contas não está respondendo. Tente de novo em alguns minutos.",
+  "err.sso_recheck": "Não conseguimos confirmar seu login do HOP ID agora. Veja se os cookies estão permitidos para este site e tente de novo daqui a pouco.",
   "err.too_large": "A nota é grande demais.",
   "err.username_reserved": "Esse nome de usuário está reservado. Escolha outro.",
   "err.username_taken": "Esse nome de usuário já está em uso.",

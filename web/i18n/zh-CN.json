@@ -426,6 +426,8 @@
   "err.sso_cookie": "登录超时，或在另一个浏览器中打开了登录。请重试。",
   "err.sso_failed": "登录失败，请重试。",
   "err.sso_ticket": "此登录链接已失效，请重试。",
+  "err.sso_hub_down": "账户服务器暂时没有响应，现在无法确认你的 HOP ID 登录。请几分钟后再试。",
+  "err.sso_recheck": "刚才未能确认你的 HOP ID 登录。请检查是否允许本站使用 Cookie，然后稍后再试。",
   "err.too_large": "笔记过大。",
   "err.username_reserved": "该用户名为保留名称，请换一个。",
   "err.username_taken": "该用户名已被占用。",

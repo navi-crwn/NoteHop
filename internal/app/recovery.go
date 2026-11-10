@@ -108,9 +108,8 @@ func (a *App) recoveryStatus(u *db.User) recoveryStatus {
 }
 
 func (a *App) securityPage(w http.ResponseWriter, r *http.Request) {
-	u := a.currentUser(r)
+	u := a.accountPage(w, r)
 	if u == nil {
-		http.Redirect(w, r, "/login?next=/security", http.StatusSeeOther)
 		return
 	}
 	a.render(w, r, http.StatusOK, "security", pageData{Title: a.locale(w, r).T("sec.title"), User: u, NoIndex: true})
@@ -120,7 +119,7 @@ func (a *App) securityPage(w http.ResponseWriter, r *http.Request) {
 // working). It asks for the current secret, so a stolen session cookie can't
 // swap in codes of its own.
 func (a *App) apiSetRecovery(w http.ResponseWriter, r *http.Request) {
-	u := a.currentUser(r)
+	u := a.verifiedUser(r)
 	if u == nil {
 		apiErr(w, http.StatusUnauthorized, "err.not_signed_in")
 		return
@@ -172,7 +171,7 @@ func secretWrong(u *db.User) string {
 // apiChangeSecret sets a new password (or vault phrase). The vault key stays
 // the same, sealed again with the new one; other devices are signed out.
 func (a *App) apiChangeSecret(w http.ResponseWriter, r *http.Request) {
-	u := a.currentUser(r)
+	u := a.verifiedUser(r)
 	if u == nil {
 		apiErr(w, http.StatusUnauthorized, "err.not_signed_in")
 		return
@@ -228,7 +227,7 @@ func (a *App) apiRecover(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var u *db.User
-	if me := a.currentUser(r); me != nil && me.SSOID != "" && (q.Username == "" || q.Username == me.Username) {
+	if me := a.verifiedUser(r); me != nil && me.SSOID != "" && (q.Username == "" || q.Username == me.Username) {
 		u = me
 	} else if userRe.MatchString(q.Username) {
 		if found, err := a.db.UserByName(q.Username); err == nil && found.SSOID == "" {
@@ -306,6 +305,6 @@ func (a *App) apiRecoverFinish(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInternalServerError, "err.recovery_failed")
 		return
 	}
-	a.startSession(w, u)
+	a.startSession(w, r, u)
 	writeJSON(w, http.StatusOK, map[string]any{"username": u.Username, "left": a.recoveryStatus(u).Left})
 }

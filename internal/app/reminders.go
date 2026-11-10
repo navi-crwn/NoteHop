@@ -39,7 +39,7 @@ func (a *App) reminderDue(u *db.User, key string, taskOpen bool, now time.Time) 
 
 // apiDismissReminder: POST /api/me/reminders/dismiss {"key": "recovery-codes"}.
 func (a *App) apiDismissReminder(w http.ResponseWriter, r *http.Request) {
-	u := a.currentUser(r)
+	u := a.verifiedUser(r)
 	if u == nil {
 		apiErr(w, http.StatusUnauthorized, "err.not_signed_in")
 		return

@@ -105,6 +105,7 @@ type App struct {
 	reportKeyOnce sync.Once // reportKey is made on first use
 	reportKey     []byte
 	space         func(string) (int64, int64)
+	hubUp         func() bool // is the account server reachable (cached); replaced in tests
 }
 
 func New(cfg Config, d *db.DB) (*App, error) {
@@ -125,6 +126,7 @@ func New(cfg Config, d *db.DB) (*App, error) {
 	}
 	a := &App{cfg: cfg, db: d, limit: newLimiter(), quota: &dayQuota{m: map[string]*dayUse{}}, guests: &dayQuota{m: map[string]*dayUse{}}, used: usedTickets{m: map[string]int64{}}, tickets: recoveryTickets{m: map[string]recoveryTicket{}}}
 	a.space = diskSpace
+	a.hubUp = newHubProbe(cfg.SSOURL).Up
 	if err := a.loadTemplates(); err != nil {
 		return nil, err
 	}
@@ -305,6 +307,7 @@ type pageData struct {
 	Path          string
 	Asset         string
 	User          *db.User
+	Stale         bool // a HOP ID session the account server has not vouched for lately: the page may re-check once
 	Reg           bool
 	NoIndex       bool
 	Token         string
@@ -363,7 +366,13 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.SSO, d.SSOName, d.Links = a.cfg.SSOEnabled(), a.cfg.SSOName, a.cfg.Links
 	d.AI, d.AICustom, d.Repo = a.cfg.aiMode(), len(a.cfg.AIOrigins) > 0, a.cfg.repo()
 	if d.User == nil {
-		d.User = a.currentUser(r)
+		u, fresh := a.sessionState(r)
+		if fresh {
+			d.User = u
+		} else if u != nil && d.SSO && a.hubUp() {
+			// never when the account server is down: the browser would land on its own error page
+			d.Stale = true
+		}
 	}
 	// In the shell the sidebar is the way back, so those pages have no "Back to NoteHop" row.
 	d.Dash = d.User != nil && dashPages[name]
@@ -428,9 +437,8 @@ func (a *App) page(name, title, desc string) http.HandlerFunc {
 }
 
 func (a *App) dashboardPage(w http.ResponseWriter, r *http.Request) {
-	u := a.currentUser(r)
+	u := a.accountPage(w, r)
 	if u == nil {
-		http.Redirect(w, r, "/login?next=/dashboard", http.StatusSeeOther)
 		return
 	}
 	due := map[string]bool{remindRecovery: a.reminderDue(u, remindRecovery, a.recoveryStatus(u).Left == 0, time.Now())}
