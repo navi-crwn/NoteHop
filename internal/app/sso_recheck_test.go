@@ -81,15 +81,20 @@ func (e *recheckEnv) sessions() int {
 // silentStart follows the redirect a stale page gives and returns the state the hub would receive.
 func (e *recheckEnv) silentStart(c *client, path string) string {
 	e.t.Helper()
-	res, err := c.hc.Get(e.srv.URL + path)
-	if err != nil {
-		e.t.Fatal(err)
+	loc, _ := url.Parse(path)
+	if !strings.HasPrefix(path, "/auth/sso") { // an account page redirects on the server; a public page does it in the script (data-stale)
+		res, err := c.hc.Get(e.srv.URL + path)
+		if err != nil {
+			e.t.Fatal(err)
+		}
+		res.Body.Close()
+		loc, _ = url.Parse(res.Header.Get("Location"))
+		if res.StatusCode != http.StatusFound || loc.Path != "/auth/sso" || loc.Query().Get("prompt") != "none" {
+			e.t.Fatalf("%s: want a redirect to /auth/sso?prompt=none, got %d %s", path, res.StatusCode, loc)
+		}
 	}
-	res.Body.Close()
-	loc, _ := url.Parse(res.Header.Get("Location"))
-	if res.StatusCode != http.StatusFound || loc.Path != "/auth/sso" || loc.Query().Get("prompt") != "none" {
-		e.t.Fatalf("%s: want a redirect to /auth/sso?prompt=none, got %d %s", path, res.StatusCode, loc)
-	}
+	var err error
+	var res *http.Response
 	res, err = c.hc.Get(e.srv.URL + loc.RequestURI())
 	if err != nil {
 		e.t.Fatal(err)
@@ -211,7 +216,7 @@ func TestRecheckLoginRequired(t *testing.T) {
 	e := newRecheckEnv(t)
 	e.signIn(e.c, "1")
 	e.age()
-	state := e.silentStart(e.c, "/faq")
+	state := e.silentStart(e.c, "/auth/sso?prompt=none&next=%2Ffaq")
 	code, loc := e.callback(e.c, "error=login_required&state="+url.QueryEscape(state))
 	if code != http.StatusSeeOther || loc != "/faq" {
 		t.Fatalf("login_required: %d %s", code, loc)
