@@ -101,12 +101,12 @@ func (a *App) sshConn(nc net.Conn, cfg *ssh.ServerConfig) {
 		if err != nil {
 			return
 		}
-		a.sshSession(ch, in)
+		a.sshSession(ch, in, ip)
 		return // one command per connection
 	}
 }
 
-func (a *App) sshSession(ch ssh.Channel, in <-chan *ssh.Request) {
+func (a *App) sshSession(ch ssh.Channel, in <-chan *ssh.Request, ip string) {
 	defer ch.Close()
 	cmd := ""
 wait: // until the client says what to run
@@ -132,7 +132,7 @@ wait: // until the client says what to run
 			req.Reply(false, nil)
 		}
 	}()
-	out := a.sshRun(cmd, ch)
+	out := a.sshRun(cmd, ch, ip)
 	io.WriteString(ch, out)
 	status := make([]byte, 4)
 	if strings.HasPrefix(out, "error:") {
@@ -148,7 +148,7 @@ const sshHelp = `NoteHop over SSH (public notes only, not end-to-end encrypted):
 For encrypted notes use the browser or the notehop CLI ("notehop new").
 `
 
-func (a *App) sshRun(cmd string, stdin io.Reader) string {
+func (a *App) sshRun(cmd string, stdin io.Reader, ip string) string {
 	args := strings.Fields(cmd)
 	verb := "new"
 	if len(args) > 0 {
@@ -175,6 +175,9 @@ func (a *App) sshRun(cmd string, stdin io.Reader) string {
 		if title == "" && strings.HasPrefix(body, "# ") {
 			first, rest, _ := strings.Cut(body, "\n")
 			title, body = strings.TrimSpace(first[2:]), strings.TrimLeft(rest, "\n")
+		}
+		if !a.guestNote(ip) {
+			return "error: too many notes from this address today; try again tomorrow or sign in on the web\n"
 		}
 		share, admin, err := a.createPublic(clipRunes(title, 200), body+"\n")
 		if err != nil {

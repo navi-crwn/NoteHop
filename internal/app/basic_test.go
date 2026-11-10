@@ -218,8 +218,8 @@ func TestNotesAreNeverIndexed(t *testing.T) {
 			t.Errorf("robots.txt lacks %q", want)
 		}
 	}
-	if strings.Contains(robots, "Sitemap") {
-		t.Error("robots.txt points to a sitemap")
+	if !strings.Contains(robots, "Sitemap: http") || !strings.Contains(robots, "/sitemap.xml") {
+		t.Error("robots.txt lacks the Sitemap line")
 	}
 }
 

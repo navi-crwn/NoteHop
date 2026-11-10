@@ -12,7 +12,7 @@ Every setting is an environment variable. On a VPS they live in `/etc/notehop/no
 | `NOTEHOP_DB` | `notehop.db` | SQLite file (or `-db`) |
 | `NOTEHOP_BASE_URL` | empty | Public URL, for example `https://note.example.com` |
 | `NOTEHOP_SECURE_COOKIES` | `true` when BASE_URL is https | `Secure` cookies + HSTS |
-| `NOTEHOP_TRUST_PROXY` | `false` | Use `X-Forwarded-For` for rate limits (turn on behind a reverse proxy) |
+| `NOTEHOP_TRUST_PROXY` | `false` | Use the first `X-Forwarded-For` entry for rate limits and quotas (turn on behind a reverse proxy). **Only safe if the proxy overwrites the header** with the connecting address (`proxy_set_header X-Forwarded-For $remote_addr;`, as in `deploy/nginx.conf.example`); a proxy that appends lets clients pick their own address and sidestep the limits |
 | `NOTEHOP_REGISTRATION` | `true` | Open or close sign-ups |
 | `NOTEHOP_SITE` | `NoteHop` | Site name |
 | `NOTEHOP_SHARE_URL` | empty | A short domain for shared links (for example `https://nhop.link`). Reader links become `https://nhop.link/TOKEN`, which redirects to `NOTEHOP_BASE_URL/TOKEN`; nothing is served on it. Owner links stay on `NOTEHOP_BASE_URL` |

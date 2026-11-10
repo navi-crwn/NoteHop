@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -50,13 +51,26 @@ func (a *App) statusPage(w http.ResponseWriter, r *http.Request) {
 	a.render(w, r, code, "status", pageData{Title: l.T("status.title"), Status: s})
 }
 
+// sitemap lists the static public pages only. No note, profile or link name is
+// ever listed.
+func (a *App) sitemap(w http.ResponseWriter, r *http.Request) {
+	base := strings.TrimRight(a.origin(r), "/")
+	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	io.WriteString(w, `<?xml version="1.0" encoding="UTF-8"?>`+"\n"+`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`+"\n")
+	for _, p := range []string{"/", "/new", "/about", "/features", "/faq", "/nearby", "/diff", "/changelog", "/contact", "/terms", "/privacy"} {
+		io.WriteString(w, "<url><loc>"+base+p+"</loc></url>\n")
+	}
+	io.WriteString(w, "</urlset>\n")
+}
+
 // robots keeps crawlers out of the machine paths. Notes themselves are not
 // listed here on purpose: a crawler that may not fetch a note address never
 // sees its "noindex" header, and an address linked from elsewhere could then
 // still be listed. Every note response carries X-Robots-Tag and a robots meta
-// tag instead, and no note is in any sitemap or public list.
+// tag instead, and no note is in the sitemap (static pages only) or any public list.
 func (a *App) robots(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, max-age=3600")
-	io.WriteString(w, "User-agent: *\nDisallow: /api/\nDisallow: /raw/\nDisallow: /mock/\nDisallow: /in/\nDisallow: /gate/\nDisallow: /n/\nDisallow: /auth/\nDisallow: /hop/\nAllow: /\n")
+	io.WriteString(w, "User-agent: *\nDisallow: /api/\nDisallow: /raw/\nDisallow: /mock/\nDisallow: /in/\nDisallow: /gate/\nDisallow: /n/\nDisallow: /auth/\nDisallow: /hop/\nAllow: /\nSitemap: "+strings.TrimRight(a.origin(r), "/")+"/sitemap.xml\n")
 }

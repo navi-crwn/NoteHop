@@ -10,7 +10,8 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 ### Changed
 - The names `secret`, `embargo` and `send` are reserved alongside `vault` and `pay`.
 - The writing-help translate menu no longer offers Arabic.
-- `/sitemap.xml` is covered by a test that it stays a 404 (notes are never listed).
+- `/sitemap.xml` lists the static public pages only (never a note, profile or link name) and `robots.txt` points to it.
+- Notes made over SSH count toward the guest cap too; IPv6 guests are counted per /64.
 - The changelog snapshot script lists FileHop among the public family repos.
 - The embedded HOP asset manifest and `scripts/sync-hop-assets.sh` read hop-assets v8 (they pointed at v6 while the vendored home engine, motion and bento files were already the v8 copies), so the fonts, floating tiles and app marks, including the new BioHop mark, come from v8.
 - The home page grids use the hop-assets v8 bento (five family tiles in one row from 1100 px, no lone box, art capped at 160-200 px); the 3D engine, bento stylesheet and BioHop assets are byte-identical v8 copies.

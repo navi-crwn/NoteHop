@@ -212,6 +212,7 @@ func (a *App) routes() {
 	m.HandleFunc("GET /privacy", a.page("privacy", "privacy.title", "privacy.lead"))
 	m.HandleFunc("GET /offline", a.page("offline", "offline.title", "offline.lead"))
 	m.HandleFunc("GET /robots.txt", a.robots)
+	m.HandleFunc("GET /sitemap.xml", a.sitemap)
 	m.HandleFunc("GET /sw.js", a.serviceWorker)
 	m.HandleFunc("GET /manifest.webmanifest", a.manifest)
 	m.HandleFunc("GET /api/nearby", a.apiNearby)
