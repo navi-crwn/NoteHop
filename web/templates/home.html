@@ -115,30 +115,6 @@
     </div>
   </section>
 
-  <!-- 5. three everyday uses -->
-  <section class="h-sec" aria-labelledby="screens-h">
-    <span class="h-tag">04 / {{.L.T "features.title"}}</span>
-    <h2 id="screens-h">{{.L.T "home.g_share"}}</h2>
-    <div class="hop-bento nh-bento">
-      {{range $g := .TourGroups}}<article class="bento-card" data-spot><h3>{{$.L.T (printf "home.g_%s" $g)}}</h3><figure class="feature-demo"><img class="demo-light" src="/static/img/demos/{{$g}}-light.webp" alt="{{$.L.T (printf "home.g_%s" $g)}}" width="1120" height="760" loading="lazy"><img class="demo-dark" src="/static/img/demos/{{$g}}-dark.webp" alt="{{$.L.T (printf "home.g_%s" $g)}}" width="1120" height="760" loading="lazy"></figure></article>{{end}}
-    </div>
-  </section>
-  <section class="h-sec" aria-labelledby="uses-h">
-    <span class="h-tag" data-rv>{{.L.T "home.u_tag"}}</span>
-    <h2 id="uses-h" data-split>{{.L.H "home.u_h"}}</h2>
-    <div class="h-uses hop-bento nh-bento" data-bare>
-      <article class="h-use" data-spot><div class="h-use-art" id="use-wifi"><img src="/static/img/home/flame.webp?v={{.Asset}}" alt="" width="160" height="160" loading="lazy">
-        <div class="h-card"><small>{{.L.T "home.u1_small"}}</small><b class="h-code" dir="ltr">coffee-milk-2026</b></div><span class="h-stamp">{{.L.T "home.u1_stamp"}}</span></div>
-        <div class="h-use-txt"><h3>{{.L.T "home.u1_h"}}</h3><p>{{.L.T "home.u1_p"}}</p></div></article>
-      <article class="h-use" data-spot><div class="h-use-art"><img src="/static/img/home/poll.webp?v={{.Asset}}" alt="" width="160" height="160" loading="lazy">
-        <div class="h-card" id="use-list" data-items="{{.L.T "home.u2_items"}}"><small>{{.L.T "home.u2_small"}}</small></div></div>
-        <div class="h-use-txt"><h3>{{.L.T "home.u2_h"}}</h3><p>{{.L.T "home.u2_p"}}</p></div></article>
-      <article class="h-use" data-spot><div class="h-use-art"><img src="/static/img/home/users.webp?v={{.Asset}}" alt="" width="160" height="160" loading="lazy">
-        <div class="h-card" id="use-meet" data-items="{{.L.T "home.u3_chat"}}"><small>{{.L.T "home.u3_small"}}</small><div class="h-chat"></div></div></div>
-        <div class="h-use-txt"><h3>{{.L.T "home.u3_h"}}</h3><p>{{.L.T "home.u3_p"}}</p></div></article>
-    </div>
-  </section>
-
   {{if .Repo}}
   <!-- 6. built in the open: numbers fetched by the server from GitHub (/api/repo) -->
   <section class="h-sec" id="open" aria-labelledby="open-h">
@@ -184,10 +160,10 @@
   {{with .HopFamily}}<section class="h-sec" id="family" aria-labelledby="family-h">
     <h2 id="family-h">{{$.L.T "family.title"}}</h2>
     <p class="h-small">{{$.L.T "family.intro"}}</p>
-    <ul class="hop-fam" role="list">
-      {{range .}}<li><div class="hop-fam-tile"><figure class="hop-fam-art"><picture><source srcset="/static/hop-home/home/{{.Slug}}-dark.webp" media="(prefers-color-scheme: dark)"><img src="/static/hop-home/home/{{.Slug}}-light.webp" alt="" width="150" height="150" loading="lazy"></picture><canvas data-hop-hero="{{.Slug}}" aria-hidden="true"></canvas></figure><a class="hop-fam-name" href="{{.URL}}"><b>{{if eq .Slug "hub"}}HOP ID{{else}}{{.Name}}{{end}}</b><span>{{hostOf .URL}}</span></a></div></li>
+    <div class="hop-bento hop-fam" data-tiles>
+      {{range .}}<article class="hop-fam-tile" data-spot><figure class="hop-fam-art" data-media><picture><source srcset="/static/hop-home/home/{{.Slug}}-dark.webp" media="(prefers-color-scheme: dark)"><img src="/static/hop-home/home/{{.Slug}}-light.webp" alt="" width="150" height="150" loading="lazy"></picture><canvas data-hop-hero="{{.Slug}}" aria-hidden="true"></canvas></figure><a class="hop-fam-name" href="{{.URL}}"><b>{{if eq .Slug "hub"}}HOP ID{{else}}{{.Name}}{{end}}</b><span>{{hostOf .URL}}</span></a></article>
       {{end}}
-    </ul>
+    </div>
   </section>{{end}}
 </div>
 
