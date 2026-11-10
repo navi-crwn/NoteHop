@@ -160,10 +160,10 @@
   {{with .HopFamily}}<section class="h-sec" id="family" aria-labelledby="family-h">
     <h2 id="family-h">{{$.L.T "family.title"}}</h2>
     <p class="h-small">{{$.L.T "family.intro"}}</p>
-    <ul class="hop-fam" role="list">
-      {{range .}}<li><div class="hop-fam-tile"><figure class="hop-fam-art"><picture><source srcset="/static/hop-home/home/{{.Slug}}-dark.webp" media="(prefers-color-scheme: dark)"><img src="/static/hop-home/home/{{.Slug}}-light.webp" alt="" width="150" height="150" loading="lazy"></picture><canvas data-hop-hero="{{.Slug}}" aria-hidden="true"></canvas></figure><a class="hop-fam-name" href="{{.URL}}"><b>{{if eq .Slug "hub"}}HOP ID{{else}}{{.Name}}{{end}}</b><span>{{hostOf .URL}}</span></a></div></li>
+    <div class="hop-bento hop-fam" data-tiles>
+      {{range .}}<article class="hop-fam-tile" data-spot><figure class="hop-fam-art" data-media><picture><source srcset="/static/hop-home/home/{{.Slug}}-dark.webp" media="(prefers-color-scheme: dark)"><img src="/static/hop-home/home/{{.Slug}}-light.webp" alt="" width="150" height="150" loading="lazy"></picture><canvas data-hop-hero="{{.Slug}}" aria-hidden="true"></canvas></figure><a class="hop-fam-name" href="{{.URL}}"><b>{{if eq .Slug "hub"}}HOP ID{{else}}{{.Name}}{{end}}</b><span>{{hostOf .URL}}</span></a></article>
       {{end}}
-    </ul>
+    </div>
   </section>{{end}}
 </div>
 
