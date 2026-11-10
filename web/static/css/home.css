@@ -218,7 +218,7 @@ body[data-page=home] main::before { content: ""; position: absolute; inset: 0 0 
 .mai ins { display: block; margin-top: 4px; padding: 2px 6px; border-radius: 6px; text-decoration: none; background: color-mix(in srgb, var(--lime) 18%, transparent); }
 
 /* ---------- 5. uses ---------- */
-.h-uses { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.h-uses { --hb-gap: 16px; margin: 0; }
 .h-use { display: grid; grid-template-rows: 230px auto; border-radius: 22px; overflow: hidden; background: var(--panel); border: 1px solid var(--line); }
 .h-use-art { position: relative; display: grid; place-items: center; background: var(--panel-2); overflow: hidden; }
 .h-use-art img { position: absolute; inset-inline-end: -16px; top: -14px; width: 120px; height: auto; opacity: .9; }
@@ -282,7 +282,6 @@ body[data-page=home] main::before { content: ""; position: absolute; inset: 0 0 
   .h-tour-body { grid-template-columns: minmax(0, 1fr); }
   .h-tnav { position: static; flex-direction: row; justify-self: center; padding: 0 8px; }
   .h-tprev svg { transform: rotate(90deg); } .h-tnext svg { transform: rotate(-90deg); }
-  .h-uses { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 760px) {
   .home { padding: 0 16px 30px; }

@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="{{.URL}}" integrity="{{.Integrity}}" crossorigin="anonymous">{{end}}
 {{with .HopUI}}<link rel="stylesheet" href="{{.CSS.URL}}"{{with .CSS.Integrity}} integrity="{{.}}"{{end}} crossorigin="anonymous">
 <script src="{{.JS.URL}}" integrity="{{.JS.Integrity}}" crossorigin="anonymous" defer></script>{{end}}
+<link rel="stylesheet" href="/static/hop-home/hop-bento.css?v={{.Asset}}">
 <link rel="stylesheet" href="/static/css/app.css?v={{.Asset}}">
 {{block "head" .}}{{end}}
 <script src="/static/js/theme.js?v={{.Asset}}"></script>

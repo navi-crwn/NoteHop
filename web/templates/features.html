@@ -3,7 +3,7 @@
 <section class="wrap prose features-page">
   <h1>{{.L.T "features.title"}}</h1>
   <p class="lead muted">{{.L.T "features.lead"}}</p>
-  <div class="bento-grid">
+  <div class="hop-bento nh-bento">
   {{range $g := .TourGroups}}
     <div class="bento-card">
       <h2>{{$.L.T (printf "home.g_%s" $g)}}</h2>
