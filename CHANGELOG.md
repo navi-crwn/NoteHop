@@ -6,6 +6,7 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ### Added
 - A cap on notes created without an account: `NOTEHOP_GUEST_NOTES_IP` (default 200 per address per day, `0` turns it off). People who are signed in are never counted. Over the cap the API answers 429 with a message in all nine languages; the value shows in the control center's settings.
+- The family manifest and vendored assets move to hop-assets v9 (PayHop joins the family list, the home page tiles and the name typefaces). `scripts/sync-hop-assets.sh` reads the version from the manifest, so the next version needs no edit. The README family tables (all nine) are the canonical block from HEL.ink, and the changelog builder knows PayHop.
 - The documentation site lists PayHop in the family table, in all nine languages.
 
 ### Fixed
