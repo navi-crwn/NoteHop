@@ -4,6 +4,8 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-10
+
 ### Fixed
 - All five family tiles on the home page assemble: the 3D engine is the hop-assets v7 copy, which keeps drawing every unsettled scene (v6 animated only four).
 - The family section on the home page uses the same 3D tiles as the other apps (name and host below, equal heights, no lonely last tile) instead of flat cards. The footer's HOP family list shows each app's mark.
