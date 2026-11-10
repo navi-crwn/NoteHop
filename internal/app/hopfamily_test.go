@@ -17,8 +17,8 @@ func TestHopFamilyTypography(t *testing.T) {
 	b, _ := io.ReadAll(res.Body)
 	body := string(b)
 	for _, want := range []string{
-		`href="https://hel.ink/hop-assets/v6/fonts-amnesia.css" integrity="sha384-`,
-		`https://hel.ink/hop-assets/v6/apps/pixelhop/mark.svg`,
+		`href="https://hel.ink/hop-assets/v8/fonts-amnesia.css" integrity="sha384-`,
+		`https://hel.ink/hop-assets/v8/apps/pixelhop/mark.svg`,
 		`>LinkHop<`,
 		`Part of the HOP family`,
 	} {
