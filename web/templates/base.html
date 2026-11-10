@@ -25,6 +25,7 @@
 {{with .HopUI}}<link rel="stylesheet" href="{{.CSS.URL}}"{{with .CSS.Integrity}} integrity="{{.}}"{{end}} crossorigin="anonymous">
 <script src="{{.JS.URL}}" integrity="{{.JS.Integrity}}" crossorigin="anonymous" defer></script>{{end}}
 <link rel="stylesheet" href="/static/hop-home/hop-bento.css?v={{.Asset}}">
+<link rel="stylesheet" href="/static/hop-brand/hop-brand.css?v={{.Asset}}">
 <link rel="stylesheet" href="/static/css/app.css?v={{.Asset}}">
 {{block "head" .}}{{end}}
 <script src="/static/js/theme.js?v={{.Asset}}"></script>
@@ -40,7 +41,7 @@
 <div class="shell" id="shell">
   <div class="shell-scrim" id="shell-scrim" hidden></div>
   <aside class="shell-side" id="shell-side" aria-label="{{.Site}}">
-    <a class="shell-brand" href="/"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="32" height="32"><span>{{.Site}}</span></a>
+    <a class="shell-brand" href="/"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="32" height="32"><span class="hop-name hop-name-notehop">{{.Site}}</span></a>
     <nav class="shell-nav" aria-label="{{.L.T "nav.main"}}">
       <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}><svg><use href="#i-grid"/></svg>{{.L.T "nav.mine"}}</a>
       <a href="/new" {{if eq .Path "/new"}}aria-current="page"{{end}}><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a>
@@ -94,7 +95,7 @@
 {{else}}
 <header class="nav" id="nav">
   <div class="wrap">
-    <a class="brand" href="/"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="28" height="28"><span class="brand-name">{{.Site}}</span></a>
+    <a class="brand" href="/"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="28" height="28"><span class="hop-name hop-name-notehop">{{.Site}}</span></a>
     <nav class="nav-links" aria-label="{{.L.T "nav.main"}}">
       <a href="/new" {{if eq .Path "/new"}}aria-current="page"{{end}}>{{.L.T "nav.new"}}</a>
       <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}>{{.L.T "nav.mine"}}</a>
@@ -155,7 +156,7 @@
   <div class="wrap"><a class="part-of" href="https://hel.ink" rel="noopener">{{with hubMark}}<img src="{{.}}" alt="" width="20" height="20" loading="lazy">{{end}}<span>{{partOf (.L.T "footer.part_of")}}</span></a></div>
   <div class="wrap footer-grid">
     <div class="foot-col foot-brand">
-      <b><img src="/static/img/logo.svg" alt="" width="20" height="20">{{.Site}}</b>
+      <b><img src="/static/img/logo.svg" alt="" width="20" height="20"><span class="hop-name hop-name-notehop">{{.Site}}</span></b>
       <p class="muted small">{{.L.T "footer.tagline"}}</p>
     </div>
     <div class="foot-col">
