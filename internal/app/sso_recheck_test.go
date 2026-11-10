@@ -8,6 +8,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -318,15 +319,20 @@ func TestRecheckCooldown(t *testing.T) {
 
 // The probe asks <hub>/up and wants a 2xx within a short time; the answer is kept for a minute.
 func TestHubProbe(t *testing.T) {
+	var mu sync.Mutex
 	mode := "ok"
 	hits := 0
+	set := func(m string) { mu.Lock(); mode = m; mu.Unlock() }
 	hub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
 		hits++
+		m := mode
+		mu.Unlock()
 		if r.URL.Path != "/up" || r.Method != "GET" {
 			w.WriteHeader(404)
 			return
 		}
-		switch mode {
+		switch m {
 		case "502":
 			w.WriteHeader(502)
 		case "slow":
@@ -340,20 +346,23 @@ func TestHubProbe(t *testing.T) {
 	if !p.Up() {
 		t.Fatal("200 should be up")
 	}
-	mode = "502"
-	if !p.Up() || hits != 1 {
+	set("502")
+	mu.Lock()
+	n := hits
+	mu.Unlock()
+	if !p.Up() || n != 1 {
 		t.Fatal("the answer should be cached for a minute")
 	}
 	forget()
 	if p.Up() {
 		t.Fatal("502 is not up (a proxy in front of a dead hub)")
 	}
-	mode = "slow"
+	set("slow")
 	forget()
 	if p.Up() {
 		t.Fatal("a timeout is not up")
 	}
-	mode = "ok"
+	set("ok")
 	forget()
 	if !p.Up() {
 		t.Fatal("recovered hub should be up again")
