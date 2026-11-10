@@ -1,9 +1,81 @@
 {
   "schema": 1,
   "sources": {
-    "NoteHop": "1f20de0d9ad4c6baf5f092d85b38a3f3c4f2f334"
+    "NoteHop": "5613be00165a0a8bd6e731338cedb5ed633031a6"
   },
   "entries": [
+    {
+      "kind": "commit",
+      "date": "2026-11-10T14:49:20+07:00",
+      "title": "Merge pull request #55: Use hop-assets v8 everywhere",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/5613be00165a0a8bd6e731338cedb5ed633031a6",
+      "id": "5613be00",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-10T07:49:20Z",
+      "title": "Use hop-assets v8 everywhere",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/55",
+      "id": "#55",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-10T08:45:16+01:00",
+      "title": "README screenshots: retake with the hop-assets v8 manifest",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/445782ba7d13d6ac8185bc02cdab01c383a41db9",
+      "id": "445782ba",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-10T08:42:13+01:00",
+      "title": "Sync the embedded HOP asset manifest and sync script to hop-assets v8",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/d274208b54c1b39596510b372127b02dfc626129",
+      "id": "d274208b",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-10T07:40:07Z",
+      "title": "Sync repository with what is live (2026-11-10)",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/53",
+      "id": "#53",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-10T14:40:06+07:00",
+      "title": "Merge pull request #53: Sync repository with what is live (2026-11-10)",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/88ff79bf8f674815cd1b02a4bd41ae6eae4a2a13",
+      "id": "88ff79bf",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-10T08:33:17+01:00",
+      "title": "README screenshots: retake from current main",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/e07503f206e818b00189d9f424dbfc8acfcf1733",
+      "id": "e07503f2",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-10T08:26:10+01:00",
+      "title": "Changelog snapshot: rebuild from fresh main",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/280eebbf456541553d19fef84a18ca6eeb90eae5",
+      "id": "280eebbf",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
     {
       "kind": "commit",
       "date": "2026-11-10T14:15:28+07:00",

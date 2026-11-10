@@ -11,6 +11,7 @@ import (
 	"log"
 	"math/big"
 	"net/http"
+	"net/netip"
 	"regexp"
 	"strconv"
 	"strings"
@@ -240,6 +241,18 @@ func (q createReq) invalid() string {
 	return ""
 }
 
+// guestNote counts one note made without an account for ip (IPv6 grouped by
+// /64, so one subscriber cannot rotate through its addresses) and reports
+// whether it stays within NOTEHOP_GUEST_NOTES_IP.
+func (a *App) guestNote(ip string) bool {
+	if p, err := netip.ParseAddr(ip); err == nil && p.Is6() && !p.Is4In6() {
+		if pre, err := p.Prefix(64); err == nil {
+			ip = pre.String()
+		}
+	}
+	return a.guests.take(ip, 1, int64(a.cfg.GuestNotesPerIP), time.Now())
+}
+
 func (a *App) apiCreate(w http.ResponseWriter, r *http.Request) {
 	var q createReq
 	if !readJSON(w, r, &q, maxContent+16<<10) {
@@ -285,7 +298,13 @@ func (a *App) apiCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	n.Config = cfg.String()
-	if u := a.currentUser(r); u != nil {
+	u := a.currentUser(r)
+	if u == nil && !a.guestNote(a.clientIP(r)) {
+		w.Header().Set("Retry-After", "3600")
+		apiErr(w, http.StatusTooManyRequests, "err.guest_notes_quota", "n", a.cfg.GuestNotesPerIP)
+		return
+	}
+	if u != nil {
 		n.OwnerID = sql.NullInt64{Int64: u.ID, Valid: true}
 		n.OwnerBlob = q.OwnerBlob
 	}

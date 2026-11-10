@@ -375,6 +375,7 @@
   "err.files_note_full": "Os anexos de uma nota podem somar no máximo 5 MB, incluindo a criptografia. Aguarde os anexos expirarem antes de enviar mais.",
   "err.files_off": "Os anexos estão desativados neste servidor.",
   "err.files_quota": "Você já enviou muitos arquivos hoje (limite de {n} MB por dia). Tente mais tarde ou cole um link do arquivo no seu próprio armazenamento em nuvem (Google Drive, Dropbox, OneDrive).",
+  "err.guest_notes_quota": "Você já criou muitas notas hoje (até {n} por dia sem conta). Entre para continuar ou tente de novo amanhã.",
   "err.freeze_failed": "Não foi possível congelar.",
   "err.frozen": "Esta versão congelada não pode ser alterada.",
   "err.full": "Esta nota está cheia.",

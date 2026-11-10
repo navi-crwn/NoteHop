@@ -27,7 +27,7 @@
   var TASKS = ['summarize', 'rewrite', 'proofread', 'translate', 'continue', 'points'];
   var REPLACES = { rewrite: 1, proofread: 1, translate: 1 }; // result stands in for the text
   var TONES = { casual: 'more casual and friendly', clear: 'clearer and easier to read', formal: 'more formal', short: 'shorter, keeping every point' };
-  var LANGS = ['en', 'id', 'zh', 'es', 'ar', 'pt', 'fr', 'ja', 'ru', 'de', 'ko', 'hi', 'it', 'nl', 'tr', 'vi', 'th', 'ms'];
+  var LANGS = ['en', 'id', 'zh', 'es', 'pt', 'fr', 'ja', 'ru', 'de', 'ko', 'hi', 'it', 'nl', 'tr', 'vi', 'th', 'ms'];
 
   function langName(code) {
     try { return new Intl.DisplayNames([NH.lang], { type: 'language' }).of(code); } catch (e) { return code; }

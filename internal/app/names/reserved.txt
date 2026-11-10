@@ -9,7 +9,7 @@ docs doc documentation guide guides tutorial changelog roadmap download download
 api raw mock in n u static assets i18n diff nearby offline sw manifest robots sitemap favicon
 well-known healthz health metrics debug feed rss atom run render recover
 new create edit delete share link links note notes my mine dashboard home index
-login logout signin signout signup register auth oauth sso vault account accounts settings profile user users
+login logout signin signout signup register auth oauth sso vault secret embargo send account accounts settings profile user users
 admin admins administrator root system sysadmin superuser moderator mod mods staff team official owner
 mail email smtp www web ftp ssh cdn assets img images media files upload uploads
 telegram bot bots webhook webhooks hook hooks inbox

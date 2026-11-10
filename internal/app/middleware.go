@@ -170,6 +170,11 @@ func sameOrigin(r *http.Request) bool {
 	return http.NewCrossOriginProtection().Check(r) == nil
 }
 
+// clientIP is the address rate limits and quotas are keyed by. With
+// NOTEHOP_TRUST_PROXY it reads the first X-Forwarded-For entry, which is only
+// safe when the proxy overwrites the header with the connecting address
+// (deploy/nginx.conf.example: proxy_set_header X-Forwarded-For $remote_addr);
+// a proxy that appends would let a client choose its own address.
 func (a *App) clientIP(r *http.Request) string {
 	if a.cfg.TrustProxy {
 		if f := r.Header.Get("X-Forwarded-For"); f != "" {

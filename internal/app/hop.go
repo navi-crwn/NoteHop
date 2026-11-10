@@ -329,6 +329,7 @@ func (a *App) settingsList() []hopSetting {
 		ro("file_mb", "int", a.cfg.FileMB, "Largest attachment in MB; 0 turns attachments off (NOTEHOP_FILE_MB)."),
 		ro("files_total_mb", "int", a.cfg.FilesTotalMB, "Disk budget for all live attachments in MB (NOTEHOP_FILES_TOTAL_MB)."),
 		ro("files_ip_mb", "int", a.cfg.FilesPerIPMB, "Attachments one address may upload per day in MB (NOTEHOP_FILES_IP_MB)."),
+		ro("guest_notes_ip", "int", a.cfg.GuestNotesPerIP, "Notes one address may create per day without signing in; 0 = no limit; signed-in people are never counted (NOTEHOP_GUEST_NOTES_IP)."),
 		ro("ssh", "bool", a.cfg.SSHAddr != "", "SSH for public notes (NOTEHOP_SSH_ADDR)."),
 		ro("telegram", "bool", a.cfg.TelegramToken != "", "Telegram bot (TELEGRAM_BOT_TOKEN)."),
 		ro("private_hooks", "bool", a.cfg.PrivateHooks, "Watch webhooks may reach private addresses (NOTEHOP_PRIVATE_HOOKS)."),
