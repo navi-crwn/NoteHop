@@ -345,7 +345,7 @@ type pageData struct {
 func (a *App) loadTemplates() error {
 	a.pages = map[string]*template.Template{}
 	for _, name := range []string{"home", "new", "note", "about", "login", "register", "dashboard", "vault", "security", "recover", "diff", "nearby", "profile", "offline", "faq", "contact", "terms", "privacy", "error", "features", "status", "changelog"} {
-		t, err := template.New(name).Funcs(template.FuncMap{"hubMark": hubMark, "partOf": partOf}).ParseFS(web.Templates, "templates/base.html", "templates/icons.html", "templates/"+name+".html")
+		t, err := template.New(name).Funcs(template.FuncMap{"hubMark": hubMark, "hostOf": hostOf, "partOf": partOf}).ParseFS(web.Templates, "templates/base.html", "templates/icons.html", "templates/"+name+".html")
 		if err != nil {
 			return err
 		}
