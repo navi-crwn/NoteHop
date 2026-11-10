@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"html/template"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -84,4 +85,13 @@ func hubMark() string {
 // stays "Hop Easy Link" in every language.
 func partOf(s string) template.HTML {
 	return template.HTML(strings.Replace(template.HTMLEscapeString(s), "{name}", "<b>Hop Easy Link</b>", 1))
+}
+
+// hostOf is the host of an app address, shown under its name in the family section.
+func hostOf(raw string) string {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return raw
+	}
+	return u.Host
 }

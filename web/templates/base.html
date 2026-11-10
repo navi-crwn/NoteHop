@@ -154,7 +154,7 @@
   <div class="wrap"><a class="part-of" href="https://hel.ink" rel="noopener">{{with hubMark}}<img src="{{.}}" alt="" width="20" height="20" loading="lazy">{{end}}<span>{{partOf (.L.T "footer.part_of")}}</span></a></div>
   <div class="wrap footer-grid">
     <div class="foot-col foot-brand">
-      <b>{{.Site}}</b>
+      <b><img src="/static/img/logo.svg" alt="" width="20" height="20">{{.Site}}</b>
       <p class="muted small">{{.L.T "footer.tagline"}}</p>
     </div>
     <div class="foot-col">
@@ -187,7 +187,7 @@
     <div class="foot-col">
       <p class="foot-heading" id="foot-family">{{.L.T "family.foot"}}</p>
       <nav aria-labelledby="foot-family">
-        {{range .HopFamily}}<a href="{{.URL}}">{{.Name}}</a>{{end}}
+        {{range .HopFamily}}<a href="{{.URL}}">{{with index .Icons "mark"}}<img src="{{.URL}}" alt="" width="16" height="16" loading="lazy">{{end}}{{.Name}}</a>{{end}}
       </nav>
     </div>
   </div>

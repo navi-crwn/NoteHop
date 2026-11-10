@@ -5,6 +5,7 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 ## [Unreleased]
 
 ### Fixed
+- The family section on the home page uses the same 3D tiles as the other apps (name and host below, equal heights, no lonely last tile) instead of flat cards. The footer's HOP family list shows each app's mark.
 - Signing out of a HOP ID account goes through the account server with `return=` set to this app, so the person ends up back on NoteHop.
 - The footer no longer repeats the language list (the language menu is in the top bar); the copyright line is right-aligned, centred on phones.
 - The changelog page lists every merged pull request again: the snapshot is rebuilt from a freshly fetched main, and `make check-changelog` fails when merged PRs are missing from it.

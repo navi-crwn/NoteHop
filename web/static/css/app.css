@@ -1339,11 +1339,6 @@ body.wr-full-on { overflow: hidden; }
 @media (max-width: 640px) { .wr-full-btn span { display: none; } }
 
 /* HOP family (home section and footer line), from the embedded hel.ink manifest. */
-.hop-family { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
-.hop-family a { display: grid; grid-template-columns: 40px 1fr; column-gap: 12px; align-items: center; padding: 16px; border-radius: 14px; border: 1px solid var(--line-2); color: inherit; text-decoration: none; transition: border-color .15s; }
-.hop-family a:hover { border-color: var(--muted); }
-.hop-family img { grid-row: span 2; width: 40px; height: 40px; border-radius: 12px; }
-.hop-family span { color: var(--muted); font-size: .88rem; }
 .hop-family-foot { display: flex; flex-wrap: wrap; gap: 6px 14px; padding-top: 10px; font-size: .88rem; color: var(--muted); }
 .hop-family-foot nav { display: flex; flex-wrap: wrap; gap: 6px 14px; }
 
@@ -1492,3 +1487,23 @@ h1, h2, .note-title h1 { overflow-wrap: anywhere; }
 /* the boxes at the foot of the Share dialog (encrypted or basic, owner link) are separate boxes */
 .admin-box + .admin-box { margin-top: 10px; }
 .share-dlg .admin-box { margin-top: 10px; }
+
+/* family section: the other apps as 3D tiles (hop-assets v6 engine, WebP fallback) */
+.hop-fam { list-style: none; margin: 30px 0 0; padding: 0; display: grid; gap: 14px; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: stretch; }
+.hop-fam > li { display: flex; min-width: 0; }
+.hop-fam-tile { flex: 1; display: grid; grid-template-rows: auto 1fr; justify-items: center; gap: 10px; min-width: 0; padding: 16px 12px 18px; border: 1px solid var(--line-2); border-radius: 18px; background: var(--panel, transparent); text-align: center; }
+.hop-fam-art { position: relative; margin: 0; width: 100%; max-width: 150px; aspect-ratio: 1; }
+.hop-fam-art img, .hop-fam-art canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+.hop-fam-art canvas { opacity: 0; cursor: grab; touch-action: pan-y; }
+.hop-fam-art canvas.on { opacity: 1; }
+.hop-fam-art:has(canvas.on) img { visibility: hidden; }
+.hop-fam-name { display: grid; gap: 2px; align-content: start; min-width: 0; max-width: 100%; color: var(--text); text-decoration: none; }
+.hop-fam-name b { font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hop-fam-name span { font: 12px var(--h-mono, 'JetBrains Mono', monospace); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hop-fam-name:hover b { text-decoration: underline; }
+@media (max-width: 1000px) { .hop-fam { grid-template-columns: repeat(6, minmax(0, 1fr)); } .hop-fam > li { grid-column: span 2; } .hop-fam > li:nth-child(n+4) { grid-column: span 3; } }
+@media (max-width: 560px) { .hop-fam { grid-template-columns: repeat(2, minmax(0, 1fr)); } .hop-fam > li, .hop-fam > li:nth-child(n+4) { grid-column: auto; } .hop-fam > li:last-child:nth-child(odd) { grid-column: 1 / -1; } }
+.foot-col nav a img { width: 16px; height: 16px; margin-right: 8px; vertical-align: -3px; border-radius: 4px; }
+
+.foot-brand b { display: inline-flex; align-items: center; gap: 8px; }
+.foot-brand b img { width: 20px; height: 20px; display: block; }
