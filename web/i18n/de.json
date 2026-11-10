@@ -375,6 +375,7 @@
   "err.files_note_full": "Anhänge in einer Notiz dürfen zusammen höchstens 5 MB betragen, einschließlich des Verschlüsselungsaufwands. Warte, bis Anhänge ablaufen, bevor du weitere hochlädst.",
   "err.files_off": "Anhänge sind auf diesem Server ausgeschaltet.",
   "err.files_quota": "Du hast heute schon viel hochgeladen ({n} MB pro Tag). Versuche es später noch einmal oder setze einen Link zur Datei in deinem eigenen Cloud-Speicher (Google Drive, Dropbox, OneDrive).",
+  "err.guest_notes_quota": "Du hast heute schon viele Notizen erstellt (ohne Konto höchstens {n} pro Tag). Melde dich an, um weiterzumachen, oder versuche es morgen wieder.",
   "err.freeze_failed": "Das Einfrieren hat nicht geklappt.",
   "err.frozen": "Dieser Schnappschuss ist eingefroren und kann nicht geändert werden.",
   "err.full": "Diese Notiz ist voll.",

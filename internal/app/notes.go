@@ -285,7 +285,13 @@ func (a *App) apiCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	n.Config = cfg.String()
-	if u := a.currentUser(r); u != nil {
+	u := a.currentUser(r)
+	if u == nil && !a.guests.take(a.clientIP(r), 1, int64(a.cfg.GuestNotesPerIP), time.Now()) {
+		w.Header().Set("Retry-After", "3600")
+		apiErr(w, http.StatusTooManyRequests, "err.guest_notes_quota", "n", a.cfg.GuestNotesPerIP)
+		return
+	}
+	if u != nil {
 		n.OwnerID = sql.NullInt64{Int64: u.ID, Valid: true}
 		n.OwnerBlob = q.OwnerBlob
 	}

@@ -375,6 +375,7 @@
   "err.files_note_full": "Total lampiran satu catatan maksimal 5 MB, termasuk overhead enkripsi. Tunggu lampiran kedaluwarsa sebelum mengunggah lagi.",
   "err.files_off": "Lampiran dimatikan di server ini.",
   "err.files_quota": "Hari ini kamu sudah mengunggah banyak file (batas {n} MB per hari). Coba lagi nanti, atau tempel link file dari penyimpanan cloud-mu sendiri (Google Drive, Dropbox, OneDrive).",
+  "err.guest_notes_quota": "Hari ini kamu sudah membuat banyak catatan (maksimal {n} per hari tanpa akun). Masuk untuk melanjutkan, atau coba lagi besok.",
   "err.freeze_failed": "Gagal membekukan.",
   "err.frozen": "Snapshot ini dibekukan dan tidak bisa diubah.",
   "err.full": "Catatan ini sudah penuh.",

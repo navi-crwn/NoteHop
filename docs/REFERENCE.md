@@ -17,6 +17,7 @@ Every setting is an environment variable. On a VPS they live in `/etc/notehop/no
 | `NOTEHOP_SITE` | `NoteHop` | Site name |
 | `NOTEHOP_SHARE_URL` | empty | A short domain for shared links (for example `https://nhop.link`). Reader links become `https://nhop.link/TOKEN`, which redirects to `NOTEHOP_BASE_URL/TOKEN`; nothing is served on it. Owner links stay on `NOTEHOP_BASE_URL` |
 | `NOTEHOP_FILE_MB` | `5` | Largest attachment (MB), capped at 5. `0` turns attachments off. All attachments uploaded for one note share a 5 MB ciphertext budget, including encryption overhead |
+| `NOTEHOP_GUEST_NOTES_IP` | `200` | Notes one IP address may create per 24 hours without signing in (signed-in people are not counted). `0` = no limit |
 | `NOTEHOP_FILES_IP_MB` | `100` | Attachments one IP address may upload per 24 hours (MB). `0` = no limit |
 | `NOTEHOP_FILES_TOTAL_MB` | `10240` | Shared budget across all users, capped at 10 GB. Nonpositive values use the cap. Expired blobs count until deleted by the janitor |
 | `NOTEHOP_MIN_FREE_MB` | `1024` | Minimum free space reserved on the SQLite filesystem; nonpositive values use the default |

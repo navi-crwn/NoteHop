@@ -29,38 +29,39 @@ import (
 )
 
 type Config struct {
-	Site           string
-	BaseURL        string
-	SecureCookies  bool
-	TrustProxy     bool
-	Registration   bool
-	SSOURL         string // account server for single sign-on; empty turns it off
-	SSOSecret      string // shared with the account server, 32+ characters
-	SSOName        string // shown on the button: "Continue with <name>"
-	SSOClient      string // this app's name at the account server (/sso/<client>)
-	SSOProviders   []Link // extra buttons straight to a provider: Name shown, URL is its id (/sso/<client>/<id>)
-	Links          []Link // related sites in the footer
-	ShareURL       string // optional second domain for share links; needs BaseURL
-	FileMB         int    // largest attachment in MB; 0 turns attachments off
-	FilesTotalMB   int    // shared attachment budget; capped at 10240 MB
-	StoragePath    string // filesystem holding SQLite, including its WAL
-	MinFreeMB      int
-	MinFreePercent int
-	FilesPerIPMB   int               // attachments one address may upload per 24 hours; 0 = no limit
-	AI             string            // writing help: "on" (on-device + own API key), "device" (on-device only), "off"
-	GitHub         string            // "owner/name" of the source repository, for the home page's numbers; "-" hides them
-	AIOrigins      []string          // extra API origins for "Other" (OpenAI-compatible) providers, e.g. a company proxy
-	PrivateHooks   bool              // let Watch webhooks reach private/loopback addresses (and plain http)
-	TelegramToken  string            // bot token from @BotFather; empty turns the bot off
-	Admins         []string          // usernames given the admin role at start, if those accounts exist (NOTEHOP_ADMINS)
-	Reserved       []string          // extra reserved names, e.g. upcoming campaigns
-	Contact        string            // shown on /contact: an email address or URL
-	HopClients     []string          // apps that may call /hop/* with the SSO secret: the control center and the account server
-	NotesClients   []string          // HOP apps that may list a member's public notes (GET /api/v1/me/notes): BioHop's note picker
-	NotesSecrets   map[string]string // a notes client's own HOP_SSO_SECRET_<APP>, when the family keeps one secret per app
-	PickerSecret   string            // HOP_PICKER_SECRET: verifies picker calls with a secret the hub never uses (32+ chars)
-	SSHAddr        string            // where SSH for public notes listens; empty = off (reported to the control center only)
-	Version        string            // build version, for /hop/health
+	Site            string
+	BaseURL         string
+	SecureCookies   bool
+	TrustProxy      bool
+	Registration    bool
+	SSOURL          string // account server for single sign-on; empty turns it off
+	SSOSecret       string // shared with the account server, 32+ characters
+	SSOName         string // shown on the button: "Continue with <name>"
+	SSOClient       string // this app's name at the account server (/sso/<client>)
+	SSOProviders    []Link // extra buttons straight to a provider: Name shown, URL is its id (/sso/<client>/<id>)
+	Links           []Link // related sites in the footer
+	ShareURL        string // optional second domain for share links; needs BaseURL
+	FileMB          int    // largest attachment in MB; 0 turns attachments off
+	FilesTotalMB    int    // shared attachment budget; capped at 10240 MB
+	StoragePath     string // filesystem holding SQLite, including its WAL
+	MinFreeMB       int
+	MinFreePercent  int
+	GuestNotesPerIP int               // notes one address may create without signing in per 24 hours; 0 = no limit
+	FilesPerIPMB    int               // attachments one address may upload per 24 hours; 0 = no limit
+	AI              string            // writing help: "on" (on-device + own API key), "device" (on-device only), "off"
+	GitHub          string            // "owner/name" of the source repository, for the home page's numbers; "-" hides them
+	AIOrigins       []string          // extra API origins for "Other" (OpenAI-compatible) providers, e.g. a company proxy
+	PrivateHooks    bool              // let Watch webhooks reach private/loopback addresses (and plain http)
+	TelegramToken   string            // bot token from @BotFather; empty turns the bot off
+	Admins          []string          // usernames given the admin role at start, if those accounts exist (NOTEHOP_ADMINS)
+	Reserved        []string          // extra reserved names, e.g. upcoming campaigns
+	Contact         string            // shown on /contact: an email address or URL
+	HopClients      []string          // apps that may call /hop/* with the SSO secret: the control center and the account server
+	NotesClients    []string          // HOP apps that may list a member's public notes (GET /api/v1/me/notes): BioHop's note picker
+	NotesSecrets    map[string]string // a notes client's own HOP_SSO_SECRET_<APP>, when the family keeps one secret per app
+	PickerSecret    string            // HOP_PICKER_SECRET: verifies picker calls with a secret the hub never uses (32+ chars)
+	SSHAddr         string            // where SSH for public notes listens; empty = off (reported to the control center only)
+	Version         string            // build version, for /hop/health
 }
 
 // Link is a related site shown in the footer (NOTEHOP_LINKS="Name=https://…").
@@ -88,6 +89,7 @@ type App struct {
 	asset     string
 	limit     *limiter
 	quota     *dayQuota // attachment bytes per address
+	guests    *dayQuota // notes created without an account, per address
 	mux       *http.ServeMux
 	used      usedTickets
 	tickets   recoveryTickets
@@ -121,7 +123,7 @@ func New(cfg Config, d *db.DB) (*App, error) {
 	if len(cfg.HopClients) == 0 {
 		cfg.HopClients = []string{"imperium", "helink"} // the control center and the account server
 	}
-	a := &App{cfg: cfg, db: d, limit: newLimiter(), quota: &dayQuota{m: map[string]*dayUse{}}, used: usedTickets{m: map[string]int64{}}, tickets: recoveryTickets{m: map[string]recoveryTicket{}}}
+	a := &App{cfg: cfg, db: d, limit: newLimiter(), quota: &dayQuota{m: map[string]*dayUse{}}, guests: &dayQuota{m: map[string]*dayUse{}}, used: usedTickets{m: map[string]int64{}}, tickets: recoveryTickets{m: map[string]recoveryTicket{}}}
 	a.space = diskSpace
 	if err := a.loadTemplates(); err != nil {
 		return nil, err

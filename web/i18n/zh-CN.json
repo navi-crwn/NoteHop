@@ -375,6 +375,7 @@
   "err.files_note_full": "每篇笔记的附件总量最多为 5 MB（含加密开销）。请等待附件过期后再上传。",
   "err.files_off": "此服务器已关闭附件功能。",
   "err.files_quota": "你今天上传的文件已经很多了（每天上限 {n} MB）。请稍后再试，或粘贴你自己云盘中文件的链接（Google Drive、Dropbox、OneDrive）。",
+  "err.guest_notes_quota": "你今天创建的笔记已经很多了（未登录时每天最多 {n} 条）。请登录后继续，或明天再试。",
   "err.freeze_failed": "冻结失败。",
   "err.frozen": "此快照已冻结，无法修改。",
   "err.full": "这篇笔记已满。",
