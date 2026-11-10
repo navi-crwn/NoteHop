@@ -4,6 +4,8 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-11
+
 ### Added
 - A cap on notes created without an account: `NOTEHOP_GUEST_NOTES_IP` (default 200 per address per day, `0` turns it off). People who are signed in are never counted. Over the cap the API answers 429 with a message in all nine languages; the value shows in the control center's settings.
 - The family manifest and vendored assets move to hop-assets v9 (PayHop joins the family list, the home page tiles and the name typefaces). `scripts/sync-hop-assets.sh` reads the version from the manifest, so the next version needs no edit. The README family tables (all nine) are the canonical block from HEL.ink, and the changelog builder knows PayHop.
@@ -228,5 +230,7 @@ The sections below make up this release. The dated headings are the days the wor
 - Developer tools: `/raw`, the `notehop` CLI, mock API, webhooks in and out, SSH, Telegram bot, installable app (PWA).
 - Optional zero-knowledge accounts, single sign-on, 9 languages, name rules and abuse tools, VPS installer with daily backups.
 
-[Unreleased]: https://github.com/navi-crwn/NoteHop/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/navi-crwn/NoteHop/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/navi-crwn/NoteHop/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/navi-crwn/NoteHop/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/navi-crwn/NoteHop/releases/tag/v1.0.0
