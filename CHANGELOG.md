@@ -5,6 +5,7 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 ## [Unreleased]
 
 ### Changed
+- The embedded HOP asset manifest and `scripts/sync-hop-assets.sh` read hop-assets v8 (they pointed at v6 while the vendored home engine, motion and bento files were already the v8 copies), so the fonts, floating tiles and app marks, including the new BioHop mark, come from v8.
 - The home page grids use the hop-assets v8 bento (five family tiles in one row from 1100 px, no lone box, art capped at 160-200 px); the 3D engine, bento stylesheet and BioHop assets are byte-identical v8 copies.
 - The family tiles stay in one row of five down to 860 px (art capped at 160 px), and the footer's HOP family list uses the same heading and one-line marks as the other apps.
 - The main button reads "Try a demo" (it opens the demo on the page) and "Open the full notepad" stays the secondary button; the static "Features / Share" pictures, which repeated the feature tour, are gone from the home page, so no section carries a number any more.
