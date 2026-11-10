@@ -1,9 +1,189 @@
 {
   "schema": 1,
   "sources": {
-    "NoteHop": "7e706d1653cf99d6c65225039baa37d5c3ff77b5"
+    "NoteHop": "1f20de0d9ad4c6baf5f092d85b38a3f3c4f2f334"
   },
   "entries": [
+    {
+      "kind": "commit",
+      "date": "2026-11-10T14:15:28+07:00",
+      "title": "Merge pull request #54: Round 4: Try a demo, proportional family tiles, drop the repeated feature section",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/1f20de0d9ad4c6baf5f092d85b38a3f3c4f2f334",
+      "id": "1f20de0d",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-10T07:15:28Z",
+      "title": "Round 4: Try a demo, proportional family tiles, drop the repeated feature section",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/54",
+      "id": "#54",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-10T07:58:42+01:00",
+      "title": "Use the hop-assets v8 bento and 3D engine",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/beb4ef6a6b01ee4a03888dc05d8fedbf2a9a2dec",
+      "id": "beb4ef6a",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-10T07:43:48+01:00",
+      "title": "Try a demo as the main action, proportional family tiles, no repeated feature section",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/75764f3e8d30cf20511e728cb493443448c11d39",
+      "id": "75764f3e",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "tag",
+      "date": "2026-11-10T13:04:19+07:00",
+      "title": "v1.1.0",
+      "url": "https://github.com/navi-crwn/NoteHop/releases/tag/v1.1.0",
+      "id": "v1.1.0",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-10T13:04:19+07:00",
+      "title": "Merge pull request #50: Release 1.1.0",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/469801651f0be840240dd3f5968b71be6d9867e6",
+      "id": "46980165",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-10T06:04:19Z",
+      "title": "Release 1.1.0",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/50",
+      "id": "#50",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-10T05:53:41Z",
+      "title": "Family section: shared 3D tiles, equal heights",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/52",
+      "id": "#52",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-10T12:53:40+07:00",
+      "title": "Merge pull request #52: Family section: shared 3D tiles, equal heights",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/ddf0d91a38e8ed5efbe88290970b9ece33473b8b",
+      "id": "ddf0d91a",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-10T06:28:26+01:00",
+      "title": "Show the app name as text in its own typeface next to the mark",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/0c08900f589e4881400bcb5ef0ee757f63d8fb54",
+      "id": "0c08900f",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-10T06:16:09+01:00",
+      "title": "Use hop-assets v7 and one bento for the home boxes",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/e9ad83a6c30f37d71a40feddad8b648013f94aa6",
+      "id": "e9ad83a6",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-10T05:48:54+01:00",
+      "title": "Draw the family section with the shared 3D tiles",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/42f0a7ce1a7c8d1653e6cd80ef236db2528e1b75",
+      "id": "42f0a7ce",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "pr",
+      "date": "2026-11-10T04:05:26Z",
+      "title": "Post-release fixes: changelog snapshot, footer language row, sign-out return",
+      "url": "https://github.com/navi-crwn/NoteHop/pull/51",
+      "id": "#51",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-10T11:05:25+07:00",
+      "title": "Merge pull request #51: Post-release fixes: changelog snapshot, footer language row, sign-out return",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/802383a5e822a1ff6266c9bba3c4b6d85e556b91",
+      "id": "802383a5",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-10T04:43:34+01:00",
+      "title": "Sync the HOP assets to v6 (new LinkHop and BioHop marks)",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/0a8679cde07b17f95cf5aed3ce1d5b931a1b5329",
+      "id": "0a8679cd",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T22:49:08+01:00",
+      "title": "Show \"Part of Hop Easy Link\" as the first footer row",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/3c07439dfd57ddf9961a2ef3adf0f8a6653eee58",
+      "id": "3c07439d",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T22:35:48+01:00",
+      "title": "Return to the app after signing out through HOP ID",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/1ac433abdb2376521055192583998f89788e3dbc",
+      "id": "1ac433ab",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T22:32:02+01:00",
+      "title": "Remove the language row from the footer",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/ba0e8b75bbe714329db3f3875e41383f6e569324",
+      "id": "ba0e8b75",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T22:32:01+01:00",
+      "title": "Refresh the changelog snapshot and fetch before building it",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/7cd830632cca2be16168f135a4a0f831c5f20e38",
+      "id": "7cd83063",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
+    {
+      "kind": "commit",
+      "date": "2026-11-09T22:12:52+01:00",
+      "title": "Release 1.1.0",
+      "url": "https://github.com/navi-crwn/NoteHop/commit/364a77f2936aed3de61868fea26302fa4efd6db1",
+      "id": "364a77f2",
+      "app": "NoteHop",
+      "repo": "NoteHop"
+    },
     {
       "kind": "commit",
       "date": "2026-11-10T03:58:56+07:00",
