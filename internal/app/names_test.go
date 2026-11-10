@@ -12,7 +12,7 @@ func TestNameRules(t *testing.T) {
 		t.Fatal("blocklist matching")
 	}
 	a := &App{cfg: Config{Reserved: []string{"promo-lebaran"}}}
-	for _, n := range []string{"faq", "admin", "notehop-promo", "admin_panel", "promo-lebaran", "official-news"} {
+	for _, n := range []string{"faq", "admin", "pay", "payhop", "pay-hop", "notehop-promo", "admin_panel", "promo-lebaran", "official-news"} {
 		if !a.reservedName(n) {
 			t.Errorf("%s should be reserved", n)
 		}

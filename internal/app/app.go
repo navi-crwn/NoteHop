@@ -369,8 +369,8 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 		u, fresh := a.sessionState(r)
 		if fresh {
 			d.User = u
-		} else if u != nil && d.SSO && a.hubUp() {
-			// never when the account server is down: the browser would land on its own error page
+		} else if u != nil && d.SSO && !a.cooling(r) {
+			// sessionState already trusts a stale session while the account server is down
 			d.Stale = true
 		}
 	}

@@ -426,7 +426,6 @@
   "err.sso_cookie": "El inicio de sesión tardó demasiado o se abrió en otro navegador. Inténtalo de nuevo.",
   "err.sso_failed": "No se pudo iniciar sesión. Inténtalo de nuevo.",
   "err.sso_ticket": "Este enlace de inicio de sesión ya no es válido. Inténtalo de nuevo.",
-  "err.sso_hub_down": "Ahora mismo no se puede confirmar tu inicio de sesión con HOP ID porque el servidor de cuentas no responde. Inténtalo de nuevo en unos minutos.",
   "err.sso_recheck": "No pudimos confirmar tu inicio de sesión con HOP ID. Comprueba que las cookies estén permitidas para este sitio e inténtalo de nuevo en un momento.",
   "err.too_large": "La nota es demasiado grande.",
   "err.username_reserved": "Ese nombre de usuario está reservado. Elige otro.",

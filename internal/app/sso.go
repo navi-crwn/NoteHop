@@ -188,6 +188,7 @@ func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
 			a.endSession(w, r)
 		} else {
 			// temporarily_unavailable or anything else: keep the session, ask again on a later page load.
+			http.SetCookie(w, &http.Cookie{Name: recheckCooldown, Value: "1", Path: "/", MaxAge: 60, HttpOnly: true, Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode})
 			dest = withRC(dest)
 		}
 		http.Redirect(w, r, dest, http.StatusSeeOther)

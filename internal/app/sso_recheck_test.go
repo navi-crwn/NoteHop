@@ -274,23 +274,92 @@ func TestRecheckStateAndLoops(t *testing.T) {
 	}
 }
 
-// The account server is down: nothing sends the browser there, no page asks for a re-check.
+// The account server is down: the session already held here stays trusted. Nobody is signed out,
+// locked out or sent away, and no page asks for a re-check; once the hub is back it is asked again.
 func TestRecheckHubDown(t *testing.T) {
 	e := newRecheckEnv(t)
 	e.signIn(e.c, "1")
 	e.age()
 	e.hubUp = false
 	code, loc, _ := e.status(e.c, "/dashboard")
-	if code != http.StatusServiceUnavailable || loc != "" {
+	if code != 200 || loc != "" {
 		t.Fatalf("dashboard with the hub down: %d %q", code, loc)
 	}
+	if code, who := e.me(e.c); code != 200 || who == "" {
+		t.Fatalf("api/me with the hub down: %d", code)
+	}
 	code, _, body := e.status(e.c, "/faq")
-	if code != 200 || strings.Contains(body, `data-stale=`) {
+	if code != 200 || strings.Contains(body, `data-stale=`) || !strings.Contains(body, `data-user=`) {
 		t.Fatalf("public page with the hub down: %d", code)
 	}
 	e.hubUp = true
 	if _, _, body := e.status(e.c, "/faq"); !strings.Contains(body, `data-stale="1"`) {
-		t.Fatal("public page with a stale session and the hub up should ask for the re-check")
+		t.Fatal("hub back: the page should ask for the re-check again")
+	}
+	if code, loc, _ := e.status(e.c, "/dashboard"); code != http.StatusFound || !strings.HasPrefix(loc, "/auth/sso?prompt=none") {
+		t.Fatalf("hub back: dashboard %d %q", code, loc)
+	}
+}
+
+// After "temporarily_unavailable" no page goes back to the hub for a minute.
+func TestRecheckCooldown(t *testing.T) {
+	e := newRecheckEnv(t)
+	e.signIn(e.c, "1")
+	e.age()
+	state := e.silentStart(e.c, "/dashboard")
+	e.callback(e.c, "error=temporarily_unavailable&state="+url.QueryEscape(state))
+	for _, p := range []string{"/faq", "/dashboard"} {
+		code, loc, body := e.status(e.c, p)
+		if strings.Contains(body, `data-stale=`) || (strings.HasPrefix(loc, "/auth/sso")) {
+			t.Fatalf("%s bounced to the hub during the cooldown: %d %q", p, code, loc)
+		}
+	}
+}
+
+// The probe asks <hub>/up and wants a 2xx within a short time; the answer is kept for a minute.
+func TestHubProbe(t *testing.T) {
+	mode := "ok"
+	hits := 0
+	hub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits++
+		if r.URL.Path != "/up" || r.Method != "GET" {
+			w.WriteHeader(404)
+			return
+		}
+		switch mode {
+		case "502":
+			w.WriteHeader(502)
+		case "slow":
+			time.Sleep(2 * time.Second)
+		}
+	}))
+	defer hub.Close()
+	p := newHubProbe(hub.URL)
+	p.client.Timeout = 300 * time.Millisecond
+	forget := func() { p.at = time.Time{} }
+	if !p.Up() {
+		t.Fatal("200 should be up")
+	}
+	mode = "502"
+	if !p.Up() || hits != 1 {
+		t.Fatal("the answer should be cached for a minute")
+	}
+	forget()
+	if p.Up() {
+		t.Fatal("502 is not up (a proxy in front of a dead hub)")
+	}
+	mode = "slow"
+	forget()
+	if p.Up() {
+		t.Fatal("a timeout is not up")
+	}
+	mode = "ok"
+	forget()
+	if !p.Up() {
+		t.Fatal("recovered hub should be up again")
+	}
+	if newHubProbe("http://127.0.0.1:1").Up() {
+		t.Fatal("a refused connection is not up")
 	}
 }
 
@@ -388,5 +457,18 @@ func TestRecheckScriptGuards(t *testing.T) {
 	}
 	if !regexp.MustCompile(`location\.replace\('/auth/sso\?prompt=none&next='`).MatchString(blk) {
 		t.Error("the trip should start at /auth/sso?prompt=none")
+	}
+}
+
+// A dashboard left open past the re-check window reloads once on a 401 instead of showing "not signed in".
+func TestApiReloadsOnStaleSession(t *testing.T) {
+	b, err := os.ReadFile("../../web/static/js/app.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"r.status === 401", "location.reload()", "nh_401", "30000"} {
+		if !strings.Contains(string(b), want) {
+			t.Errorf("app.js lacks %q", want)
+		}
 	}
 }

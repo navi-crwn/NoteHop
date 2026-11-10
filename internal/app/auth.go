@@ -217,7 +217,12 @@ func (a *App) sessionState(r *http.Request) (*db.User, bool) {
 	}
 	c, _ := r.Cookie(sessionCookie)
 	at, err := a.db.SessionVerifiedAt(hashHex(c.Value))
-	return u, err == nil && time.Since(at) <= recheckAfter
+	if err == nil && time.Since(at) <= recheckAfter {
+		return u, true
+	}
+	// Stale. With the account server unreachable the session already held here stays trusted:
+	// nobody is signed out, locked out or sent away; the re-check is tried again on a later page load.
+	return u, !a.hubUp()
 }
 
 // verifiedUser is the account to show and to act as: the session's, but only while the
@@ -230,6 +235,15 @@ func (a *App) verifiedUser(r *http.Request) *db.User {
 		return nil
 	}
 	return u
+}
+
+// recheckCooldown marks a browser the account server answered "not now" (temporarily_unavailable):
+// no page asks again for a minute, so a hub that keeps saying so is not visited on every navigation.
+const recheckCooldown = "nh_recheck"
+
+func (a *App) cooling(r *http.Request) bool {
+	c, err := r.Cookie(recheckCooldown)
+	return err == nil && c.Value != ""
 }
 
 // accountPage is the gate of a page that belongs to a signed-in account. It returns the
@@ -246,10 +260,7 @@ func (a *App) accountPage(w http.ResponseWriter, r *http.Request) *db.User {
 	switch {
 	case u == nil:
 		http.Redirect(w, r, "/login?next="+url.QueryEscape(here), http.StatusSeeOther)
-	case !a.hubUp():
-		// no way to re-check while the account server is down: say so rather than send the browser there
-		a.authFail(w, r, http.StatusServiceUnavailable, "err.sso_hub_down")
-	case r.URL.Query().Get("_rc") != "":
+	case r.URL.Query().Get("_rc") != "" || a.cooling(r):
 		a.authFail(w, r, http.StatusBadRequest, "err.sso_recheck")
 	default:
 		http.Redirect(w, r, "/auth/sso?prompt=none&next="+url.QueryEscape(here), http.StatusFound)
