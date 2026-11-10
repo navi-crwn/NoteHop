@@ -4,6 +4,10 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+### Changed
+- The family tiles stay in one row of five down to 860 px (art capped at 160 px), and the footer's HOP family list uses the same heading and one-line marks as the other apps.
+- The main button reads "Try a demo" (it opens the demo on the page) and "Open the full notepad" stays the secondary button; the static "Features / Share" pictures, which repeated the feature tour, are gone from the home page, so no section carries a number any more.
+
 ## [1.1.0] - 2026-11-10
 
 ### Fixed

@@ -1489,7 +1489,7 @@ h1, h2, .note-title h1 { overflow-wrap: anywhere; }
 .hop-fam { list-style: none; margin: 30px 0 0; padding: 0; display: grid; gap: 14px; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: stretch; }
 .hop-fam > li { display: flex; min-width: 0; }
 .hop-fam-tile { flex: 1; display: grid; grid-template-rows: auto 1fr; justify-items: center; gap: 10px; min-width: 0; padding: 16px 12px 18px; border: 1px solid var(--line-2); border-radius: 18px; background: var(--panel, transparent); text-align: center; }
-.hop-fam-art { position: relative; margin: 0; width: 100%; max-width: 150px; aspect-ratio: 1; }
+.hop-fam-art { position: relative; margin: 0; width: 100%; max-width: 160px; aspect-ratio: 1; }
 .hop-fam-art img, .hop-fam-art canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
 .hop-fam-art canvas { opacity: 0; cursor: grab; touch-action: pan-y; }
 .hop-fam-art canvas.on { opacity: 1; }
@@ -1498,9 +1498,10 @@ h1, h2, .note-title h1 { overflow-wrap: anywhere; }
 .hop-fam-name b { font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hop-fam-name span { font: 12px var(--h-mono, 'JetBrains Mono', monospace); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hop-fam-name:hover b { text-decoration: underline; }
-@media (max-width: 1000px) { .hop-fam { grid-template-columns: repeat(6, minmax(0, 1fr)); } .hop-fam > li { grid-column: span 2; } .hop-fam > li:nth-child(n+4) { grid-column: span 3; } }
-@media (max-width: 560px) { .hop-fam { grid-template-columns: repeat(2, minmax(0, 1fr)); } .hop-fam > li, .hop-fam > li:nth-child(n+4) { grid-column: auto; } .hop-fam > li:last-child:nth-child(odd) { grid-column: 1 / -1; } }
-.foot-col nav a img { width: 16px; height: 16px; margin-right: 8px; vertical-align: -3px; border-radius: 4px; }
+@media (max-width: 860px) { .hop-fam { grid-template-columns: repeat(6, minmax(0, 1fr)); } .hop-fam > li { grid-column: span 2; } .hop-fam > li:nth-child(n+4) { grid-column: span 3; } }
+@media (max-width: 560px) { .hop-fam-art { max-width: 130px; } .hop-fam { grid-template-columns: repeat(2, minmax(0, 1fr)); } .hop-fam > li, .hop-fam > li:nth-child(n+4) { grid-column: auto; } .hop-fam > li:last-child:nth-child(odd) { grid-column: 1 / -1; } }
+.foot-col nav a { display: flex; align-items: center; gap: 8px; }
+.foot-col nav a img { width: 16px; height: 16px; flex: none; border-radius: 4px; }
 
 .foot-brand b { display: inline-flex; align-items: center; gap: 8px; }
 .foot-brand b img { width: 20px; height: 20px; display: block; }

@@ -115,30 +115,6 @@
     </div>
   </section>
 
-  <!-- 5. three everyday uses -->
-  <section class="h-sec" aria-labelledby="screens-h">
-    <span class="h-tag">04 / {{.L.T "features.title"}}</span>
-    <h2 id="screens-h">{{.L.T "home.g_share"}}</h2>
-    <div class="hop-bento nh-bento">
-      {{range $g := .TourGroups}}<article class="bento-card" data-spot><h3>{{$.L.T (printf "home.g_%s" $g)}}</h3><figure class="feature-demo"><img class="demo-light" src="/static/img/demos/{{$g}}-light.webp" alt="{{$.L.T (printf "home.g_%s" $g)}}" width="1120" height="760" loading="lazy"><img class="demo-dark" src="/static/img/demos/{{$g}}-dark.webp" alt="{{$.L.T (printf "home.g_%s" $g)}}" width="1120" height="760" loading="lazy"></figure></article>{{end}}
-    </div>
-  </section>
-  <section class="h-sec" aria-labelledby="uses-h">
-    <span class="h-tag" data-rv>{{.L.T "home.u_tag"}}</span>
-    <h2 id="uses-h" data-split>{{.L.H "home.u_h"}}</h2>
-    <div class="h-uses hop-bento nh-bento" data-bare>
-      <article class="h-use" data-spot><div class="h-use-art" id="use-wifi"><img src="/static/img/home/flame.webp?v={{.Asset}}" alt="" width="160" height="160" loading="lazy">
-        <div class="h-card"><small>{{.L.T "home.u1_small"}}</small><b class="h-code" dir="ltr">coffee-milk-2026</b></div><span class="h-stamp">{{.L.T "home.u1_stamp"}}</span></div>
-        <div class="h-use-txt"><h3>{{.L.T "home.u1_h"}}</h3><p>{{.L.T "home.u1_p"}}</p></div></article>
-      <article class="h-use" data-spot><div class="h-use-art"><img src="/static/img/home/poll.webp?v={{.Asset}}" alt="" width="160" height="160" loading="lazy">
-        <div class="h-card" id="use-list" data-items="{{.L.T "home.u2_items"}}"><small>{{.L.T "home.u2_small"}}</small></div></div>
-        <div class="h-use-txt"><h3>{{.L.T "home.u2_h"}}</h3><p>{{.L.T "home.u2_p"}}</p></div></article>
-      <article class="h-use" data-spot><div class="h-use-art"><img src="/static/img/home/users.webp?v={{.Asset}}" alt="" width="160" height="160" loading="lazy">
-        <div class="h-card" id="use-meet" data-items="{{.L.T "home.u3_chat"}}"><small>{{.L.T "home.u3_small"}}</small><div class="h-chat"></div></div></div>
-        <div class="h-use-txt"><h3>{{.L.T "home.u3_h"}}</h3><p>{{.L.T "home.u3_p"}}</p></div></article>
-    </div>
-  </section>
-
   {{if .Repo}}
   <!-- 6. built in the open: numbers fetched by the server from GitHub (/api/repo) -->
   <section class="h-sec" id="open" aria-labelledby="open-h">
