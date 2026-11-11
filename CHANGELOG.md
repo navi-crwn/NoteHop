@@ -4,6 +4,17 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+### Added
+- `notehop get` reads the note link (or `TOKEN KEY`, with `-server` or `-key`) from standard input when no argument is given, so `notehop new … | notehop get` works.
+- `notehop decrypt -key LINK_OR_KEY [file]`: opens a stored note payload offline from a file or stdin, in the format the web app writes (with `-password` and `-salt` for a note with a password). It never contacts a server.
+- A release workflow builds the binary for linux/amd64, linux/arm64, darwin/arm64, darwin/amd64 and windows/amd64 and attaches them, with `SHA256SUMS`, when a release is published. Pull requests that touch the build only get a build check.
+- `/secret` (read once, gone after a day) and `/embargo` (opens at a date) open the new-note form with that preset already chosen, in all nine languages. They use the settings the form already has; no new note type. The home page tour links to both.
+- `NOTEHOP_FILE_TTL_HOURS` (default 24, whole hours from 1 to 720) sets how long attachments are kept; an invalid value is logged and the default used.
+- `NOTEHOP_FILES_ACCOUNT_MB` (default 100, `0` = no limit): how much live attachment data one signed-in account may hold. Over it the upload is refused (429, message in nine languages) and the editor shows "Your attachments: x of y MB". Only the uploader id and the size are stored (`files.owner_id`, an idempotent migration); the files stay ciphertext.
+
+### Changed
+- The attachment notices (FAQ, "attached", "expired") no longer promise exactly 24 hours, since the operator can change it.
+
 ## [1.2.0] - 2026-11-11
 
 ### Added

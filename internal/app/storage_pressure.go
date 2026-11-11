@@ -29,6 +29,16 @@ func (a *App) apiFileStatus(w http.ResponseWriter, r *http.Request) {
 	case used >= int64(a.cfg.FilesTotalMB)<<20:
 		code = "err.files_full"
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"available": code == "", "code": code,
-		"note_limit_bytes": 5 << 20, "total_limit_bytes": int64(a.cfg.FilesTotalMB) << 20})
+	out := map[string]any{"note_limit_bytes": 5 << 20, "total_limit_bytes": int64(a.cfg.FilesTotalMB) << 20, "ttl_hours": int(a.cfg.FileTTL.Hours())}
+	// A signed-in person also sees what their account holds against its limit.
+	if u := a.currentUser(r); u != nil && a.cfg.FilesAccountMB > 0 {
+		held, _ := a.db.AccountFileBytes(u.ID)
+		limit := int64(a.cfg.FilesAccountMB) << 20
+		out["account_used_bytes"], out["account_limit_bytes"] = held, limit
+		if code == "" && held >= limit {
+			code = "err.files_account_quota"
+		}
+	}
+	out["available"], out["code"] = code == "", code
+	writeJSON(w, http.StatusOK, out)
 }

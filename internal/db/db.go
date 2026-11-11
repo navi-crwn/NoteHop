@@ -196,6 +196,11 @@ var migrations = []string{
 	// 14: when the account server (HOP ID) last vouched for a session. 0 for rows that
 	// predate the column, so they are re-checked once; local (password) sessions ignore it.
 	`ALTER TABLE sessions ADD COLUMN verified_at INTEGER NOT NULL DEFAULT 0;`,
+	// 15: who uploaded an attachment (the signed-in account, 0 for guests), so an account
+	// can have a limit on the attachments it holds. Only the owner id and the size are
+	// kept: the file is still ciphertext and nothing about its content or note is added.
+	`ALTER TABLE files ADD COLUMN owner_id INTEGER NOT NULL DEFAULT 0;
+	CREATE INDEX files_owner ON files(owner_id, expires);`,
 }
 
 // migrate applies pending migrations, each in its own transaction together

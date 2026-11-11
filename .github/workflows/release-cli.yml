@@ -1,0 +1,73 @@
+name: Release binaries
+
+# Builds the notehop binary (server and CLI are one program) for five
+# platforms and, when a GitHub release is published, attaches them with a
+# SHA256SUMS file. Pull requests that touch the build only get a build check;
+# nothing runs on a plain push. No secrets: the built-in GITHUB_TOKEN uploads.
+on:
+  release:
+    types: [published]
+  pull_request:
+    paths:
+      - .github/workflows/release-cli.yml
+      - cmd/**
+      - internal/**
+      - go.mod
+      - go.sum
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {goos: linux,   goarch: amd64}
+          - {goos: linux,   goarch: arm64}
+          - {goos: darwin,  goarch: arm64}
+          - {goos: darwin,  goarch: amd64}
+          - {goos: windows, goarch: amd64}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build
+        env:
+          CGO_ENABLED: '0'
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || 'check' }}
+        run: |
+          ext=""; [ "$GOOS" = windows ] && ext=".exe"
+          mkdir -p dist
+          go build -trimpath -ldflags "-s -w -X main.version=$VERSION" -o "dist/notehop-$GOOS-$GOARCH$ext" ./cmd/notehop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: notehop-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # attach files to the release
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums and upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          cd dist
+          sha256sum notehop-* > SHA256SUMS
+          cat SHA256SUMS
+          gh release upload "$TAG" notehop-* SHA256SUMS --clobber --repo "$GITHUB_REPOSITORY"

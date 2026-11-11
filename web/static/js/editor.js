@@ -297,13 +297,19 @@
     root.dataset.uploadDraft = uploadDraft;
     var storageWarning = NH.h('p', { role: 'status', hidden: true });
     root.appendChild(storageWarning);
+    // Signed in: what the account holds against its attachment limit.
+    var storageUsage = NH.h('p.hint', { hidden: true });
+    root.appendChild(storageUsage);
+    function mb(n) { return (n / 1048576).toFixed(n < 10485760 ? 1 : 0); }
     var storageBlocked = false, attaching = false;
     function refreshStorage() {
       if (!root.isConnected) return;
       NH.api('GET', '/api/files/status').then(function (s) {
         storageBlocked = !s.available;
         storageWarning.hidden = s.available;
-        storageWarning.textContent = s.code ? NH.t(s.code) : '';
+        storageWarning.textContent = s.code ? NH.t(s.code, { n: Math.round((s.account_limit_bytes || 0) / 1048576) }) : '';
+        storageUsage.hidden = !s.account_limit_bytes;
+        if (s.account_limit_bytes) storageUsage.textContent = NH.t('file.account_usage', { used: mb(s.account_used_bytes), limit: mb(s.account_limit_bytes) });
         picker.disabled = storageBlocked;
         NH.$$('[data-cmd="file"]', root).forEach(function (b) { b.disabled = storageBlocked; });
       }).catch(function () {});

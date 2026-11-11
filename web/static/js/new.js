@@ -281,6 +281,21 @@
     }
   } catch (x) {}
 
+  // /secret and /embargo: the same form with a preset chosen. Only settings the
+  // form already has: nothing here is a new kind of note, and nothing is sent early.
+  var preset = form.dataset.preset;
+  if (preset === "secret") {
+    // Read once, and gone after a day even if nobody opens it.
+    var sec = form.querySelector("[data-starter=secret]");
+    if (sec) sec.click();
+    pick("until", "86400");
+    applyOptions();
+  } else if (preset === "embargo") {
+    // Opens at a date: the time capsule, with its date field already filled (tomorrow).
+    set("capsule", true);
+    applyOptions();
+  }
+
   // Signed in, but the vault is not open in this browser: the note would go
   // into the account without its key. Say so before the click, with the way to
   // open the vault; the draft comes along.
