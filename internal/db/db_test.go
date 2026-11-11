@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"path/filepath"
 	"testing"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -102,5 +103,51 @@ func TestBackup(t *testing.T) {
 	}
 	if err := d.Backup(out); err == nil {
 		t.Fatal("backup over an existing file must fail")
+	}
+}
+
+// A database from before sessions.verified_at: the column is added once, old sessions read as
+// "never confirmed" (0, so they are re-checked), new ones carry the time they were made.
+func TestSessionVerifiedAt(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "s.db")
+	d, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	u, err := d.CreateUser("ada", "h")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := d.Exec(`ALTER TABLE sessions DROP COLUMN verified_at`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := d.Exec(`INSERT INTO sessions (token_hash, user_id, expires) VALUES ('old', ?, ?)`, u.ID, time.Now().Add(time.Hour).Unix()); err != nil {
+		t.Fatal(err)
+	}
+	d.Exec(`PRAGMA user_version = 13`)
+	d.Close()
+
+	for i := 0; i < 2; i++ { // migrating again must change nothing
+		d, err = Open(path)
+		if err != nil {
+			t.Fatalf("open %d: %v", i, err)
+		}
+		at, err := d.SessionVerifiedAt("old")
+		if err != nil || at.Unix() != 0 {
+			t.Fatalf("old session: %v %v", at, err)
+		}
+		d.Close()
+	}
+	d, _ = Open(path)
+	defer d.Close()
+	if err := d.CreateSession("new", u.ID, time.Hour); err != nil {
+		t.Fatal(err)
+	}
+	at, err := d.SessionVerifiedAt("new")
+	if err != nil || time.Since(at) > time.Minute {
+		t.Fatalf("new session: %v %v", at, err)
+	}
+	if _, err := d.SessionVerifiedAt("missing"); err == nil {
+		t.Fatal("unknown session should not have a time")
 	}
 }

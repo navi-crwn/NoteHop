@@ -440,7 +440,7 @@ func (a *App) apiRevealBurn(w http.ResponseWriter, r *http.Request) {
 var refRe = regexp.MustCompile(`^[a-f0-9]{64}$`)
 
 func (a *App) apiMargin(w http.ResponseWriter, r *http.Request) {
-	u := a.currentUser(r)
+	u := a.verifiedUser(r)
 	if u == nil {
 		apiErr(w, http.StatusUnauthorized, "err.not_signed_in")
 		return

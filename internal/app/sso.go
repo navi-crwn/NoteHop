@@ -119,25 +119,45 @@ func safeNext(next string) string {
 	return next
 }
 
-// ssoStart sends the visitor to the account server to sign in.
+// ssoStart sends the visitor to the account server to sign in. With prompt=none it is the
+// quiet re-check of a session already held here: the account server must never show a page,
+// it answers with a ticket (same or another account) or with error=login_required.
 func (a *App) ssoStart(w http.ResponseWriter, r *http.Request) {
 	if !a.cfg.SSOEnabled() {
 		a.notFound(w, r)
 		return
 	}
 	state := randToken(32)
-	http.SetCookie(w, &http.Cookie{Name: ssoCookie, Value: state + "|" + url.QueryEscape(safeNext(r.FormValue("next"))),
+	silent := r.FormValue("prompt") == "none"
+	mark := state + "|" + url.QueryEscape(safeNext(r.FormValue("next")))
+	if silent {
+		mark += "|none"
+	}
+	http.SetCookie(w, &http.Cookie{Name: ssoCookie, Value: mark,
 		Path: "/auth/", HttpOnly: true, Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode, MaxAge: 900})
 	q := url.Values{"state": {state}, "return_to": {a.cfg.BaseURL + "/auth/sso/callback"}}
 	path := "/sso/" + url.PathEscape(a.cfg.SSOClient)
-	// A provider button (Google, say) skips the account server's login page.
-	// Only configured ids are passed on; anything else gets the plain login.
-	for _, p := range a.cfg.SSOProviders {
-		if p.URL == r.FormValue("provider") {
-			path += "/" + url.PathEscape(p.URL)
+	if silent {
+		q.Set("prompt", "none")
+	} else {
+		// A provider button (Google, say) skips the account server's login page.
+		// Only configured ids are passed on; anything else gets the plain login.
+		for _, p := range a.cfg.SSOProviders {
+			if p.URL == r.FormValue("provider") {
+				path += "/" + url.PathEscape(p.URL)
+			}
 		}
 	}
 	http.Redirect(w, r, a.cfg.SSOURL+path+"?"+q.Encode(), http.StatusFound)
+}
+
+// withRC marks a path as "you have just been through the account server". A page that still
+// finds the session unconfirmed with this mark shows a message instead of going round again.
+func withRC(dest string) string {
+	if strings.Contains(dest, "?") {
+		return dest + "&_rc=1"
+	}
+	return dest + "?_rc=1"
 }
 
 func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
@@ -150,8 +170,30 @@ func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
 		a.authFail(w, r, http.StatusBadRequest, "err.sso_cookie")
 		return
 	}
-	state, next, _ := strings.Cut(c.Value, "|")
+	state, rest, _ := strings.Cut(c.Value, "|")
+	next, flag, _ := strings.Cut(rest, "|")
 	next, _ = url.QueryUnescape(next)
+	silent := flag == "none"
+	if e := r.FormValue("error"); e != "" {
+		// Only the answer to a silent check, carrying our own state, counts.
+		if !silent || !hmac.Equal([]byte(r.FormValue("state")), []byte(state)) {
+			a.authFail(w, r, http.StatusBadRequest, "err.sso_ticket")
+			return
+		}
+		http.SetCookie(w, &http.Cookie{Name: ssoCookie, Path: "/auth/", MaxAge: -1})
+		dest := safeNext(next)
+		if e == "login_required" {
+			// The account server has no session for this browser, so whatever account this app still
+			// held is not valid. Public pages stay open as a guest; account pages go to sign in.
+			a.endSession(w, r)
+		} else {
+			// temporarily_unavailable or anything else: keep the session, ask again on a later page load.
+			http.SetCookie(w, &http.Cookie{Name: recheckCooldown, Value: "1", Path: "/", MaxAge: 60, HttpOnly: true, Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode})
+			dest = withRC(dest)
+		}
+		http.Redirect(w, r, dest, http.StatusSeeOther)
+		return
+	}
 	t, err := parseTicket(r.FormValue("ticket"), a.cfg.SSOSecret, time.Now())
 	// A ticket the server made for another of its apps must not work here.
 	if err != nil || !hmac.Equal([]byte(t.State), []byte(state)) || (t.Aud != "" && t.Aud != a.cfg.SSOClient) || !a.used.first(t.Jti, t.Exp) {
@@ -178,11 +220,24 @@ func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
 		a.authFail(w, r, http.StatusForbidden, "err.account_suspended")
 		return
 	}
-	a.startSession(w, u)
+	// The account the browser held before this ticket: the same one means the re-check just
+	// confirmed it (its vault key in this browser stays valid); another one means the account
+	// was switched at the account server, and the old session ends inside startSession.
+	old := a.currentUser(r)
+	same := old != nil && old.ID == u.ID
+	a.startSession(w, r, u)
 	http.SetCookie(w, &http.Cookie{Name: ssoCookie, Path: "/auth/", MaxAge: -1})
+	dest := safeNext(next)
+	if silent {
+		dest = withRC(dest)
+	}
+	if silent && same {
+		http.Redirect(w, r, dest, http.StatusSeeOther)
+		return
+	}
 	// The vault page opens straight to next when this browser already holds
-	// the vault key, and asks for the vault phrase otherwise.
-	http.Redirect(w, r, "/vault?next="+url.QueryEscape(safeNext(next)), http.StatusSeeOther)
+	// the vault key of this account, and asks for the vault phrase otherwise.
+	http.Redirect(w, r, "/vault?next="+url.QueryEscape(dest), http.StatusSeeOther)
 }
 
 var errRegClosed = errors.New("registration closed")
@@ -307,9 +362,8 @@ func (a *App) authFail(w http.ResponseWriter, r *http.Request, status int, key s
 // vaultPage unlocks (or, the first time, creates) the vault key of a single
 // sign-on account. Password accounts get theirs from the password at login.
 func (a *App) vaultPage(w http.ResponseWriter, r *http.Request) {
-	u := a.currentUser(r)
+	u := a.accountPage(w, r)
 	if u == nil {
-		http.Redirect(w, r, "/login?next=/dashboard", http.StatusSeeOther)
 		return
 	}
 	if u.SSOID == "" {
@@ -324,7 +378,7 @@ func (a *App) vaultPage(w http.ResponseWriter, r *http.Request) {
 // later calls only say whether the phrase matches, so a typo doesn't leave the
 // dashboard silently locked.
 func (a *App) apiVault(w http.ResponseWriter, r *http.Request) {
-	u := a.currentUser(r)
+	u := a.verifiedUser(r)
 	if u == nil {
 		apiErr(w, http.StatusUnauthorized, "err.not_signed_in")
 		return

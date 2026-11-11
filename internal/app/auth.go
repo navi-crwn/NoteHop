@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -107,7 +108,7 @@ func (a *App) apiRegister(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInternalServerError, "err.register_failed")
 		return
 	}
-	a.startSession(w, u)
+	a.startSession(w, r, u)
 	writeJSON(w, http.StatusCreated, map[string]string{"username": u.Username})
 }
 
@@ -135,13 +136,19 @@ func (a *App) apiLogin(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusForbidden, "err.account_suspended")
 		return
 	}
-	a.startSession(w, u)
+	a.startSession(w, r, u)
 	// vault_wrap: the vault key sealed with the key from the password, once
 	// the password has been changed or reset (empty before; see recovery.go).
 	writeJSON(w, http.StatusOK, map[string]string{"username": u.Username, "vault_wrap": u.VaultWrap})
 }
 
-func (a *App) startSession(w http.ResponseWriter, u *db.User) {
+// startSession signs u in at this browser. Whatever session the browser held before
+// belongs to whoever was signed in then, so that row ends here: a new sign-in never
+// leaves the old account's session behind.
+func (a *App) startSession(w http.ResponseWriter, r *http.Request, u *db.User) {
+	if c, err := r.Cookie(sessionCookie); err == nil && c.Value != "" {
+		_ = a.db.DeleteSession(hashHex(c.Value))
+	}
 	tok := randToken(40)
 	if err := a.db.CreateSession(hashHex(tok), u.ID, sessionTTL); err != nil {
 		log.Printf("session: %v", err)
@@ -153,13 +160,18 @@ func (a *App) startSession(w http.ResponseWriter, u *db.User) {
 	})
 }
 
-func (a *App) apiLogout(w http.ResponseWriter, r *http.Request) {
-	u := a.currentUser(r)
+// endSession drops this browser's session row and cookie, nothing else.
+func (a *App) endSession(w http.ResponseWriter, r *http.Request) {
 	if c, err := r.Cookie(sessionCookie); err == nil {
 		_ = a.db.DeleteSession(hashHex(c.Value))
 	}
 	http.SetCookie(w, &http.Cookie{Name: sessionCookie, Value: "", Path: "/", MaxAge: -1, HttpOnly: true,
 		Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode})
+}
+
+func (a *App) apiLogout(w http.ResponseWriter, r *http.Request) {
+	u := a.currentUser(r)
+	a.endSession(w, r)
 	out := map[string]any{"ok": true}
 	if u != nil && u.SSOID != "" {
 		// A HOP ID account signs out of the whole family and comes back here.
@@ -170,6 +182,10 @@ func (a *App) apiLogout(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, out)
 }
 
+// currentUser is the account behind this browser's session cookie, whether or not the
+// account server has vouched for it lately. Use it where the session only decides
+// what a note's owner may do (so text being written is never refused halfway); use
+// verifiedUser for anything that shows or changes the account itself.
 func (a *App) currentUser(r *http.Request) *db.User {
 	c, err := r.Cookie(sessionCookie)
 	if err != nil || c.Value == "" {
@@ -182,8 +198,79 @@ func (a *App) currentUser(r *http.Request) *db.User {
 	return u
 }
 
-func (a *App) apiMe(w http.ResponseWriter, r *http.Request) {
+// recheckAfter is how long the account server's word is trusted. A HOP ID session older
+// than this is not shown as an account and does not open the account pages until the
+// browser has been through the account server again, which costs nothing while the same
+// HOP ID is still signed in there and swaps the account if it is not. A var so tests can move it.
+var recheckAfter = 5 * time.Minute
+
+// sessionState is the account behind the cookie (nil when there is none) and whether it can be
+// taken at its word: a password account always, a HOP ID account while the account server
+// vouched for it recently. A live but not fresh session is "stale": worth one silent trip.
+func (a *App) sessionState(r *http.Request) (*db.User, bool) {
 	u := a.currentUser(r)
+	if u == nil {
+		return nil, false
+	}
+	if u.SSOID == "" || !a.cfg.SSOEnabled() {
+		return u, true
+	}
+	c, _ := r.Cookie(sessionCookie)
+	at, err := a.db.SessionVerifiedAt(hashHex(c.Value))
+	if err == nil && time.Since(at) <= recheckAfter {
+		return u, true
+	}
+	// Stale. While the account server cannot confirm the account right now (unreachable, or it
+	// answered "not now" and the cooldown cookie is set) the session already held here stays
+	// trusted: nobody is signed out, locked out or sent away; the re-check is tried again later.
+	return u, a.cooling(r) || !a.hubUp()
+}
+
+// verifiedUser is the account to show and to act as: the session's, but only while the
+// account server has vouched for it recently. A stale session may belong to an account that
+// is no longer the one signed in there (switched without signing out), so it counts as
+// nobody until the next trip through the account server.
+func (a *App) verifiedUser(r *http.Request) *db.User {
+	u, fresh := a.sessionState(r)
+	if !fresh {
+		return nil
+	}
+	return u
+}
+
+// recheckCooldown marks a browser the account server answered "not now" (temporarily_unavailable):
+// no page asks again for a minute, so a hub that keeps saying so is not visited on every navigation.
+const recheckCooldown = "nh_recheck"
+
+func (a *App) cooling(r *http.Request) bool {
+	c, err := r.Cookie(recheckCooldown)
+	return err == nil && c.Value != ""
+}
+
+// accountPage is the gate of a page that belongs to a signed-in account. It returns the
+// verified account, or has already answered: a stale HOP ID session goes through the account
+// server once, quietly (prompt=none), and comes back; nobody goes to sign in. Never a loop:
+// the way back carries _rc=1, and a session still unconfirmed then gets a message instead.
+func (a *App) accountPage(w http.ResponseWriter, r *http.Request) *db.User {
+	u, fresh := a.sessionState(r)
+	if u != nil && fresh {
+		return u
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	here := r.URL.Path
+	switch {
+	case u == nil:
+		http.Redirect(w, r, "/login?next="+url.QueryEscape(here), http.StatusSeeOther)
+	case r.URL.Query().Get("_rc") != "":
+		a.authFail(w, r, http.StatusBadRequest, "err.sso_recheck")
+	default:
+		http.Redirect(w, r, "/auth/sso?prompt=none&next="+url.QueryEscape(here), http.StatusFound)
+	}
+	return nil
+}
+
+func (a *App) apiMe(w http.ResponseWriter, r *http.Request) {
+	u := a.verifiedUser(r)
 	if u == nil {
 		apiErr(w, http.StatusUnauthorized, "err.not_signed_in")
 		return
@@ -193,7 +280,7 @@ func (a *App) apiMe(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) apiMyNotes(w http.ResponseWriter, r *http.Request) {
-	u := a.currentUser(r)
+	u := a.verifiedUser(r)
 	if u == nil {
 		apiErr(w, http.StatusUnauthorized, "err.not_signed_in")
 		return

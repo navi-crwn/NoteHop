@@ -426,6 +426,7 @@
   "err.sso_cookie": "Signing in took too long or was opened in another browser. Please try again.",
   "err.sso_failed": "Couldn't sign you in. Please try again.",
   "err.sso_ticket": "This sign-in link is no longer valid. Please try again.",
+  "err.sso_recheck": "We couldn't confirm your HOP ID sign-in just now. Check that cookies are allowed for this site, then try again in a moment.",
   "err.too_large": "The note is too large.",
   "err.username_reserved": "That username is reserved. Please choose another.",
   "err.username_taken": "That username is taken.",

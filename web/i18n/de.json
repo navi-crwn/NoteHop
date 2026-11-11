@@ -426,6 +426,7 @@
   "err.sso_cookie": "Die Anmeldung hat zu lange gedauert oder wurde in einem anderen Browser geöffnet. Bitte versuche es noch einmal.",
   "err.sso_failed": "Die Anmeldung hat nicht geklappt. Bitte versuche es noch einmal.",
   "err.sso_ticket": "Dieser Anmelde-Link ist nicht mehr gültig. Bitte versuche es noch einmal.",
+  "err.sso_recheck": "Wir konnten deine HOP-ID-Anmeldung gerade nicht bestätigen. Prüfe, ob Cookies für diese Seite erlaubt sind, und versuche es gleich noch einmal.",
   "err.too_large": "Die Notiz ist zu groß.",
   "err.username_reserved": "Dieser Benutzername ist reserviert. Bitte wähle einen anderen.",
   "err.username_taken": "Dieser Benutzername ist vergeben.",

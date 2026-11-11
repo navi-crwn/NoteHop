@@ -193,6 +193,9 @@ var migrations = []string{
 	// IF NOT EXISTS: running it against a database that already has the table changes nothing.
 	`CREATE TABLE IF NOT EXISTS reminders (user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, key TEXT NOT NULL,
 		dismissed_at INTEGER NOT NULL, PRIMARY KEY (user_id, key));`,
+	// 14: when the account server (HOP ID) last vouched for a session. 0 for rows that
+	// predate the column, so they are re-checked once; local (password) sessions ignore it.
+	`ALTER TABLE sessions ADD COLUMN verified_at INTEGER NOT NULL DEFAULT 0;`,
 }
 
 // migrate applies pending migrations, each in its own transaction together
@@ -736,8 +739,16 @@ func (d *DB) UserBySSO(ssoID string) (*User, error) {
 }
 
 func (d *DB) CreateSession(tokenHash string, userID int64, ttl time.Duration) error {
-	_, err := d.Exec(`INSERT INTO sessions (token_hash, user_id, expires) VALUES (?, ?, ?)`, tokenHash, userID, time.Now().Add(ttl).Unix())
+	_, err := d.Exec(`INSERT INTO sessions (token_hash, user_id, expires, verified_at) VALUES (?, ?, ?, ?)`, tokenHash, userID, time.Now().Add(ttl).Unix(), now())
 	return err
+}
+
+// SessionVerifiedAt is when the account server last vouched for this session: the moment
+// it was made, since a session is only ever made right after a ticket or a password check.
+func (d *DB) SessionVerifiedAt(tokenHash string) (time.Time, error) {
+	var at int64
+	err := d.QueryRow(`SELECT verified_at FROM sessions WHERE token_hash = ? AND expires > ?`, tokenHash, now()).Scan(&at)
+	return time.Unix(at, 0), err
 }
 
 func (d *DB) UserBySession(tokenHash string) (*User, error) {

@@ -34,7 +34,7 @@
 <link rel="stylesheet" href="/static/css/coss.css?v={{.Asset}}">
 <script src="/static/js/family-switcher.js?v={{.Asset}}" defer></script>
 </head>
-<body data-page="{{block "page" .}}{{end}}"{{with .Token}} data-token="{{.}}"{{end}}{{with .Mode}} data-mode="{{.}}"{{end}}{{if .User}} data-user="{{.User.Username}}"{{end}}{{if and .User .User.SSOID}} data-sso="1"{{end}}{{with .Main}} data-main="{{.}}"{{end}}{{with .Share}} data-share="{{.}}"{{end}}>
+<body data-page="{{block "page" .}}{{end}}"{{with .Token}} data-token="{{.}}"{{end}}{{with .Mode}} data-mode="{{.}}"{{end}}{{if .User}} data-user="{{.User.Username}}"{{end}}{{if and .User .User.SSOID}} data-sso="1"{{end}}{{if .Stale}} data-stale="1"{{end}}{{with .Main}} data-main="{{.}}"{{end}}{{with .Share}} data-share="{{.}}"{{end}}>
 <a class="skip" href="#main">{{.L.T "nav.skip"}}</a>
 {{template "icons"}}
 {{if .Dash}}

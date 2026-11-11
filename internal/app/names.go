@@ -102,7 +102,7 @@ func (a *App) siteAdmin(u *db.User) bool {
 // slugProblem returns the catalog key (and its values) explaining why a
 // custom link name can't be used, or "" if it can.
 func (a *App) slugProblem(r *http.Request, slug string) (string, []any) {
-	u := a.currentUser(r)
+	u := a.verifiedUser(r)
 	admin := a.siteAdmin(u)
 	switch {
 	case strings.HasSuffix(slug, "-") || strings.Contains(slug, "--"):

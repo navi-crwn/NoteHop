@@ -4,8 +4,15 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-11
+
 ### Added
 - A cap on notes created without an account: `NOTEHOP_GUEST_NOTES_IP` (default 200 per address per day, `0` turns it off). People who are signed in are never counted. Over the cap the API answers 429 with a message in all nine languages; the value shows in the control center's settings.
+- The family manifest and vendored assets move to hop-assets v9 (PayHop joins the family list, the home page tiles and the name typefaces). `scripts/sync-hop-assets.sh` reads the version from the manifest, so the next version needs no edit. The README family tables (all nine) are the canonical block from HEL.ink, and the changelog builder knows PayHop.
+- The documentation site lists PayHop in the family table, in all nine languages.
+
+### Fixed
+- Switching HOP ID account at the hub no longer leaves the previous account signed in here. A session the hub has not confirmed in the last 5 minutes is re-checked once, quietly, when a page loads (`prompt=none`): same account carries on, another account replaces the session, no hub session ends it (public pages stay open as a guest, the dashboard asks to sign in). Whenever the hub cannot confirm the account right now (down, not answering on `/up`, or answering "not now", which is retried after a minute) the session stays trusted and nothing turns into an error. Nothing is redirected when the hub is down, from the note editor or a note link, or from a page with unsaved text; password accounts are not affected. Signing in again always ends the session the browser held before. Sessions gain a `verified_at` column (idempotent migration).
 
 ### Changed
 - The names `secret`, `embargo` and `send` are reserved alongside `vault` and `pay`.
@@ -223,5 +230,7 @@ The sections below make up this release. The dated headings are the days the wor
 - Developer tools: `/raw`, the `notehop` CLI, mock API, webhooks in and out, SSH, Telegram bot, installable app (PWA).
 - Optional zero-knowledge accounts, single sign-on, 9 languages, name rules and abuse tools, VPS installer with daily backups.
 
-[Unreleased]: https://github.com/navi-crwn/NoteHop/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/navi-crwn/NoteHop/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/navi-crwn/NoteHop/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/navi-crwn/NoteHop/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/navi-crwn/NoteHop/releases/tag/v1.0.0

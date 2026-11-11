@@ -426,6 +426,7 @@
   "err.sso_cookie": "Proses masuk terlalu lama atau dibuka di browser lain. Silakan coba lagi.",
   "err.sso_failed": "Gagal masuk. Silakan coba lagi.",
   "err.sso_ticket": "Link masuk ini sudah tidak berlaku. Silakan coba lagi.",
+  "err.sso_recheck": "Kami belum bisa memastikan masuk HOP ID kamu. Pastikan cookie diizinkan untuk situs ini, lalu coba lagi sebentar lagi.",
   "err.too_large": "Catatan terlalu besar.",
   "err.username_reserved": "Username itu dicadangkan. Silakan pilih yang lain.",
   "err.username_taken": "Username itu sudah dipakai.",
