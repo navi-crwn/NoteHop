@@ -125,6 +125,51 @@ func envBool(key string, def bool) bool {
 	return def
 }
 
+// parseFileTTL reads NOTEHOP_FILE_TTL_HOURS: whole hours, from 1 to 720 (30
+// days). Empty means the default (24).
+func parseFileTTL(raw string) (time.Duration, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return app.DefaultFileTTL, nil
+	}
+	h, err := strconv.Atoi(raw)
+	if err != nil || h < int(app.MinFileTTL.Hours()) || h > int(app.MaxFileTTL.Hours()) {
+		return app.DefaultFileTTL, fmt.Errorf("NOTEHOP_FILE_TTL_HOURS=%q is not a whole number of hours from 1 to 720; using %d", raw, int(app.DefaultFileTTL.Hours()))
+	}
+	return time.Duration(h) * time.Hour, nil
+}
+
+// parseAccountMB reads NOTEHOP_FILES_ACCOUNT_MB: whole megabytes, 0 = no limit.
+// Empty means the default; a negative or non-numeric value is refused (and the
+// default used), never read as "no limit".
+func parseAccountMB(raw string) (int, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return app.DefaultFilesAccountMB, nil
+	}
+	n, err := strconv.Atoi(raw)
+	if err != nil || n < 0 {
+		return app.DefaultFilesAccountMB, fmt.Errorf("NOTEHOP_FILES_ACCOUNT_MB=%q is not a whole number of megabytes (0 = no limit); using %d", raw, app.DefaultFilesAccountMB)
+	}
+	return n, nil
+}
+
+func filesAccountMB() int {
+	n, err := parseAccountMB(os.Getenv("NOTEHOP_FILES_ACCOUNT_MB"))
+	if err != nil {
+		log.Print(err)
+	}
+	return n
+}
+
+func fileTTL() time.Duration {
+	d, err := parseFileTTL(os.Getenv("NOTEHOP_FILE_TTL_HOURS"))
+	if err != nil {
+		log.Print(err)
+	}
+	return d
+}
+
 // version is set at build time: -ldflags "-X main.version=v1.2.3".
 var version = "dev"
 
@@ -140,6 +185,9 @@ func main() {
 		case "get":
 			cliGet(os.Args[2:])
 			return
+		case "decrypt":
+			cliDecrypt(os.Args[2:])
+			return
 		case "takedown":
 			takedown(os.Args[2:])
 			return
@@ -150,7 +198,7 @@ func main() {
 	dbPath := flag.String("db", env("NOTEHOP_DB", "notehop.db"), "SQLite database file")
 	flag.Parse()
 	if flag.NArg() > 0 { // a mistyped subcommand must not start the server
-		fmt.Fprintf(os.Stderr, "notehop: unknown command %q (commands: backup, new, get, takedown; or flags -addr, -db, -version)\n", flag.Arg(0))
+		fmt.Fprintf(os.Stderr, "notehop: unknown command %q (commands: backup, new, get, decrypt, takedown; or flags -addr, -db, -version)\n", flag.Arg(0))
 		os.Exit(2)
 	}
 	if *showVersion {
@@ -173,6 +221,8 @@ func main() {
 		Links:           envLinks("NOTEHOP_LINKS"),
 		ShareURL:        strings.TrimRight(env("NOTEHOP_SHARE_URL", ""), "/"),
 		FileMB:          envInt("NOTEHOP_FILE_MB", 5),
+		FileTTL:         fileTTL(),
+		FilesAccountMB:  filesAccountMB(),
 		FilesTotalMB:    envInt("NOTEHOP_FILES_TOTAL_MB", 10240),
 		StoragePath:     filepath.Dir(*dbPath),
 		MinFreeMB:       envInt("NOTEHOP_MIN_FREE_MB", 1024),
@@ -319,32 +369,6 @@ func cliNew(args []string) {
 	}
 	fmt.Println(c.Share)
 	fmt.Fprintln(os.Stderr, "admin (keep private):", c.Admin)
-}
-
-// cliGet: notehop get <link> — downloads and decrypts here.
-func cliGet(args []string) {
-	fs := flag.NewFlagSet("get", flag.ExitOnError)
-	password := fs.String("password", "", "the note's password (or NOTEHOP_PASSWORD)")
-	fs.Parse(args)
-	if fs.NArg() != 1 {
-		fmt.Fprintln(os.Stderr, "usage: notehop get [-password p] 'https://…/TOKEN#k=…'")
-		os.Exit(2)
-	}
-	pw := *password
-	if pw == "" {
-		pw = os.Getenv("NOTEHOP_PASSWORD")
-	}
-	n, err := client.Get(fs.Arg(0), pw)
-	if err != nil {
-		log.Fatalf("get: %v", err)
-	}
-	if n.Title != "" {
-		fmt.Printf("# %s\n\n", n.Title)
-	}
-	fmt.Print(n.Body)
-	if !strings.HasSuffix(n.Body, "\n") {
-		fmt.Println()
-	}
 }
 
 // takedown removes a reported note (by its link, with or without the #key)

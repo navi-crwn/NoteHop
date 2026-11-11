@@ -18,6 +18,8 @@ Every setting is an environment variable. On a VPS they live in `/etc/notehop/no
 | `NOTEHOP_SHARE_URL` | empty | A short domain for shared links (for example `https://nhop.link`). Reader links become `https://nhop.link/TOKEN`, which redirects to `NOTEHOP_BASE_URL/TOKEN`; nothing is served on it. Owner links stay on `NOTEHOP_BASE_URL` |
 | `NOTEHOP_FILE_MB` | `5` | Largest attachment (MB), capped at 5. `0` turns attachments off. All attachments uploaded for one note share a 5 MB ciphertext budget, including encryption overhead |
 | `NOTEHOP_GUEST_NOTES_IP` | `200` | Notes one IP address may create per 24 hours without signing in (signed-in people are not counted). `0` = no limit |
+| `NOTEHOP_FILE_TTL_HOURS` | `24` | How long an attachment is kept, in whole hours, 1 to 720. Anything else is ignored (logged) and the default used. Applies to files uploaded after the change |
+| `NOTEHOP_FILES_ACCOUNT_MB` | `100` | Live (not yet expired) attachments one signed-in account may hold at once (MB), counted by size and uploader id only. `0` = no limit; a negative or non-numeric value is ignored (logged) and the default used. The per-IP limit below still applies |
 | `NOTEHOP_FILES_IP_MB` | `100` | Attachments one IP address may upload per 24 hours (MB). `0` = no limit |
 | `NOTEHOP_FILES_TOTAL_MB` | `10240` | Shared budget across all users, capped at 10 GB. Nonpositive values use the cap. Expired blobs count until deleted by the janitor |
 | `NOTEHOP_MIN_FREE_MB` | `1024` | Minimum free space reserved on the SQLite filesystem; nonpositive values use the default |
@@ -80,6 +82,8 @@ notehop backup -db notehop.db copy.db                               # safe copy 
 notehop new -server https://note.example.com < note.md              # encrypted in the terminal, prints the link
 notehop new -server https://… -password secret -expires 24h -burn 1 file.md
 notehop get 'https://note.example.com/TOKEN#k=…'                    # download and decrypt in the terminal
+notehop get < link.txt                                              # the link (or "TOKEN KEY" with -server) can come from stdin; -key-file / NOTEHOP_KEY give the key
+notehop decrypt -key-file key.txt payload.txt                        # offline: decrypt a stored payload, never connects (key from a file or NOTEHOP_KEY; -key also works but shows in ps and history)
 ssh -p 2222 note.example.com < note.md                              # a basic note, readable by the server (when NOTEHOP_SSH_ADDR is set)
 notehop new -server https://… -public -slug monday-meeting note.md  # a basic note with a link name
 notehop takedown -db notehop.db https://note.example.com/xxxx       # moderation: delete + hold the link name for 365 days
@@ -141,7 +145,7 @@ Everything is JSON. Headers: `X-Admin` (owner token), `X-Write` (proof of the ke
 | `GET /api/n/{token}/live` (WebSocket) | key holders | Live collaboration. First message `{t:"auth", write, admin}`, then `{t, to, d}` with `d` encrypted. Types: `y` (Yjs update, writers only), `need`/`sync`/`nosync` (initial state), `aw` (presence/cursors), `chat`, `follow`. Not for frozen or delete-after-reading notes |
 | `GET /api/nearby` (WebSocket) | anyone, per public IP + 6-digit `?code=` | WebRTC signaling for `/nearby` (`hi`, `sig`); pads and files go browser to browser |
 | `POST /api/files` | anyone (20/min/IP) | Upload an attachment: the body is raw ciphertext (`application/octet-stream`). Answers `{id, expires}`; the key is only in the note's text (`nh-file:ID#KEY`) |
-| `GET /api/files/{id}` | anyone who knows the ID | The attachment's ciphertext (404 after 24 hours) |
+| `GET /api/files/{id}` | anyone who knows the ID | The attachment's ciphertext (404 after `NOTEHOP_FILE_TTL_HOURS`, 24 by default) |
 | `POST /api/n/{token}/inbox` · `DELETE` | owner | Turn on an inbox `{pub, priv}` (P-256 public key + the private key sealed by the browser) / turn it off |
 | `POST /in/{token}` | anyone who knows the address (60/min/IP) | Raw text or JSON `{text, from}` → an encrypted reply |
 | `POST /api/telegram/{secret}` | Telegram | Bot webhook (checked with `X-Telegram-Bot-Api-Secret-Token`) |

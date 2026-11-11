@@ -124,6 +124,9 @@ func TestSessionVerifiedAt(t *testing.T) {
 	if _, err := d.Exec(`INSERT INTO sessions (token_hash, user_id, expires) VALUES ('old', ?, ?)`, u.ID, time.Now().Add(time.Hour).Unix()); err != nil {
 		t.Fatal(err)
 	}
+	// Migration 15 (files.owner_id) runs again too, so take it out as well.
+	d.Exec(`DROP INDEX files_owner`)
+	d.Exec(`ALTER TABLE files DROP COLUMN owner_id`)
 	d.Exec(`PRAGMA user_version = 13`)
 	d.Close()
 

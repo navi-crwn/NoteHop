@@ -273,3 +273,51 @@ func Token(ref string) string {
 	}
 	return strings.Trim(ref, "/")
 }
+
+// KeyFrom takes the note key in any form people have it: the bare key, a
+// fragment ("k=KEY&a=ADMIN"), or a whole link ("https://…/TOKEN#k=KEY").
+func KeyFrom(s string) string {
+	s = strings.TrimSpace(s)
+	if _, frag, ok := strings.Cut(s, "#"); ok {
+		s = frag
+	}
+	if strings.Contains(s, "=") {
+		q, _ := url.ParseQuery(strings.TrimPrefix(s, "#"))
+		return q.Get("k")
+	}
+	return s
+}
+
+// Decrypt opens a stored payload entirely offline: nothing here touches the
+// network. payload is the sealed text a server keeps for an encrypted note
+// (iv ‖ AES-GCM, base64url), or the JSON an open request returned, which
+// carries it as "content". key is as KeyFrom reads it. A note with a password
+// also needs that password and the note's salt (the "salt" of its metadata).
+func Decrypt(payload, key, password, salt string) (Note, error) {
+	payload = strings.TrimSpace(payload)
+	if strings.HasPrefix(payload, "{") {
+		var o struct {
+			Content string `json:"content"`
+		}
+		if err := json.Unmarshal([]byte(payload), &o); err != nil || o.Content == "" {
+			return Note{}, errors.New("the JSON has no \"content\" field")
+		}
+		payload = o.Content
+	}
+	if password != "" && salt == "" {
+		return Note{}, errors.New("a note with a password also needs its salt")
+	}
+	keys, err := Derive(KeyFrom(key), password, salt)
+	if err != nil {
+		return Note{}, err
+	}
+	plain, err := Open(keys.AES, payload)
+	if err != nil {
+		return Note{}, errors.New("can't decrypt: wrong key or password, or not a NoteHop payload")
+	}
+	var n Note
+	if err := json.Unmarshal(plain, &n); err != nil {
+		return Note{}, errors.New("decrypted, but the content is not a note")
+	}
+	return n, nil
+}

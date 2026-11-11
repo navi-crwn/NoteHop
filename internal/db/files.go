@@ -7,6 +7,9 @@ import (
 
 var ErrNoteFilesFull = errors.New("note attachment budget exceeded")
 
+// ErrAccountFilesFull: the account already holds its limit of live attachments.
+var ErrAccountFilesFull = errors.New("account attachment quota exceeded")
+
 // File is an attachment: AES-GCM ciphertext the browser made with a key the
 // server never sees.
 type File struct {
@@ -16,12 +19,28 @@ type File struct {
 	Created int64
 	Expires int64
 	Scope   string
+	OwnerID int64 // the signed-in account that uploaded it; 0 for a guest
 }
 
 // AddFile stores an attachment unless that would take the total over limit
 // bytes (0 = no limit). Checked in the same transaction as the insert, so
 // parallel uploads can't overshoot it together.
 func (d *DB) AddFile(f File, limit int64) (bool, error) {
+	return d.AddFileFor(f, limit, 0)
+}
+
+// AccountFileBytes is the size of the live (not yet expired) attachments an
+// account uploaded.
+func (d *DB) AccountFileBytes(owner int64) (int64, error) {
+	var used int64
+	err := d.QueryRow(`SELECT COALESCE(SUM(size), 0) FROM files WHERE owner_id = ? AND expires > ?`, owner, now()).Scan(&used)
+	return used, err
+}
+
+// AddFileFor is AddFile with a per-account limit: when f.OwnerID is set and
+// ownerLimit > 0, the account's live attachments plus f may not pass it
+// (ErrAccountFilesFull). Same transaction, so parallel uploads can't overshoot.
+func (d *DB) AddFileFor(f File, limit, ownerLimit int64) (bool, error) {
 	tx, err := d.Begin()
 	if err != nil {
 		return false, err
@@ -34,6 +53,15 @@ func (d *DB) AddFile(f File, limit int64) (bool, error) {
 		}
 		if used+f.Size > limit {
 			return false, nil
+		}
+	}
+	if f.OwnerID != 0 && ownerLimit > 0 {
+		var used int64
+		if err := tx.QueryRow(`SELECT COALESCE(SUM(size), 0) FROM files WHERE owner_id = ? AND expires > ?`, f.OwnerID, now()).Scan(&used); err != nil {
+			return false, err
+		}
+		if used+f.Size > ownerLimit {
+			return false, ErrAccountFilesFull
 		}
 	}
 	if f.Scope != "" {
@@ -52,8 +80,8 @@ func (d *DB) AddFile(f File, limit int64) (bool, error) {
 			return false, ErrTaken
 		}
 	}
-	if _, err := tx.Exec(`INSERT INTO files (id, size, data, created, expires, scope) VALUES (?, ?, ?, ?, ?, ?)`,
-		f.ID, f.Size, f.Data, f.Created, f.Expires, f.Scope); err != nil {
+	if _, err := tx.Exec(`INSERT INTO files (id, size, data, created, expires, scope, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		f.ID, f.Size, f.Data, f.Created, f.Expires, f.Scope, f.OwnerID); err != nil {
 		return false, err
 	}
 	return true, tx.Commit()

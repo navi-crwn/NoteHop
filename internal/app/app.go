@@ -34,16 +34,18 @@ type Config struct {
 	SecureCookies   bool
 	TrustProxy      bool
 	Registration    bool
-	SSOURL          string // account server for single sign-on; empty turns it off
-	SSOSecret       string // shared with the account server, 32+ characters
-	SSOName         string // shown on the button: "Continue with <name>"
-	SSOClient       string // this app's name at the account server (/sso/<client>)
-	SSOProviders    []Link // extra buttons straight to a provider: Name shown, URL is its id (/sso/<client>/<id>)
-	Links           []Link // related sites in the footer
-	ShareURL        string // optional second domain for share links; needs BaseURL
-	FileMB          int    // largest attachment in MB; 0 turns attachments off
-	FilesTotalMB    int    // shared attachment budget; capped at 10240 MB
-	StoragePath     string // filesystem holding SQLite, including its WAL
+	SSOURL          string        // account server for single sign-on; empty turns it off
+	SSOSecret       string        // shared with the account server, 32+ characters
+	SSOName         string        // shown on the button: "Continue with <name>"
+	SSOClient       string        // this app's name at the account server (/sso/<client>)
+	SSOProviders    []Link        // extra buttons straight to a provider: Name shown, URL is its id (/sso/<client>/<id>)
+	Links           []Link        // related sites in the footer
+	ShareURL        string        // optional second domain for share links; needs BaseURL
+	FileMB          int           // largest attachment in MB; 0 turns attachments off
+	FileTTL         time.Duration // how long an attachment lives; 0 = DefaultFileTTL
+	FilesAccountMB  int           // live attachments one signed-in account may hold; 0 = no limit
+	FilesTotalMB    int           // shared attachment budget; capped at 10240 MB
+	StoragePath     string        // filesystem holding SQLite, including its WAL
 	MinFreeMB       int
 	MinFreePercent  int
 	GuestNotesPerIP int               // notes one address may create without signing in per 24 hours; 0 = no limit
@@ -111,6 +113,12 @@ type App struct {
 func New(cfg Config, d *db.DB) (*App, error) {
 	if cfg.FilesTotalMB <= 0 || cfg.FilesTotalMB > 10240 {
 		cfg.FilesTotalMB = 10240
+	}
+	if cfg.FileTTL < MinFileTTL || cfg.FileTTL > MaxFileTTL {
+		cfg.FileTTL = DefaultFileTTL
+	}
+	if cfg.FilesAccountMB < 0 { // nonsense is not "no limit": that is 0
+		cfg.FilesAccountMB = DefaultFilesAccountMB
 	}
 	if cfg.FileMB > 5 {
 		cfg.FileMB = 5
@@ -199,6 +207,8 @@ func (a *App) routes() {
 
 	m.HandleFunc("GET /{$}", a.page("home", "home.title", "meta.desc_new"))
 	m.HandleFunc("GET /new", a.page("new", "nav.new", "meta.desc_new"))
+	m.HandleFunc("GET /secret", a.presetPage("secret"))   // the new-note form, set to read once and a short life
+	m.HandleFunc("GET /embargo", a.presetPage("embargo")) // the new-note form, set to open at a date
 	m.HandleFunc("GET /about", a.page("about", "title.about", "meta.desc_about"))
 	m.HandleFunc("GET /login", a.page("login", "title.login", ""))
 	m.HandleFunc("GET /register", a.page("register", "title.register", ""))
@@ -302,6 +312,7 @@ type pageData struct {
 	GatePassed    bool
 	Encrypted     bool
 	Site          string
+	Preset        string // /secret or /embargo: the new-note form opens with this preset chosen
 	Title         string
 	Desc          string
 	Path          string
@@ -321,14 +332,15 @@ type pageData struct {
 	Repo          string   // source repository (Config.GitHub), empty when hidden
 	TourGroups    []string // home page feature tour: groups, and the items in each
 	TourItems     []int
-	Links         []Link // related sites, from NOTEHOP_LINKS
-	Next          string // where to go after signing in
-	Msg           string // error page text; empty means "note not found"
-	Fault         bool   // the error page for a server fault (500)
-	Origin        string // scheme://host for absolute OpenGraph URLs
-	Main          string // main site, for admin links
-	Share         string // share domain, for links handed to readers (may be empty)
-	LinkHost      string // host of reader links, shown before a link name
+	TourLinks     map[string]string // tour item text key (home.f_<group>_<n>) → the page it links to
+	Links         []Link            // related sites, from NOTEHOP_LINKS
+	Next          string            // where to go after signing in
+	Msg           string            // error page text; empty means "note not found"
+	Fault         bool              // the error page for a server fault (500)
+	Origin        string            // scheme://host for absolute OpenGraph URLs
+	Main          string            // main site, for admin links
+	Share         string            // share domain, for links handed to readers (may be empty)
+	LinkHost      string            // host of reader links, shown before a link name
 	L             i18n.Locale
 	Langs         []i18n.Lang
 	Clipper       template.URL // bookmarklet for the about page
@@ -381,6 +393,7 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.MiniFoot = miniFootPages[name]
 	if name == "home" || name == "features" {
 		d.TourGroups, d.TourItems = []string{"share", "private", "together", "blocks", "dev", "web"}, []int{1, 2, 3, 4, 5, 6}
+		d.TourLinks = tourLinks
 	}
 	if d.SSO {
 		d.SSOVia = a.cfg.SSOProviders
@@ -433,6 +446,24 @@ func (a *App) page(name, title, desc string) http.HandlerFunc {
 			d.Desc = l.T(desc)
 		}
 		a.render(w, r, http.StatusOK, name, d)
+	}
+}
+
+// presetPage is the new-note form with one preset already chosen (/secret,
+// /embargo). It is the same page as /new, only opened with settings the form
+// already has, so there is no new note type: the preset name is only a hint
+// to the page script, and the server stores nothing different.
+// tourLinks are the home page tour items that open a ready-made page. The key is the
+// item's own text key, so a link follows its text if the tour is reordered or renumbered.
+var tourLinks = map[string]string{
+	"home.f_private_1": "/secret",  // "Delete after reading"
+	"home.f_private_2": "/embargo", // "Time capsule"
+}
+
+func (a *App) presetPage(name string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		l := a.locale(w, r)
+		a.render(w, r, http.StatusOK, "new", pageData{Title: l.T(name + ".title"), Desc: l.T(name + ".desc"), Preset: name})
 	}
 }
 

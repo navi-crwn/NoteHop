@@ -15,8 +15,16 @@ import (
 // Attachments: the browser encrypts each file with its own random key and
 // uploads only the ciphertext. The key travels inside the note text
 // (nh-file:ID#KEY), so whoever can read the note can open the file, and the
-// server can't. Files are temporary: they disappear after a day.
-const fileTTL = 24 * time.Hour
+// server can't. Files are temporary: they disappear after Config.FileTTL
+// (a day unless the operator sets NOTEHOP_FILE_TTL_HOURS).
+const (
+	DefaultFileTTL = 24 * time.Hour
+	MinFileTTL     = time.Hour
+	MaxFileTTL     = 30 * 24 * time.Hour
+
+	// DefaultFilesAccountMB is what one signed-in account may hold at once; 0 turns the limit off.
+	DefaultFilesAccountMB = 100
+)
 
 var fileIDRe = regexp.MustCompile(`^[A-Za-z0-9]{20}$`)
 
@@ -70,8 +78,18 @@ func (a *App) apiUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	now := time.Now()
-	f := db.File{ID: randToken(20), Size: int64(len(data)), Data: data, Created: now.Unix(), Expires: now.Add(fileTTL).Unix(), Scope: scope}
-	ok, err := a.db.AddFile(f, int64(a.cfg.FilesTotalMB)<<20)
+	f := db.File{ID: randToken(20), Size: int64(len(data)), Data: data, Created: now.Unix(), Expires: now.Add(a.cfg.FileTTL).Unix(), Scope: scope}
+	// A signed-in account also has a limit on what it holds at once, wherever it
+	// uploads from. Only the account id and the size are recorded.
+	if u := a.currentUser(r); u != nil {
+		f.OwnerID = u.ID
+	}
+	ok, err := a.db.AddFileFor(f, int64(a.cfg.FilesTotalMB)<<20, int64(a.cfg.FilesAccountMB)<<20)
+	if errors.Is(err, db.ErrAccountFilesFull) {
+		w.Header().Set("Retry-After", "3600")
+		apiErr(w, http.StatusTooManyRequests, "err.files_account_quota", "n", a.cfg.FilesAccountMB)
+		return
+	}
 	if errors.Is(err, db.ErrNoteFilesFull) {
 		apiErr(w, http.StatusRequestEntityTooLarge, "err.files_note_full")
 		return

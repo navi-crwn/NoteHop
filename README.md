@@ -110,7 +110,7 @@ How far "the server cannot read it" goes:
 - Web notes: HTML, CSS and JS files in one note, with a Run button, the result and a console. The code runs in an isolated frame in your browser with no internet access and no access to the note page, its cookies or its key. Readers are asked before someone else's code runs.
 - Writing help, optional: summarize, rewrite, translate and fix spelling. It uses your browser's built-in AI, which stays on your device, or your own API key for Claude, ChatGPT, Gemini, OpenRouter or Ollama. The text and the key go from your browser to the provider and never through NoteHop.
 - Content warnings: mark a note 18+ or sensitive, with an optional reason. Readers confirm before the note opens, and `/raw` and the mock API honour the same check.
-- Attachments: drop files or images into a note. They are encrypted in the browser, kept for 24 hours, and limited to 5 MB per file with a shared storage budget that the operator can set.
+- Attachments: drop files or images into a note. They are encrypted in the browser, kept for 24 hours by default (`NOTEHOP_FILE_TTL_HOURS`), and limited to 5 MB per file, with a shared storage budget and a per-account limit (`NOTEHOP_FILES_ACCOUNT_MB`, 100 MB by default) that the operator can set.
 - Accounts are optional. With one, your list of notes is encrypted with a key that only your password can open. Eight one-time recovery codes get you back in if you forget the password. Operators can also connect a single sign-on account server, such as HOP ID.
 - Extra privacy: a decoy password that opens a fake note, access only from certain networks, a leak tracer that shows which link a copied text came from, and version history with differences.
 - Nearby: send a pad or files to a device on the same network, directly from browser to browser.
@@ -120,6 +120,22 @@ How far "the server cannot read it" goes:
 - Reports and moderation: every note has **Report this note**. Operators review reports with the `notehop takedown` command or from a control center over the [HOP App Protocol](docs/REFERENCE.md#control-center-hop-app-protocol).
 
 <a id="run-your-own"></a>
+
+## Command line
+
+The `notehop` binary is also a small client. It encrypts and decrypts on your own machine, so the server never sees the text.
+
+```bash
+notehop new -server https://note.example.com < note.md                  # prints the share link (the admin link goes to stderr)
+notehop new -server https://note.example.com < note.md | notehop get    # the two pipe together
+notehop get < link.txt                                                  # link from stdin; "TOKEN KEY" works too, with -server
+notehop decrypt -key-file key.txt payload.txt                           # offline: never connects
+NOTEHOP_KEY="https://note.example.com/TOKEN#k=…" notehop decrypt payload.txt
+```
+
+The note key is a secret. Passing it as `-key` (or the link as an argument) puts it in the process list and your shell history, so prefer a file (`-key-file`, a bare key or a whole link), the `NOTEHOP_KEY` variable, or stdin.
+
+`decrypt` reads the stored payload (the sealed text, or the JSON an open request returns) from a file or stdin and opens it with the key from the link. A note with a password also needs `-password` and the salt of the note (`-salt`). Ready-made binaries for Linux (amd64, arm64), macOS (arm64, amd64) and Windows (amd64), with a `SHA256SUMS` file, are attached to each release.
 
 ## Run your own
 

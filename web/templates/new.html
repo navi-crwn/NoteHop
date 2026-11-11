@@ -1,8 +1,8 @@
 {{define "page"}}new{{end}}
 {{define "content"}}
 <section class="wrap compose">
-  <h1 class="sr">{{.L.T "nav.new"}}</h1>
-  <form id="compose" autocomplete="off">
+  {{if .Preset}}<div class="preset-head"><h1>{{.Title}}</h1><p>{{.L.T (printf "%s.lead" .Preset)}}</p></div>{{else}}<h1 class="sr">{{.L.T "nav.new"}}</h1>{{end}}
+  <form id="compose" autocomplete="off"{{if .Preset}} data-preset="{{.Preset}}"{{end}}>
     <!-- starters: presets over the settings below; "A note" is on, and the editor is ready to type in -->
     <div class="starters" role="group" aria-label="{{.L.T "new.start_h"}}">
       <button type="button" class="starter" data-starter="note" aria-pressed="true" title="{{.L.T "start.note_d"}}"><svg><use href="#i-edit"/></svg><span>{{.L.T "start.note"}}</span></button>

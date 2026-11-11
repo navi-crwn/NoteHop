@@ -4,6 +4,19 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-12
+
+### Added
+- `notehop get` reads the note link (or `TOKEN KEY`, with `-server` or `-key`) from standard input when no argument is given, so `notehop new … | notehop get` works.
+- `notehop decrypt [-key-file FILE] [file]` (the key, or the whole link, may also come from `NOTEHOP_KEY`; `-key` still works but is visible in the process list and shell history; `get` takes the same): opens a stored note payload offline from a file or stdin, in the format the web app writes (with `-password` and `-salt` for a note with a password). It never contacts a server.
+- A release workflow builds the binary for linux/amd64, linux/arm64, darwin/arm64, darwin/amd64 and windows/amd64 and attaches them, with `SHA256SUMS`, when a release is published. Pull requests that touch the build only get a build check.
+- `/secret` (read once, gone after a day) and `/embargo` (opens at a date) open the new-note form with that preset already chosen, in all nine languages. They use the settings the form already has; no new note type. The home page tour links to both.
+- `NOTEHOP_FILE_TTL_HOURS` (default 24, whole hours from 1 to 720) sets how long attachments are kept; an invalid value is logged and the default used.
+- `NOTEHOP_FILES_ACCOUNT_MB` (default 100, `0` = no limit): how much live attachment data one signed-in account may hold. Over it the upload is refused (429, message in nine languages) and the editor shows "Your attachments: x of y MB". Only the uploader id and the size are stored (`files.owner_id`, added by migration 15); the files stay ciphertext.
+
+### Changed
+- The attachment notices (FAQ, "attached", "expired") no longer promise exactly 24 hours, since the operator can change it.
+
 ## [1.2.0] - 2026-11-11
 
 ### Added
@@ -230,7 +243,8 @@ The sections below make up this release. The dated headings are the days the wor
 - Developer tools: `/raw`, the `notehop` CLI, mock API, webhooks in and out, SSH, Telegram bot, installable app (PWA).
 - Optional zero-knowledge accounts, single sign-on, 9 languages, name rules and abuse tools, VPS installer with daily backups.
 
-[Unreleased]: https://github.com/navi-crwn/NoteHop/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/navi-crwn/NoteHop/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/navi-crwn/NoteHop/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/navi-crwn/NoteHop/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/navi-crwn/NoteHop/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/navi-crwn/NoteHop/releases/tag/v1.0.0
