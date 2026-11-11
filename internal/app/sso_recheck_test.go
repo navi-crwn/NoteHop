@@ -259,8 +259,8 @@ func TestRecheckStateAndLoops(t *testing.T) {
 		t.Fatal("session lost")
 	}
 
-	// temporarily_unavailable: keep the session, come back marked, and the account page then
-	// shows a message instead of going round again
+	// temporarily_unavailable: keep the session, come back marked; the cooldown keeps it trusted,
+	// so the account page opens instead of going round again
 	state = e.silentStart(e.c, "/dashboard")
 	code, loc := e.callback(e.c, "error=temporarily_unavailable&state="+url.QueryEscape(state))
 	if code != http.StatusSeeOther || loc != "/dashboard?_rc=1" {
@@ -269,9 +269,14 @@ func TestRecheckStateAndLoops(t *testing.T) {
 	if e.sessions() != 1 {
 		t.Fatal("session lost on temporarily_unavailable")
 	}
-	code, loc, body := e.status(e.c, loc)
+	if code, loc, _ := e.status(e.c, loc); code != http.StatusOK || loc != "" {
+		t.Fatalf("marked page must open without going round again: %d %q", code, loc)
+	}
+	// a marked page with no cooldown cookie (cookies dropped) still gets the message, never a loop
+	e.c.hc.Jar.SetCookies(mustURL(e.srv.URL), []*http.Cookie{{Name: recheckCooldown, Value: "", Path: "/", MaxAge: -1}})
+	code, loc, body := e.status(e.c, "/dashboard?_rc=1")
 	if code != http.StatusBadRequest || loc != "" || !strings.Contains(body, "cookies") {
-		t.Fatalf("marked page must not redirect again: %d %q", code, loc)
+		t.Fatalf("marked page without cooldown must not redirect again: %d %q", code, loc)
 	}
 }
 
@@ -479,5 +484,62 @@ func TestApiReloadsOnStaleSession(t *testing.T) {
 		if !strings.Contains(string(b), want) {
 			t.Errorf("app.js lacks %q", want)
 		}
+	}
+}
+
+// While the hub said "not now" (cooldown cookie), a stale HOP ID session stays trusted: the
+// account pages and APIs work and nothing goes to the hub. After the cooldown the silent
+// re-check is tried again.
+func TestRecheckCooldownKeepsSessionTrusted(t *testing.T) {
+	e := newRecheckEnv(t)
+	e.signIn(e.c, "1")
+	e.age()
+	state := e.silentStart(e.c, "/dashboard")
+	e.callback(e.c, "error=temporarily_unavailable&state="+url.QueryEscape(state))
+	for _, p := range []string{"/dashboard", "/security"} {
+		if code, loc, _ := e.status(e.c, p); code != 200 || loc != "" {
+			t.Fatalf("%s during the cooldown: %d %q", p, code, loc)
+		}
+	}
+	if code, who := e.me(e.c); code != 200 || who == "" {
+		t.Fatalf("/api/me during the cooldown: %d %q", code, who)
+	}
+	// the cooldown ends (cookie expired): the next page load goes to the hub quietly again
+	u, _ := url.Parse(e.srv.URL)
+	e.c.hc.Jar.SetCookies(u, []*http.Cookie{{Name: recheckCooldown, Value: "", Path: "/", MaxAge: -1}})
+	e.silentStart(e.c, "/dashboard")
+}
+
+// A local account is never sent to the hub, with or without the cooldown cookie.
+func TestRecheckCooldownLocalAccount(t *testing.T) {
+	e := newRecheckEnv(t)
+	secret := base64.RawURLEncoding.EncodeToString([]byte("0123456789abcdef0123456789abcdef"))
+	if code, _, _ := e.c.do("POST", "/api/register", map[string]string{"username": "local_user", "auth": secret}, nil); code != 201 {
+		t.Fatalf("register: %d", code)
+	}
+	e.age()
+	e.c.hc.Jar.SetCookies(mustURL(e.srv.URL), []*http.Cookie{{Name: recheckCooldown, Value: "1", Path: "/"}})
+	if code, loc, _ := e.status(e.c, "/dashboard"); code != 200 || loc != "" {
+		t.Fatalf("local account: %d %q", code, loc)
+	}
+}
+
+// "Not now" first, then a later silent check answers login_required: the session still ends.
+func TestRecheckLoginRequiredAfterCooldown(t *testing.T) {
+	e := newRecheckEnv(t)
+	e.signIn(e.c, "1")
+	e.age()
+	state := e.silentStart(e.c, "/dashboard")
+	e.callback(e.c, "error=temporarily_unavailable&state="+url.QueryEscape(state))
+	e.c.hc.Jar.SetCookies(mustURL(e.srv.URL), []*http.Cookie{{Name: recheckCooldown, Value: "", Path: "/", MaxAge: -1}})
+	state = e.silentStart(e.c, "/dashboard")
+	if code, _ := e.callback(e.c, "error=login_required&state="+url.QueryEscape(state)); code != http.StatusSeeOther {
+		t.Fatalf("login_required: %d", code)
+	}
+	if e.sessions() != 0 {
+		t.Fatalf("session kept: %d rows", e.sessions())
+	}
+	if code, loc, _ := e.status(e.c, "/dashboard"); code != http.StatusSeeOther || !strings.HasPrefix(loc, "/login") {
+		t.Fatalf("dashboard as guest: %d %s", code, loc)
 	}
 }

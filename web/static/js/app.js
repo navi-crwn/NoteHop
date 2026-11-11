@@ -84,7 +84,7 @@
         if (!r.ok) {
           // The session went stale while this page was open: one reload lets the quiet re-check
           // run (never twice within 30 s, so a browser that drops cookies cannot loop).
-          if (r.status === 401 && document.body.dataset.user && /^\/api\/(me|vault)/.test(path)) {
+          if (r.status === 401 && String(method).toUpperCase() === 'GET' && document.body.dataset.user && /^\/api\/(me|vault)/.test(path)) {
             var last = 0;
             try { last = +sessionStorage.getItem('nh_401') || 0; sessionStorage.setItem('nh_401', String(Date.now())); } catch (e) {}
             if (Date.now() - last > 30000) { location.reload(); return new Promise(function () {}); }

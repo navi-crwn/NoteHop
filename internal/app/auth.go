@@ -220,9 +220,10 @@ func (a *App) sessionState(r *http.Request) (*db.User, bool) {
 	if err == nil && time.Since(at) <= recheckAfter {
 		return u, true
 	}
-	// Stale. With the account server unreachable the session already held here stays trusted:
-	// nobody is signed out, locked out or sent away; the re-check is tried again on a later page load.
-	return u, !a.hubUp()
+	// Stale. While the account server cannot confirm the account right now (unreachable, or it
+	// answered "not now" and the cooldown cookie is set) the session already held here stays
+	// trusted: nobody is signed out, locked out or sent away; the re-check is tried again later.
+	return u, a.cooling(r) || !a.hubUp()
 }
 
 // verifiedUser is the account to show and to act as: the session's, but only while the
@@ -260,7 +261,7 @@ func (a *App) accountPage(w http.ResponseWriter, r *http.Request) *db.User {
 	switch {
 	case u == nil:
 		http.Redirect(w, r, "/login?next="+url.QueryEscape(here), http.StatusSeeOther)
-	case r.URL.Query().Get("_rc") != "" || a.cooling(r):
+	case r.URL.Query().Get("_rc") != "":
 		a.authFail(w, r, http.StatusBadRequest, "err.sso_recheck")
 	default:
 		http.Redirect(w, r, "/auth/sso?prompt=none&next="+url.QueryEscape(here), http.StatusFound)
