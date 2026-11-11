@@ -4,6 +4,8 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-12
+
 ### Added
 - `notehop get` reads the note link (or `TOKEN KEY`, with `-server` or `-key`) from standard input when no argument is given, so `notehop new … | notehop get` works.
 - `notehop decrypt [-key-file FILE] [file]` (the key, or the whole link, may also come from `NOTEHOP_KEY`; `-key` still works but is visible in the process list and shell history; `get` takes the same): opens a stored note payload offline from a file or stdin, in the format the web app writes (with `-password` and `-salt` for a note with a password). It never contacts a server.
@@ -241,7 +243,8 @@ The sections below make up this release. The dated headings are the days the wor
 - Developer tools: `/raw`, the `notehop` CLI, mock API, webhooks in and out, SSH, Telegram bot, installable app (PWA).
 - Optional zero-knowledge accounts, single sign-on, 9 languages, name rules and abuse tools, VPS installer with daily backups.
 
-[Unreleased]: https://github.com/navi-crwn/NoteHop/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/navi-crwn/NoteHop/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/navi-crwn/NoteHop/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/navi-crwn/NoteHop/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/navi-crwn/NoteHop/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/navi-crwn/NoteHop/releases/tag/v1.0.0
