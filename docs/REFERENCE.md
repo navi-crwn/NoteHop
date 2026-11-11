@@ -19,7 +19,7 @@ Every setting is an environment variable. On a VPS they live in `/etc/notehop/no
 | `NOTEHOP_FILE_MB` | `5` | Largest attachment (MB), capped at 5. `0` turns attachments off. All attachments uploaded for one note share a 5 MB ciphertext budget, including encryption overhead |
 | `NOTEHOP_GUEST_NOTES_IP` | `200` | Notes one IP address may create per 24 hours without signing in (signed-in people are not counted). `0` = no limit |
 | `NOTEHOP_FILE_TTL_HOURS` | `24` | How long an attachment is kept, in whole hours, 1 to 720. Anything else is ignored (logged) and the default used. Applies to files uploaded after the change |
-| `NOTEHOP_FILES_ACCOUNT_MB` | `100` | Live (not yet expired) attachments one signed-in account may hold at once (MB), counted by size and uploader id only. `0` = no limit. The per-IP limit below still applies |
+| `NOTEHOP_FILES_ACCOUNT_MB` | `100` | Live (not yet expired) attachments one signed-in account may hold at once (MB), counted by size and uploader id only. `0` = no limit; a negative or non-numeric value is ignored (logged) and the default used. The per-IP limit below still applies |
 | `NOTEHOP_FILES_IP_MB` | `100` | Attachments one IP address may upload per 24 hours (MB). `0` = no limit |
 | `NOTEHOP_FILES_TOTAL_MB` | `10240` | Shared budget across all users, capped at 10 GB. Nonpositive values use the cap. Expired blobs count until deleted by the janitor |
 | `NOTEHOP_MIN_FREE_MB` | `1024` | Minimum free space reserved on the SQLite filesystem; nonpositive values use the default |
@@ -82,8 +82,8 @@ notehop backup -db notehop.db copy.db                               # safe copy 
 notehop new -server https://note.example.com < note.md              # encrypted in the terminal, prints the link
 notehop new -server https://… -password secret -expires 24h -burn 1 file.md
 notehop get 'https://note.example.com/TOKEN#k=…'                    # download and decrypt in the terminal
-echo 'https://note.example.com/TOKEN#k=…' | notehop get               # the link (or "TOKEN KEY" with -server) can come from stdin
-notehop decrypt -key 'https://…/TOKEN#k=…' payload.txt              # offline: decrypt a stored payload, never connects
+notehop get < link.txt                                              # the link (or "TOKEN KEY" with -server) can come from stdin; -key-file / NOTEHOP_KEY give the key
+notehop decrypt -key-file key.txt payload.txt                        # offline: decrypt a stored payload, never connects (key from a file or NOTEHOP_KEY; -key also works but shows in ps and history)
 ssh -p 2222 note.example.com < note.md                              # a basic note, readable by the server (when NOTEHOP_SSH_ADDR is set)
 notehop new -server https://… -public -slug monday-meeting note.md  # a basic note with a link name
 notehop takedown -db notehop.db https://note.example.com/xxxx       # moderation: delete + hold the link name for 365 days

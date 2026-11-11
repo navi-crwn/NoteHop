@@ -117,6 +117,9 @@ func New(cfg Config, d *db.DB) (*App, error) {
 	if cfg.FileTTL < MinFileTTL || cfg.FileTTL > MaxFileTTL {
 		cfg.FileTTL = DefaultFileTTL
 	}
+	if cfg.FilesAccountMB < 0 { // nonsense is not "no limit": that is 0
+		cfg.FilesAccountMB = DefaultFilesAccountMB
+	}
 	if cfg.FileMB > 5 {
 		cfg.FileMB = 5
 	}
@@ -329,14 +332,15 @@ type pageData struct {
 	Repo          string   // source repository (Config.GitHub), empty when hidden
 	TourGroups    []string // home page feature tour: groups, and the items in each
 	TourItems     []int
-	Links         []Link // related sites, from NOTEHOP_LINKS
-	Next          string // where to go after signing in
-	Msg           string // error page text; empty means "note not found"
-	Fault         bool   // the error page for a server fault (500)
-	Origin        string // scheme://host for absolute OpenGraph URLs
-	Main          string // main site, for admin links
-	Share         string // share domain, for links handed to readers (may be empty)
-	LinkHost      string // host of reader links, shown before a link name
+	TourLinks     map[string]string // tour item text key (home.f_<group>_<n>) → the page it links to
+	Links         []Link            // related sites, from NOTEHOP_LINKS
+	Next          string            // where to go after signing in
+	Msg           string            // error page text; empty means "note not found"
+	Fault         bool              // the error page for a server fault (500)
+	Origin        string            // scheme://host for absolute OpenGraph URLs
+	Main          string            // main site, for admin links
+	Share         string            // share domain, for links handed to readers (may be empty)
+	LinkHost      string            // host of reader links, shown before a link name
 	L             i18n.Locale
 	Langs         []i18n.Lang
 	Clipper       template.URL // bookmarklet for the about page
@@ -389,6 +393,7 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	d.MiniFoot = miniFootPages[name]
 	if name == "home" || name == "features" {
 		d.TourGroups, d.TourItems = []string{"share", "private", "together", "blocks", "dev", "web"}, []int{1, 2, 3, 4, 5, 6}
+		d.TourLinks = tourLinks
 	}
 	if d.SSO {
 		d.SSOVia = a.cfg.SSOProviders
@@ -448,6 +453,13 @@ func (a *App) page(name, title, desc string) http.HandlerFunc {
 // /embargo). It is the same page as /new, only opened with settings the form
 // already has, so there is no new note type: the preset name is only a hint
 // to the page script, and the server stores nothing different.
+// tourLinks are the home page tour items that open a ready-made page. The key is the
+// item's own text key, so a link follows its text if the tour is reordered or renumbered.
+var tourLinks = map[string]string{
+	"home.f_private_1": "/secret",  // "Delete after reading"
+	"home.f_private_2": "/embargo", // "Time capsule"
+}
+
 func (a *App) presetPage(name string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l := a.locale(w, r)

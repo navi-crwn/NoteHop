@@ -128,9 +128,12 @@ The `notehop` binary is also a small client. It encrypts and decrypts on your ow
 ```bash
 notehop new -server https://note.example.com < note.md                  # prints the share link (the admin link goes to stderr)
 notehop new -server https://note.example.com < note.md | notehop get    # the two pipe together
-echo "https://note.example.com/TOKEN#k=…" | notehop get                 # link from stdin; "TOKEN KEY" works too, with -server
-notehop decrypt -key "https://note.example.com/TOKEN#k=…" payload.txt   # offline: never connects
+notehop get < link.txt                                                  # link from stdin; "TOKEN KEY" works too, with -server
+notehop decrypt -key-file key.txt payload.txt                           # offline: never connects
+NOTEHOP_KEY="https://note.example.com/TOKEN#k=…" notehop decrypt payload.txt
 ```
+
+The note key is a secret. Passing it as `-key` (or the link as an argument) puts it in the process list and your shell history, so prefer a file (`-key-file`, a bare key or a whole link), the `NOTEHOP_KEY` variable, or stdin.
 
 `decrypt` reads the stored payload (the sealed text, or the JSON an open request returns) from a file or stdin and opens it with the key from the link. A note with a password also needs `-password` and the salt of the note (`-salt`). Ready-made binaries for Linux (amd64, arm64), macOS (arm64, amd64) and Windows (amd64), with a `SHA256SUMS` file, are attached to each release.
 

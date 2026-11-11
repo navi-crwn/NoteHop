@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/navi-crwn/NoteHop/internal/i18n"
 )
 
 func getPage(t *testing.T, srv *httptest.Server, path, lang string) (int, string) {
@@ -115,5 +117,16 @@ func TestPresetNamesReservedAndLinked(t *testing.T) {
 		if !strings.Contains(home, `href="`+p+`"`) {
 			t.Errorf("home lacks a link to %s", p)
 		}
+	}
+	// Each link wraps the text of its own tour item, not whatever sits at that position.
+	for key, p := range tourLinks {
+		want := `<a href="` + p + `">` + i18n.Locale{Lang: i18n.Get(i18n.Default)}.T(key) + "</a>"
+		if !strings.Contains(home, want) {
+			t.Errorf("%s: home lacks %s", key, want)
+		}
+	}
+	// And no other tour item is a link.
+	if n := strings.Count(home, `<b><a href=`); n != len(tourLinks) {
+		t.Errorf("%d linked tour items, want %d", n, len(tourLinks))
 	}
 }

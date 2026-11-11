@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"errors"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
@@ -84,6 +86,22 @@ func TestGetPasswordFromEnv(t *testing.T) {
 	}
 }
 
+// noNetwork makes any HTTP request in this test a failure: the default transport (which the
+// client package's http.Client falls back to) refuses and records the attempt.
+type deadTransport struct{ t *testing.T }
+
+func (d deadTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	d.t.Errorf("network used: %s %s", r.Method, r.URL)
+	return nil, errors.New("network is off in this test")
+}
+
+func noNetwork(t *testing.T) {
+	t.Helper()
+	old := http.DefaultTransport
+	http.DefaultTransport = deadTransport{t}
+	t.Cleanup(func() { http.DefaultTransport = old })
+}
+
 func decrypt(t *testing.T, stdin string, args ...string) (int, string, string) {
 	t.Helper()
 	var out, errb bytes.Buffer
@@ -97,7 +115,7 @@ func TestDecryptOffline(t *testing.T) {
 	const payload = "MzFY731hJ5bG2Efb1AZvxBKB1FrWAzq3cxylDCFVyUggGcZ4BOA_fBVjQE3_tTMIDuEE99yMQot1IUYx2Cwrq7Pt_CV9AdXddLNydkWzj59Xog"
 	const link = "http://127.0.0.1:1/AbCdEfGh12#k=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8"
 	want := "# Vector\n\nSealed by Seal; opened offline.\n"
-	t.Setenv("HTTP_PROXY", "http://127.0.0.1:1") // anything that tried the network would fail loudly
+	noNetwork(t)
 
 	if code, out, e := decrypt(t, payload+"\n", "-key", link); code != 0 || out != want {
 		t.Fatalf("stdin: %d %q %q", code, out, e)
@@ -153,6 +171,79 @@ func TestParseFileTTL(t *testing.T) {
 		got, err := parseFileTTL(in)
 		if err == nil || got != 24*time.Hour {
 			t.Errorf("%q: want an error and the default, got %v %v", in, got, err)
+		}
+	}
+}
+
+// The key can come from a file or NOTEHOP_KEY, so it need not be on the command line.
+func TestKeyFromFileAndEnv(t *testing.T) {
+	const payload = "MzFY731hJ5bG2Efb1AZvxBKB1FrWAzq3cxylDCFVyUggGcZ4BOA_fBVjQE3_tTMIDuEE99yMQot1IUYx2Cwrq7Pt_CV9AdXddLNydkWzj59Xog"
+	const key = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8"
+	want := "# Vector\n\nSealed by Seal; opened offline.\n"
+	noNetwork(t)
+	dir := t.TempDir()
+	bare, link, empty := filepath.Join(dir, "k"), filepath.Join(dir, "l"), filepath.Join(dir, "e")
+	os.WriteFile(bare, []byte(key+"\n"), 0o600)
+	os.WriteFile(link, []byte("https://n.example/AbCdEfGh12#k="+key+"\n"), 0o600)
+	os.WriteFile(empty, nil, 0o600)
+
+	if code, out, e := decrypt(t, payload, "-key-file", bare); code != 0 || out != want {
+		t.Fatalf("bare key file: %d %q %q", code, out, e)
+	}
+	if code, out, e := decrypt(t, payload, "-key-file", link); code != 0 || out != want {
+		t.Fatalf("link file: %d %q %q", code, out, e)
+	}
+	if code, _, _ := decrypt(t, payload, "-key-file", empty); code != 1 {
+		t.Fatalf("empty key file: %d", code)
+	}
+	if code, _, _ := decrypt(t, payload, "-key-file", filepath.Join(dir, "missing")); code != 1 {
+		t.Fatalf("missing key file: %d", code)
+	}
+	t.Setenv("NOTEHOP_KEY", "https://n.example/AbCdEfGh12#k="+key)
+	if code, out, e := decrypt(t, payload); code != 0 || out != want {
+		t.Fatalf("env: %d %q %q", code, out, e)
+	}
+	// An explicit -key beats the environment.
+	if code, _, _ := decrypt(t, payload, "-key", "k="+client.NewKey()); code != 1 {
+		t.Fatalf("flag should win over env: %d", code)
+	}
+	// The help warns about -key.
+	var out, errb bytes.Buffer
+	runDecrypt([]string{"-h"}, strings.NewReader(""), &out, &errb, false)
+	if !strings.Contains(errb.String(), "process list") || !strings.Contains(errb.String(), "-key-file") {
+		t.Fatalf("help lacks the warning: %q", errb.String())
+	}
+}
+
+func TestGetKeyFromFileAndEnv(t *testing.T) {
+	srv, _ := testServer(t)
+	c, _ := client.Create(srv.URL, client.Note{Title: "Rapat", Body: "agenda\n"}, client.Options{})
+	want := "# Rapat\n\nagenda\n"
+	kf := filepath.Join(t.TempDir(), "k")
+	os.WriteFile(kf, []byte(client.KeyFrom(c.Share)+"\n"), 0o600)
+	if code, out, e := get(t, c.Token+"\n", false, "-server", srv.URL, "-key-file", kf); code != 0 || out != want {
+		t.Fatalf("key file: %d %q %q", code, out, e)
+	}
+	t.Setenv("NOTEHOP_KEY", client.KeyFrom(c.Share))
+	if code, out, e := get(t, c.Token+"\n", false, "-server", srv.URL); code != 0 || out != want {
+		t.Fatalf("env: %d %q %q", code, out, e)
+	}
+	// A link that carries its own key keeps it; the variable only fills a gap.
+	t.Setenv("NOTEHOP_KEY", client.NewKey())
+	if code, out, e := get(t, c.Share+"\n", false); code != 0 || out != want {
+		t.Fatalf("own key kept: %d %q %q", code, out, e)
+	}
+}
+
+func TestParseAccountMB(t *testing.T) {
+	for in, want := range map[string]int{"": 100, "100": 100, "0": 0, " 250 ": 250, "1": 1} {
+		if got, err := parseAccountMB(in); err != nil || got != want {
+			t.Errorf("%q: %d %v", in, got, err)
+		}
+	}
+	for _, in := range []string{"-1", "-100", "abc", "1.5", "10MB", "99999999999999999999"} {
+		if got, err := parseAccountMB(in); err == nil || got != 100 {
+			t.Errorf("%q: want an error and the default 100, got %d %v", in, got, err)
 		}
 	}
 }

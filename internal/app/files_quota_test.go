@@ -150,3 +150,15 @@ func TestFileTTL(t *testing.T) {
 		}
 	}
 }
+
+// A negative value is nonsense, not "no limit": New uses the default, as for the lifetime.
+func TestAccountQuotaNegativeUsesDefault(t *testing.T) {
+	d, _ := db.Open(":memory:")
+	defer d.Close()
+	for in, want := range map[int]int{-1: DefaultFilesAccountMB, -999: DefaultFilesAccountMB, 0: 0, 7: 7} {
+		a, err := New(Config{FilesAccountMB: in}, d)
+		if err != nil || a.cfg.FilesAccountMB != want {
+			t.Errorf("FilesAccountMB %d became %d (err %v), want %d", in, a.cfg.FilesAccountMB, err, want)
+		}
+	}
+}

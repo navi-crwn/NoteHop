@@ -102,7 +102,7 @@
         </div>
         <div class="h-tour-body">
           {{range $i, $g := .TourGroups}}<div class="h-panel{{if ne $i 0}} hide{{end}}" role="tabpanel" id="tp-{{$g}}" aria-labelledby="tt-{{$g}}" data-g="{{$g}}">
-            <ul class="h-feats">{{range $n := $.TourItems}}<li><svg><use href="#i-tick"/></svg><b>{{if and (eq $g "private") (eq $n 1)}}<a href="/secret">{{$.L.T (printf "home.f_%s_%d" $g $n)}}</a>{{else if and (eq $g "private") (eq $n 2)}}<a href="/embargo">{{$.L.T (printf "home.f_%s_%d" $g $n)}}</a>{{else}}{{$.L.T (printf "home.f_%s_%d" $g $n)}}{{end}}</b><span>{{$.L.T (printf "home.f_%s_%dp" $g $n)}}</span></li>{{end}}</ul>
+            <ul class="h-feats">{{range $n := $.TourItems}}<li><svg><use href="#i-tick"/></svg><b>{{$k := printf "home.f_%s_%d" $g $n}}{{with index $.TourLinks $k}}<a href="{{.}}">{{$.L.T $k}}</a>{{else}}{{$.L.T $k}}{{end}}</b><span>{{$.L.T (printf "home.f_%s_%dp" $g $n)}}</span></li>{{end}}</ul>
             <div class="h-mini" data-mini="{{$g}}"><p class="h-mini-h">{{$.L.T (printf "home.m_%s" $g)}}</p><div class="h-mini-in"></div></div>
           </div>{{end}}
           <nav class="h-tnav" aria-label="{{.L.T "home.t_tabs"}}">

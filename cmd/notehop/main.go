@@ -139,6 +139,29 @@ func parseFileTTL(raw string) (time.Duration, error) {
 	return time.Duration(h) * time.Hour, nil
 }
 
+// parseAccountMB reads NOTEHOP_FILES_ACCOUNT_MB: whole megabytes, 0 = no limit.
+// Empty means the default; a negative or non-numeric value is refused (and the
+// default used), never read as "no limit".
+func parseAccountMB(raw string) (int, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return app.DefaultFilesAccountMB, nil
+	}
+	n, err := strconv.Atoi(raw)
+	if err != nil || n < 0 {
+		return app.DefaultFilesAccountMB, fmt.Errorf("NOTEHOP_FILES_ACCOUNT_MB=%q is not a whole number of megabytes (0 = no limit); using %d", raw, app.DefaultFilesAccountMB)
+	}
+	return n, nil
+}
+
+func filesAccountMB() int {
+	n, err := parseAccountMB(os.Getenv("NOTEHOP_FILES_ACCOUNT_MB"))
+	if err != nil {
+		log.Print(err)
+	}
+	return n
+}
+
 func fileTTL() time.Duration {
 	d, err := parseFileTTL(os.Getenv("NOTEHOP_FILE_TTL_HOURS"))
 	if err != nil {
@@ -199,7 +222,7 @@ func main() {
 		ShareURL:        strings.TrimRight(env("NOTEHOP_SHARE_URL", ""), "/"),
 		FileMB:          envInt("NOTEHOP_FILE_MB", 5),
 		FileTTL:         fileTTL(),
-		FilesAccountMB:  envInt("NOTEHOP_FILES_ACCOUNT_MB", 100),
+		FilesAccountMB:  filesAccountMB(),
 		FilesTotalMB:    envInt("NOTEHOP_FILES_TOTAL_MB", 10240),
 		StoragePath:     filepath.Dir(*dbPath),
 		MinFreeMB:       envInt("NOTEHOP_MIN_FREE_MB", 1024),

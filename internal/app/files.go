@@ -21,6 +21,9 @@ const (
 	DefaultFileTTL = 24 * time.Hour
 	MinFileTTL     = time.Hour
 	MaxFileTTL     = 30 * 24 * time.Hour
+
+	// DefaultFilesAccountMB is what one signed-in account may hold at once; 0 turns the limit off.
+	DefaultFilesAccountMB = 100
 )
 
 var fileIDRe = regexp.MustCompile(`^[A-Za-z0-9]{20}$`)
