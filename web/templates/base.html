@@ -6,6 +6,8 @@
 <title>{{if .Title}}{{.Title}} · {{end}}{{.Site}}</title>
 {{with .Desc}}<meta name="description" content="{{.}}">{{end}}
 {{if .NoIndex}}<meta name="robots" content="noindex, nofollow">{{end}}
+{{with .Canonical}}<link rel="canonical" href="{{.}}">
+<meta property="og:url" content="{{.}}">{{end}}
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="{{.Site}}">
 <meta property="og:title" content="{{if .Title}}{{.Title}}{{else}}{{.Site}}{{end}}">

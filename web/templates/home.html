@@ -1,5 +1,6 @@
 {{define "page"}}home{{end}}
-{{define "head"}}<link rel="stylesheet" href="/static/css/home.css?v={{.Asset}}">{{end}}
+{{define "head"}}<link rel="stylesheet" href="/static/css/home.css?v={{.Asset}}">
+{{with .WebApp}}<script type="application/ld+json">{{.}}</script>{{end}}{{end}}
 {{define "content"}}
 <div class="home">
   <!-- 1. hero: the logo in live 3D (hero3d.js); the picture stays without WebGL -->

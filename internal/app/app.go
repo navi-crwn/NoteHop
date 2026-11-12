@@ -321,6 +321,8 @@ type pageData struct {
 	Stale         bool // a HOP ID session the account server has not vouched for lately: the page may re-check once
 	Reg           bool
 	NoIndex       bool
+	Canonical     string         // an indexable page's own address (pages.go); empty on every other page
+	WebApp        map[string]any // home page: structured data for search engines
 	Token         string
 	Mode          string
 	SSO           bool // show "Continue with <SSOName>"
@@ -400,6 +402,16 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 		d.Hub = strings.TrimRight(a.cfg.SSOURL, "/")
 	}
 	d.Origin = a.origin(r)
+	// Only an indexable page that rendered as itself may be listed; anything else says so twice (header and tag).
+	d.NoIndex = d.NoIndex || status != http.StatusOK || !indexablePage[r.URL.Path]
+	if d.NoIndex {
+		w.Header().Set("X-Robots-Tag", noIndex)
+	} else {
+		d.Canonical = a.canonical(r)
+		if name == "home" {
+			d.WebApp = a.webApp(r, d.L)
+		}
+	}
 	d.Main, d.Share = a.cfg.BaseURL, a.shareURL()
 	d.LinkHost = strings.TrimPrefix(strings.TrimPrefix(cmp.Or(d.Share, d.Origin), "https://"), "http://")
 	d.HopFonts, d.HopFamily = hopFonts(), hopFamily("notehop")
@@ -660,7 +672,7 @@ func mermaidFrame(w http.ResponseWriter, r *http.Request) {
 	h.Set("X-Frame-Options", "SAMEORIGIN")
 	h.Set("Content-Type", "text/html; charset=utf-8")
 	h.Set("Cache-Control", "public, max-age=3600")
-	io.WriteString(w, `<!doctype html><meta charset="utf-8"><title>Mermaid</title>`+
+	io.WriteString(w, `<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>Mermaid</title>`+
 		`<script src="/static/vendor/mermaid.min.js"></script><script src="/static/js/mermaid-frame.js"></script>`)
 }
 
@@ -680,7 +692,7 @@ func runFrame(w http.ResponseWriter, r *http.Request) {
 	h.Set("X-Frame-Options", "SAMEORIGIN")
 	h.Set("Content-Type", "text/html; charset=utf-8")
 	h.Set("Cache-Control", "no-store")
-	io.WriteString(w, `<!doctype html><meta charset="utf-8"><title>Run</title><script src="/static/js/run-frame.js"></script>`)
+	io.WriteString(w, `<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>Run</title><script src="/static/js/run-frame.js"></script>`)
 }
 
 // serviceWorker serves the worker from the site root (so it may control every
