@@ -56,7 +56,7 @@ The database schema migrates itself at start (version in `PRAGMA user_version`, 
 
 ### Languages
 
-The UI comes in 9 languages: English (default and fallback), 简体中文 (zh-CN), Deutsch, Bahasa Indonesia, 日本語, Português (pt-BR), Español, Français and Русский. The old codes `zh` and `pt` still work and map to `zh-CN` and `pt-BR`. Anonymous visitors get English regardless of `Accept-Language`; the globe menu stores a choice in the `nh_lang` cookie, and `?lang=xx` sets that cookie. Both explicit choices always win over the default. Texts live in `web/i18n/*.json`, and `go test ./internal/i18n` checks that every file has the same keys, placeholders and tags. API errors come as `{error, code, vars}` and are translated in the browser.
+The UI comes in 9 languages: English (default and fallback), 简体中文 (zh-CN), Deutsch, Bahasa Indonesia, 日本語, Português (pt-BR), Español, Français and Русский. The old codes `zh` and `pt` still work and map to `zh-CN` and `pt-BR`. Anonymous visitors get English regardless of `Accept-Language`; the globe menu stores a choice in the family cookie `hop_lang` (shared on `.hel.ink`, host-only elsewhere; an old `nh_lang` cookie is still read once and carried over), and `?lang=xx` sets that cookie. The theme button writes `hop_theme` the same way. Both explicit choices always win over the default. Texts live in `web/i18n/*.json`, and `go test ./internal/i18n` checks that every file has the same keys, placeholders and tags. API errors come as `{error, code, vars}` and are translated in the browser.
 
 When you add or change interface text, change it in all nine files in `web/i18n/`, then run `go test ./internal/i18n`. Two other places carry translated text and are separate from the interface catalogs:
 
