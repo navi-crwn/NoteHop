@@ -8,7 +8,8 @@
 {{if .NoIndex}}<meta name="robots" content="noindex, nofollow">{{end}}
 {{with .Canonical}}<link rel="canonical" href="{{.}}">
 <meta property="og:url" content="{{.}}">{{end}}
-<meta property="og:type" content="website">
+{{range .Alternates}}<link rel="alternate" hreflang="{{.Lang}}" href="{{.URL}}">
+{{end}}<meta property="og:type" content="website">
 <meta property="og:site_name" content="{{.Site}}">
 <meta property="og:title" content="{{if .Title}}{{.Title}}{{else}}{{.Site}}{{end}}">
 <meta property="og:description" content="{{if .Desc}}{{.Desc}}{{else}}{{.L.T "meta.desc_new"}}{{end}}">

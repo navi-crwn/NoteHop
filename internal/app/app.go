@@ -321,6 +321,7 @@ type pageData struct {
 	Stale         bool // a HOP ID session the account server has not vouched for lately: the page may re-check once
 	Reg           bool
 	NoIndex       bool
+	Alternates    []langLink     // that page in each language (hreflang)
 	Canonical     string         // an indexable page's own address (pages.go); empty on every other page
 	WebApp        map[string]any // home page: structured data for search engines
 	Token         string
@@ -407,7 +408,7 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 	if d.NoIndex {
 		w.Header().Set("X-Robots-Tag", noIndex)
 	} else {
-		d.Canonical = a.canonical(r)
+		d.Canonical, d.Alternates = a.canonical(r)
 		if name == "home" {
 			d.WebApp = a.webApp(r, d.L)
 		}

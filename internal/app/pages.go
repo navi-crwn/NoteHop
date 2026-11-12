@@ -82,11 +82,29 @@ func crawlable(p string) bool {
 	return indexablePage[p] || strings.HasPrefix(p, "/static/") || strings.HasPrefix(p, "/i18n/")
 }
 
-// canonical is the one address a search engine should list for an indexable page: the public base
-// URL and the path, never the query string. Language comes from a cookie (or ?lang=, which only sets
-// that cookie), so the nine languages share one address and the pages carry no hreflang.
-func (a *App) canonical(r *http.Request) string {
-	return strings.TrimRight(a.origin(r), "/") + r.URL.Path
+// langLink is one language's address of a page, for <link rel="alternate" hreflang>.
+type langLink struct{ Lang, URL string }
+
+// canonical is the address a search engine should list for an indexable public page: the configured
+// base URL and the path, plus ?lang=<code> only when the request itself carried a supported code
+// (pt means pt-BR); every other query parameter is dropped. ?lang= always answers in that language,
+// so it is a real per-language address. The alternates are the nine languages and x-default (the
+// bare address); the sitemap lists the same links.
+func (a *App) canonical(r *http.Request) (string, []langLink) {
+	page := strings.TrimRight(a.origin(r), "/") + r.URL.Path
+	self := page
+	if q, ok := i18n.Resolve(r.URL.Query().Get("lang")); ok {
+		self = page + "?lang=" + q
+	}
+	return self, alternates(page)
+}
+
+func alternates(page string) []langLink {
+	out := make([]langLink, 0, len(i18n.Langs)+1)
+	for _, l := range i18n.Langs {
+		out = append(out, langLink{l.Code, page + "?lang=" + l.Code})
+	}
+	return append(out, langLink{"x-default", page})
 }
 
 // webApp is the home page's structured data (schema.org WebApplication). It is
@@ -113,9 +131,13 @@ func (a *App) sitemap(w http.ResponseWriter, r *http.Request) {
 	base := strings.TrimRight(a.origin(r), "/")
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, max-age=3600")
-	io.WriteString(w, `<?xml version="1.0" encoding="UTF-8"?>`+"\n"+`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`+"\n")
+	io.WriteString(w, `<?xml version="1.0" encoding="UTF-8"?>`+"\n"+`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">`+"\n")
 	for _, p := range indexablePages {
-		io.WriteString(w, "<url><loc>"+base+p+"</loc></url>\n")
+		io.WriteString(w, "<url><loc>"+base+p+"</loc>")
+		for _, l := range alternates(base + p) {
+			io.WriteString(w, `<xhtml:link rel="alternate" hreflang="`+l.Lang+`" href="`+l.URL+`"/>`)
+		}
+		io.WriteString(w, "</url>\n")
 	}
 	io.WriteString(w, "</urlset>\n")
 }

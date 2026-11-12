@@ -66,15 +66,21 @@ func TestEveryNoteResponseIsNoindex(t *testing.T) {
 		}
 	}
 	// HTML note pages and error pages also say it in the page itself.
-	for _, p := range []string{"/" + enc.token, "/" + pw.token, "/" + basicN.token, "/n/" + enc.token, "/nope-nope-nope", "/login", "/register"} {
-		if _, body := seoGet(t, srv, p, ""); !strings.Contains(body, `name="robots" content="noindex, nofollow"`) || strings.Contains(body, `rel="canonical"`) {
-			t.Errorf("%s: want robots meta and no canonical", p)
+	for _, base := range []string{"/" + enc.token, "/" + pw.token, "/" + basicN.token, "/n/" + enc.token, "/nope-nope-nope", "/login", "/register"} {
+		for _, p := range []string{base, base + "?lang=de"} {
+			res, body := seoGet(t, srv, p, "")
+			if tag := res.Header.Get("X-Robots-Tag"); tag != "noindex, nofollow, noarchive" {
+				t.Errorf("%s: X-Robots-Tag %q", p, tag)
+			}
+			if !strings.Contains(body, `name="robots" content="noindex, nofollow"`) || strings.Contains(body, `rel="canonical"`) || strings.Contains(body, "hreflang") || strings.Contains(body, "og:url") {
+				t.Errorf("%s: want robots meta and no canonical, og:url or hreflang", p)
+			}
 		}
 	}
 }
 
-// Public pages: absolute canonical without query, share tags, no noindex, no hreflang
-// (the language is a cookie, there is one address per page), JSON-LD on home only.
+// Public pages follow the family rule (KONTRAK-SEO-BAHASA): the canonical is the configured base URL plus the
+// path, plus ?lang=<code> only when the request carried a supported one; og:url equals it; ten alternates.
 func TestPublicPagesCanonicalAndShareTags(t *testing.T) {
 	d, _ := db.Open(":memory:")
 	a, err := New(Config{BaseURL: "https://note.example.org"}, d)
@@ -83,32 +89,55 @@ func TestPublicPagesCanonicalAndShareTags(t *testing.T) {
 	}
 	srv := httptest.NewServer(a.Handler())
 	t.Cleanup(func() { srv.Close(); d.Close() })
+	suffix := map[string]string{"": "", "?lang=de": "?lang=de", "?lang=de&utm_source=x": "?lang=de", "?utm_source=x&lang=ja": "?lang=ja",
+		"?lang=pt": "?lang=pt-BR", "?lang=en": "?lang=en", "?lang=xx": "", "?lang=ar": "", "?utm_source=x": ""}
+	codes := []string{"en", "zh-CN", "de", "id", "ja", "pt-BR", "es", "fr", "ru"}
 	titles := map[string]string{}
 	for _, p := range indexablePages {
-		for _, q := range []string{"", "?lang=de", "?utm_source=x&lang=ja"} {
-			res, body := seoGet(t, srv, p+q, "Googlebot/2.1")
-			if res.StatusCode != 200 {
-				t.Errorf("%s%s: %d", p, q, res.StatusCode)
-				continue
-			}
-			if tag := res.Header.Get("X-Robots-Tag"); tag != "" {
-				t.Errorf("%s%s: indexable page carries X-Robots-Tag %q", p, q, tag)
-			}
-			want := "https://note.example.org" + p
-			for _, s := range []string{`<link rel="canonical" href="` + want + `">`, `<meta property="og:url" content="` + want + `">`,
-				`<meta property="og:image" content="https://note.example.org/static/img/og.png">`, `<meta name="twitter:card" content="summary_large_image">`} {
-				if !strings.Contains(body, s) {
-					t.Errorf("%s%s: lacks %s", p, q, s)
+		for q, sfx := range suffix {
+			for _, host := range []string{"", "other.example.net"} {
+				req, _ := http.NewRequest("GET", srv.URL+p+q, nil)
+				req.Header.Set("User-Agent", "Googlebot/2.1")
+				if host != "" {
+					req.Host = host
 				}
-			}
-			if strings.Contains(body, "hreflang") || strings.Contains(body, `content="noindex`) {
-				t.Errorf("%s%s: hreflang or noindex present", p, q)
-			}
-			if got := strings.Contains(body, `application/ld+json`); got != (p == "/") {
-				t.Errorf("%s%s: JSON-LD present=%v", p, q, got)
-			}
-			if q == "" {
-				titles[p] = regexp.MustCompile(`<title>(.*?)</title>`).FindStringSubmatch(body)[1]
+				res, err := http.DefaultClient.Do(req)
+				if err != nil {
+					t.Fatal(err)
+				}
+				raw, _ := io.ReadAll(res.Body)
+				res.Body.Close()
+				body := string(raw)
+				if res.StatusCode != 200 {
+					t.Errorf("%s%s: %d", p, q, res.StatusCode)
+					continue
+				}
+				if tag := res.Header.Get("X-Robots-Tag"); tag != "" {
+					t.Errorf("%s%s: indexable page carries X-Robots-Tag %q", p, q, tag)
+				}
+				page := "https://note.example.org" + p
+				want := page + sfx
+				for _, s := range []string{`<link rel="canonical" href="` + want + `">`, `<meta property="og:url" content="` + want + `">`,
+					`<meta property="og:image" content="https://note.example.org/static/img/og.png">`, `<meta name="twitter:card" content="summary_large_image">`,
+					`<link rel="alternate" hreflang="x-default" href="` + page + `">`} {
+					if !strings.Contains(body, s) {
+						t.Errorf("%s%s (host %q): lacks %s", p, q, host, s)
+					}
+				}
+				for _, c := range codes {
+					if !strings.Contains(body, `<link rel="alternate" hreflang="`+c+`" href="`+page+`?lang=`+c+`">`) {
+						t.Errorf("%s%s: no hreflang %s", p, q, c)
+					}
+				}
+				if n := strings.Count(body, `rel="alternate" hreflang=`); n != 10 || strings.Contains(body, `content="noindex`) {
+					t.Errorf("%s%s: %d alternates (want 10) or noindex present", p, q, n)
+				}
+				if got := strings.Contains(body, `application/ld+json`); got != (p == "/") {
+					t.Errorf("%s%s: JSON-LD present=%v", p, q, got)
+				}
+				if q == "" && host == "" {
+					titles[p] = regexp.MustCompile(`<title>(.*?)</title>`).FindStringSubmatch(body)[1]
+				}
 			}
 		}
 	}
@@ -149,6 +178,12 @@ func TestSitemapAndAccountPages(t *testing.T) {
 	locs := regexp.MustCompile(`<loc>[^<]*?(/[^<]*)</loc>`).FindAllStringSubmatch(sm, -1)
 	if len(locs) != len(indexablePages) {
 		t.Errorf("sitemap has %d urls, want %d", len(locs), len(indexablePages))
+	}
+	if n := strings.Count(sm, `<xhtml:link rel="alternate" hreflang=`); n != 10*len(indexablePages) {
+		t.Errorf("sitemap has %d alternates, want %d", n, 10*len(indexablePages))
+	}
+	if !strings.Contains(sm, `<loc>`+"http://"+strings.TrimPrefix(srv.URL, "http://")+`/secret</loc><xhtml:link rel="alternate" hreflang="en" href="`+srv.URL+`/secret?lang=en"/>`) || !strings.Contains(sm, `hreflang="x-default" href="`+srv.URL+`/secret"/>`) {
+		t.Errorf("sitemap entry for /secret lacks its alternates")
 	}
 	for _, p := range []string{"/", "/new", "/secret", "/embargo", "/about", "/features", "/faq", "/nearby", "/diff", "/changelog", "/contact", "/terms", "/privacy"} {
 		if !regexp.MustCompile(`<loc>[^<]*` + regexp.QuoteMeta(p) + `</loc>`).MatchString(sm) {
