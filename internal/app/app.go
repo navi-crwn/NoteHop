@@ -559,25 +559,64 @@ func assetVersion() string {
 
 // ---------- language ----------
 
-const langCookie = "nh_lang"
+// langCookie is the family language cookie (shared on .hel.ink, plain text, read by scripts too);
+// oldLangCookie is the one this app used before and is still read, once, to carry a choice over.
+const langCookie = "hop_lang"
+const oldLangCookie = "nh_lang"
+
+// onFamilyHost says whether the request came in on hel.ink or a subdomain: only then do the family
+// cookies carry Domain=.hel.ink. Self-hosted copies and localhost keep them host-only.
+func onFamilyHost(r *http.Request) bool {
+	h := r.Host
+	if i := strings.LastIndexByte(h, ':'); i >= 0 && !strings.Contains(h[i:], "]") {
+		h = h[:i]
+	}
+	h = strings.ToLower(h)
+	return h == "hel.ink" || strings.HasSuffix(h, ".hel.ink")
+}
+
+// setLangCookie writes hop_lang once per response, however many times the page asks for its locale.
+func (a *App) setLangCookie(w http.ResponseWriter, r *http.Request, code string) {
+	for _, v := range w.Header().Values("Set-Cookie") {
+		if strings.HasPrefix(v, langCookie+"=") {
+			return
+		}
+	}
+	c := &http.Cookie{Name: langCookie, Value: code, Path: "/", MaxAge: 365 * 24 * 3600, Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode}
+	if onFamilyHost(r) {
+		c.Domain, c.Secure = ".hel.ink", true
+	}
+	http.SetCookie(w, c)
+}
 
 // locale is the reader's language. The order of precedence is:
 //  1. explicit ?lang= query (remembered in a cookie),
-//  2. explicit nh_lang cookie from a previous choice,
-//  3. English (the anonymous default; Accept-Language is not used).
+//  2. the family cookie hop_lang from a previous choice,
+//  3. the old nh_lang cookie (and hop_lang is written from it),
+//  4. English (the anonymous default; Accept-Language is not used).
 //
 // Explicit choices must be a supported language code. Invalid values fall
 // back to English, and they do not overwrite a previously valid cookie.
 func (a *App) locale(w http.ResponseWriter, r *http.Request) i18n.Locale {
 	if q, ok := i18n.Resolve(r.URL.Query().Get("lang")); ok {
-		http.SetCookie(w, &http.Cookie{Name: langCookie, Value: q, Path: "/", MaxAge: 365 * 24 * 3600,
-			Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode})
+		a.setLangCookie(w, r, q)
 		return i18n.Locale{Lang: i18n.Get(q)}
 	}
 	code := i18n.Default
+	found := false
 	if c, err := r.Cookie(langCookie); err == nil {
 		if resolved, ok := i18n.Resolve(c.Value); ok {
-			code = resolved
+			code, found = resolved, true
+		}
+	}
+	if !found {
+		if c, err := r.Cookie(oldLangCookie); err == nil {
+			if resolved, ok := i18n.Resolve(c.Value); ok {
+				code = resolved
+				if _, err := r.Cookie(langCookie); err != nil {
+					a.setLangCookie(w, r, resolved)
+				}
+			}
 		}
 	}
 	w.Header().Add("Vary", "Cookie")
