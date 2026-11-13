@@ -192,14 +192,19 @@
   var STARTERS = {
     note: { mode: 'read' },
     checklist: { mode: 'check' },
-    code: { mode: 'read', type: 'code' },
-    web: { mode: 'read', type: 'web' },
     form: { mode: 'append' },
     together: { mode: 'edit' },
     secret: { mode: 'read', opens: 1 },
     signoff: { mode: 'read', signoff: true }
   };
   var startMore = $('#start-more');
+  // Choosing another format in the editor menu lets go of the starter that was lit: the format is the editor's.
+  var applying = false;
+  $('[data-editor]').addEventListener('nh-type', function () {
+    if (applying || ed.type === 'doc') return;
+    NH.$$('[data-starter]').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+    startMore.classList.toggle('is-set', false);
+  });
   NH.$$('[data-starter]').forEach(function (b) {
     b.addEventListener('click', function () {
       var kind = b.dataset.starter, st = STARTERS[kind];
@@ -211,9 +216,10 @@
       if (st.opens) pick('kind', 'encrypted');
       pick('opens', String(st.opens || 0));
       set('signoff', !!st.signoff);
-      // Code and Web are editor types; the other starters write a Document.
-      var want = st.type || 'doc';
-      if (ed.type !== want) ed.setType(st.type ? { y: st.type } : {}, !ed.value.trim());
+      // The starters write a Document; the format (Plain, Document, Code, Web) belongs to the editor's menu.
+      applying = true;
+      if (ed.type !== 'doc') ed.setType({}, !ed.value.trim());
+      applying = false;
       // Only fill an empty editor: never throw away what someone wrote.
       if (!ed.value.trim() && starterBody(kind)) ed.value = starterBody(kind);
       applyOptions();
