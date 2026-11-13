@@ -86,14 +86,16 @@ func crawlable(p string) bool {
 type langLink struct{ Lang, URL string }
 
 // canonical is the address a search engine should list for an indexable public page: the configured
-// base URL and the path, plus ?lang=<code> only when the request itself carried a supported code
-// (pt means pt-BR); every other query parameter is dropped. ?lang= always answers in that language,
-// so it is a real per-language address. The alternates are the nine languages and x-default (the
-// bare address); the sitemap lists the same links.
+// base URL and the path, plus ?lang=<code> only when the request itself carried one of the eight
+// non-English codes (pt means pt-BR); every other query parameter is dropped. English is the default
+// language and lives at the bare address, so ?lang=en has the bare canonical (family rule, amended
+// 2026-11-13). ?lang=<code> always answers in that language, so it is a real per-language address.
+// The alternates are the nine languages (en and x-default are both the bare address); the sitemap
+// lists the same links.
 func (a *App) canonical(r *http.Request) (string, []langLink) {
 	page := strings.TrimRight(a.origin(r), "/") + r.URL.Path
 	self := page
-	if q, ok := i18n.Resolve(r.URL.Query().Get("lang")); ok {
+	if q, ok := i18n.Resolve(r.URL.Query().Get("lang")); ok && q != "en" {
 		self = page + "?lang=" + q
 	}
 	return self, alternates(page)
@@ -102,7 +104,11 @@ func (a *App) canonical(r *http.Request) (string, []langLink) {
 func alternates(page string) []langLink {
 	out := make([]langLink, 0, len(i18n.Langs)+1)
 	for _, l := range i18n.Langs {
-		out = append(out, langLink{l.Code, page + "?lang=" + l.Code})
+		href := page + "?lang=" + l.Code
+		if l.Code == "en" {
+			href = page
+		}
+		out = append(out, langLink{l.Code, href})
 	}
 	return append(out, langLink{"x-default", page})
 }

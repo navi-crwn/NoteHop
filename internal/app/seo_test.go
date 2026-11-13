@@ -80,7 +80,8 @@ func TestEveryNoteResponseIsNoindex(t *testing.T) {
 }
 
 // Public pages follow the family rule (KONTRAK-SEO-BAHASA): the canonical is the configured base URL plus the
-// path, plus ?lang=<code> only when the request carried a supported one; og:url equals it; ten alternates.
+// path, plus ?lang=<code> only when the request carried a supported non-English one (?lang=en is the bare
+// address); og:url equals it; ten alternates, with en equal to x-default.
 func TestPublicPagesCanonicalAndShareTags(t *testing.T) {
 	d, _ := db.Open(":memory:")
 	a, err := New(Config{BaseURL: "https://note.example.org"}, d)
@@ -90,7 +91,7 @@ func TestPublicPagesCanonicalAndShareTags(t *testing.T) {
 	srv := httptest.NewServer(a.Handler())
 	t.Cleanup(func() { srv.Close(); d.Close() })
 	suffix := map[string]string{"": "", "?lang=de": "?lang=de", "?lang=de&utm_source=x": "?lang=de", "?utm_source=x&lang=ja": "?lang=ja",
-		"?lang=pt": "?lang=pt-BR", "?lang=en": "?lang=en", "?lang=xx": "", "?lang=ar": "", "?utm_source=x": ""}
+		"?lang=pt": "?lang=pt-BR", "?lang=en": "", "?lang=xx": "", "?lang=ar": "", "?utm_source=x": ""}
 	codes := []string{"en", "zh-CN", "de", "id", "ja", "pt-BR", "es", "fr", "ru"}
 	titles := map[string]string{}
 	for _, p := range indexablePages {
@@ -125,9 +126,16 @@ func TestPublicPagesCanonicalAndShareTags(t *testing.T) {
 					}
 				}
 				for _, c := range codes {
-					if !strings.Contains(body, `<link rel="alternate" hreflang="`+c+`" href="`+page+`?lang=`+c+`">`) {
+					href := page + "?lang=" + c
+					if c == "en" { // English lives at the bare address, the same as x-default
+						href = page
+					}
+					if !strings.Contains(body, `<link rel="alternate" hreflang="`+c+`" href="`+href+`">`) {
 						t.Errorf("%s%s: no hreflang %s", p, q, c)
 					}
+				}
+				if strings.Contains(body, `<link rel="alternate" hreflang="en" href="`+page+`?lang=en">`) || strings.Contains(body, `content="`+page+`?lang=en"`) {
+					t.Errorf("%s%s: ?lang=en written as a canonical or alternate", p, q)
 				}
 				if n := strings.Count(body, `rel="alternate" hreflang=`); n != 10 || strings.Contains(body, `content="noindex`) {
 					t.Errorf("%s%s: %d alternates (want 10) or noindex present", p, q, n)
@@ -182,7 +190,7 @@ func TestSitemapAndAccountPages(t *testing.T) {
 	if n := strings.Count(sm, `<xhtml:link rel="alternate" hreflang=`); n != 10*len(indexablePages) {
 		t.Errorf("sitemap has %d alternates, want %d", n, 10*len(indexablePages))
 	}
-	if !strings.Contains(sm, `<loc>`+"http://"+strings.TrimPrefix(srv.URL, "http://")+`/secret</loc><xhtml:link rel="alternate" hreflang="en" href="`+srv.URL+`/secret?lang=en"/>`) || !strings.Contains(sm, `hreflang="x-default" href="`+srv.URL+`/secret"/>`) {
+	if !strings.Contains(sm, `<loc>`+"http://"+strings.TrimPrefix(srv.URL, "http://")+`/secret</loc><xhtml:link rel="alternate" hreflang="en" href="`+srv.URL+`/secret"/><xhtml:link rel="alternate" hreflang="zh-CN" href="`+srv.URL+`/secret?lang=zh-CN"/>`) || !strings.Contains(sm, `hreflang="x-default" href="`+srv.URL+`/secret"/>`) {
 		t.Errorf("sitemap entry for /secret lacks its alternates")
 	}
 	for _, p := range []string{"/", "/new", "/secret", "/embargo", "/about", "/features", "/faq", "/nearby", "/diff", "/changelog", "/contact", "/terms", "/privacy"} {
