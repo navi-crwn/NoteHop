@@ -361,6 +361,8 @@ type pageData struct {
 	Dash          bool            // the signed-in dashboard shell (sidebar, settings-type top bar)
 	MiniFoot      bool            // a working page: one line of footer instead of the columns
 	Reminders     map[string]bool // reminder cards due on the dashboard, by key (reminders.go)
+	Announce      string          // the notice at the top of the dashboard home (hop.go), "" when there is none
+	AnnounceID    string          // a short fingerprint of it: hiding one notice does not hide the next
 	Status        *liveStatus     // /status only
 	Changelog     *changePage
 }
@@ -488,7 +490,9 @@ func (a *App) dashboardPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	due := map[string]bool{remindRecovery: a.reminderDue(u, remindRecovery, a.recoveryStatus(u).Left == 0, time.Now())}
-	a.render(w, r, http.StatusOK, "dashboard", pageData{Title: a.locale(w, r).T("title.dashboard"), User: u, NoIndex: true, Reminders: due})
+	d := pageData{Title: a.locale(w, r).T("title.dashboard"), User: u, NoIndex: true, Reminders: due}
+	d.Announce, d.AnnounceID = a.announcement(), a.announcementID()
+	a.render(w, r, http.StatusOK, "dashboard", d)
 }
 
 // profileOrNote serves /@name as a profile and /TOKEN as a note page. Site

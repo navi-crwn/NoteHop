@@ -1626,5 +1626,6 @@
   "reset.go": "Borrar todo y restablecer",
   "reset.done": "Bóveda restablecida. Crea ahora una clave de bóveda nueva.",
   "reset.stale": "Hay que volver a comprobar tu inicio de sesión. La página se recarga; después inténtalo de nuevo.",
-  "reset.link": "¿Sin código de recuperación? Restablece la bóveda"
+  "reset.link": "¿Sin código de recuperación? Restablece la bóveda",
+  "announce.title": "Anuncio"
 }

@@ -1626,5 +1626,6 @@
   "reset.go": "Apagar tudo e redefinir",
   "reset.done": "Cofre redefinido. Crie agora uma nova chave do cofre.",
   "reset.stale": "Sua entrada precisa ser verificada de novo. A página recarrega; depois tente mais uma vez.",
-  "reset.link": "Sem código de recuperação? Redefina o cofre"
+  "reset.link": "Sem código de recuperação? Redefina o cofre",
+  "announce.title": "Aviso"
 }

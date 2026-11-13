@@ -655,7 +655,12 @@ svg.graph a:hover circle { fill: var(--violet); }
 .note-link b.locked-title { color: var(--muted); font-weight: 600; }
 .note-list .device-hint { padding: 0 2px 4px; }
 /* a reminder card: what is still to do and the way there; hop-ui.js puts its "Hide" button in the top corner */
-.remind { display: flex; gap: 10px; align-items: flex-start; }
+.remind, .announce { display: flex; gap: 10px; align-items: flex-start; }
+.announce[hidden] { display: none; }
+.announce > svg { width: 18px; height: 18px; flex: none; margin-top: 2px; }
+.announce-body { flex: 1; min-width: 0; }
+.announce-body p { margin: 2px 0 0; color: var(--muted); overflow-wrap: anywhere; }
+.announce .icon-btn { margin: -4px -6px 0 0; }
 .remind > svg { width: 18px; height: 18px; flex: none; margin-top: 2px; }
 .remind-body { display: grid; gap: 6px; min-width: 0; justify-items: start; }
 .remind-body p { margin: 0; color: var(--muted); }
@@ -1380,7 +1385,6 @@ body.wr-full-on { overflow: hidden; }
 .part-of img { width: 20px; height: 20px; display: block; }
 .part-of b { font-weight: 400; color: var(--text); }
 .part-of:hover b { text-decoration: underline; }
-.shell-foot .part-of { margin: 0 auto 10px; padding: 0; }
 footer .footer-grid { display: grid; grid-template-columns: minmax(180px, 1.35fr) repeat(4, minmax(0, 1fr)); align-items: start; gap: 28px 24px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
 .foot-col { display: flex; flex-direction: column; gap: 8px; }
 .foot-heading { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text); margin: 0 0 4px; font-weight: 700; }

@@ -5,7 +5,7 @@
   {{if .Fault}}
   <h1>{{.L.T "error.fault_title"}}</h1>
   <p class="muted">{{.L.T "error.fault_text"}}</p>
-  <a class="btn primary" href="/">{{.L.T "error.fault_home"}}</a>
+  <a class="btn primary" href="{{if .User}}/dashboard{{else}}/{{end}}">{{.L.T "error.fault_home"}}</a>
   {{else if .Msg}}
   <h1>{{.Title}}</h1>
   <p class="muted">{{.Msg}}</p>

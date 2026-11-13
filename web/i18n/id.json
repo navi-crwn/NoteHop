@@ -1626,5 +1626,6 @@
   "reset.go": "Hapus semuanya dan reset",
   "reset.done": "Brankas sudah direset. Buat kunci brankas baru sekarang.",
   "reset.stale": "Masukmu perlu diperiksa lagi. Halaman dimuat ulang; lalu coba sekali lagi.",
-  "reset.link": "Tidak punya kode pemulihan? Reset brankas"
+  "reset.link": "Tidak punya kode pemulihan? Reset brankas",
+  "announce.title": "Pengumuman"
 }

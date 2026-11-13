@@ -1626,5 +1626,6 @@
   "reset.go": "Alles löschen und zurücksetzen",
   "reset.done": "Tresor zurückgesetzt. Lege jetzt einen neuen Tresorschlüssel fest.",
   "reset.stale": "Deine Anmeldung muss noch einmal geprüft werden. Die Seite lädt neu; versuche es dann noch einmal.",
-  "reset.link": "Kein Wiederherstellungscode? Tresor zurücksetzen"
+  "reset.link": "Kein Wiederherstellungscode? Tresor zurücksetzen",
+  "announce.title": "Ankündigung"
 }

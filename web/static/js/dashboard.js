@@ -8,6 +8,18 @@
 // server can read it anyway. An encrypted note has no title without the key.
 (function () {
   'use strict';
+  // The site's notice: shown unless this person closed this very notice in the last 7 days.
+  (function () {
+    var card = document.getElementById('announce');
+    if (!card) return;
+    var key = 'nh_announce_' + card.dataset.id, week = 7 * 86400000, at = 0;
+    try { at = +localStorage.getItem(key) || 0; } catch (e) {}
+    if (!at || Date.now() - at > week) card.hidden = false;
+    document.getElementById('announce-close').addEventListener('click', function () {
+      card.hidden = true;
+      try { localStorage.setItem(key, String(Date.now())); } catch (e) {}
+    });
+  })();
   var $ = NH.$, h = NH.h;
   var ul = $('#mine'), filter = $('#filter'), rows = [];
   var vault = NHC.vault();

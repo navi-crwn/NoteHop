@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/navi-crwn/NoteHop/internal/db"
 	"github.com/navi-crwn/NoteHop/internal/hop"
@@ -295,11 +296,36 @@ func (a *App) hopMetrics(w http.ResponseWriter, r *http.Request, _ []byte) {
 // read-only and comes from the environment.
 const settingRegistration = "registration"
 
+// settingAnnouncement is a short notice for the top of every member's dashboard home (plain text, empty = none).
+const (
+	settingAnnouncement = "announcement"
+	announcementMax     = 300
+)
+
 // loadSettings mirrors the settings table into memory at start.
 func (a *App) loadSettings() {
 	if v, ok := a.db.Setting(settingRegistration); ok {
 		a.settings.Store(settingRegistration, v == "true")
 	}
+	if v, ok := a.db.Setting(settingAnnouncement); ok {
+		a.settings.Store(settingAnnouncement, v)
+	}
+}
+
+// announcementID is a short fingerprint of the notice, "" when there is none: closing one notice must not hide the next.
+func (a *App) announcementID() string {
+	if s := a.announcement(); s != "" {
+		return hashHex(s)[:12]
+	}
+	return ""
+}
+
+// announcement is the notice shown on the dashboard home, "" when there is none.
+func (a *App) announcement() string {
+	if v, ok := a.settings.Load(settingAnnouncement); ok {
+		return v.(string)
+	}
+	return ""
 }
 
 // registration is whether sign-ups are open: the control center's setting
@@ -326,6 +352,7 @@ func (a *App) settingsList() []hopSetting {
 	}
 	return []hopSetting{
 		{Key: settingRegistration, Type: "bool", Value: a.registration(), Default: a.cfg.Registration, Description: "Whether new accounts may be made (sign-up and first sign-on)."},
+		{Key: settingAnnouncement, Type: "string", Value: a.announcement(), Default: "", Description: "A notice at the top of every member's dashboard home, plain text up to 300 characters (empty = none)."},
 		ro("file_mb", "int", a.cfg.FileMB, "Largest attachment in MB; 0 turns attachments off (NOTEHOP_FILE_MB)."),
 		ro("files_total_mb", "int", a.cfg.FilesTotalMB, "Disk budget for all live attachments in MB (NOTEHOP_FILES_TOTAL_MB)."),
 		ro("file_ttl_hours", "int", int(a.cfg.FileTTL.Hours()), "How long an attachment is kept, in hours (NOTEHOP_FILE_TTL_HOURS)."),
@@ -353,10 +380,32 @@ func (a *App) hopPutSettings(w http.ResponseWriter, r *http.Request, body []byte
 		return
 	}
 	for k := range q {
-		if k != settingRegistration {
-			hopFail(w, http.StatusBadRequest, "readonly_setting", "only "+settingRegistration+" can be changed here; the rest comes from the environment")
+		if k != settingRegistration && k != settingAnnouncement {
+			hopFail(w, http.StatusBadRequest, "readonly_setting", "only "+settingRegistration+" and "+settingAnnouncement+" can be changed here; the rest comes from the environment")
 			return
 		}
+	}
+	// Validate everything before writing anything: a bad value changes nothing.
+	var notice *string
+	if v, ok := q[settingAnnouncement]; ok {
+		s, isStr := v.(string)
+		if v == nil {
+			s, isStr = "", true
+		}
+		s = strings.TrimSpace(s)
+		if !isStr || utf8.RuneCountInString(s) > announcementMax {
+			hopFail(w, http.StatusBadRequest, "bad_value", settingAnnouncement+" must be text of at most "+strconv.Itoa(announcementMax)+" characters")
+			return
+		}
+		notice = &s
+	}
+	if notice != nil {
+		if err := a.db.SetSetting(settingAnnouncement, *notice); err != nil {
+			hopServerErr(w, "settings", err)
+			return
+		}
+		a.settings.Store(settingAnnouncement, *notice)
+		a.audit(r, "settings.update", settingAnnouncement, map[string]any{"value": *notice})
 	}
 	if v, ok := q[settingRegistration]; ok {
 		on, isBool := v.(bool)

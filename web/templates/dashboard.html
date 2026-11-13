@@ -1,6 +1,12 @@
 {{define "page"}}dashboard{{end}}
 {{define "content"}}
 <section class="wrap">
+  {{if .Announce}}<!-- a notice from the people who run this site: one card above everything, hidden for a week once closed (dashboard.js) -->
+  <section class="alert info announce" id="announce" data-id="{{.AnnounceID}}" aria-labelledby="announce-h" hidden>
+    <svg><use href="#i-spark"/></svg>
+    <div class="announce-body"><b id="announce-h">{{.L.T "announce.title"}}</b><p>{{.Announce}}</p></div>
+    <button type="button" class="icon-btn sm" id="announce-close" aria-label="{{.L.T "common.close"}}" title="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button>
+  </section>{{end}}
   <div class="page-head">
     <div><h1>{{.L.T "title.dashboard"}}</h1><p class="muted" id="dash-lead">{{.L.T "dash.lead"}}</p></div>
     <div class="btn-row"><a class="btn" href="/security"><svg><use href="#i-key"/></svg>{{.L.T "sec.title"}}</a><a class="btn primary" href="/new"><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a></div>

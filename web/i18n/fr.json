@@ -1626,5 +1626,6 @@
   "reset.go": "Tout supprimer et réinitialiser",
   "reset.done": "Coffre réinitialisé. Créez maintenant une nouvelle clé du coffre.",
   "reset.stale": "Votre connexion doit être vérifiée à nouveau. La page se recharge ; réessayez ensuite.",
-  "reset.link": "Pas de code de récupération ? Réinitialisez le coffre"
+  "reset.link": "Pas de code de récupération ? Réinitialisez le coffre",
+  "announce.title": "Annonce"
 }

@@ -19,7 +19,8 @@ var backPages = map[string]bool{
 
 // dashPages get the signed-in dashboard chrome (sidebar with this app's menu
 // and the HOP family, settings-type top bar) when someone is signed in.
-var dashPages = map[string]bool{"dashboard": true, "vault": true, "new": true, "security": true}
+var dashPages = map[string]bool{"dashboard": true, "vault": true, "new": true, "security": true,
+	"nearby": true, "diff": true, "about": true, "faq": true}
 
 // miniFootPages are the pages people work on: one line of footer instead of
 // the five columns, which stay on the pages that present NoteHop.

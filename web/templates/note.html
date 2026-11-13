@@ -12,7 +12,7 @@
         {{with .WarningReason}}<p>{{.}}</p>{{end}}
         <label><input type="checkbox" name="remember" value="1"> {{.L.T "gate.remember_24h"}}</label>
         <button type="submit" class="btn primary sm">{{if eq .Warning "adult"}}{{.L.T "gate.continue_adult"}}{{else}}{{.L.T "gate.continue_sensitive"}}{{end}}</button>
-        <a href="/" class="btn">{{.L.T "gate.go_back"}}</a>
+        <a href="{{if .User}}/dashboard{{else}}/{{end}}" class="btn">{{.L.T "gate.go_back"}}</a>
       </form>
       {{else if not .Encrypted}}
       <a href="/raw/{{.Token}}" class="btn primary">{{.L.T "gate.continue_sensitive"}}</a>

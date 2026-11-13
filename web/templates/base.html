@@ -44,21 +44,24 @@
 <div class="shell" id="shell">
   <div class="shell-scrim" id="shell-scrim" hidden></div>
   <aside class="shell-side" id="shell-side" aria-label="{{.Site}}">
-    <a class="shell-brand" href="/"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="32" height="32"><span class="hop-name hop-name-notehop">{{.Site}}</span></a>
+    <a class="shell-brand" href="/dashboard"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="32" height="32"><span class="hop-name hop-name-notehop">{{.Site}}</span></a>
     <nav class="shell-nav" aria-label="{{.L.T "nav.main"}}">
       <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}><svg><use href="#i-grid"/></svg>{{.L.T "nav.mine"}}</a>
       <a href="/new" {{if eq .Path "/new"}}aria-current="page"{{end}}><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a>
       <a href="/security" {{if eq .Path "/security"}}aria-current="page"{{end}}><svg><use href="#i-key"/></svg>{{.L.T "sec.title"}}</a>
-      <a href="/nearby"><svg><use href="#i-phone"/></svg>{{.L.T "nearby.title"}}</a>
-      <a href="/diff"><svg><use href="#i-sliders"/></svg>{{.L.T "diffpage.title"}}</a>
-      <a href="/about"><svg><use href="#i-doc"/></svg>{{.L.T "nav.about"}}</a>
-      <a href="/faq"><svg><use href="#i-chat"/></svg>{{.L.T "nav.faq"}}</a>
+      <a href="/nearby" {{if eq .Path "/nearby"}}aria-current="page"{{end}}><svg><use href="#i-phone"/></svg>{{.L.T "nearby.title"}}</a>
+      <a href="/diff" {{if eq .Path "/diff"}}aria-current="page"{{end}}><svg><use href="#i-sliders"/></svg>{{.L.T "diffpage.title"}}</a>
+      <a href="/about" {{if eq .Path "/about"}}aria-current="page"{{end}}><svg><use href="#i-doc"/></svg>{{.L.T "nav.about"}}</a>
+      <a href="/faq" {{if eq .Path "/faq"}}aria-current="page"{{end}}><svg><use href="#i-chat"/></svg>{{.L.T "nav.faq"}}</a>
     </nav>
     <p class="shell-label">{{.L.T "dash.family"}}</p>
     <nav class="shell-nav shell-family" aria-label="{{.L.T "dash.family"}}">
       {{range .HopFamily}}<a href="{{if $.Hub}}{{$.Hub}}/{{if eq .Slug "hub"}}dashboard{{else}}apps/{{.Slug}}{{end}}{{else}}{{.URL}}{{end}}"><img src="{{(index .Icons "mark").URL}}" alt="" width="18" height="18" loading="lazy">{{if eq .Slug "hub"}}HOP ID{{else}}{{.Name}}{{end}}<svg class="out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M8 7h9v9"/></svg></a>{{end}}
     </nav>
-    <p class="shell-side-foot"><a href="/changelog">{{.L.T "changelog.title"}}</a> · <a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a></p>
+    <div class="shell-side-foot">
+      <p><a href="/changelog">{{.L.T "changelog.title"}}</a> · <a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a></p>
+      <a class="part-of" href="https://hel.ink" rel="noopener">{{with hubMark}}<img src="{{.}}" alt="" width="20" height="20" loading="lazy">{{end}}<span>{{partOf (.L.T "footer.part_of")}}</span></a>
+    </div>
   </aside>
   <div class="shell-body">
     <header class="shell-top">
@@ -87,7 +90,6 @@
     </header>
     <main id="main">{{template "mainbody" .}}</main>
     <footer class="shell-foot">
-      <a class="part-of" href="https://hel.ink" rel="noopener">{{with hubMark}}<img src="{{.}}" alt="" width="20" height="20" loading="lazy">{{end}}<span>{{partOf (.L.T "footer.part_of")}}</span></a>
       <nav aria-label="{{.Site}}">
         <a href="/about">{{.L.T "footer.about"}}</a><a href="/faq">{{.L.T "footer.faq"}}</a><a href="/status">{{.L.T "status.title"}}</a><a href="/terms">{{.L.T "terms.title"}}</a><a href="/privacy">{{.L.T "privacy.title"}}</a><a href="/contact">{{.L.T "contact.title"}}</a>
       </nav>
@@ -98,7 +100,7 @@
 {{else}}
 <header class="nav" id="nav">
   <div class="wrap">
-    <a class="brand" href="/"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="28" height="28"><span class="hop-name hop-name-notehop">{{.Site}}</span></a>
+    <a class="brand" href="{{if .User}}/dashboard{{else}}/{{end}}"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="28" height="28"><span class="hop-name hop-name-notehop">{{.Site}}</span></a>
     <nav class="nav-links" aria-label="{{.L.T "nav.main"}}">
       <a href="/new" {{if eq .Path "/new"}}aria-current="page"{{end}}>{{.L.T "nav.new"}}</a>
       <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}>{{.L.T "nav.mine"}}</a>
@@ -220,6 +222,6 @@
     <div class="or"><span>{{.L.T "auth.or_local"}}</span></div>
 {{end}}{{end}}
 {{define "mainbody"}}
-{{if .Back}}<div class="wrap back-row"><a class="back" href="/"><span aria-hidden="true">&larr;</span> {{printf (.L.T "nav.back") .Site}}</a></div>{{end}}
+{{if .Back}}<div class="wrap back-row"><a class="back" href="{{if .User}}/dashboard{{else}}/{{end}}"><span aria-hidden="true">&larr;</span> {{printf (.L.T "nav.back") .Site}}</a></div>{{end}}
 {{template "content" .}}
 {{end}}
