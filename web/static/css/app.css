@@ -162,6 +162,7 @@ main { flex: 1; padding: 28px 0 64px; }
 .menu-list .who { padding: 8px 10px 10px; border-bottom: 1px solid var(--line); margin-bottom: 4px; font-size: .85rem; color: var(--muted); }
 .menu-list .who b { color: var(--text); }
 .burger { display: none; }
+.nav-links .nav-help { display: none; }
 @media (max-width: 760px) {
   .nav-links { display: none; position: absolute; top: 60px; left: 0; right: 0; flex-direction: column; background: var(--panel);
     border-bottom: 1px solid var(--line); padding: 10px 16px 14px; margin: 0; }
@@ -918,7 +919,7 @@ body.sheet-open { overflow: hidden; }
 .adv-group h3 svg, .adv-sub > summary svg { width: 14px; height: 14px; flex: none; }
 .faq details { scroll-margin-top: 80px; }
 .contact-card { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.nearby-pair { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; } .nearby-pair > div { flex: 1 1 220px; } .nearby-pair p { margin: 2px 0 0; } #nb-code { width: 9ch; font: 700 1.2rem ui-monospace, monospace; letter-spacing: .15em; text-align: center; }
+.nearby-pair { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; } .nearby-pair > div { flex: 1 1 220px; } .nearby-pair p { margin: 2px 0 0; } #nb-code { width: 13ch; font: 700 1.2rem ui-monospace, monospace; letter-spacing: .15em; text-align: center; }
 
 /* ---------- note page: one control bar, grouped menu, phone dock ----------
    Everything you can do sits on one line above the note. The chips explain
@@ -1451,9 +1452,12 @@ h1, h2, .note-title h1 { overflow-wrap: anywhere; }
 @media (max-width: 420px) {
   /* the logo alone; the name stays for screen readers */
   .brand { min-width: 44px; justify-content: center; }
-  .brand-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .brand .hop-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .nav .wrap { gap: 6px; }
   .nav-r { gap: 4px; }
+  /* the help menu moves into the burger list: six controls do not fit the bar */
+  #help-menu { display: none; }
+  .nav-links .nav-help { display: block; }
 }
 /* The bars fixed to the bottom must not cover the last lines of the page (the language links). */
 @media (max-width: 640px) {

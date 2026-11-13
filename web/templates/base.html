@@ -104,6 +104,8 @@
       <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}>{{.L.T "nav.mine"}}</a>
       <a href="/diff" {{if eq .Path "/diff"}}aria-current="page"{{end}}>{{.L.T "diffpage.title"}}</a>
       <a href="/nearby" {{if eq .Path "/nearby"}}aria-current="page"{{end}}>{{.L.T "nearby.title"}}</a>
+      <a class="nav-help" href="/about" {{if eq .Path "/about"}}aria-current="page"{{end}}>{{.L.T "nav.about"}}</a>
+      <a class="nav-help" href="/faq" {{if eq .Path "/faq"}}aria-current="page"{{end}}>{{.L.T "nav.faq"}}</a>
     </nav>
     <div class="nav-r">
       <div class="menu" id="help-menu">
