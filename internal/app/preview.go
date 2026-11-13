@@ -104,7 +104,7 @@ func (a *App) preview(w http.ResponseWriter, r *http.Request, title, desc string
 	l := a.locale(w, r)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
-	w.Header().Set("X-Robots-Tag", "noindex, nofollow")
+	w.Header().Set("X-Robots-Tag", noIndex)
 	_ = previewTmpl.Execute(w, struct {
 		Title, Desc, Site, Origin, Lang string
 	}{Title: title, Desc: desc, Site: a.cfg.Site, Origin: a.origin(r), Lang: l.Code})

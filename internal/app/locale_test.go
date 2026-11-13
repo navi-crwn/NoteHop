@@ -6,6 +6,7 @@ import (
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -165,10 +166,10 @@ func TestLocaleExplicitChoiceWins(t *testing.T) {
 	defer res.Body.Close()
 	b, _ := io.ReadAll(res.Body)
 	if got := htmlLang(string(b)); got != "id" {
-		t.Fatalf("nh_lang=id cookie: html lang = %q, want id", got)
+		t.Fatalf("hop_lang=id cookie: html lang = %q, want id", got)
 	}
 	if !strings.Contains(pageTitle(string(b)), "Catatan baru") {
-		t.Fatalf("nh_lang=id cookie: title %q does not contain Indonesian title", pageTitle(string(b)))
+		t.Fatalf("hop_lang=id cookie: title %q does not contain Indonesian title", pageTitle(string(b)))
 	}
 
 	// Cookie wins over a conflicting Accept-Language header.
@@ -181,7 +182,7 @@ func TestLocaleExplicitChoiceWins(t *testing.T) {
 	defer conflictRes.Body.Close()
 	conflictBody, _ := io.ReadAll(conflictRes.Body)
 	if got := htmlLang(string(conflictBody)); got != "id" {
-		t.Fatalf("nh_lang=id cookie vs fr-CA header: html lang = %q, want id", got)
+		t.Fatalf("hop_lang=id cookie vs fr-CA header: html lang = %q, want id", got)
 	}
 
 	// ?lang= still overrides a conflicting Accept-Language header.
@@ -206,16 +207,16 @@ func TestLocaleExplicitChoiceWins(t *testing.T) {
 	cookies := jar.Cookies(set.URL)
 	var langCookie *http.Cookie
 	for _, c := range cookies {
-		if c.Name == "nh_lang" {
+		if c.Name == "hop_lang" {
 			langCookie = c
 			break
 		}
 	}
 	if langCookie == nil {
-		t.Fatalf("expected nh_lang cookie to be set, got cookies: %v", cookies)
+		t.Fatalf("expected hop_lang cookie to be set, got cookies: %v", cookies)
 	}
 	if langCookie.Value != "id" {
-		t.Fatalf("nh_lang cookie value = %q, want id", langCookie.Value)
+		t.Fatalf("hop_lang cookie value = %q, want id", langCookie.Value)
 	}
 }
 
@@ -231,8 +232,8 @@ func TestLocaleInvalidFallback(t *testing.T) {
 	// An unsupported cookie falls back to English without panic.
 	srv, captured := newTestAppWithCookieCapture(t)
 	jar, _ := cookiejar.New(nil)
-	jar.SetCookies(mustURL(srv.URL+"/new"), []*http.Cookie{{Name: "nh_lang", Value: "xx"}})
-	assertJarContains(t, jar, mustURL(srv.URL+"/new"), "nh_lang", "xx")
+	jar.SetCookies(mustURL(srv.URL+"/new"), []*http.Cookie{{Name: "hop_lang", Value: "xx"}})
+	assertJarContains(t, jar, mustURL(srv.URL+"/new"), "hop_lang", "xx")
 	client := &http.Client{Jar: jar}
 	req, _ := http.NewRequest("GET", srv.URL+"/new", nil)
 	req.Header.Set("Accept-Language", "id-ID,id;q=0.9")
@@ -243,18 +244,18 @@ func TestLocaleInvalidFallback(t *testing.T) {
 	defer res.Body.Close()
 	b, _ := io.ReadAll(res.Body)
 	if got := htmlLang(string(b)); got != "en" {
-		t.Fatalf("unsupported nh_lang=xx cookie: html lang = %q, want en", got)
+		t.Fatalf("unsupported hop_lang=xx cookie: html lang = %q, want en", got)
 	}
 	// Verify the cookie was actually transported to the server.
 	found := false
 	for _, c := range *captured {
-		if strings.Contains(c, "nh_lang=xx") {
+		if strings.Contains(c, "hop_lang=xx") {
 			found = true
 			break
 		}
 	}
 	if !found {
-		t.Fatalf("server never received nh_lang=xx cookie; captured Cookie headers: %v", *captured)
+		t.Fatalf("server never received hop_lang=xx cookie; captured Cookie headers: %v", *captured)
 	}
 }
 
@@ -312,14 +313,14 @@ func TestNineLanguages(t *testing.T) {
 		}
 		if want == "en" {
 			for _, c := range res.Cookies() {
-				if c.Name == "nh_lang" {
+				if c.Name == "hop_lang" {
 					t.Errorf("?lang=%s must not set the language cookie, got %q", q, c.Value)
 				}
 			}
 		}
 	}
 	req, _ := http.NewRequest("GET", srv.URL+"/new", nil)
-	req.AddCookie(&http.Cookie{Name: "nh_lang", Value: "pt"})
+	req.AddCookie(&http.Cookie{Name: "hop_lang", Value: "pt"})
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatal(err)
@@ -334,5 +335,84 @@ func TestNineLanguages(t *testing.T) {
 	}
 	if _, res := fetch(t, srv, "/i18n/ar.js", ""); res.StatusCode != 404 {
 		t.Errorf("/i18n/ar.js: %d, want 404", res.StatusCode)
+	}
+}
+
+// The family cookie contract: hop_lang is plain text, Domain=.hel.ink only on a hel.ink host,
+// written once per response, and the old nh_lang cookie is carried over.
+func TestLangCookieFamilyContract(t *testing.T) {
+	srv := newTestApp(t)
+	get := func(host, path string, cookies ...*http.Cookie) (string, []string) {
+		req, _ := http.NewRequest("GET", srv.URL+path, nil)
+		if host != "" {
+			req.Host = host
+		}
+		for _, c := range cookies {
+			req.AddCookie(c)
+		}
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, _ := io.ReadAll(res.Body)
+		res.Body.Close()
+		var set []string
+		for _, v := range res.Header.Values("Set-Cookie") {
+			if strings.HasPrefix(v, "hop_lang=") {
+				set = append(set, v)
+			}
+		}
+		return string(b), set
+	}
+	// Once per response, host-only on localhost, never HttpOnly.
+	_, set := get("", "/new?lang=zh")
+	if len(set) != 1 {
+		t.Fatalf("?lang=zh: hop_lang sent %d times, want 1: %v", len(set), set)
+	}
+	if !strings.HasPrefix(set[0], "hop_lang=zh-CN;") || strings.Contains(set[0], "Domain") || strings.Contains(set[0], "HttpOnly") ||
+		!strings.Contains(set[0], "Max-Age=31536000") || !strings.Contains(set[0], "SameSite=Lax") {
+		t.Errorf("localhost cookie = %q", set[0])
+	}
+	// A hel.ink host: shared domain and Secure.
+	for _, host := range []string{"note.hel.ink", "hel.ink", "note.hel.ink:443"} {
+		_, set = get(host, "/new?lang=de")
+		if len(set) != 1 || !strings.Contains(set[0], "Domain=hel.ink") || !strings.Contains(set[0], "Secure") {
+			t.Errorf("%s: cookie = %v, want Domain=hel.ink and Secure", host, set)
+		}
+	}
+	_, set = get("nothel.ink", "/new?lang=de")
+	if len(set) != 1 || strings.Contains(set[0], "Domain") {
+		t.Errorf("nothel.ink must stay host-only: %v", set)
+	}
+	// The cookie decides the page; an old nh_lang is used, and hop_lang is written from it.
+	body, set := get("", "/new", &http.Cookie{Name: "hop_lang", Value: "ja"}, &http.Cookie{Name: "nh_lang", Value: "fr"})
+	if htmlLang(body) != "ja" || len(set) != 0 {
+		t.Errorf("hop_lang=ja must win and not be rewritten: lang %q set %v", htmlLang(body), set)
+	}
+	body, set = get("", "/new", &http.Cookie{Name: "nh_lang", Value: "fr"})
+	if htmlLang(body) != "fr" || len(set) != 1 || !strings.HasPrefix(set[0], "hop_lang=fr;") {
+		t.Errorf("old nh_lang=fr: lang %q set %v", htmlLang(body), set)
+	}
+	body, set = get("", "/new", &http.Cookie{Name: "nh_lang", Value: "pt"})
+	if htmlLang(body) != "pt-BR" || len(set) != 1 || !strings.HasPrefix(set[0], "hop_lang=pt-BR;") {
+		t.Errorf("old nh_lang=pt must be written as pt-BR: lang %q set %v", htmlLang(body), set)
+	}
+}
+
+// The theme reader and the writers read and write the family cookie hop_theme.
+func TestThemeScriptUsesFamilyCookie(t *testing.T) {
+	for file, want := range map[string][]string{
+		"../../web/static/js/theme.js": {"hop_theme", "localStorage.getItem('theme')", "domain=.hel.ink"},
+		"../../web/static/js/app.js":   {"hopPref('hop_theme'", "hopPref('hop_lang'"},
+	} {
+		b, err := os.ReadFile(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, w := range want {
+			if !strings.Contains(string(b), w) {
+				t.Errorf("%s lacks %q", file, w)
+			}
+		}
 	}
 }

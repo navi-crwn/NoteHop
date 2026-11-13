@@ -61,6 +61,7 @@ async function readLink(p) {
   const L = await logs(p);
   ok('console shows logs with file:line', L.some(x => x.startsWith('hello {"a":1}') && x.endsWith('app.js:1')), L[0]);
   ok('the code cannot touch the note page', L.some(x => x.startsWith('parent blocked')));
+  ok('blocked internet request is named in the console, once, with a note under the badge', L.filter(x => x.startsWith('Blocked network request: https://example.com')).length === 1 && await p.isVisible('.wr-blocked'), L.join(' | ').slice(0, 200));
   ok('no storage, no cookies', L.some(x => x.startsWith('storage blocked')) && L.some(x => x.startsWith('cookie blocked')));
   ok('no internet', L.some(x => x.startsWith('net blocked')) && !L.some(x => x.includes('net OPEN')));
   ok('cannot navigate the tab', L.some(x => x.startsWith('top blocked')) && /\/new/.test(p.url()));

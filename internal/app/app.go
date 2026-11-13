@@ -321,6 +321,9 @@ type pageData struct {
 	Stale         bool // a HOP ID session the account server has not vouched for lately: the page may re-check once
 	Reg           bool
 	NoIndex       bool
+	Alternates    []langLink     // that page in each language (hreflang)
+	Canonical     string         // an indexable page's own address (pages.go); empty on every other page
+	WebApp        map[string]any // home page: structured data for search engines
 	Token         string
 	Mode          string
 	SSO           bool // show "Continue with <SSOName>"
@@ -400,6 +403,16 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 		d.Hub = strings.TrimRight(a.cfg.SSOURL, "/")
 	}
 	d.Origin = a.origin(r)
+	// Only an indexable page that rendered as itself may be listed; anything else says so twice (header and tag).
+	d.NoIndex = d.NoIndex || status != http.StatusOK || !indexablePage[r.URL.Path]
+	if d.NoIndex {
+		w.Header().Set("X-Robots-Tag", noIndex)
+	} else {
+		d.Canonical, d.Alternates = a.canonical(r)
+		if name == "home" {
+			d.WebApp = a.webApp(r, d.L)
+		}
+	}
 	d.Main, d.Share = a.cfg.BaseURL, a.shareURL()
 	d.LinkHost = strings.TrimPrefix(strings.TrimPrefix(cmp.Or(d.Share, d.Origin), "https://"), "http://")
 	d.HopFonts, d.HopFamily = hopFonts(), hopFamily("notehop")
@@ -559,25 +572,64 @@ func assetVersion() string {
 
 // ---------- language ----------
 
-const langCookie = "nh_lang"
+// langCookie is the family language cookie (shared on .hel.ink, plain text, read by scripts too);
+// oldLangCookie is the one this app used before and is still read, once, to carry a choice over.
+const langCookie = "hop_lang"
+const oldLangCookie = "nh_lang"
+
+// onFamilyHost says whether the request came in on hel.ink or a subdomain: only then do the family
+// cookies carry Domain=.hel.ink. Self-hosted copies and localhost keep them host-only.
+func onFamilyHost(r *http.Request) bool {
+	h := r.Host
+	if i := strings.LastIndexByte(h, ':'); i >= 0 && !strings.Contains(h[i:], "]") {
+		h = h[:i]
+	}
+	h = strings.ToLower(h)
+	return h == "hel.ink" || strings.HasSuffix(h, ".hel.ink")
+}
+
+// setLangCookie writes hop_lang once per response, however many times the page asks for its locale.
+func (a *App) setLangCookie(w http.ResponseWriter, r *http.Request, code string) {
+	for _, v := range w.Header().Values("Set-Cookie") {
+		if strings.HasPrefix(v, langCookie+"=") {
+			return
+		}
+	}
+	c := &http.Cookie{Name: langCookie, Value: code, Path: "/", MaxAge: 365 * 24 * 3600, Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode}
+	if onFamilyHost(r) {
+		c.Domain, c.Secure = ".hel.ink", true
+	}
+	http.SetCookie(w, c)
+}
 
 // locale is the reader's language. The order of precedence is:
 //  1. explicit ?lang= query (remembered in a cookie),
-//  2. explicit nh_lang cookie from a previous choice,
-//  3. English (the anonymous default; Accept-Language is not used).
+//  2. the family cookie hop_lang from a previous choice,
+//  3. the old nh_lang cookie (and hop_lang is written from it),
+//  4. English (the anonymous default; Accept-Language is not used).
 //
 // Explicit choices must be a supported language code. Invalid values fall
 // back to English, and they do not overwrite a previously valid cookie.
 func (a *App) locale(w http.ResponseWriter, r *http.Request) i18n.Locale {
 	if q, ok := i18n.Resolve(r.URL.Query().Get("lang")); ok {
-		http.SetCookie(w, &http.Cookie{Name: langCookie, Value: q, Path: "/", MaxAge: 365 * 24 * 3600,
-			Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode})
+		a.setLangCookie(w, r, q)
 		return i18n.Locale{Lang: i18n.Get(q)}
 	}
 	code := i18n.Default
+	found := false
 	if c, err := r.Cookie(langCookie); err == nil {
 		if resolved, ok := i18n.Resolve(c.Value); ok {
-			code = resolved
+			code, found = resolved, true
+		}
+	}
+	if !found {
+		if c, err := r.Cookie(oldLangCookie); err == nil {
+			if resolved, ok := i18n.Resolve(c.Value); ok {
+				code = resolved
+				if _, err := r.Cookie(langCookie); err != nil {
+					a.setLangCookie(w, r, resolved)
+				}
+			}
 		}
 	}
 	w.Header().Add("Vary", "Cookie")
@@ -621,7 +673,7 @@ func mermaidFrame(w http.ResponseWriter, r *http.Request) {
 	h.Set("X-Frame-Options", "SAMEORIGIN")
 	h.Set("Content-Type", "text/html; charset=utf-8")
 	h.Set("Cache-Control", "public, max-age=3600")
-	io.WriteString(w, `<!doctype html><meta charset="utf-8"><title>Mermaid</title>`+
+	io.WriteString(w, `<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>Mermaid</title>`+
 		`<script src="/static/vendor/mermaid.min.js"></script><script src="/static/js/mermaid-frame.js"></script>`)
 }
 
@@ -641,7 +693,7 @@ func runFrame(w http.ResponseWriter, r *http.Request) {
 	h.Set("X-Frame-Options", "SAMEORIGIN")
 	h.Set("Content-Type", "text/html; charset=utf-8")
 	h.Set("Cache-Control", "no-store")
-	io.WriteString(w, `<!doctype html><meta charset="utf-8"><title>Run</title><script src="/static/js/run-frame.js"></script>`)
+	io.WriteString(w, `<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>Run</title><script src="/static/js/run-frame.js"></script>`)
 }
 
 // serviceWorker serves the worker from the site root (so it may control every

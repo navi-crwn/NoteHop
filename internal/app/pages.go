@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/navi-crwn/NoteHop/internal/i18n"
 )
 
 // backPages are the inner pages that show a "Back to NoteHop" link (U-06).
@@ -51,15 +53,97 @@ func (a *App) statusPage(w http.ResponseWriter, r *http.Request) {
 	a.render(w, r, code, "status", pageData{Title: l.T("status.title"), Status: s})
 }
 
-// sitemap lists the static public pages only. No note, profile or link name is
-// ever listed.
+// indexablePages are the only addresses a search engine may list: the pages
+// that present NoteHop. The same list is the sitemap, decides which pages get a
+// canonical link, and is the exception to the "noindex" every other response
+// carries. A note (/TOKEN, /link-name, /n/, /raw/, /mock/), a profile, an
+// account page, a file, the API and any route added later are not in it.
+var indexablePages = []string{"/", "/new", "/secret", "/embargo", "/about", "/features", "/faq", "/nearby", "/diff", "/changelog", "/contact", "/terms", "/privacy"}
+
+var indexablePage = func() map[string]bool {
+	m := make(map[string]bool, len(indexablePages))
+	for _, p := range indexablePages {
+		m[p] = true
+	}
+	return m
+}()
+
+// noIndex is the X-Robots-Tag of everything that is not an indexable page.
+const noIndex = "noindex, nofollow, noarchive"
+
+// crawlable reports whether a path is answered without X-Robots-Tag: an
+// indexable page, a file such a page is built from (styles, scripts, images,
+// text catalogs) or one of the files crawlers ask for by name.
+func crawlable(p string) bool {
+	switch p {
+	case "/robots.txt", "/sitemap.xml", "/manifest.webmanifest", "/sw.js":
+		return true
+	}
+	return indexablePage[p] || strings.HasPrefix(p, "/static/") || strings.HasPrefix(p, "/i18n/")
+}
+
+// langLink is one language's address of a page, for <link rel="alternate" hreflang>.
+type langLink struct{ Lang, URL string }
+
+// canonical is the address a search engine should list for an indexable public page: the configured
+// base URL and the path, plus ?lang=<code> only when the request itself carried one of the eight
+// non-English codes (pt means pt-BR); every other query parameter is dropped. English is the default
+// language and lives at the bare address, so ?lang=en has the bare canonical (family rule, amended
+// 2026-11-13). ?lang=<code> always answers in that language, so it is a real per-language address.
+// The alternates are the nine languages (en and x-default are both the bare address); the sitemap
+// lists the same links.
+func (a *App) canonical(r *http.Request) (string, []langLink) {
+	page := strings.TrimRight(a.origin(r), "/") + r.URL.Path
+	self := page
+	if q, ok := i18n.Resolve(r.URL.Query().Get("lang")); ok && q != "en" {
+		self = page + "?lang=" + q
+	}
+	return self, alternates(page)
+}
+
+func alternates(page string) []langLink {
+	out := make([]langLink, 0, len(i18n.Langs)+1)
+	for _, l := range i18n.Langs {
+		href := page + "?lang=" + l.Code
+		if l.Code == "en" {
+			href = page
+		}
+		out = append(out, langLink{l.Code, href})
+	}
+	return append(out, langLink{"x-default", page})
+}
+
+// webApp is the home page's structured data (schema.org WebApplication). It is
+// a JSON data block, not a script: the content security policy has no say over it.
+func (a *App) webApp(r *http.Request, l i18n.Locale) map[string]any {
+	return map[string]any{
+		"@context":            "https://schema.org",
+		"@type":               "WebApplication",
+		"name":                a.cfg.Site,
+		"url":                 strings.TrimRight(a.origin(r), "/") + "/",
+		"image":               strings.TrimRight(a.origin(r), "/") + "/static/img/og.png",
+		"inLanguage":          []string{"en", "zh-CN", "de", "id", "ja", "pt-BR", "es", "fr", "ru"},
+		"description":         l.T("meta.desc_new"),
+		"applicationCategory": "UtilitiesApplication",
+		"operatingSystem":     "Any",
+		"offers":              map[string]any{"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+		"publisher":           map[string]any{"@type": "Organization", "name": "HEL.ink", "url": "https://hel.ink"},
+	}
+}
+
+// sitemap lists the indexable pages, each once. No note, profile or link name
+// is ever listed.
 func (a *App) sitemap(w http.ResponseWriter, r *http.Request) {
 	base := strings.TrimRight(a.origin(r), "/")
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, max-age=3600")
-	io.WriteString(w, `<?xml version="1.0" encoding="UTF-8"?>`+"\n"+`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`+"\n")
-	for _, p := range []string{"/", "/new", "/secret", "/embargo", "/about", "/features", "/faq", "/nearby", "/diff", "/changelog", "/contact", "/terms", "/privacy"} {
-		io.WriteString(w, "<url><loc>"+base+p+"</loc></url>\n")
+	io.WriteString(w, `<?xml version="1.0" encoding="UTF-8"?>`+"\n"+`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">`+"\n")
+	for _, p := range indexablePages {
+		io.WriteString(w, "<url><loc>"+base+p+"</loc>")
+		for _, l := range alternates(base + p) {
+			io.WriteString(w, `<xhtml:link rel="alternate" hreflang="`+l.Lang+`" href="`+l.URL+`"/>`)
+		}
+		io.WriteString(w, "</url>\n")
 	}
 	io.WriteString(w, "</urlset>\n")
 }

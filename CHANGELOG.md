@@ -4,6 +4,17 @@ What changed in NoteHop, newest first. Each entry links to its pull request.
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-11-12
+
+### Fixed
+- The main buttons (`.btn.primary`) no longer show a bright line on their right edge: the gradient is now painted to the border box instead of repeating under the 1 px transparent border.
+- The Web note result box says what it blocked. When the code asks for a picture, script, font, style sheet or network request from the internet, the console lists it once (in your language) and a line under "No internet" points to an uploaded attachment or a `data:` address. The box itself is unchanged: no internet, no same-origin access.
+- The language cookie is written once per response, not twice.
+- Search engines: every note response (page, password or code prompt, old link, raw, mock, API, attachment, frames, errors, missing notes) and every account page answers with `X-Robots-Tag: noindex, nofollow, noarchive`; only the public pages (home, `/new`, `/secret`, `/embargo`, the info and tool pages) can be listed, and any route added later is `noindex` until it is named in the list. Those pages carry an absolute canonical link (no other query parameter), `og:url`, an absolute `og:image` and `twitter:card`; the home page has `WebApplication` structured data. `?lang=<code>` is the address of a page in one language: the canonical carries it only when the request did and the language is not English (English lives at the bare address, which is also `x-default`), every public page lists the nine `hreflang` alternates plus `x-default`, and so does the sitemap. `/secret` and `/embargo` keep their own titles and are in the sitemap, which lists every public page and nothing else.
+
+### Changed
+- Theme and language are now shared across the HOP family: the cookies `hop_theme` (light or dark, written by the theme button) and `hop_lang` (replaces `nh_lang`, which is still read once and carried over) carry `Domain=.hel.ink` on `hel.ink` hosts and stay host-only everywhere else, so self-hosted copies need no setting. The old `theme` storage key is still read and written.
+
 ## [1.3.0] - 2026-11-12
 
 ### Added
@@ -243,7 +254,8 @@ The sections below make up this release. The dated headings are the days the wor
 - Developer tools: `/raw`, the `notehop` CLI, mock API, webhooks in and out, SSH, Telegram bot, installable app (PWA).
 - Optional zero-knowledge accounts, single sign-on, 9 languages, name rules and abuse tools, VPS installer with daily backups.
 
-[Unreleased]: https://github.com/navi-crwn/NoteHop/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/navi-crwn/NoteHop/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/navi-crwn/NoteHop/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/navi-crwn/NoteHop/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/navi-crwn/NoteHop/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/navi-crwn/NoteHop/compare/v1.0.0...v1.1.0

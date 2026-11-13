@@ -217,6 +217,7 @@
     var root = document.documentElement;
     var dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
     root.dataset.theme = dark ? 'light' : 'dark';
+    window.hopPref('hop_theme', root.dataset.theme);
     try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
   });
   var burger = document.getElementById('burger'), nav = document.getElementById('nav');
@@ -261,7 +262,7 @@
   NH.$$('[data-lang]').forEach(function (a) {
     a.addEventListener('click', function (e) {
       e.preventDefault();
-      document.cookie = 'nh_lang=' + a.dataset.lang + '; path=/; max-age=31536000; samesite=lax' + (location.protocol === 'https:' ? '; secure' : '');
+      window.hopPref('hop_lang', a.dataset.lang);
       location.reload();
     });
   });

@@ -60,7 +60,8 @@
     'function send(l,a,w){try{P.postMessage({nh:"log",level:l,args:Array.prototype.map.call(a,f),at:w||at()},"*")}catch(e){}}' +
     '["log","info","warn","error","debug"].forEach(function(l){var o=console[l];console[l]=function(){send(l==="debug"?"log":l,arguments);if(o)o.apply(console,arguments)}});' +
     'addEventListener("error",function(e){send("error",[e.message],e.filename?String(e.filename).split("/").pop()+":"+e.lineno:"")});' +
-    'addEventListener("unhandledrejection",function(e){send("error",["Uncaught (in promise) "+f(e.reason)],"")})})();<\/script>';
+    'addEventListener("unhandledrejection",function(e){send("error",["Uncaught (in promise) "+f(e.reason)],"")});' +
+    'document.addEventListener("securitypolicyviolation",function(e){try{P.postMessage({nh:"log",blocked:{d:String(e.effectiveDirective||e.violatedDirective||""),u:String(e.blockedURI||"").slice(0,300)}},"*")}catch(x){}})})();<\/script>';
 
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function page(files) {
@@ -113,11 +114,13 @@
     var clear = h('button.link-btn', { type: 'button' }, NH.t('web.clear'));
     clear.addEventListener('click', function () { list.replaceChildren(); count = 0; cnt.textContent = '0'; });
     wrap.dataset.device = device;
+    // One line under the bar once something was blocked: the box has no internet on purpose.
+    var blockedNote = h('p.wr-blocked', { hidden: true }, NH.t('web.blocked_note')), seen = {};
     stage.appendChild(wrap);
     el.append(
       h('div.wr-bar', h('span.wr-addr', NH.icon('shield'), NH.t('web.result')),
         h('span.wr-net', { title: NH.t('web.no_net_hint') }, h('i'), NH.t('web.no_net')), devs, again, full),
-      stage,
+      blockedNote, stage,
       h('div.wr-cons', h('div.wr-cons-head', NH.icon('code'), h('b', NH.t('web.console')), cnt, h('span.sp'), clear), list));
     function idle(node) { wrap.replaceChildren(node || h('p.wr-idle', NH.t('web.idle'))); }
     idle();
@@ -129,9 +132,20 @@
       list.appendChild(h('li.' + level, h('span', text), at ? h('span.wr-at', at) : ''));
       list.scrollTop = list.scrollHeight;
     }
+    // A CSP block inside the frame, told once per kind and address, in the reader's language.
+    var KINDS = [['img-src', 'img'], ['script-src', 'script'], ['font-src', 'font'], ['connect-src', 'net'], ['style-src', 'style'], ['media-src', 'media']];
+    function blocked(b) {
+      var d = String(b.d || '').slice(0, 40), u = String(b.u || '').slice(0, 300), kind = 'other';
+      KINDS.forEach(function (k) { if (d.indexOf(k[0]) === 0) kind = k[1]; });
+      if (seen[d + ' ' + u]) return;
+      seen[d + ' ' + u] = 1;
+      log('warn', NH.t('web.blocked', { what: NH.t('web.blk_' + kind), uri: u }), '');
+      blockedNote.hidden = false;
+    }
     window.addEventListener('message', function (e) {
       if (!frameWin || e.source !== frameWin || !e.data) return;
-      if (e.data.nh === 'ready' && pending != null) { frameWin.postMessage({ nh: 'run', html: pending }, '*'); pending = null; }
+      if (e.data.nh === 'log' && e.data.blocked && typeof e.data.blocked === 'object') blocked(e.data.blocked);
+      else if (e.data.nh === 'ready' && pending != null) { frameWin.postMessage({ nh: 'run', html: pending }, '*'); pending = null; }
       else if (e.data.nh === 'log') log(['warn', 'error', 'info'].indexOf(e.data.level) !== -1 ? e.data.level : 'log',
         (e.data.args || []).map(String).join(' ').slice(0, 4000), String(e.data.at || '').slice(0, 60));
     });
@@ -145,6 +159,8 @@
       list.replaceChildren();
       count = 0;
       cnt.textContent = '0';
+      seen = {};
+      blockedNote.hidden = true;
     }
     return { el: el, run: run, idle: idle, frame: function () { return frame; } };
   }
