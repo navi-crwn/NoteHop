@@ -276,7 +276,10 @@
     if (vault && sealed.length && sealed.every(function (x) { return x.why === 'mismatch'; })) {
       var again = h('button.btn.sm', { type: 'button' }, NH.icon('key'), NH.t('dash.vault_enter_again'));
       again.addEventListener('click', enterAgain);
-      $('#vault-mismatch').replaceChildren(NH.icon('lock'), h('span', NH.t('dash.vault_mismatch')), again);
+      var kids = [NH.icon('lock'), h('span', NH.t('dash.vault_mismatch')), again];
+      // A HOP ID account that lost its vault key and has no recovery code can start again (security page).
+      if (document.body.dataset.sso) kids.push(h('a.btn.sm', { href: '/security#reset' }, NH.t('reset.link')));
+      $('#vault-mismatch').replaceChildren.apply($('#vault-mismatch'), kids);
       $('#vault-mismatch').classList.remove('hide');
     }
     draw();

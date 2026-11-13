@@ -1094,6 +1094,9 @@ body.sheet-open { overflow: hidden; }
 /* ---------- security page and account recovery ---------- */
 .sec-card { margin-bottom: 16px; }
 .sec-card h2 { margin: 0 0 4px; font-size: 1.2rem; }
+.sec-danger { border-color: color-mix(in srgb, var(--red) 40%, var(--line)); }
+.reset-list { margin: 0 0 12px; padding-inline-start: 1.2rem; }
+.reset-list li { margin: 2px 0; }
 .sec-card > p.muted { margin: 0 0 14px; }
 .sec-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .rec-state { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font-size: .78rem; font-weight: 700; }
