@@ -1636,5 +1636,9 @@
   "changelog.t_removed": "削除",
   "changelog.t_deprecated": "非推奨",
   "err.reset_recheck": "ノートを守るため、リセットには直近数分以内に HOP ID が確認したログインが必要です。ログアウトして HOP ID で入り直し、もう一度お試しください。",
-  "reset.other_device": "ほかの端末で保管庫がまだ開いている場合は、そちらを使ってください。何も失わずに新しいキーを設定できます。"
+  "reset.other_device": "ほかの端末で保管庫がまだ開いている場合は、そちらを使ってください。何も失わずに新しいキーを設定できます。",
+  "palette.label": "配色",
+  "palette.classic": "クラシック",
+  "palette.mist": "ミスト",
+  "palette.sand": "サンド"
 }

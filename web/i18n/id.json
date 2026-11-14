@@ -1636,5 +1636,9 @@
   "changelog.t_removed": "Dihapus",
   "changelog.t_deprecated": "Usang",
   "err.reset_recheck": "Untuk melindungi catatanmu, reset memerlukan masuk yang dikonfirmasi HOP ID dalam beberapa menit terakhir. Keluar, masuk lagi dengan HOP ID, lalu coba sekali lagi.",
-  "reset.other_device": "Jika perangkat lain masih membuka brankas, pakai perangkat itu saja: di sana kamu bisa membuat kunci baru tanpa kehilangan apa pun."
+  "reset.other_device": "Jika perangkat lain masih membuka brankas, pakai perangkat itu saja: di sana kamu bisa membuat kunci baru tanpa kehilangan apa pun.",
+  "palette.label": "Warna",
+  "palette.classic": "Klasik",
+  "palette.mist": "Kabut",
+  "palette.sand": "Pasir"
 }

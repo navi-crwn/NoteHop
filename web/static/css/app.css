@@ -21,6 +21,10 @@
   --amber: #fbbf24;
   --green: #34d399;
   --grad: linear-gradient(120deg, var(--lime), var(--cyan) 45%, var(--violet));
+  /* The main button: the classic green, cyan and violet, with the violet end a little deeper in the dark theme, where
+     its full strength read as a bright block at the right end. */
+  --btn-bg: linear-gradient(100deg, var(--lime), var(--cyan) 52%, light-dark(var(--violet), color-mix(in srgb, var(--violet) 78%, #2a1a60)));
+  --btn-fg: #061016;
   --accent: var(--cyan);
   --on-accent: #041014;
   /* HOP control standard (2026-11-09): one shape and one height scale for every input, select and button. */
@@ -78,6 +82,25 @@
     --hl-kw: #7c3aed; --hl-str: #3f6212; --hl-num: #b45309; --hl-fn: #0e7490; --hl-com: #656b7e; --hl-attr: #be185d; --tc-orange: #ea580c; --tc-blue: #2563eb; --tc-gray: #6b7280;
     color-scheme: light;
   }
+}
+
+/* ---------- colour palettes ----------
+   Light or dark follows the family cookie (hop_theme); the palette is NoteHop's own choice (localStorage nh_palette,
+   set on <html data-palette> before the page paints). No attribute = the classic palette above. A palette only
+   changes tokens: the buttons, links, focus rings and highlights all read them. light-dark() picks by colour-scheme. */
+:root[data-palette="mist"] {
+  --btn-bg: linear-gradient(135deg, light-dark(#4f5bd5, #9aaeff), light-dark(#2f74b8, #86c8f3));
+  --btn-fg: light-dark(#ffffff, #0a1022);
+  --grad: var(--btn-bg);
+  --accent: light-dark(#3f4fc4, #9aaeff); --on-accent: var(--btn-fg);
+  --lime: light-dark(#3f7d6a, #9ed4c0); --cyan: light-dark(#2f74b8, #86c8f3); --violet: light-dark(#4f5bd5, #9aaeff); --violet-text: light-dark(#4f5bd5, #b4c2ff);
+}
+:root[data-palette="sand"] {
+  --btn-bg: linear-gradient(135deg, light-dark(#b4532a, #f3b48c), light-dark(#a2406f, #ea9fb0));
+  --btn-fg: light-dark(#ffffff, #1b0f0a);
+  --grad: var(--btn-bg);
+  --accent: light-dark(#a8481f, #f3b48c); --on-accent: var(--btn-fg);
+  --lime: light-dark(#8a6a1f, #e6cf8f); --cyan: light-dark(#a2406f, #ea9fb0); --violet: light-dark(#b4532a, #f3b48c); --violet-text: light-dark(#a2406f, #f3b8c4);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -161,6 +184,15 @@ main { flex: 1; padding: 28px 0 64px; }
 .menu-list a:hover, .menu-list button:hover { background: var(--panel-2); text-decoration: none; }
 .menu-list .who { padding: 8px 10px 10px; border-bottom: 1px solid var(--line); margin-bottom: 4px; font-size: .85rem; color: var(--muted); }
 .menu-list .who b { color: var(--text); }
+.menu-list .pal { margin-top: 4px; padding: 8px 10px 4px; border-top: 1px solid var(--line); }
+.menu-list .pal > span { display: block; margin-bottom: 6px; font-size: .75rem; color: var(--muted); }
+.menu-list .pal div { display: flex; gap: 6px; }
+.menu-list .pal button { flex: 1; width: auto; min-height: 36px; padding: 4px 6px; justify-content: center; gap: 6px; border: 1px solid var(--line-2); font-size: .8rem; }
+.menu-list .pal button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
+.menu-list .pal i { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+.sw-classic { background: linear-gradient(135deg, #a3e635, #22d3ee, #8b5cf6); }
+.sw-mist { background: linear-gradient(135deg, #4f5bd5, #86c8f3); }
+.sw-sand { background: linear-gradient(135deg, #b4532a, #ea9fb0); }
 .burger { display: none; }
 .nav-links .nav-help { display: none; }
 @media (max-width: 760px) {
@@ -186,8 +218,11 @@ footer a:hover { color: var(--text); }
 .btn:hover { text-decoration: none; border-color: color-mix(in srgb, var(--text) 30%, transparent); }
 .btn:active { transform: scale(.97); }
 .btn:focus-visible, .icon-btn:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 var(--hop-ring) color-mix(in srgb, var(--accent) 35%, transparent); }
-.btn.primary { background: var(--grad) border-box; color: #061016; border-color: transparent; }
-.btn.primary:hover { filter: brightness(1.08); }
+/* The gradient is laid out on the whole button, once: laid out on the padding box and repeated, its start showed
+   again in the 1px border on the right, a pale line at the right end. */
+.btn.primary { background: var(--btn-bg); background-origin: border-box; background-clip: border-box; background-repeat: no-repeat; background-size: 100% 100%;
+  color: var(--btn-fg); border-color: transparent; }
+.btn.primary:hover { filter: brightness(1.06); }
 .btn.ghost { background: transparent; }
 .btn.danger { color: var(--red); }
 .btn.sm { height: var(--hop-ctl-h-sm); padding: 0 12px; font-size: 13px; }
@@ -250,7 +285,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); width: 16
 .kbd { display: inline-block; padding: 0 6px; border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 6px; font: .8rem var(--mono); }
 .eyebrow { display: inline-flex; gap: 8px; align-items: center; padding: 5px 12px 5px 6px; border-radius: 999px; border: 1px solid var(--line-2);
   background: var(--panel); font-size: .82rem; color: var(--muted); margin-bottom: 18px; }
-.eyebrow b { background: var(--grad); color: #061016; padding: 1px 8px; border-radius: 999px; font-size: .74rem; }
+.eyebrow b { background: var(--grad); color: var(--btn-fg); padding: 1px 8px; border-radius: 999px; font-size: .74rem; }
 
 /* ---------- compose ---------- */
 /* One column: a row of starters, the editor at full width (web notes get
@@ -990,7 +1025,7 @@ body.sheet-open { overflow: hidden; }
     padding: 6px 8px calc(8px + env(safe-area-inset-bottom)); background: var(--panel); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px rgba(30, 30, 80, .08); }
   .note-dock button { position: relative; display: grid; justify-items: center; gap: 2px; padding: 4px 2px; border: 0; background: none; color: var(--muted); font: inherit; font-size: .72rem; font-weight: 650; cursor: pointer; }
   .note-dock button svg { width: 22px; height: 22px; }
-  .note-dock button.primary svg { width: 34px; height: 30px; padding: 6px 8px; border-radius: 10px; background: var(--grad); color: #061016; }
+  .note-dock button.primary svg { width: 34px; height: 30px; padding: 6px 8px; border-radius: 10px; background: var(--grad); color: var(--btn-fg); }
   .note-dock button[hidden] { display: none; }
   .note-dock .dot { position: absolute; top: 2px; inset-inline-end: calc(50% - 16px); width: 9px; height: 9px; border-radius: 50%; background: var(--accent); border: 2px solid var(--panel); }
   body.has-dock main { padding-bottom: 76px; }

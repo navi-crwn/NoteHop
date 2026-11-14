@@ -1636,5 +1636,9 @@
   "changelog.t_removed": "Supprimé",
   "changelog.t_deprecated": "Obsolète",
   "err.reset_recheck": "Pour protéger vos notes, la réinitialisation exige une connexion que HOP ID a confirmée ces dernières minutes. Déconnectez-vous, reconnectez-vous avec HOP ID, puis réessayez.",
-  "reset.other_device": "Si un autre de vos appareils a encore le coffre ouvert, utilisez-le : vous pouvez y définir une nouvelle clé sans rien perdre."
+  "reset.other_device": "Si un autre de vos appareils a encore le coffre ouvert, utilisez-le : vous pouvez y définir une nouvelle clé sans rien perdre.",
+  "palette.label": "Couleurs",
+  "palette.classic": "Classique",
+  "palette.mist": "Brume",
+  "palette.sand": "Sable"
 }

@@ -73,7 +73,12 @@
           <button type="button" class="icon-btn" aria-haspopup="true" aria-label="{{.L.T "nav.language"}}" title="{{.L.T "nav.language"}}"><svg><use href="#i-globe"/></svg></button>
           <div class="menu-list">{{$cur := .L.Code}}{{range .Langs}}
             <a href="?lang={{.Code}}" data-lang="{{.Code}}" lang="{{.Code}}"{{if eq .Code $cur}} aria-current="true"{{end}}><span>{{.Name}}</span><small>{{.Short}}</small></a>{{end}}
-          </div>
+          <div class="pal" role="group" aria-label="{{.L.T "palette.label"}}"><span>{{.L.T "palette.label"}}</span><div>
+            <button type="button" data-palette="" aria-pressed="true"><i class="sw-classic"></i>{{.L.T "palette.classic"}}</button>
+            <button type="button" data-palette="mist" aria-pressed="false"><i class="sw-mist"></i>{{.L.T "palette.mist"}}</button>
+            <button type="button" data-palette="sand" aria-pressed="false"><i class="sw-sand"></i>{{.L.T "palette.sand"}}</button>
+          </div></div>
+        </div>
         </div>
         <button class="icon-btn" id="theme" type="button" aria-label="{{.L.T "nav.theme"}}"><svg class="t-moon"><use href="#i-moon"/></svg><svg class="t-sun"><use href="#i-sun"/></svg></button>
         <div class="menu" id="menu">
@@ -125,6 +130,11 @@
         <button type="button" class="icon-btn" aria-haspopup="true" aria-label="{{.L.T "nav.language"}}" title="{{.L.T "nav.language"}}"><svg><use href="#i-globe"/></svg></button>
         <div class="menu-list">{{$cur := .L.Code}}{{range .Langs}}
           <a href="?lang={{.Code}}" data-lang="{{.Code}}" lang="{{.Code}}"{{if eq .Code $cur}} aria-current="true"{{end}}><span>{{.Name}}</span><small>{{.Short}}</small></a>{{end}}
+        <div class="pal" role="group" aria-label="{{.L.T "palette.label"}}"><span>{{.L.T "palette.label"}}</span><div>
+            <button type="button" data-palette="" aria-pressed="true"><i class="sw-classic"></i>{{.L.T "palette.classic"}}</button>
+            <button type="button" data-palette="mist" aria-pressed="false"><i class="sw-mist"></i>{{.L.T "palette.mist"}}</button>
+            <button type="button" data-palette="sand" aria-pressed="false"><i class="sw-sand"></i>{{.L.T "palette.sand"}}</button>
+          </div></div>
         </div>
       </div>
       <button class="icon-btn" id="theme" type="button" aria-label="{{.L.T "nav.theme"}}"><svg class="t-moon"><use href="#i-moon"/></svg><svg class="t-sun"><use href="#i-sun"/></svg></button>

@@ -1636,5 +1636,9 @@
   "changelog.t_removed": "Eliminado",
   "changelog.t_deprecated": "Obsoleto",
   "err.reset_recheck": "Para proteger tus notas, el restablecimiento necesita un inicio de sesión que HOP ID haya confirmado en los últimos minutos. Cierra sesión, vuelve a entrar con HOP ID e inténtalo de nuevo.",
-  "reset.other_device": "Si otro de tus dispositivos todavía tiene la bóveda abierta, usa ese: allí puedes crear una clave nueva sin perder nada."
+  "reset.other_device": "Si otro de tus dispositivos todavía tiene la bóveda abierta, usa ese: allí puedes crear una clave nueva sin perder nada.",
+  "palette.label": "Colores",
+  "palette.classic": "Clásico",
+  "palette.mist": "Niebla",
+  "palette.sand": "Arena"
 }
