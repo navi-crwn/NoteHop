@@ -1503,10 +1503,10 @@
   "gate.continue_sensitive": "我已了解 — 继续",
   "gate.continue_adult": "我已满18岁 — 继续",
   "changelog.title": "更新日志",
-  "changelog.lead": "提交、版本发布和已合并的拉取请求，按时间从新到旧排列。",
+  "changelog.lead": "每个 HOP 应用的更新内容，最新的在前。",
   "changelog.newer": "较新",
   "changelog.older": "较早",
-  "changelog.sources": "源代码版本",
+  "changelog.sources": "各应用的最新版本",
   "changelog.commit": "提交",
   "changelog.pr": "已合并的拉取请求",
   "changelog.tag": "版本发布",
@@ -1627,5 +1627,12 @@
   "reset.done": "保险库已重置。请现在设置新的保险库密钥。",
   "reset.stale": "需要重新核对你的登录。页面将重新加载，然后请再试一次。",
   "reset.link": "没有恢复码？重置保险库",
-  "announce.title": "公告"
+  "announce.title": "公告",
+  "changelog.details": "技术详情",
+  "changelog.t_added": "新增",
+  "changelog.t_changed": "变更",
+  "changelog.t_fixed": "修复",
+  "changelog.t_security": "安全",
+  "changelog.t_removed": "移除",
+  "changelog.t_deprecated": "已弃用"
 }

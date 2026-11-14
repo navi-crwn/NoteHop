@@ -4,17 +4,24 @@
   <h1>{{.L.T "changelog.title"}}</h1>
   <p class="lead">{{.L.T "changelog.lead"}}</p>
   <ol class="change-list">
-    {{range .Changelog.Entries}}<li>
+    {{range .Changelog.Entries}}{{if .Items}}<li>
+      <div class="muted">{{.App}} · v{{.Version}} · <time datetime="{{.Date}}">{{slice .Date 0 10}}</time></div>
+      <h2>{{.Title}}</h2>
+      {{with .Summary}}<p class="muted">{{.}}</p>{{end}}
+      {{range .Groups}}<h3>{{$.L.T (printf "changelog.t_%s" .Type)}}</h3>
+      <ul>{{range .Items}}<li><b>{{.Where}}.</b> {{.Text}}</li>{{end}}</ul>{{end}}
+      <p class="small"><a href="{{.URL}}" rel="noopener">{{$.L.T "changelog.details"}} →</a></p>
+    </li>{{else}}<li>
       <div class="muted"><time datetime="{{.Date}}">{{slice .Date 0 10}}</time> · {{if eq .Kind "pr"}}{{$.L.T "changelog.pr"}}{{else if eq .Kind "tag"}}{{$.L.T "changelog.tag"}}{{else}}{{$.L.T "changelog.commit"}}{{end}}</div>
       <h2><a href="{{.URL}}" rel="noopener">{{.Title}}</a></h2><small>{{.ID}}</small>
-    </li>{{end}}
+    </li>{{end}}{{end}}
   </ol>
   <nav class="change-pages" aria-label="{{.L.T "changelog.title"}}">
     {{if .Changelog.Previous}}<a href="{{.Changelog.Previous}}">← {{.L.T "changelog.newer"}}</a>{{else}}<span></span>{{end}}
     <span>{{.Changelog.Page}} / {{.Changelog.Pages}}</span>
     {{if .Changelog.Next}}<a href="{{.Changelog.Next}}">{{.L.T "changelog.older"}} →</a>{{else}}<span></span>{{end}}
   </nav>
-  <details><summary>{{.L.T "changelog.sources"}} ({{.Changelog.Total}})</summary>{{range $repo,$revision := .Changelog.Sources}}<p>{{$repo}} · <a href="https://github.com/navi-crwn/{{$repo}}/commit/{{$revision}}">{{slice $revision 0 12}}</a></p>{{end}}</details>
+  <details><summary>{{.L.T "changelog.sources"}} ({{.Changelog.Total}})</summary>{{range $repo,$version := .Changelog.Sources}}<p>{{$repo}} · v{{$version}}</p>{{end}}</details>
 </section>
 {{end}}
 {{define "scripts"}}{{end}}

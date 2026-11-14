@@ -1503,10 +1503,10 @@
   "gate.continue_sensitive": "Entendido — Continuar",
   "gate.continue_adult": "Tenho 18+ anos — Continuar",
   "changelog.title": "Histórico de alterações",
-  "changelog.lead": "Commits, versões e pull requests integrados, do mais recente ao mais antigo.",
+  "changelog.lead": "O que mudou em cada app HOP, do mais recente ao mais antigo.",
   "changelog.newer": "Mais recentes",
   "changelog.older": "Mais antigos",
-  "changelog.sources": "Revisões do código",
+  "changelog.sources": "Versão mais recente de cada app",
   "changelog.commit": "Commit",
   "changelog.pr": "Pull request integrado",
   "changelog.tag": "Versão",
@@ -1627,5 +1627,12 @@
   "reset.done": "Cofre redefinido. Crie agora uma nova chave do cofre.",
   "reset.stale": "Sua entrada precisa ser verificada de novo. A página recarrega; depois tente mais uma vez.",
   "reset.link": "Sem código de recuperação? Redefina o cofre",
-  "announce.title": "Aviso"
+  "announce.title": "Aviso",
+  "changelog.details": "Detalhes técnicos",
+  "changelog.t_added": "Adicionado",
+  "changelog.t_changed": "Alterado",
+  "changelog.t_fixed": "Corrigido",
+  "changelog.t_security": "Segurança",
+  "changelog.t_removed": "Removido",
+  "changelog.t_deprecated": "Obsoleto"
 }

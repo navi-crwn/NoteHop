@@ -15,6 +15,8 @@ jobs:
       - run: go vet ./...
       - run: go test -race ./...
       - run: make build
+      - name: Changelog is plain and current
+        run: python3 scripts/build-changelog.py --repo NoteHop --check && python3 -m unittest scripts/test_build_changelog.py
   e2e-web:
     runs-on: ubuntu-latest
     steps:

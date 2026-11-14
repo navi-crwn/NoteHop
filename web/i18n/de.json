@@ -1503,10 +1503,10 @@
   "gate.continue_sensitive": "Ich verstehe – Weiter",
   "gate.continue_adult": "Ich bin 18+ – Weiter",
   "changelog.title": "Änderungsprotokoll",
-  "changelog.lead": "Commits, Releases und gemergte Pull Requests, die neuesten zuerst.",
+  "changelog.lead": "Was sich in jeder HOP-App geändert hat, die neuesten zuerst.",
   "changelog.newer": "Neuer",
   "changelog.older": "Älter",
-  "changelog.sources": "Quellcode-Revisionen",
+  "changelog.sources": "Neueste Version jeder App",
   "changelog.commit": "Commit",
   "changelog.pr": "Gemergter Pull Request",
   "changelog.tag": "Release",
@@ -1627,5 +1627,12 @@
   "reset.done": "Tresor zurückgesetzt. Lege jetzt einen neuen Tresorschlüssel fest.",
   "reset.stale": "Deine Anmeldung muss noch einmal geprüft werden. Die Seite lädt neu; versuche es dann noch einmal.",
   "reset.link": "Kein Wiederherstellungscode? Tresor zurücksetzen",
-  "announce.title": "Ankündigung"
+  "announce.title": "Ankündigung",
+  "changelog.details": "Technische Details",
+  "changelog.t_added": "Neu",
+  "changelog.t_changed": "Geändert",
+  "changelog.t_fixed": "Behoben",
+  "changelog.t_security": "Sicherheit",
+  "changelog.t_removed": "Entfernt",
+  "changelog.t_deprecated": "Veraltet"
 }

@@ -1,262 +1,133 @@
 # Changelog
 
-What changed in NoteHop, newest first. Each entry links to its pull request.
+What changed in NoteHop, newest first, written for the people who use it.
 
 ## [Unreleased]
 
-## [1.3.1] - 2026-11-12
+## [1.4.0] - 2026-11-14 - Reset vault and a tidier dashboard
 
-### Fixed
-- The main buttons (`.btn.primary`) no longer show a bright line on their right edge: the gradient is now painted to the border box instead of repeating under the 1 px transparent border.
-- The Web note result box says what it blocked. When the code asks for a picture, script, font, style sheet or network request from the internet, the console lists it once (in your language) and a line under "No internet" points to an uploaded attachment or a `data:` address. The box itself is unchanged: no internet, no same-origin access.
-- The language cookie is written once per response, not twice.
-- Search engines: every note response (page, password or code prompt, old link, raw, mock, API, attachment, frames, errors, missing notes) and every account page answers with `X-Robots-Tag: noindex, nofollow, noarchive`; only the public pages (home, `/new`, `/secret`, `/embargo`, the info and tool pages) can be listed, and any route added later is `noindex` until it is named in the list. Those pages carry an absolute canonical link (no other query parameter), `og:url`, an absolute `og:image` and `twitter:card`; the home page has `WebApplication` structured data. `?lang=<code>` is the address of a page in one language: the canonical carries it only when the request did and the language is not English (English lives at the bare address, which is also `x-default`), every public page lists the nine `hreflang` alternates plus `x-default`, and so does the sitemap. `/secret` and `/embargo` keep their own titles and are in the sitemap, which lists every public page and nothing else.
-
-### Changed
-- Theme and language are now shared across the HOP family: the cookies `hop_theme` (light or dark, written by the theme button) and `hop_lang` (replaces `nh_lang`, which is still read once and carried over) carry `Domain=.hel.ink` on `hel.ink` hosts and stay host-only everywhere else, so self-hosted copies need no setting. The old `theme` storage key is still read and written.
-
-## [1.3.0] - 2026-11-12
+A way out for people who lost their vault key, and a calmer signed-in area.
 
 ### Added
-- `notehop get` reads the note link (or `TOKEN KEY`, with `-server` or `-key`) from standard input when no argument is given, so `notehop new … | notehop get` works.
-- `notehop decrypt [-key-file FILE] [file]` (the key, or the whole link, may also come from `NOTEHOP_KEY`; `-key` still works but is visible in the process list and shell history; `get` takes the same): opens a stored note payload offline from a file or stdin, in the format the web app writes (with `-password` and `-salt` for a note with a password). It never contacts a server.
-- A release workflow builds the binary for linux/amd64, linux/arm64, darwin/arm64, darwin/amd64 and windows/amd64 and attaches them, with `SHA256SUMS`, when a release is published. Pull requests that touch the build only get a build check.
-- `/secret` (read once, gone after a day) and `/embargo` (opens at a date) open the new-note form with that preset already chosen, in all nine languages. They use the settings the form already has; no new note type. The home page tour links to both.
-- `NOTEHOP_FILE_TTL_HOURS` (default 24, whole hours from 1 to 720) sets how long attachments are kept; an invalid value is logged and the default used.
-- `NOTEHOP_FILES_ACCOUNT_MB` (default 100, `0` = no limit): how much live attachment data one signed-in account may hold. Over it the upload is refused (429, message in nine languages) and the editor shows "Your attachments: x of y MB". Only the uploader id and the size are stored (`files.owner_id`, added by migration 15); the files stay ciphertext.
+
+- **Security page.** A HOP ID account that forgot its vault key and has no recovery codes can now start again with "Reset vault". It deletes everything the old key protected (all notes with their attachments and share links, margin notes and recovery codes), signs the other devices out and lets you set a new vault key straight away. It asks in two steps, first showing how much will be lost and then asking you to type RESET, because there is no way back. NoteHop never held the key, so giving up the old notes is the only way to a new one, and people who lost the key were stuck before.
+- **Dashboard home.** A card at the top can show a notice from the people who run the site, such as planned maintenance. Close it and it stays away for a week; when there is no notice there is no card. Every dashboard in the family now has a place for announcements.
 
 ### Changed
-- The attachment notices (FAQ, "attached", "expired") no longer promise exactly 24 hours, since the operator can change it.
 
-## [1.2.0] - 2026-11-11
+- **New note page.** Code and Web are no longer in the "start from" row. They are formats in the editor's own Format menu, next to Plain and Document, and choosing one lets go of the starter that was lit. The same choice used to sit in two places that could disagree.
+- **Nearby devices, Compare texts, How it works and FAQ.** Signed-in people now open these inside the dashboard, with the sidebar in place, instead of landing on a public page with a different top bar.
+- **Back links and the logo.** When you are signed in, "Back to NoteHop", the logo and the way out of an error page lead to your dashboard instead of the public home page. Visitors without an account still go to the home page.
+- **Sidebar.** "Part of Hop Easy Link" now sits at the bottom left of the sidebar, as in the other HOP apps, and is no longer repeated in the page footer.
+
+### Fixed
+
+- **Top bar on small screens.** On phones the buttons of the public top bar wrapped onto a second line and covered the page below. They now stay in one row; the help menu moves into the menu behind the burger button on the narrowest phones, and nothing overlaps in any of the nine languages.
+- **Nearby devices.** The pairing code box showed only five of the six digits. It is now wide enough for all six on every screen.
+
+## [1.3.1] - 2026-11-12 - Search engines, buttons and a shared look
+
+### Fixed
+
+- **Main buttons.** The main buttons no longer show a bright line on their right edge. The colour gradient was repeating underneath the border.
+- **Web notes.** The result box now says what it blocked, such as pictures, scripts or fonts the code asked for from the internet, so a note that looks empty explains why. The box itself stays sealed. Blocked requests used to fail without a word.
+- **Language choice.** The language you pick is saved once per visit instead of twice. Nothing changes on screen.
+- **Search engines.** Only the public pages (home, new note, the info and tool pages) can appear in search results. Notes, links, accounts and every other page tell search engines to stay away, so private content is never listed.
+
+### Changed
+
+- **Light or dark theme and language across HOP apps.** The theme and language you choose are now shared between the HOP apps, so you set them once and every app follows. Copies installed on your own server are not affected.
+
+## [1.3.0] - 2026-11-12 - Command line, attachments and quick presets
 
 ### Added
-- A cap on notes created without an account: `NOTEHOP_GUEST_NOTES_IP` (default 200 per address per day, `0` turns it off). People who are signed in are never counted. Over the cap the API answers 429 with a message in all nine languages; the value shows in the control center's settings.
-- The family manifest and vendored assets move to hop-assets v9 (PayHop joins the family list, the home page tiles and the name typefaces). `scripts/sync-hop-assets.sh` reads the version from the manifest, so the next version needs no edit. The README family tables (all nine) are the canonical block from HEL.ink, and the changelog builder knows PayHop.
-- The documentation site lists PayHop in the family table, in all nine languages.
 
-### Fixed
-- Switching HOP ID account at the hub no longer leaves the previous account signed in here. A session the hub has not confirmed in the last 5 minutes is re-checked once, quietly, when a page loads (`prompt=none`): same account carries on, another account replaces the session, no hub session ends it (public pages stay open as a guest, the dashboard asks to sign in). Whenever the hub cannot confirm the account right now (down, not answering on `/up`, or answering "not now", which is retried after a minute) the session stays trusted and nothing turns into an error. Nothing is redirected when the hub is down, from the note editor or a note link, or from a page with unsaved text; password accounts are not affected. Signing in again always ends the session the browser held before. Sessions gain a `verified_at` column (idempotent migration).
-
-### Changed
-- The names `secret`, `embargo` and `send` are reserved alongside `vault` and `pay`.
-- The writing-help translate menu no longer offers Arabic.
-- `/sitemap.xml` lists the static public pages only (never a note, profile or link name) and `robots.txt` points to it.
-- Notes made over SSH count toward the guest cap too; IPv6 guests are counted per /64.
-- The changelog snapshot script lists FileHop among the public family repos.
-- The embedded HOP asset manifest and `scripts/sync-hop-assets.sh` read hop-assets v8 (they pointed at v6 while the vendored home engine, motion and bento files were already the v8 copies), so the fonts, floating tiles and app marks, including the new BioHop mark, come from v8.
-- The home page grids use the hop-assets v8 bento (five family tiles in one row from 1100 px, no lone box, art capped at 160-200 px); the 3D engine, bento stylesheet and BioHop assets are byte-identical v8 copies.
-- The family tiles stay in one row of five down to 860 px (art capped at 160 px), and the footer's HOP family list uses the same heading and one-line marks as the other apps.
-- The main button reads "Try a demo" (it opens the demo on the page) and "Open the full notepad" stays the secondary button; the static "Features / Share" pictures, which repeated the feature tour, are gone from the home page, so no section carries a number any more.
-
-## [1.1.0] - 2026-11-10
-
-### Fixed
-- All five family tiles on the home page assemble: the 3D engine is the hop-assets v7 copy, which keeps drawing every unsettled scene (v6 animated only four).
-- The family section on the home page uses the same 3D tiles as the other apps (name and host below, equal heights, no lonely last tile) instead of flat cards. The footer's HOP family list shows each app's mark.
-- Signing out of a HOP ID account goes through the account server with `return=` set to this app, so the person ends up back on NoteHop.
-- The footer no longer repeats the language list (the language menu is in the top bar); the copyright line is right-aligned, centred on phones.
-- The changelog page lists every merged pull request again: the snapshot is rebuilt from a freshly fetched main, and `make check-changelog` fails when merged PRs are missing from it.
-- Drawers and menus close with Escape and hand the focus back: the dashboard drawer (the focus goes into it when it opens, and its links leave the tab order while it is closed on a small screen) and the public header's menu on phones, which also closes on a tap outside. The Share dialog's tabs fade at the edge on a phone, to show that they scroll.
-- The local sign-in form says what it takes: a NoteHop username chosen at sign-up here, not an email address. An email typed into it gets a sentence that points at "Continue with HOP" instead of the username rule. Nothing about accounts or sign-in changes.
-- Small copy: the password box on a reader's page says "Enter the password" (it said "Add a password"); "Private margin" asks a signed-in member to unlock the vault instead of to sign in; counts are written so that 1 reads right ("Suggestions waiting: 1", not "1 suggestions").
-- My notes no longer shows a dead "Locked" row for every note the vault can't open. A basic note is listed by its name with a working link in every state; an encrypted one says why its title is locked (vault locked in this browser, a vault key that doesn't match, or a key that was never saved to the account) and the page offers the way out for each: unlock, enter the key again, or "Save the keys" from the device that made the note. The page says whether the vault is open, and it can be locked again without signing out (also from the account menu). Search matches the link name too and says when nothing matches; To-dos, Links, Code, the graph and Export read basic notes without the vault and say how many locked notes they left out, instead of an empty list or "No notes to export". The delete dialog names the note (never "Untitled" for a named one) and confirms with "Deleted.". "Add them" forgets notes that no longer exist instead of offering them again for ever. Notes remembered on the device are a group of their own, "On this device". One term, "vault key", replaces "account key" in all nine languages.
-- `GET /api/me/notes` names a basic note from its own text (`title`), so the dashboard can show it when the owner blob is empty or the vault is closed; an encrypted note keeps an empty title without the key. Each row links through the note's first read-only link when it has one. `POST /api/n/{token}/claim` also lets the owner seal the key of a note already in the account whose blob is empty (made while the vault was closed).
-- A decoy password now answers exactly as the note does to a stranger, even on the owner link and in the owner's signed-in browser: no Owner badge, no editor, no link list and no "someone opened the decoy" report. Until now the owner's own page gave the decoy away, which is the one situation it exists for. A decoy opening still spends a view like a real one, so a view counter can't tell them apart either; the settings now say so.
+- **Command line.** The notehop get command can read the note link from standard input, so it can follow notehop new in one line.
+- **Command line.** A new decrypt command opens a saved note file offline, without contacting any server.
+- **Downloads.** Programs for Linux, macOS and Windows are now built and attached to each release together with their checksums, so people can install without building them.
+- **Secret message and Time capsule.** Two addresses open the new-note form with the setting already chosen: a message that can be read once and is gone after a day, and a note that opens on a date you pick. Both are in all nine languages and linked from the home page tour.
+- **Attachments.** The person who runs a server can now choose how long attachments are kept and how much one signed-in account may hold (100 MB by default). Over the limit an upload is refused with a clear message in nine languages, and the editor shows how much of your share is used. This stops one account from filling the disk.
 
 ### Changed
-- The header and footer show the mark and the app name as real text in the app's own typeface (hop-assets v7 brand fonts: name-only subsets, vendored byte-identical, SIL OFL).
-- The "everyday uses" boxes and the feature screens use the shared bento grid, so every row is full (3 = 3 + 3 / 6, 6 = 4 + 2 / 2 + 2 + 2 / 6) and each box has the pointer spotlight.
-- New LinkHop and BioHop marks from hop-assets v6 (the embedded manifest and, where the app carries them, the home art and floating-tile copies).
-- Every control follows the HOP control standard of 2026-11-09 (tokens `--hop-ctl-*` on `:root`): one radius (8px) for inputs, selects, text areas, search fields, buttons and icon buttons, where there were seven (0, 8, 9, 10, 11, 13 and full pills); three heights (36px, 32px in toolbars and rows, 40px for the main action and in the sign-in card) in place of nine; at least 44px on touch screens and 16px text in fields on phones. Buttons are as wide as their text and do not wrap ("Add link" no longer stretches across the Share dialog); the sign-in and sign-up cards are 24rem wide; password fields stop at 24rem, text fields at 28rem, the search fields at 20rem with a leading icon. The filter chips of My notes and the starters of the new-note page are small buttons with the standard radius: pills are left to badges, counters and switches. Focus is a 3px ring, a press scales to 97%, and reduced motion removes both transitions and the press. Cards and dialogs take the 14px card radius, the shared dialogs too. The gradient of the primary button stays: it is NoteHop's accent.
-- Questions use the HOP family's shared dialogs (hop-assets v5, `hop-ui.js` and `hop-ui.css` from hel.ink, loaded with an SRI hash) in place of the browser's own: all 14 `confirm` and both `prompt` calls go through `NH.confirm` and `NH.prompt`. A delete has a red button that names what goes ("Delete “Shopping list”"), the dialog starts on Cancel, Escape cancels, and the focus returns to the control that asked. Where `hop-ui.js` is not there (offline, blocked, or the hub has not deployed v5 yet) the same calls fall back to the browser's dialogs, so nothing breaks in between. The CSP names `https://hel.ink` in `script-src` for that one pinned file. The two UI entries are added to the bundled manifest; the rest of it stays on the version it was on.
-- The new-note page is one editor and one row of settings. The editor is ready to type in (the cursor is in it on a computer; the starters are presets above it, with Code and Web among them and the rarer ones under "More"). Under it, one chip per setting, each reading "name: value": Type, Password, Delete, Opens, Readers. The password has its own chip, with the second (decoy) password right under it; the view limit has its own ("Opens: 10×") instead of hiding the password field under "Read once". Nothing is in two places any more: "Other settings" holds only what has no chip (open later, stop changes, signing, content warning, remember on this device), and whatever is on there shows as a chip too. A setting that can't be used says why in its own menu, with the button that changes it; an error opens the menu of the field it is about. The sentence about what the link will do sits next to the Create button. Signed in with the vault locked, the page says so before the note is made, with a way to unlock that keeps the draft.
-- Signed in, New note and Security use the same chrome as My notes (sidebar with the HOP family, no app grid in the top bar). The public header carries New note, My notes, Compare texts and Nearby devices; How it works and the FAQ are behind one help button. Working pages (new note, a note, compare, nearby, sign-in) end in a one-line footer; the five-column footer stays on the pages that present NoteHop. On phones the settings wrap as labelled chips and the Create button stays at the bottom of the screen.
-- HOP family assets move to hop-assets v4: FileHop's new pixel mark in the family list, the app switcher and the footer (bundled manifest), and the copied home engine with FileHop's matching 3D map. `scripts/sync-hop-assets.sh` copies from v4.
-- The report scrub also catches a key pasted with an escaped `#` (`%23k=`, `%23k%3D`) and a bare `k=...` or `a=...`. Reports already stored lose the key the next time the server starts; the rest of their text stays. Backups taken earlier still hold the old text until they age out.
-- `deploy/notehop.env.example` names every variable the program reads. A test keeps it that way.
-- CI builds use Go 1.27.3 (`go` line in `go.mod`), which has the fixes the 1.27.2 toolchain lacks.
-- `install.sh --dry-run` no longer creates the data folder and `bin/`. It said nothing would be executed, and now nothing is.
+
+- **Attachment notices.** The FAQ and the "attached" and "expired" messages no longer promise exactly 24 hours, because the person who runs the server can change it.
+
+## [1.2.0] - 2026-11-11 - Account switching, a guest limit and PayHop
+
+### Added
+
+- **Creating notes without an account.** One address can create a limited number of notes per day without signing in (200 by default). People who are signed in are never counted, and over the limit the message is shown in nine languages. This keeps the service usable when someone floods it.
+- **HOP family.** PayHop joins the family list, the home page tiles, the README tables in all nine languages and the documentation site. The shared fonts, tiles and app marks, including BioHop's new mark, come from a newer shared version.
+
+### Fixed
+
+- **Switching HOP ID account.** Switching to another account at the hub no longer leaves the previous account signed in here. The first page you open afterwards quietly checks with the hub: the same account carries on, another account replaces the old one, and with no hub session you are signed out of the dashboard while public pages stay open. If the hub cannot answer, nobody is signed out or sent away.
+
+### Changed
+
+- **Link names.** The names secret, embargo and send are reserved for the site.
+- **Writing help.** The translate menu no longer offers Arabic, which the site does not support.
+- **Search engines.** The sitemap lists only the public pages, never a note, profile or link name. Notes made over SSH count toward the guest limit too.
+- **Home page.** The family tiles stay in one row of five down to narrow windows, the main button reads "Try a demo", and the repeated feature pictures are gone.
+
+## [1.1.0] - 2026-11-10 - A clearer dashboard and shared dialogs
+
+### Added
+
+- **Footer.** Every footer starts with the HOP ID mark and "Part of Hop Easy Link", linking to the hub.
+- **My notes.** A reminder card appears while the account has no recovery codes, explaining what is at stake and offering a button to make them. You can hide it for a week, and it disappears for good once the codes exist.
+- **HOP family.** FileHop, the sixth HOP app, appears in the dashboard sidebar, the app switcher, the footer and the README and documentation tables.
+- **Note picker for other apps.** BioHop can show a signed-in member's public notes so they can be chosen from there. Encrypted notes, notes with a content warning and notes meant to burn after reading are never offered.
+
+### Changed
+
+- **Every page.** All buttons, fields and menus follow the shared HOP control standard: one corner shape, three heights, at least 44 pixels on touch screens and readable text in fields on phones. Buttons are as wide as their text and no longer stretch across dialogs.
+- **Questions and confirmations.** Deleting or confirming now uses the HOP family's shared dialog, with a red button that names what will be deleted, Cancel selected first, Escape to cancel and the focus returned to where you were. If the shared dialog cannot load, the browser's own dialog is used instead.
+- **New note page.** One editor and one row of settings, each reading "name: value": type, password, delete, opens and readers. The password and the view limit have their own settings, a setting that cannot be used explains why, and the Create button sits next to a sentence saying what the link will do. If you are signed in with the vault locked, the page says so before the note is made and lets you unlock without losing the draft.
+- **Signed-in pages.** New note and Security use the same frame as My notes, with the sidebar and the HOP family. The public top bar keeps New note, My notes, Compare texts and Nearby devices, and puts How it works and the FAQ behind one help button. Working pages end in a one-line footer.
+- **Header and footer.** The app name is real text in the app's own typeface, and the family marks are updated.
+- **Home page.** The "everyday uses" boxes and feature screens use the shared grid, so every row is full.
+- **Reports.** A report pasted with a note key in an unusual form now loses the key too, including reports already stored.
+- **Self-hosting.** The sample settings file lists every setting, a test keeps it complete, and the dry run of the installer no longer creates folders.
+
+### Fixed
+
+- **My notes.** The list no longer shows a dead "Locked" row for every note the vault cannot open. A basic note is listed by its name with a working link in every state, and an encrypted one says why its title is hidden and how to fix it: unlock, enter the key again, or save the keys from the device that made the note. The page says whether the vault is open and lets you lock it again without signing out. Search, to-dos, links, code, the graph and export work for basic notes without the vault and say how many locked notes they left out. Names of notes remembered on this device are grouped separately, and "account key" is now called "vault key" in all nine languages.
+- **Decoy password.** A decoy password now looks exactly like a stranger's view, even for the owner. It used to give itself away, which is the one case where it must not.
+- **Dialogs and menus.** Menus and drawers close with Escape and give the focus back, and the Share dialog's tabs fade at the edge on a phone to show that they scroll.
+- **Sign-in form.** The local sign-in form says it needs a NoteHop username and not an email address, and points to "Continue with HOP" when an email is typed.
+- **Wording.** Small copy fixes, such as "Enter the password" and counts that read correctly for one.
+- **Family tiles and sign-out.** The home page tiles all assemble, the footer no longer repeats the language list, and signing out of a HOP ID account returns you to NoteHop.
+- **Changelog.** The changelog page lists every merged change again.
 
 ### Security
-- `HOP_PICKER_SECRET` (32+ characters) verifies `GET /api/v1/me/notes` with a secret the hub never uses. Until now NoteHop had to hold BioHop's sign-in secret (`HOP_SSO_SECRET_BIOHOP`) to verify the note picker, so a leak here could forge a hub ticket for BioHop. It is accepted next to the older secrets while the family moves; once BioHop signs with it (navi-crwn/BioHop `fix/picker-secret`), remove `HOP_SSO_SECRET_BIOHOP` from this server.
+
+- **Note picker.** The note picker used for BioHop now has a secret of its own, so a leak on this server can no longer forge a sign-in for BioHop.
+
+## [1.0.0] - 2026-11-04 - First stable release
+
+NoteHop has been public since 2026-10-27; this is the point where the features below became the base that later releases build on.
 
 ### Added
-- Every footer starts with the HOP ID mark and "Part of Hop Easy Link" (linking to hel.ink), for everyone and in both looks; the Clean-only brand strip is replaced by it.
-- A reminder card on My notes while the account has no recovery codes: what is at stake and a button to make them. It uses the HOP family's `data-hop-remind` card, so `hop-ui.js` gives it a "Hide" button; `POST /api/me/reminders/dismiss {key}` stores when it was hidden (new table `reminders`, migration 13). A hidden card stays away for seven days and comes back if the codes still have not been made; once they exist it is gone for good. The vault line above it is a status, not a reminder, and cannot be hidden.
-- FileHop (file.hel.ink), the sixth HOP app, is in the HOP family list: the dashboard sidebar, the app switcher and the footer (from the bundled asset manifest), the README family table in all nine languages, and the family table on the documentation site.
-- The HOP family assets move to hop-assets v3, which adds FileHop: the bundled manifest, the copied home engine (`web/static/hop-home/`, with the FileHop 3D mark), `scripts/sync-hop-assets.sh` and the documentation site's font link. In the HOP family section, an app the 3D engine has no block map for keeps its flat mark instead of falling back to the NoteHop logo.
-- `GET /api/v1/me/notes` for the note picker in the other HOP apps (BioHop's "Choose from NoteHop"). Only an app named in `NOTEHOP_NOTES_CLIENTS` (default `biohop`, empty turns it off) may call it, server to server, signed with the HOP App Protocol (its own `HOP_SSO_SECRET_<APP>` when it has one, else `NOTEHOP_SSO_SECRET`) and with `X-HOP-Actor` set to the member's HOP ID. It lists that member's public notes that have a read-only link, newest first, `{ok, data: {items: [{id, title, url, updated}], next}}`, with `?q=` on the title, `?limit=` up to 50 and a cursor. Never listed: encrypted notes (the key stays in the member's browser, and a keyless link shows visitors nothing), notes shared only with an edit, append, check or suggest link (a public page would hand those rights to everyone), notes with a content warning, burn-after-reading notes, expired notes and notes a feature holds back before reading. A browser session cannot use the route.
 
-## [1.0.0] - 2026-11-04
+- **Notes.** Notes are locked in the browser by default, and the key stays in the link after the hash sign, so the server only stores text it cannot read. A basic note, readable by the server and with a link name you choose, is the other choice, and the owner can convert a note either way.
+- **Editor.** Markdown with a slash menu, checklists, polls, forms, tables and diagrams, three note types (Plain, Document, Code), website notes that run in a sealed frame without internet, encrypted attachments that last one day, live editing with chat, and nearby devices.
+- **Sharing and privacy.** Links with their own rights, owner links, copies frozen in time, delete after reading, expiry dates, decoy passwords, network allow lists, time capsules and sign-off.
+- **Accounts.** One account for every HOP app through HOP ID, with recovery codes and a Security page to change the password. Notes also work without an account.
+- **Help with writing.** Optional summarize, rewrite, translate and spelling help, using the browser's built-in AI or your own key.
+- **Nine languages.** The interface, the READMEs and the documentation site are in English, Chinese, German, Indonesian, Japanese, Portuguese, Spanish, French and Russian.
+- **Self-hosting.** One command installs, updates and removes NoteHop. It is a single program with a small database and daily backups.
+- **Developer tools.** A command line, raw text addresses, a mock API, webhooks in and out, SSH, a Telegram bot and an installable app.
 
-The first stable release. NoteHop has been public since 2026-10-27; 1.0.0 is the point where the feature set below is treated as the baseline that later releases build on.
+### Fixed
 
-- Notes are encrypted in the browser by default. The key stays in the link after `#k=`, so the server stores ciphertext it cannot read. A basic (readable) note is the other choice, and the owner can convert a note either way.
-- One account for every HOP app: sign-in goes through HOP ID, and the hub tells NoteHop about profile changes, suspensions, deletions and revoked sessions, and NoteHop acts on them. Notes also work without an account.
-- The interface, the READMEs and the documentation site are in nine languages: English, 简体中文, Deutsch, Bahasa Indonesia, 日本語, Português (Brasil), Español, Français and Русский.
-- Self-hosting is one command (`install.sh`, with `update.sh` and `uninstall.sh`), and the app is a single Go binary with a SQLite database. Database migrations run at start (12 so far).
-- The 2026-11-04 audit fixes are included: reports no longer keep a note's key, a sign-in ticket for a suspended account is refused, and a page that fails to render answers 500.
+- **Reports.** A report no longer keeps a note's key, and it keeps only a scrambled form of the reporter's address.
+- **Sign-in.** A sign-in for a suspended account is refused, and after signing in only addresses on this site are followed, which closes a way to be sent to another site.
+- **Errors.** A page that fails now says so with an error instead of showing half a page, and a mistyped command no longer starts the server.
+- **Deleting.** Deleting a note, an account or an expired note also deletes its attachments, and link names of deleted accounts stay reserved.
+- **Live editing.** People are disconnected when a note is deleted or expires, and a person joining just as the last one leaves can no longer end up alone.
+- **Settings and accessibility.** The "More settings" panel is a proper dialog, contrast is readable, controls are big enough on phones, and icon buttons have names.
 
-The sections below make up this release. The dated headings are the days the work landed, not separate versions.
+### Security
 
-### More settings and interface sweep ([#38](https://github.com/navi-crwn/NoteHop/pull/38))
-- "More settings" on the New note page lost four of its six groups to the page behind it (a stray closing tag). It is now a proper dialog: it scrolls inside, the head stays, Escape, the backdrop and the close button close it, focus returns to the button, and the page behind does not scroll.
-- The Share dialog of an encrypted note says the link is the key, in all nine languages.
-- No inline styles any more (the console errors on New note, Terms, Privacy and the content warning screen), `/TOKEN` links in the home tour, translated footer labels and notice on Terms and Privacy.
-- Readable contrast for links and faint text, names for checklist boxes and icon buttons, focus rings on the title and editor, 44 px controls and a one-row header on phones, menus that stay on screen, long titles that wrap, and less layout shift while a note loads.
-- `scripts/e2e-sweep.js` and `internal/app/ui_sweep_test.go` check these.
-
-### Copy edits ([#36](https://github.com/navi-crwn/NoteHop/pull/36))
-- The error for a missing note is worded in parallel with the other errors, and the Russian export text has its punctuation fixed.
-
-### Audit fixes ([#39](https://github.com/navi-crwn/NoteHop/pull/39))
-- Live editing: peers are closed when a note is deleted, a link is revoked or a note expires. The icon-only formatting buttons have an accessible name.
-- A report no longer keeps a note's key or owner token: `#k=…` and `#a=…` in the report text are replaced with `[removed]` before it is stored, and the report dialog tells people not to paste the full link of an encrypted note.
-- A sign-in ticket that says the account is suspended, banned or locked is refused before any local account is made or linked.
-- A page that fails while it renders now answers 500 instead of a 200 with half a page.
-- A mistyped command (`notehop bakcup`) exits with an error instead of starting the server.
-- A bug that panics in a handler now answers with an error page in the reader's language (or the JSON error for the API) and writes the panic to the log, instead of dropping the connection.
-- A report keeps a keyed hash of the reporter's address (made with a secret in the database) instead of a plain hash that could be reversed by trying every IPv4 address. Reports already stored keep their old value and stop counting toward the hourly limit after an hour.
-- Copying a link that holds a key from My notes, the diff page or the redaction dialog says that the link is the key. The embed's Open link no longer sends a referrer.
-- The privacy page says that a report's reason and message are stored readable and that the owner part of a link is sent to the server (stored as a hash).
-
-### Hardening ([#35](https://github.com/navi-crwn/NoteHop/pull/35))
-- After signing in, `?next=` only follows paths on this site: a tab, line break or other control character, or a backslash, in the path sent the browser to another site (`/<tab>/host`). The server and the sign-in and vault scripts all refuse it now.
-- `notehop backup` creates its copy readable by its owner only (0600), whatever the umask; a failed backup removes the half-written file. `deploy/backup.sh` and `update.sh` keep the backup folder at 0700, and the backup service sets the same state directory mode as the main one.
-- Deleting a note, a takedown, an expired note and deleting an account remove the note's attachments with it instead of leaving them until their 24 hours are over.
-- Deleting an account releases the link names held for it: they stay reserved for everyone, instead of for the next account that gets the same numeric id.
-- Live editing: a person joining at the moment the last one leaves could end up in a room the note no longer pointed to, cut off from everyone else on that note.
-- The license names the copyright holder, as the other HOP repositories do.
-
-### Installers, READMEs and documentation site ([#34](https://github.com/navi-crwn/NoteHop/pull/34))
-- `install.sh` is a one-command installer that also runs straight from GitHub with `curl … | bash`. It checks for Go or Docker, git, curl and free disk space, asks for the site name, address, port and data folder (every question has a default, and `--yes` takes them all), writes a private `.env`, builds the program, and starts it once to check `/healthz`. It can run NoteHop in the foreground, as a systemd unit, or with Docker Compose, and can connect to an existing HOP ID hub or install one next to NoteHop. `--dry-run` shows the steps without running them.
-- `update.sh` copies the database into a private `backups/` folder (mode 0700), runs `git pull --ff-only` and rebuilds, or rebuilds the Docker image. It refuses to run over local changes unless you pass `--force`.
-- `uninstall.sh` removes the program and keeps `.env`, the data folder and `backups/`. `--purge` deletes those too, after you type the site name.
-- A README in each of the nine languages, and a documentation site for GitHub Pages in the nine languages (`docs/`, rendered from `docs/locales.ini` by `docs/.render.mjs`).
-
-### Nine languages ([#33](https://github.com/navi-crwn/NoteHop/pull/33))
-- The interface is available in English, 简体中文, Deutsch, Bahasa Indonesia, 日本語, Português (Brasil), Español, Français and Русский. German is new. The catalogs `zh` and `pt` are now `zh-CN` and `pt-BR`; the old codes `zh` and `pt` still work. Arabic and right-to-left layout are removed.
-- `go test ./internal/i18n` checks that every catalog has the same keys, placeholders and tags as English.
-
-### Shared home engine and HOP assets v2 ([#27](https://github.com/navi-crwn/NoteHop/pull/27), [#28](https://github.com/navi-crwn/NoteHop/pull/28), [#32](https://github.com/navi-crwn/NoteHop/pull/32))
-- The home page's hero renderer and scroll motion come from the shared HOP home module, and the family manifest is synced to HOP assets v2 (`scripts/sync-hop-assets.sh`).
-
-### Basic and encrypted notes ([#31](https://github.com/navi-crwn/NoteHop/pull/31))
-- "New note" now starts with one choice: **Encrypted** (the default; locked in the browser, the key stays in the link after `#k=`, so the server can't read it) or **Basic** (readable by the server, with a link name you choose, like `/monday-meeting`). Every kind of note (plain text, document, code, website) exists in both. What used to be the "public note" switch hidden under Expert is now this choice, and "public" wording became "basic" everywhere.
-- Only a basic note can have a link name. An encrypted note keeps the long link: the server refuses a name for it (`err.slug_basic_only`), in a new note and in "Add link".
-- The share dialog renames a link with **Save** and **Cancel** (pencil on the row); "Add link" only creates. The old name is held for the owner for 90 days (`PUT /api/n/{token}/links/{link}`).
-- The owner can change a note between basic and encrypted, both ways, from the share dialog (`POST /api/n/{token}/convert`). The browser re-encodes the text and the server swaps it in; links, keys and settings stay, version history is cleared. A note with added lines, suggestions, a decoy, burn blocks, an inbox or sign-offs can't change type yet (the server says which); snapshots are read-only.
-- No note is ever indexed: `X-Robots-Tag: noindex, nofollow, noarchive` on every note, API, raw, mock and profile response (the robots meta tag was already on note pages), a `robots.txt` that keeps crawlers off the machine paths (note addresses are left crawlable on purpose, so the noindex header is seen), no sitemap, and link previews show only the kind and status of a note, never its title or text.
-- My notes: filters for Encrypted and Basic, a type label on each row, and a basic note's read link is just its address.
-- The CLI refuses `-slug` without `-public` before it calls the server.
-- Copy: claims that "the server can't read your note" now say encrypted notes; the new text is translated in all nine catalogs (`docs/pending-translation-basic-notes.json` is the list of those keys and is no longer needed).
-
-### Media and asset addresses ([#30](https://github.com/navi-crwn/NoteHop/pull/30))
-- The avatar the account server sends (in the sign-on ticket or a profile push) is stored and reported to the control center as an absolute http(s) address: a path such as `/storage/avatars/x.png` is resolved against `NOTEHOP_SSO_URL`, and anything unusable is dropped instead of being cut in half.
-- The offline worker no longer keeps `/raw/…`, `/mock/…` or `/in/…` pages (they carry a public note's text and use up a burn note's view), and it caches only complete (200) responses.
-
-### Dashboard chrome ([#29](https://github.com/navi-crwn/NoteHop/pull/29))
-- The signed-in dashboard (My notes, Vault key) has the same chrome as the other HOP dashboards: a sidebar with this app's menu and the HOP family (HOP ID, LinkHop, BioHop, PixelHop, with their marks), a top bar of settings-type controls (new note, language, theme, account menu) and a compact footer. The app grid is no longer in that top bar.
-- The footer on every page spreads its five columns evenly; a flex rule had packed them to the left.
-
-### Attachment storage limits ([#27](https://github.com/navi-crwn/NoteHop/pull/27))
-- Attachments are limited per note (a shared 5 MB ciphertext budget for everything uploaded to one note), per address (`NOTEHOP_FILES_IP_MB`, 100 MB per 24 hours by default) and across the site (`NOTEHOP_FILES_TOTAL_MB`, at most 10 GB). The server also keeps a free-disk reserve (`NOTEHOP_MIN_FREE_MB`, `NOTEHOP_MIN_FREE_PERCENT`).
-- When a limit would be exceeded, uploads answer `507` with `Retry-After: 60`. The editor shows a warning, disables file selection and checks again every 30 seconds.
-- A file uploaded before its note exists is tied to the note by a one-time `X-Upload-Draft` capability. Database migration 12 adds `files.scope` and `file_drafts`.
-
-## 2026-10-31
-
-### Content warning gate ([#24](https://github.com/navi-crwn/NoteHop/pull/24))
-- A note can carry a content warning: sensitive, or 18+ adult, with an optional reason of up to 255 characters. Readers see a gate with the reason and confirm before the note is decrypted; the confirmation is remembered for 24 hours on that device, and a form works without JavaScript.
-- `/raw`, the mock API, SSH and live rooms honour the same gate. Link previews show the warning title instead of anything from the note.
-- The label and the reason are stored readable, outside the ciphertext, so the gate can work before decryption.
-- The control center can mark a note adult or sensitive, or clear the mark (`mark_nsfw`, `unmark_nsfw`, `mark_sensitive`).
-
-### Product history and family experience ([#25](https://github.com/navi-crwn/NoteHop/pull/25), [#26](https://github.com/navi-crwn/NoteHop/pull/26))
-- A `/changelog` page shows the commit, tag and pull request history from `web/changelog.json`, which `scripts/build-changelog.py` generates.
-- The family switcher and the HOP family section list the other apps with their marks.
-
-### Features grid, contact page and footer ([#23](https://github.com/navi-crwn/NoteHop/pull/23))
-- `/features` is a responsive grid, `/contact` shows its channels as cards and links the private security advisory form, and every page has the same four-column footer with the language switcher.
-
-### Documentation site ([#22](https://github.com/navi-crwn/NoteHop/pull/22))
-- A GitHub Pages site for NoteHop in the nine languages, with theme-aware feature demos on the home page and screenshots in the README.
-
-### Smaller changes ([#15](https://github.com/navi-crwn/NoteHop/pull/15) to [#20](https://github.com/navi-crwn/NoteHop/pull/20))
-- English is the default language for new visitors. A language picked with `?lang=` or remembered in the cookie still wins; `Accept-Language` is no longer used ([#16](https://github.com/navi-crwn/NoteHop/pull/16)).
-- Typography from the HOP family and a family section on the home page and in the footer ([#17](https://github.com/navi-crwn/NoteHop/pull/17)).
-- The HOP family table in this README is checked against the canonical copy in HEL.ink by a CI job ([#18](https://github.com/navi-crwn/NoteHop/pull/18)), and PixelHop is listed at `pixel.hel.ink` ([#20](https://github.com/navi-crwn/NoteHop/pull/20)).
-- `/features` and `/status` pages (version, start time and a live database check), back links on inner pages, and GitHub contact links on `/contact` ([#19](https://github.com/navi-crwn/NoteHop/pull/19)).
-- `SECURITY.md` and structured issue forms ([#15](https://github.com/navi-crwn/NoteHop/pull/15)).
-
-## 2026-10-29 and 2026-10-30
-
-### Continuous integration ([#13](https://github.com/navi-crwn/NoteHop/pull/13))
-- A GitHub Actions workflow runs `gofmt`, `go vet`, `go test -race` and the build on every push and pull request.
-
-## 2026-10-28
-
-### Chained logout ([#12](https://github.com/navi-crwn/NoteHop/pull/12))
-- `GET /auth/sso/logout` ends the NoteHop session when you sign out at the account server or in another HOP app, then goes on to `?next=`, only when that is an https address on the account server's domain.
-
-### Notes at /name, short share links ([short-links-redirect](https://github.com/navi-crwn/NoteHop/tree/short-links-redirect))
-- Notes live at `/TOKEN` or `/link-name` on the main site. The old `/n/TOKEN` redirects there, for links of every kind (read, write, reply, tick, owner); the browser keeps the `#…` part.
-- `NOTEHOP_SHARE_URL` is now a short domain that only redirects: reader links are `share.example/TOKEN` and open `main/TOKEN`. Nothing is served on it. Owner links stay on the main site.
-- Site pages (`/new`, `/faq`…) are reserved names, and a test makes sure every new page is one.
-- `notehop new` prints the short reader link; `notehop get` and `takedown` accept every form.
-
-### Short share links ([#10](https://github.com/navi-crwn/NoteHop/pull/10))
-- First version of short reader links, with notes served on the share domain. Replaced by the entry above before it went live.
-
-### A simpler create page ([new-compose](https://github.com/navi-crwn/NoteHop/tree/new-compose))
-- The editor uses the full width; the side panel of settings is gone. Web notes show the result beside the code.
-- "What do you want to make?" is one row of small buttons, with a one-line description of the chosen one.
-- One bar under the editor: who can do what, how private, how long, **More**, and **Create link**. Each button opens a short menu that explains every choice; **More** opens the extra settings in a drawer and counts the ones that are on.
-- On phones the bar stays at the bottom as icons, and every menu opens as a sheet.
-
-### Control center API and reports ([hop-admin-api](https://github.com/navi-crwn/NoteHop/tree/hop-admin-api))
-- **Report this note** in every note's menu: a reason and a short message go to the site team, never the note's content. 5 reports per hour per address.
-- A signed `/hop/*` API (HOP App Protocol v1) so a control center can see health, numbers, accounts, notes, attachments, reports, link-name holds and settings, and act on them; and so the account server can push profile changes, suspensions and deletions. Encrypted notes stay metadata only. Every change is written to an audit log. `NOTEHOP_HOP_CLIENTS` names the callers.
-- Account roles: the admin role now lives in the database and follows the account server's roles (promotion and demotion). `NOTEHOP_ADMINS` only seeds the role for accounts that already exist; a listed name registered later grants nothing. Suspended accounts can't sign in.
-- Database migrations 9 (role, status, audit, events, settings) and 10 (reports).
-
-
-### Home page v2 ([#6](https://github.com/navi-crwn/NoteHop/pull/6))
-- The logo as 3D blocks you can turn (plain WebGL; a picture when WebGL is missing).
-- A live demo with real encryption: the scrambled text in the preview is exactly what **Create link** sends.
-- Motion that follows the scroll: a note's life from typing to gone, and a feature tour of six groups with tabs, dots and up/down arrows. Nothing moves when "reduce motion" is on.
-- Numbers from GitHub (stars, languages, weekly commits) through `GET /api/repo`, set with `NOTEHOP_GITHUB`.
-- MIT license.
-
-### Web notes ([#5](https://github.com/navi-crwn/NoteHop/pull/5))
-- A new note type: HTML, CSS and JS files in one note, with a file explorer, templates, **Run**, the result and a console, phone and tablet widths, and full screen.
-- The code runs only in a sealed frame (`/run`) with no internet and no access to the page, cookies or the note's key. Readers are asked before someone else's code runs.
-
-### Account recovery and writing help ([#4](https://github.com/navi-crwn/NoteHop/pull/4))
-- 8 one-time recovery codes and a `/security` page to change your password. The server never sees the codes, the password or the vault key.
-- Optional writing help: summarize, rewrite, translate, fix spelling, with the browser's built-in AI or your own API key (Claude, ChatGPT, Gemini, OpenRouter, Ollama). `NOTEHOP_AI` turns it off or limits it to on-device.
-
-### Note types and sign-in ([#3](https://github.com/navi-crwn/NoteHop/pull/3))
-- Note types: Plain, Document and Code (line numbers, never run, downloads as `.txt`).
-- A right-click format menu: colors, highlight, size, alignment, case, links.
-- Sign-in buttons straight to a provider on your account server (`NOTEHOP_SSO_PROVIDERS`).
-- A home page with a quick note; the full create page moved to `/new`.
-- Limits on `/raw` and `/mock` reads and on attachments per address.
-
-## 2026-10-27
-
-### First public version ([#1](https://github.com/navi-crwn/NoteHop/pull/1))
-- Notes locked in the browser (AES-256-GCM, key in the link), links with their own rights, owner links, frozen copies, delete after reading, expiry, your own link names and QR codes.
-- Markdown editor with a `/` menu, spoilers, PIN blocks, checklists, polls, forms, calculator, Mermaid, Kanban, slides.
-- Encrypted 24-hour attachments, live collaboration with chat, nearby devices over WebRTC.
-- Timed and private extras: time capsules, scheduled locks, decoy passwords, network allow lists, leak tracer, sign-off, version history.
-- Developer tools: `/raw`, the `notehop` CLI, mock API, webhooks in and out, SSH, Telegram bot, installable app (PWA).
-- Optional zero-knowledge accounts, single sign-on, 9 languages, name rules and abuse tools, VPS installer with daily backups.
-
-[Unreleased]: https://github.com/navi-crwn/NoteHop/compare/v1.3.1...HEAD
-[1.3.1]: https://github.com/navi-crwn/NoteHop/compare/v1.3.0...v1.3.1
-[1.3.0]: https://github.com/navi-crwn/NoteHop/compare/v1.2.0...v1.3.0
-[1.2.0]: https://github.com/navi-crwn/NoteHop/compare/v1.1.0...v1.2.0
-[1.1.0]: https://github.com/navi-crwn/NoteHop/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/navi-crwn/NoteHop/releases/tag/v1.0.0
+- **Backups.** Backup files can be read only by their owner.

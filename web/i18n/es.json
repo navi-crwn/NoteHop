@@ -1503,10 +1503,10 @@
   "gate.continue_sensitive": "Entendido — Continuar",
   "gate.continue_adult": "Tengo más de 18 años — Continuar",
   "changelog.title": "Historial de cambios",
-  "changelog.lead": "Commits, versiones y solicitudes de incorporación fusionadas, de más reciente a más antiguo.",
+  "changelog.lead": "Qué ha cambiado en cada app de HOP, lo más reciente primero.",
   "changelog.newer": "Más recientes",
   "changelog.older": "Más antiguos",
-  "changelog.sources": "Revisiones del código",
+  "changelog.sources": "Última versión de cada app",
   "changelog.commit": "Commit",
   "changelog.pr": "Solicitud fusionada",
   "changelog.tag": "Versión",
@@ -1627,5 +1627,12 @@
   "reset.done": "Bóveda restablecida. Crea ahora una clave de bóveda nueva.",
   "reset.stale": "Hay que volver a comprobar tu inicio de sesión. La página se recarga; después inténtalo de nuevo.",
   "reset.link": "¿Sin código de recuperación? Restablece la bóveda",
-  "announce.title": "Anuncio"
+  "announce.title": "Anuncio",
+  "changelog.details": "Detalles técnicos",
+  "changelog.t_added": "Añadido",
+  "changelog.t_changed": "Cambiado",
+  "changelog.t_fixed": "Corregido",
+  "changelog.t_security": "Seguridad",
+  "changelog.t_removed": "Eliminado",
+  "changelog.t_deprecated": "Obsoleto"
 }

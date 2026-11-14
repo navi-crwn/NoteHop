@@ -1503,10 +1503,10 @@
   "gate.continue_sensitive": "I understand — Continue",
   "gate.continue_adult": "I am 18+ — Continue",
   "changelog.title": "Changelog",
-  "changelog.lead": "Commits, releases and merged pull requests, newest first.",
+  "changelog.lead": "What changed in each HOP app, newest first.",
   "changelog.newer": "Newer",
   "changelog.older": "Older",
-  "changelog.sources": "Source revisions",
+  "changelog.sources": "Latest release of each app",
   "changelog.commit": "Commit",
   "changelog.pr": "Merged pull request",
   "changelog.tag": "Release",
@@ -1627,5 +1627,12 @@
   "reset.done": "Vault reset. Set a new vault key now.",
   "reset.stale": "Your sign-in has to be checked again. The page reloads; then try once more.",
   "reset.link": "No recovery code? Reset the vault",
-  "announce.title": "Announcement"
+  "announce.title": "Announcement",
+  "changelog.details": "Technical details",
+  "changelog.t_added": "Added",
+  "changelog.t_changed": "Changed",
+  "changelog.t_fixed": "Fixed",
+  "changelog.t_security": "Security",
+  "changelog.t_removed": "Removed",
+  "changelog.t_deprecated": "Deprecated"
 }

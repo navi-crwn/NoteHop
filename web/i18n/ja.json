@@ -1503,10 +1503,10 @@
   "gate.continue_sensitive": "理解して続行",
   "gate.continue_adult": "18歳以上です — 続行",
   "changelog.title": "変更履歴",
-  "changelog.lead": "コミット、リリース、マージ済みプルリクエストを新しい順に表示します。",
+  "changelog.lead": "HOPの各アプリで何が変わったか。新しい順です。",
   "changelog.newer": "新しい履歴",
   "changelog.older": "古い履歴",
-  "changelog.sources": "ソースのリビジョン",
+  "changelog.sources": "各アプリの最新リリース",
   "changelog.commit": "コミット",
   "changelog.pr": "マージ済みプルリクエスト",
   "changelog.tag": "リリース",
@@ -1627,5 +1627,12 @@
   "reset.done": "保管庫をリセットしました。新しい保管庫キーを設定してください。",
   "reset.stale": "ログインをもう一度確認する必要があります。ページを再読み込みします。そのあと、もう一度お試しください。",
   "reset.link": "リカバリーコードがない？保管庫をリセット",
-  "announce.title": "お知らせ"
+  "announce.title": "お知らせ",
+  "changelog.details": "技術的な詳細",
+  "changelog.t_added": "追加",
+  "changelog.t_changed": "変更",
+  "changelog.t_fixed": "修正",
+  "changelog.t_security": "セキュリティ",
+  "changelog.t_removed": "削除",
+  "changelog.t_deprecated": "非推奨"
 }

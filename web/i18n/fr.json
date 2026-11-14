@@ -1503,10 +1503,10 @@
   "gate.continue_sensitive": "J'ai compris — Continuer",
   "gate.continue_adult": "J'ai 18 ans ou plus — Continuer",
   "changelog.title": "Historique des modifications",
-  "changelog.lead": "Commits, versions et demandes de fusion intégrées, du plus récent au plus ancien.",
+  "changelog.lead": "Ce qui a changé dans chaque app HOP, du plus récent au plus ancien.",
   "changelog.newer": "Plus récents",
   "changelog.older": "Plus anciens",
-  "changelog.sources": "Révisions du code",
+  "changelog.sources": "Dernière version de chaque app",
   "changelog.commit": "Commit",
   "changelog.pr": "Demande intégrée",
   "changelog.tag": "Version",
@@ -1627,5 +1627,12 @@
   "reset.done": "Coffre réinitialisé. Créez maintenant une nouvelle clé du coffre.",
   "reset.stale": "Votre connexion doit être vérifiée à nouveau. La page se recharge ; réessayez ensuite.",
   "reset.link": "Pas de code de récupération ? Réinitialisez le coffre",
-  "announce.title": "Annonce"
+  "announce.title": "Annonce",
+  "changelog.details": "Détails techniques",
+  "changelog.t_added": "Ajouté",
+  "changelog.t_changed": "Modifié",
+  "changelog.t_fixed": "Corrigé",
+  "changelog.t_security": "Sécurité",
+  "changelog.t_removed": "Supprimé",
+  "changelog.t_deprecated": "Obsolète"
 }

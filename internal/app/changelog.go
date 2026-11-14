@@ -10,8 +10,41 @@ import (
 	"github.com/navi-crwn/NoteHop/web"
 )
 
+// changeItem is one line of a release: what changed (Type), where (Where) and the plain-language Text.
+// encoding/json fills these from "type", "where" and "text" (names match without regard to case).
+type changeItem struct{ Type, Where, Text string }
+
+// changeEntry is one release. Entries from before the plain-language changelog have no Items and show as a title only.
 type changeEntry struct {
 	Kind, Date, Title, URL, ID, App, Repo string
+	Version, Summary                      string
+	Items                                 []changeItem
+}
+
+// changeGroup is the items of one type, in the order the page shows them.
+type changeGroup struct {
+	Type  string
+	Items []changeItem
+}
+
+var changeTypes = []string{"added", "changed", "fixed", "security", "removed", "deprecated"}
+
+// Groups sorts a release's items by type (added, changed, fixed, security, removed, deprecated), keeping the written
+// order inside a type, so the template needs no logic.
+func (e changeEntry) Groups() []changeGroup {
+	var out []changeGroup
+	for _, t := range changeTypes {
+		var items []changeItem
+		for _, it := range e.Items {
+			if it.Type == t {
+				items = append(items, it)
+			}
+		}
+		if len(items) > 0 {
+			out = append(out, changeGroup{Type: t, Items: items})
+		}
+	}
+	return out
 }
 
 type changeHistory struct {

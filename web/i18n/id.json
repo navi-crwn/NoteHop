@@ -1503,10 +1503,10 @@
   "gate.continue_sensitive": "Saya paham — Lanjutkan",
   "gate.continue_adult": "Saya berusia 18+ — Lanjutkan",
   "changelog.title": "Riwayat perubahan",
-  "changelog.lead": "Commit, rilis, dan pull request yang sudah digabungkan, dari yang terbaru.",
+  "changelog.lead": "Apa yang berubah di setiap app HOP, yang terbaru di atas.",
   "changelog.newer": "Lebih baru",
   "changelog.older": "Lebih lama",
-  "changelog.sources": "Revisi sumber",
+  "changelog.sources": "Rilis terbaru tiap app",
   "changelog.commit": "Commit",
   "changelog.pr": "Pull request digabungkan",
   "changelog.tag": "Rilis",
@@ -1627,5 +1627,12 @@
   "reset.done": "Brankas sudah direset. Buat kunci brankas baru sekarang.",
   "reset.stale": "Masukmu perlu diperiksa lagi. Halaman dimuat ulang; lalu coba sekali lagi.",
   "reset.link": "Tidak punya kode pemulihan? Reset brankas",
-  "announce.title": "Pengumuman"
+  "announce.title": "Pengumuman",
+  "changelog.details": "Detail teknis",
+  "changelog.t_added": "Ditambahkan",
+  "changelog.t_changed": "Diubah",
+  "changelog.t_fixed": "Diperbaiki",
+  "changelog.t_security": "Keamanan",
+  "changelog.t_removed": "Dihapus",
+  "changelog.t_deprecated": "Usang"
 }

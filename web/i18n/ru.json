@@ -1503,10 +1503,10 @@
   "gate.continue_sensitive": "Понятно — Продолжить",
   "gate.continue_adult": "Мне есть 18 лет — Продолжить",
   "changelog.title": "История изменений",
-  "changelog.lead": "Коммиты, выпуски и объединённые запросы на слияние — от новых к старым.",
+  "changelog.lead": "Что изменилось в каждом приложении HOP, сначала новое.",
   "changelog.newer": "Новее",
   "changelog.older": "Старее",
-  "changelog.sources": "Ревизии исходного кода",
+  "changelog.sources": "Последний выпуск каждого приложения",
   "changelog.commit": "Коммит",
   "changelog.pr": "Объединённый запрос",
   "changelog.tag": "Выпуск",
@@ -1627,5 +1627,12 @@
   "reset.done": "Сейф сброшен. Задайте новый ключ сейфа.",
   "reset.stale": "Вход нужно проверить заново. Страница перезагрузится; затем попробуйте ещё раз.",
   "reset.link": "Нет кода восстановления? Сбросьте сейф",
-  "announce.title": "Объявление"
+  "announce.title": "Объявление",
+  "changelog.details": "Технические подробности",
+  "changelog.t_added": "Добавлено",
+  "changelog.t_changed": "Изменено",
+  "changelog.t_fixed": "Исправлено",
+  "changelog.t_security": "Безопасность",
+  "changelog.t_removed": "Удалено",
+  "changelog.t_deprecated": "Устарело"
 }
