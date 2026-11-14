@@ -309,6 +309,7 @@
       if (!root.isConnected) return;
       var tgt = opts.uploadTarget ? opts.uploadTarget() : null, q = '', hdr = {};
       if (tgt && /^\/api\/n\/([^/]+)\/files$/.test(tgt.url)) q = '?note=' + RegExp.$1; else hdr['X-Upload-Draft'] = uploadDraft;
+      if (tgt && tgt.headers) Object.assign(hdr, tgt.headers);
       NH.api('GET', '/api/files/status' + q, undefined, hdr).then(function (s) {
         storageBlocked = !s.available;
         storageWarning.hidden = s.available;

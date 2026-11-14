@@ -1655,5 +1655,8 @@
   "dash.takeover_password": "这篇笔记设有密码。请用所有者链接打开后再编辑。",
   "web.files_top": "文件放在上方",
   "web.files_side": "文件放在侧边",
-  "web.resize": "调整预览大小"
+  "web.resize": "调整预览大小",
+  "err.files_busy": "服务器正在接收其他上传。请几秒后重试。",
+  "err.recheck": "这需要 HOP ID 在最近几分钟内确认过的登录。请退出，用 HOP ID 重新登录，然后再试一次。",
+  "err.vault_stale": "你的保险库密钥已过期（保险库已在另一台设备上重置）。请刷新页面并输入新密钥。"
 }

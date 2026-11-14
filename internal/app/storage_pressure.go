@@ -39,8 +39,14 @@ func (a *App) apiFileStatus(w http.ResponseWriter, r *http.Request) {
 	// What this note (or the draft being written) holds already, against its own limit.
 	scope := ""
 	if tok := r.URL.Query().Get("note"); tok != "" {
+		// Only someone who may write to the note (its keys, or its signed-in owner) is told what it holds:
+		// the size of an encrypted note's attachments is not for anyone who merely knows a link name.
 		if n, _, e := a.db.NoteByLink(tok); e == nil {
-			scope = "note:" + strconv.FormatInt(n.ID, 10)
+			u := a.currentUser(r)
+			owner := u != nil && n.OwnerID.Valid && n.OwnerID.Int64 == u.ID
+			if owner || hashMatch(r.Header.Get("X-Write"), n.WriteHash) || hashMatch(r.Header.Get("X-Admin"), n.AdminHash) {
+				scope = "note:" + strconv.FormatInt(n.ID, 10)
+			}
 		}
 	} else if d := r.Header.Get("X-Upload-Draft"); keyRe.MatchString(d) {
 		scope = "draft:" + hashHex(d)

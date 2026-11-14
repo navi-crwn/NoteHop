@@ -271,7 +271,12 @@
         return NH.api('POST', '/api/me/notes/' + encodeURIComponent(n.token) + '/takeover', { admin: admin, write: keys.write });
       }).then(function () {
         NH.recent.add({ token: n.token, k: k, a: admin, t: name(r) || '', created: n.created, expires: n.expires, p: false });
-        location.href = NH.noteURL(n.token, { k: k, a: admin });
+        // With the vault open the new keys go into it, so the account's other devices get them too (and do not
+        // take the note over again, which would cut this one off).
+        var sealed = vault ? vault.seal({ t: name(r) || '', k: k, a: admin, p: '' }).then(function (blob) {
+          return NH.api('POST', '/api/n/' + encodeURIComponent(n.token) + '/claim', { owner_blob: blob }, { 'X-Admin': admin });
+        }).catch(function () {}) : Promise.resolve();
+        return sealed.then(function () { location.href = NH.noteURL(n.token, { k: k, a: admin }); });
       }).catch(function (x) { btn.disabled = false; if (x) NH.toast(x.message, 'err'); });
     });
   }

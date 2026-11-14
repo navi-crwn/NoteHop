@@ -103,6 +103,7 @@ type App struct {
 	started   time.Time  // for /hop/health uptime
 	settings  sync.Map   // run-time settings from the control center (key → value), mirrors the settings table
 	uploadMu  sync.Mutex
+	uploadSem chan struct{} // at most uploadSlots bodies are read at once (memory: one body is up to 20 MB)
 
 	reportKeyOnce sync.Once // reportKey is made on first use
 	reportKey     []byte
@@ -132,7 +133,7 @@ func New(cfg Config, d *db.DB) (*App, error) {
 	if len(cfg.HopClients) == 0 {
 		cfg.HopClients = []string{"imperium", "helink"} // the control center and the account server
 	}
-	a := &App{cfg: cfg, db: d, limit: newLimiter(), quota: &dayQuota{m: map[string]*dayUse{}}, guests: &dayQuota{m: map[string]*dayUse{}}, used: usedTickets{m: map[string]int64{}}, tickets: recoveryTickets{m: map[string]recoveryTicket{}}}
+	a := &App{cfg: cfg, db: d, limit: newLimiter(), quota: &dayQuota{m: map[string]*dayUse{}}, guests: &dayQuota{m: map[string]*dayUse{}}, used: usedTickets{m: map[string]int64{}}, tickets: recoveryTickets{m: map[string]recoveryTicket{}}, uploadSem: make(chan struct{}, uploadSlots)}
 	a.space = diskSpace
 	a.hubUp = newHubProbe(cfg.SSOURL).Up
 	if err := a.loadTemplates(); err != nil {

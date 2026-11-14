@@ -1655,5 +1655,8 @@
   "dash.takeover_password": "Esta nota tiene contraseña. Ábrela con su enlace de propietario para editarla.",
   "web.files_top": "Archivos arriba",
   "web.files_side": "Archivos al lado",
-  "web.resize": "Cambiar el tamaño de la vista previa"
+  "web.resize": "Cambiar el tamaño de la vista previa",
+  "err.files_busy": "El servidor está recibiendo otras subidas. Inténtalo de nuevo en unos segundos.",
+  "err.recheck": "Esto necesita un inicio de sesión que HOP ID haya confirmado en los últimos minutos. Cierra sesión, vuelve a entrar con HOP ID e inténtalo de nuevo.",
+  "err.vault_stale": "Tu clave de bóveda está desactualizada (la bóveda se restableció en otro dispositivo). Recarga la página e introduce la clave nueva."
 }

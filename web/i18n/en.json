@@ -1655,5 +1655,8 @@
   "dash.takeover_password": "This note has a password. Open it with its owner link to edit it.",
   "web.files_top": "Files on top",
   "web.files_side": "Files at the side",
-  "web.resize": "Resize the preview"
+  "web.resize": "Resize the preview",
+  "err.files_busy": "The server is busy receiving other uploads. Try again in a few seconds.",
+  "err.recheck": "This needs a sign-in that HOP ID confirmed in the last few minutes. Sign out, sign in with HOP ID again, then try once more.",
+  "err.vault_stale": "Your vault key is out of date (the vault was reset on another device). Reload the page and enter the new key."
 }

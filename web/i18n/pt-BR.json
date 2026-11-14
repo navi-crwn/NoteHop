@@ -1655,5 +1655,8 @@
   "dash.takeover_password": "Esta nota tem senha. Abra-a com o link de dono para editar.",
   "web.files_top": "Arquivos no alto",
   "web.files_side": "Arquivos ao lado",
-  "web.resize": "Redimensionar a visualização"
+  "web.resize": "Redimensionar a visualização",
+  "err.files_busy": "O servidor está recebendo outros envios. Tente de novo em alguns segundos.",
+  "err.recheck": "Isso exige uma entrada que o HOP ID confirmou nos últimos minutos. Saia, entre de novo com o HOP ID e tente mais uma vez.",
+  "err.vault_stale": "Sua chave do cofre está desatualizada (o cofre foi redefinido em outro dispositivo). Recarregue a página e digite a nova chave."
 }

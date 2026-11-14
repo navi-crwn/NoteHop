@@ -1655,5 +1655,8 @@
   "dash.takeover_password": "Diese Notiz hat ein Passwort. Öffne sie mit ihrem Besitzer-Link, um sie zu bearbeiten.",
   "web.files_top": "Dateien oben",
   "web.files_side": "Dateien an der Seite",
-  "web.resize": "Vorschau in der Größe ändern"
+  "web.resize": "Vorschau in der Größe ändern",
+  "err.files_busy": "Der Server nimmt gerade andere Uploads entgegen. Versuche es in ein paar Sekunden erneut.",
+  "err.recheck": "Dafür ist eine Anmeldung nötig, die HOP ID in den letzten Minuten bestätigt hat. Melde dich ab, melde dich erneut mit HOP ID an und versuche es noch einmal.",
+  "err.vault_stale": "Dein Tresorschlüssel ist veraltet (der Tresor wurde auf einem anderen Gerät zurückgesetzt). Lade die Seite neu und gib den neuen Schlüssel ein."
 }

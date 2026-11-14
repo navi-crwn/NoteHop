@@ -19,15 +19,20 @@ import (
 //   - only notes the session's account owns, and only BASIC notes (the server can read them anyway). An encrypted
 //     note's keys never come near the server, so it is refused here whatever the caller says;
 //   - not a frozen snapshot (read-only for everyone);
-//   - the account server must have vouched for the session recently (verifiedUser), the request must be
+//   - for a HOP ID account the account server must have vouched for this very session recently, strictly
+//     (freshlyVouched: no cooldown cookie, no "hub is down", no "sign-on is off" shortcut); the request must be
 //     same-origin like every change, and there is a per-account limit.
 //
 // It adds no way to act on a note without being its owner, and it does not turn the session cookie into an
 // admin key: later edits still send the keys the browser holds.
 func (a *App) apiTakeover(w http.ResponseWriter, r *http.Request) {
-	u := a.verifiedUser(r)
+	u := a.currentUser(r)
 	if u == nil {
 		apiErr(w, http.StatusUnauthorized, "err.not_signed_in")
+		return
+	}
+	if !a.freshlyVouched(r, u) {
+		apiErr(w, http.StatusUnauthorized, "err.recheck")
 		return
 	}
 	if !a.limit.allow("t"+u.Username, 20) {
@@ -70,5 +75,7 @@ func (a *App) apiTakeover(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInternalServerError, "err.takeover_failed")
 		return
 	}
+	// Whoever was editing live with the old keys is cut off; the owner's page reconnects with the new ones.
+	a.live.closePeers(n.ID, nil)
 	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
 }

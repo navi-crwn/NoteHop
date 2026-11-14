@@ -3,7 +3,6 @@ package app
 import (
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/navi-crwn/NoteHop/internal/db"
 )
@@ -32,16 +31,9 @@ func (a *App) resetGate(w http.ResponseWriter, r *http.Request) *db.User {
 		apiErr(w, http.StatusUnauthorized, "err.not_signed_in")
 		return nil
 	}
-	if u.SSOID != "" {
-		c, err := r.Cookie(sessionCookie)
-		var at time.Time
-		if err == nil {
-			at, err = a.db.SessionVerifiedAt(hashHex(c.Value))
-		}
-		if err != nil || !a.cfg.SSOEnabled() || time.Since(at) > recheckAfter {
-			apiErr(w, http.StatusUnauthorized, "err.reset_recheck")
-			return nil
-		}
+	if !a.freshlyVouched(r, u) {
+		apiErr(w, http.StatusUnauthorized, "err.reset_recheck")
+		return nil
 	}
 	if u.SSOID == "" {
 		// A password account's vault key comes from the password: there is no separate phrase to forget.

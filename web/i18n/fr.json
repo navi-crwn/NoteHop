@@ -1655,5 +1655,8 @@
   "dash.takeover_password": "Cette note a un mot de passe. Ouvrez-la avec son lien de propriétaire pour la modifier.",
   "web.files_top": "Fichiers en haut",
   "web.files_side": "Fichiers sur le côté",
-  "web.resize": "Redimensionner l’aperçu"
+  "web.resize": "Redimensionner l’aperçu",
+  "err.files_busy": "Le serveur reçoit d’autres envois. Réessayez dans quelques secondes.",
+  "err.recheck": "Cela exige une connexion que HOP ID a confirmée ces dernières minutes. Déconnectez-vous, reconnectez-vous avec HOP ID, puis réessayez.",
+  "err.vault_stale": "Votre clé du coffre est périmée (le coffre a été réinitialisé sur un autre appareil). Rechargez la page et saisissez la nouvelle clé."
 }

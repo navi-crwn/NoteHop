@@ -1655,5 +1655,8 @@
   "dash.takeover_password": "Catatan ini punya sandi. Buka dengan tautan pemiliknya untuk mengubahnya.",
   "web.files_top": "Berkas di atas",
   "web.files_side": "Berkas di samping",
-  "web.resize": "Ubah ukuran pratinjau"
+  "web.resize": "Ubah ukuran pratinjau",
+  "err.files_busy": "Server sedang menerima unggahan lain. Coba lagi beberapa detik lagi.",
+  "err.recheck": "Ini memerlukan masuk yang dikonfirmasi HOP ID dalam beberapa menit terakhir. Keluar, masuk lagi dengan HOP ID, lalu coba sekali lagi.",
+  "err.vault_stale": "Kunci brankasmu sudah usang (brankas direset di perangkat lain). Muat ulang halaman dan masukkan kunci baru."
 }

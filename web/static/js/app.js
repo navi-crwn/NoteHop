@@ -70,6 +70,8 @@
 
   NH.api = function (method, path, body, headers) {
     var init = { method: method, headers: Object.assign({}, headers || {}), credentials: 'same-origin' };
+    // The vault generation this page was loaded with: the server refuses a write sealed with an older key (after a reset).
+    if (document.body.dataset.epoch) init.headers['X-Vault-Epoch'] = document.body.dataset.epoch;
     if (body instanceof Uint8Array || body instanceof Blob) {
       init.headers['Content-Type'] = 'application/octet-stream';
       init.body = body;
