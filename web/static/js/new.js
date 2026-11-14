@@ -92,13 +92,13 @@
     if (radio('until') !== 'forever' && radio('until') !== 'other') $('#expires').value = radio('until');
     set('burn', views() > 0);
     RULES.forEach(function (r) {
-      var input = toggle(r.feature), blocked = r.when(), lbl = input.closest('label');
+      var input = toggle(r.feature), blocked = !!blockedBy(r.feature), lbl = input.closest('label'), why = (blockedBy(r.feature) || r).why;
       if (blocked && input.checked) {
         input.checked = false;
         if (r.feature === 'burn') pick('opens', '0');
         if (!r.quiet) NH.toast(r.why);
       }
-      if (lbl) { lbl.classList.toggle('blocked', blocked); lbl.title = blocked ? r.why : ''; }
+      if (lbl) { lbl.classList.toggle('blocked', blocked); lbl.title = blocked ? why : ''; }
     });
     // A setting that can't be used here stays visible, with the reason and the way to change it.
     // A password on a basic note only locks it: say so right where the password is typed.
