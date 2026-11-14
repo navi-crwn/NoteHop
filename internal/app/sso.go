@@ -257,7 +257,8 @@ func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
 	if silent {
 		dest = withRC(dest)
 	}
-	if silent && same {
+	// A sign-in asked for before a vault reset goes straight on: the person forgot the phrase the vault page would ask for.
+	if (silent && same) || relogin {
 		http.Redirect(w, r, dest, http.StatusSeeOther)
 		return
 	}

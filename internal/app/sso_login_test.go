@@ -46,10 +46,10 @@ func TestVaultResetNeedsASignInTheHubStamped(t *testing.T) {
 	if code, _ := ssoCallback(t, c, ticketWithAuthTime("9101", state, now)); code != http.StatusSeeOther {
 		t.Fatalf("ordinary sign-in: %d", code)
 	}
-	if code, m, _ := c.do("GET", resetPath, nil, nil); code != http.StatusUnauthorized || m["code"] != "err.reset_login" {
+	if code, m, _ := c.do("GET", resetPath, nil, nil); code != http.StatusForbidden || m["code"] != "err.reset_login" {
 		t.Fatalf("ordinary sign-in, preview: %d %v", code, m)
 	}
-	if code, m, _ := c.do("POST", resetPath, body, nil); code != http.StatusUnauthorized || m["code"] != "err.reset_login" {
+	if code, m, _ := c.do("POST", resetPath, body, nil); code != http.StatusForbidden || m["code"] != "err.reset_login" {
 		t.Fatalf("ordinary sign-in, reset: %d %v", code, m)
 	}
 
@@ -73,7 +73,7 @@ func TestVaultResetNeedsASignInTheHubStamped(t *testing.T) {
 	e = newRecheckEnv(t)
 	c = noRedirect(t, e.srv)
 	state = reloginStart(t, c)
-	if code, loc := ssoCallback(t, c, ticketWithAuthTime("9103", state, now-30)); code != http.StatusSeeOther || loc == "" {
+	if code, loc := ssoCallback(t, c, ticketWithAuthTime("9103", state, now-30)); code != http.StatusSeeOther || loc != "/security?reset=1" {
 		t.Fatalf("fresh sign-in: %d %s", code, loc)
 	}
 	u, _ := e.db.UserBySSO("9103")
@@ -85,7 +85,7 @@ func TestVaultResetNeedsASignInTheHubStamped(t *testing.T) {
 	if _, err := e.db.Exec(`UPDATE sessions SET login_at = ?`, now-int64((reLoginWindow+time.Minute).Seconds())); err != nil {
 		t.Fatal(err)
 	}
-	if code, m, _ := c.do("POST", resetPath, body, nil); code != http.StatusUnauthorized || m["code"] != "err.reset_login" {
+	if code, m, _ := c.do("POST", resetPath, body, nil); code != http.StatusForbidden || m["code"] != "err.reset_login" {
 		t.Fatalf("an old stamp: %d %v", code, m)
 	}
 	if got := e.count(`SELECT COUNT(*) FROM notes WHERE owner_id = ? AND encrypted = 1`, u.ID); got != 1 {

@@ -107,6 +107,7 @@ type App struct {
 	uploadIP  map[string]int // slots held per client address, at most uploadSlotsPerIP each
 	uploadIPM sync.Mutex
 	pwTries   pwGuards // wrong password proofs on basic notes (pwguess.go)
+	news      hubNews  // the family announcement from the hub (hubnews.go)
 
 	reportKeyOnce sync.Once // reportKey is made on first use
 	reportKey     []byte
@@ -368,6 +369,7 @@ type pageData struct {
 	Reminders     map[string]bool // reminder cards due on the dashboard, by key (reminders.go)
 	Announce      string          // the notice at the top of the dashboard home (hop.go), "" when there is none
 	AnnounceID    string          // a short fingerprint of it: hiding one notice does not hide the next
+	HubNews       *hubItem        // the family announcement under it (hubnews.go), nil when there is none
 	DashView      string          // "vault" on the encrypted-notes view of the dashboard, "" (basic notes) otherwise
 	Status        *liveStatus     // /status only
 	Changelog     *changePage
@@ -498,6 +500,11 @@ func (a *App) dashboardPage(w http.ResponseWriter, r *http.Request) {
 	due := map[string]bool{remindRecovery: a.reminderDue(u, remindRecovery, a.recoveryStatus(u).Left == 0, time.Now())}
 	d := pageData{Title: a.locale(w, r).T("title.dashboard"), User: u, NoIndex: true, Reminders: due}
 	d.Announce, d.AnnounceID = a.announcement(), a.announcementID()
+	// The family announcement: a closed one stays away for seven days (the reminder mechanism, key ann-<id>); a
+	// critical one cannot be closed and always shows.
+	if it := a.hubAnnouncement(time.Now()); it != nil && (!it.Closable || a.reminderDue(u, reminderAnnPrefix+it.ID, true, time.Now())) {
+		d.HubNews = it
+	}
 	if r.URL.Query().Get("view") == "vault" {
 		d.DashView = "vault"
 	}

@@ -1580,3 +1580,9 @@ h1, h2, .note-title h1 { overflow-wrap: anywhere; }
 .foot-brand b img { width: 20px; height: 20px; display: block; }
 .wr-blocked { margin: 0; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--panel-2); color: var(--muted); font: 500 .76rem/1.45 var(--sans); }
 .wr-blocked[hidden] { display: none; }
+
+/* With a HOP ID hub the local sign-in is folded under one small line: accounts made on NoteHop before still use it. */
+.old-login > summary { list-style: none; cursor: pointer; text-align: center; margin: 14px 0 0; color: var(--muted); font-size: .85rem; text-decoration: underline; text-underline-offset: 3px; }
+.old-login > summary::-webkit-details-marker { display: none; }
+.old-login > summary:focus-visible { outline: 2px solid var(--accent, currentColor); outline-offset: 3px; border-radius: 4px; }
+.old-login[open] > summary { margin-bottom: 14px; }

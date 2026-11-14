@@ -152,7 +152,7 @@
         rdlg.showModal();
         rword.focus();
       }, function (x) {
-        if (x.status === 401 && x.code === 'err.reset_login') { NH.toast(NH.t('reset.relogin'), 'ok'); return setTimeout(relogin, 900); }
+        if (x.code === 'err.reset_login') { NH.toast(NH.t('reset.relogin'), 'ok'); return setTimeout(relogin, 900); }
         NH.toast(x.message, 'err');
       });
     });
@@ -176,7 +176,7 @@
         setTimeout(function () { location.href = r.next || '/vault'; }, 900);
       }, function (x) {
         rgo.disabled = rword.value.trim() !== word;
-        if (x.status === 401 && x.code === 'err.reset_login') { rdlg.close(); NH.toast(NH.t('reset.relogin'), 'ok'); return setTimeout(relogin, 900); }
+        if (x.code === 'err.reset_login') { rdlg.close(); NH.toast(NH.t('reset.relogin'), 'ok'); return setTimeout(relogin, 900); }
         if (x.status === 401 && x.code === 'err.reset_recheck') { rfail(x); return; } // needs a fresh HOP ID sign-in: sign out and in again
         if (x.status === 401) { // not signed in any more
           rfail(new Error(NH.t('reset.stale')));

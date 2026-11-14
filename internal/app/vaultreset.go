@@ -43,7 +43,7 @@ func (a *App) resetGate(w http.ResponseWriter, r *http.Request) *db.User {
 	// The vault phrase cannot be asked for, so the person must have just signed in at the account server for real:
 	// the page sends them there (prompt=login) and back. A hub that cannot stamp the sign-in leaves no way through.
 	if !a.freshlyLoggedIn(r, u) {
-		apiErr(w, http.StatusUnauthorized, "err.reset_login")
+		apiErr(w, http.StatusForbidden, "err.reset_login")
 		return nil
 	}
 	return u

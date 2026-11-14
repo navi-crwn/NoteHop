@@ -7,6 +7,11 @@
     <div class="announce-body"><b id="announce-h">{{.L.T "announce.title"}}</b><p>{{.Announce}}</p></div>
     <button type="button" class="icon-btn sm" id="announce-close" aria-label="{{.L.T "common.close"}}" title="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button>
   </section>{{end}}
+  {{with .HubNews}}<!-- the family announcement from the HOP ID hub: plain text, one card, hidden for a week once closed (a critical one cannot be) -->
+  <section class="alert {{if eq .Level "critical"}}err{{else if eq .Level "warning"}}warn{{else}}info{{end}} announce hubnews" id="hubnews" {{if .Closable}}data-hop-remind="ann-{{.ID}}" data-hop-remind-url="/api/me/reminders/dismiss" {{end}}aria-labelledby="hubnews-h">
+    <svg><use href="#i-spark"/></svg>
+    <div class="announce-body"><b id="hubnews-h">{{if .URL}}<a href="{{.URL}}" rel="noopener noreferrer">{{.Title}}</a>{{else}}{{.Title}}{{end}}</b>{{if .Body}}<p>{{.Body}}</p>{{end}}</div>
+  </section>{{end}}
   <div class="page-head">
     <div><h1>{{if eq .DashView "vault"}}{{.L.T "dash.vault_btn"}}{{else}}{{.L.T "title.dashboard"}}{{end}}</h1><p class="muted" id="dash-lead">{{if eq .DashView "vault"}}{{.L.T "dash.lead"}}{{else}}{{.L.T "dash.lead_basic"}}{{end}}</p></div>
     <div class="btn-row">{{if eq .DashView "vault"}}<a class="btn" href="/dashboard"><svg><use href="#i-grid"/></svg>{{.L.T "nav.mine"}}</a>{{else}}<a class="btn" href="/dashboard?view=vault" id="vault-btn"><svg><use href="#i-lock"/></svg><span>{{.L.T "dash.vault_btn"}}</span></a>{{end}}<a class="btn" href="/security"><svg><use href="#i-key"/></svg>{{.L.T "sec.title"}}</a><a class="btn primary" href="{{if eq .DashView "vault"}}/new{{else}}/new?kind=basic{{end}}"><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a></div>

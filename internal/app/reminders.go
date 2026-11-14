@@ -3,6 +3,7 @@ package app
 import (
 	"log"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/navi-crwn/NoteHop/internal/db"
@@ -21,7 +22,14 @@ const reminderQuiet = 7 * 24 * time.Hour
 // remindRecovery: the account has no unused recovery code.
 const remindRecovery = "recovery-codes"
 
-var reminderKeys = map[string]bool{remindRecovery: true}
+// reminderAnnPrefix starts the key of a family announcement's card: ann-<id of the notice>.
+const reminderAnnPrefix = "ann-"
+
+var annKeyRe = regexp.MustCompile(`^ann-[A-Za-z0-9_-]{1,40}$`)
+
+// reminderKey says whether a card key may be hidden: the recovery card, or a family announcement (any id: a made-up
+// one only fills the member's own row, and a critical notice ignores it).
+func reminderKey(k string) bool { return k == remindRecovery || annKeyRe.MatchString(k) }
 
 // reminderDue reports whether a card is shown now: its task is still open and
 // the member has not hidden it in the last seven days.
@@ -50,7 +58,7 @@ func (a *App) apiDismissReminder(w http.ResponseWriter, r *http.Request) {
 	if !readJSON(w, r, &q, 256) {
 		return
 	}
-	if !reminderKeys[q.Key] {
+	if !reminderKey(q.Key) {
 		apiErr(w, http.StatusBadRequest, "err.bad_request")
 		return
 	}
