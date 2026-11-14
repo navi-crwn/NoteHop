@@ -1,6 +1,7 @@
-// Security page: recovery codes and changing the password (or the vault
-// phrase of a single sign-on account). Codes are made here and shown once;
-// the server gets only what crypto.js derives from them (see recovery.go).
+// Security page: recovery codes, changing the password (or the vault
+// phrase of a single sign-on account) and, for a HOP ID account that lost its
+// vault key, starting again. Codes are made here and shown once; the server
+// gets only what crypto.js derives from them (see recovery.go, vaultreset.go).
 (function () {
   'use strict';
   var $ = NH.$, h = NH.h;
@@ -129,4 +130,53 @@
       NH.toast(NH.t(sso ? 'sec.phrase_changed' : 'sec.password_changed'), 'ok');
     }, function (x) { fail(x.message); });
   });
+
+  // ---------- reset vault: the way out of a forgotten vault key, by giving up what it sealed ----------
+  var rdlg = $('#reset-dlg');
+  if (rdlg) {
+    var rform = $('#reset-form'), rword = $('#reset-word'), rgo = $('#reset-go'), rerr = $('#reset-err'), word = 'RESET';
+    var shows = [['notes', 'reset.c_notes'], ['files', 'reset.c_files'], ['links', 'reset.c_links'], ['margins', 'reset.c_margins'], ['codes', 'reset.c_codes']];
+    var rfail = function (x) { rerr.textContent = x.message; rerr.classList.remove('hide'); };
+    $('#reset-open').addEventListener('click', function () {
+      rform.reset();
+      rerr.classList.add('hide');
+      rgo.disabled = true;
+      // What would go, counted by the server now: the person is told the real numbers.
+      NH.api('GET', '/api/me/vault/reset').then(function (r) {
+        word = r.word;
+        $('#reset-word-l').textContent = NH.t('reset.type', { word: word });
+        $('#reset-list').replaceChildren.apply($('#reset-list'), shows.map(function (s) { return h('li', NH.t(s[1], { n: r.counts[s[0]] })); }).concat(r.counts.kept ? [h('li', NH.t('reset.kept', { n: r.counts.kept }))] : []));
+        rdlg.showModal();
+        rword.focus();
+      }, function (x) { NH.toast(x.message, 'err'); });
+    });
+    // The button can only be pressed once the word is typed exactly.
+    rword.addEventListener('input', function () { rgo.disabled = rword.value.trim() !== word; });
+    rform.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (rword.value.trim() !== word) return;
+      rerr.classList.add('hide');
+      rgo.disabled = true;
+      NH.api('POST', '/api/me/vault/reset', { confirm: rword.value.trim() }).then(function (r) {
+        // This browser's copy of the old key, the AI key sealed with it and the list of recent notes go too.
+        NH.store.del('nh_vault');
+        NH.store.del('nh_ai');
+        NH.recent.clear();
+        // and the copies of note data the offline worker kept on this device
+        try { if (window.caches) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }); } catch (e) {}
+        rdlg.close();
+        NH.toast(NH.t('reset.done'), 'ok');
+        setTimeout(function () { location.href = r.next || '/vault'; }, 900);
+      }, function (x) {
+        rgo.disabled = rword.value.trim() !== word;
+        if (x.status === 401 && x.code === 'err.reset_recheck') { rfail(x); return; } // needs a fresh HOP ID sign-in: sign out and in again
+        if (x.status === 401) { // not signed in any more
+          rfail(new Error(NH.t('reset.stale')));
+          setTimeout(function () { location.reload(); }, 1800);
+          return;
+        }
+        rfail(x);
+      });
+    });
+  }
 })();

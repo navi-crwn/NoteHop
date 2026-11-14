@@ -24,7 +24,7 @@ async function page(b) {
 const wait = (p, fn, arg, t) => p.waitForFunction(fn, arg, { timeout: t || 10000 });
 
 (async () => {
-  const b = await chromium.launch();
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {});
   try {
     const a = await page(b);
     const frames = [];

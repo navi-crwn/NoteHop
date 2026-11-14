@@ -13,6 +13,8 @@
 .shell-nav a[aria-current="page"] svg { color: var(--cyan); }
 .shell-label { margin: 14px 12px 6px; font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
 .shell-side-foot { margin: auto 0 0; padding: 12px 12px 4px; border-top: 1px solid var(--line); font-size: .78rem; color: var(--faint); }
+.shell-side-foot p { margin: 0; }
+.shell-side-foot .part-of { margin: 0; padding: 10px 0 0; }
 .shell-side-foot a { color: inherit; }
 .shell-side-foot a:hover { color: var(--text); }
 .shell-body { margin-inline-start: var(--side); min-height: 100vh; display: flex; flex-direction: column; min-width: 0; }

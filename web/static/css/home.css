@@ -55,7 +55,7 @@ body[data-page=home] main::before { content: ""; position: absolute; inset: 0 0 
 .h-hero { display: grid; grid-template-columns: 1.05fr .95fr; align-items: center; gap: 24px; padding: 56px 0 20px; }
 .h-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 14px 4px 4px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--panel); font-size: 14px; color: var(--muted); text-decoration: none; }
 .h-chip:hover { text-decoration: none; border-color: var(--accent); }
-.h-chip b { padding: 2px 10px; border-radius: 999px; background: var(--grad); color: #061016; font: 700 12px var(--h-mono); }
+.h-chip b { padding: 2px 10px; border-radius: 999px; background: var(--grad); color: var(--btn-fg); font: 700 12px var(--h-mono); }
 .h-chip svg { width: 15px; height: 15px; color: var(--text); }
 .h-hero h1 { font-size: clamp(38px, 5vw, 66px); line-height: 1; letter-spacing: -.045em; font-weight: 800; margin: 24px 0 20px; text-wrap: balance; }
 .h-hero h1 em.scrambled { font-family: var(--h-mono); font-style: normal; font-size: .62em; letter-spacing: 0; }
@@ -120,7 +120,7 @@ body[data-page=home] main::before { content: ""; position: absolute; inset: 0 0 
 .h-steps b { display: block; color: var(--text); font-size: 16px; }
 .h-steps span { font-size: 14px; }
 .h-steps li.on { background: var(--panel); color: var(--text); box-shadow: 0 1px 3px rgba(0, 0, 0, .1); }
-.h-steps li.on::before { background: var(--grad); color: #061016; }
+.h-steps li.on::before { background: var(--grad); color: var(--btn-fg); }
 .h-bar { height: 4px; margin: 14px 14px 0; border-radius: 2px; background: var(--line-2); overflow: hidden; }
 .h-bar i { display: block; height: 100%; width: 0; background: var(--grad); }
 .h-scene { position: relative; height: clamp(380px, calc(100vh - 300px), 520px); border-radius: 26px; background: var(--panel-2); border: 1px solid var(--line); overflow: hidden; }

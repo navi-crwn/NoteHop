@@ -103,6 +103,7 @@ type App struct {
 	started   time.Time  // for /hop/health uptime
 	settings  sync.Map   // run-time settings from the control center (key → value), mirrors the settings table
 	uploadMu  sync.Mutex
+	uploadSem chan struct{} // at most uploadSlots bodies are read at once (memory: one body is up to 20 MB)
 
 	reportKeyOnce sync.Once // reportKey is made on first use
 	reportKey     []byte
@@ -120,8 +121,8 @@ func New(cfg Config, d *db.DB) (*App, error) {
 	if cfg.FilesAccountMB < 0 { // nonsense is not "no limit": that is 0
 		cfg.FilesAccountMB = DefaultFilesAccountMB
 	}
-	if cfg.FileMB > 5 {
-		cfg.FileMB = 5
+	if cfg.FileMB > MaxFileMB {
+		cfg.FileMB = MaxFileMB
 	}
 	if cfg.StoragePath == "" {
 		cfg.StoragePath = "."
@@ -132,7 +133,7 @@ func New(cfg Config, d *db.DB) (*App, error) {
 	if len(cfg.HopClients) == 0 {
 		cfg.HopClients = []string{"imperium", "helink"} // the control center and the account server
 	}
-	a := &App{cfg: cfg, db: d, limit: newLimiter(), quota: &dayQuota{m: map[string]*dayUse{}}, guests: &dayQuota{m: map[string]*dayUse{}}, used: usedTickets{m: map[string]int64{}}, tickets: recoveryTickets{m: map[string]recoveryTicket{}}}
+	a := &App{cfg: cfg, db: d, limit: newLimiter(), quota: &dayQuota{m: map[string]*dayUse{}}, guests: &dayQuota{m: map[string]*dayUse{}}, used: usedTickets{m: map[string]int64{}}, tickets: recoveryTickets{m: map[string]recoveryTicket{}}, uploadSem: make(chan struct{}, uploadSlots)}
 	a.space = diskSpace
 	a.hubUp = newHubProbe(cfg.SSOURL).Up
 	if err := a.loadTemplates(); err != nil {
@@ -295,6 +296,9 @@ func (a *App) routes() {
 	m.HandleFunc("POST /api/vault", a.apiVault)
 	m.HandleFunc("POST /api/me/recovery", a.apiSetRecovery)
 	m.HandleFunc("POST /api/me/secret", a.apiChangeSecret)
+	m.HandleFunc("GET /api/me/vault/reset", a.apiResetPreview) // reset vault (vaultreset.go)
+	m.HandleFunc("POST /api/me/vault/reset", a.apiResetVault)
+	m.HandleFunc("POST /api/me/notes/{token}/takeover", a.apiTakeover) // new editing keys for a basic note (takeover.go)
 	m.HandleFunc("POST /api/recover", a.apiRecover)
 	m.HandleFunc("POST /api/recover/finish", a.apiRecoverFinish)
 	m.HandleFunc("POST /api/n/{token}/report", a.apiReport)
@@ -359,6 +363,9 @@ type pageData struct {
 	Dash          bool            // the signed-in dashboard shell (sidebar, settings-type top bar)
 	MiniFoot      bool            // a working page: one line of footer instead of the columns
 	Reminders     map[string]bool // reminder cards due on the dashboard, by key (reminders.go)
+	Announce      string          // the notice at the top of the dashboard home (hop.go), "" when there is none
+	AnnounceID    string          // a short fingerprint of it: hiding one notice does not hide the next
+	DashView      string          // "vault" on the encrypted-notes view of the dashboard, "" (basic notes) otherwise
 	Status        *liveStatus     // /status only
 	Changelog     *changePage
 }
@@ -486,7 +493,12 @@ func (a *App) dashboardPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	due := map[string]bool{remindRecovery: a.reminderDue(u, remindRecovery, a.recoveryStatus(u).Left == 0, time.Now())}
-	a.render(w, r, http.StatusOK, "dashboard", pageData{Title: a.locale(w, r).T("title.dashboard"), User: u, NoIndex: true, Reminders: due})
+	d := pageData{Title: a.locale(w, r).T("title.dashboard"), User: u, NoIndex: true, Reminders: due}
+	d.Announce, d.AnnounceID = a.announcement(), a.announcementID()
+	if r.URL.Query().Get("view") == "vault" {
+		d.DashView = "vault"
+	}
+	a.render(w, r, http.StatusOK, "dashboard", d)
 }
 
 // profileOrNote serves /@name as a profile and /TOKEN as a note page. Site

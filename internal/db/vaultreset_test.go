@@ -1,0 +1,379 @@
+package db
+
+import (
+	"path/filepath"
+	"strconv"
+	"strings"
+	"testing"
+	"time"
+)
+
+// An account with everything a vault protects, and a second account that must stay exactly as it was.
+type vaultFixture struct {
+	d          *DB
+	a, b       *User
+	keepA      string // the session of A that survives the reset
+	aNotes     []*Note
+	bNote      *Note
+	frozenLink *Link
+}
+
+func seedVault(t *testing.T) *vaultFixture {
+	t.Helper()
+	d, err := Open(filepath.Join(t.TempDir(), "t.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { d.Close() })
+	mk := func(name, sso string) *User {
+		u := &User{Username: name, SSOID: sso, Email: name + "@example.test"}
+		if err := d.CreateSSOUser(u); err != nil {
+			t.Fatal(err)
+		}
+		if err := d.SetVaultCheck(u.ID, "check-"+name); err != nil {
+			t.Fatal(err)
+		}
+		if err := d.SetSecret(u.ID, true, "check-"+name, "wrap-"+name); err != nil {
+			t.Fatal(err)
+		}
+		if err := d.SetRecoveryCodes(u.ID, []RecoveryCode{{Slot: 0, ProofHash: "p0" + name, Wrap: "w0"}, {Slot: 1, ProofHash: "p1" + name, Wrap: "w1"}}); err != nil {
+			t.Fatal(err)
+		}
+		if err := d.SetMargin(u.ID, "ref-"+name, "private words"); err != nil {
+			t.Fatal(err)
+		}
+		if err := d.DismissReminder(u.ID, "recovery-codes"); err != nil {
+			t.Fatal(err)
+		}
+		return u
+	}
+	f := &vaultFixture{d: d, a: mk("helena", "sso-helena"), b: mk("budi", "sso-budi")}
+	for _, tok := range []string{"helena-one", "helena-two"} {
+		n := newOwnedNote(t, d, f.a.ID, tok)
+		f.aNotes = append(f.aNotes, n)
+	}
+	// the first note is encrypted (it and its frozen copy go with the vault); the second is basic (it stays)
+	if _, err := d.Exec(`UPDATE notes SET encrypted = 1 WHERE id = ?`, f.aNotes[0].ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := d.Exec(`UPDATE notes SET owner_blob = 'sealed-with-the-old-key' WHERE owner_id = ?`, f.a.ID); err != nil {
+		t.Fatal(err)
+	}
+	// a second share link for the first note, a frozen copy (it keeps the owner), an attachment of a note,
+	// and an upload that no note has claimed yet
+	if err := d.AddLink(&Link{Token: "extra-LINK-a", NoteID: f.aNotes[0].ID, Mode: "read"}); err != nil {
+		t.Fatal(err)
+	}
+	fl, err := d.Freeze(f.aNotes[0], "frozen-copy-a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.frozenLink = fl
+	addFile(t, d, "fileA-note", "note:"+itoa(f.aNotes[0].ID))
+	addFile(t, d, "fileA-draft", "draft:abc")
+	if _, err := d.Exec(`UPDATE files SET owner_id = ? WHERE id = 'fileA-draft'`, f.a.ID); err != nil {
+		t.Fatal(err)
+	}
+	f.bNote = newOwnedNote(t, d, f.b.ID, "budi-one")
+	addFile(t, d, "fileB-note", "note:"+itoa(f.bNote.ID))
+	addFile(t, d, "fileB-draft", "draft:budi")
+	if _, err := d.Exec(`UPDATE files SET owner_id = ? WHERE id = 'fileB-draft'`, f.b.ID); err != nil {
+		t.Fatal(err)
+	}
+	for _, s := range []struct {
+		hash string
+		u    *User
+	}{{"sess-a-keep", f.a}, {"sess-a-other", f.a}, {"sess-b", f.b}} {
+		if err := d.CreateSession(s.hash, s.u.ID, time.Hour); err != nil {
+			t.Fatal(err)
+		}
+	}
+	f.keepA = "sess-a-keep"
+	return f
+}
+
+func itoa(n int64) string { return strconv.FormatInt(n, 10) }
+
+func (f *vaultFixture) count(t *testing.T, q string, args ...any) int {
+	t.Helper()
+	var n int
+	if err := f.d.QueryRow(q, args...).Scan(&n); err != nil {
+		t.Fatal(err)
+	}
+	return n
+}
+
+// The reset takes every trace of what the old phrase sealed, from every table the account has rows in,
+// and leaves another account untouched.
+func TestResetVaultDeletesEverythingOfTheAccountAndNothingElse(t *testing.T) {
+	f := seedVault(t)
+	before, err := f.d.VaultResetCounts(f.a.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if before.Notes != 2 || before.Kept != 1 || before.Links != 3 || before.Files != 2 || before.Margins != 1 || before.Codes != 2 {
+		t.Fatalf("what the screen will say it takes: %+v (want 2 encrypted notes incl. the frozen copy, 1 basic kept, 3 links, 2 files, 1 margin, 2 codes)", before)
+	}
+	got, err := f.d.ResetVault(f.a.ID, f.keepA, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != before {
+		t.Fatalf("it took %+v but said it would take %+v", got, before)
+	}
+
+	for table, q := range map[string]string{
+		"encrypted notes": `SELECT COUNT(*) FROM notes WHERE owner_id = ? AND encrypted = 1`,
+		"links":           `SELECT COUNT(*) FROM links WHERE token IN ('helena-one','extra-LINK-a','frozen-copy-a')`,
+		"margins":         `SELECT COUNT(*) FROM margins WHERE user_id = ?`,
+		"recovery_codes":  `SELECT COUNT(*) FROM recovery_codes WHERE user_id = ?`,
+		"reminders":       `SELECT COUNT(*) FROM reminders WHERE user_id = ?`,
+		"files":           `SELECT COUNT(*) FROM files WHERE id IN ('fileA-note','fileA-draft')`,
+	} {
+		var n int
+		if strings.Contains(q, "?") {
+			n = f.count(t, q, f.a.ID)
+		} else {
+			n = f.count(t, q)
+		}
+		if n != 0 {
+			t.Errorf("%s: %d rows of the account are left", table, n)
+		}
+	}
+	// the old links are gone like any deleted note's: nothing opens, and the names are held for the account
+	for _, tok := range []string{"helena-one", "extra-LINK-a", "frozen-copy-a"} {
+		if _, _, err := f.d.NoteByLink(tok); err == nil {
+			t.Errorf("link %s still opens a note", tok)
+		}
+	}
+	// the basic note stays, still the account's, readable, without the blob sealed with the old key
+	if n, _, err := f.d.NoteByLink("helena-two"); err != nil || n.OwnerID.Int64 != f.a.ID || n.OwnerBlob != "" {
+		t.Errorf("the basic note: %v %+v", err, n)
+	}
+	if _, _, held := f.d.SlugHold("helena-two"); held {
+		t.Error("the link name of a note that stayed is held")
+	}
+	if owner, _, held := f.d.SlugHold("helena-one"); !held || owner.Int64 != f.a.ID {
+		t.Errorf("the link name was not held for the account: %v %v", owner, held)
+	}
+	u, err := f.d.UserByID(f.a.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if u.VaultCheck != "" || u.VaultWrap != "" {
+		t.Errorf("the unlock secrets are still there: check=%q wrap=%q", u.VaultCheck, u.VaultWrap)
+	}
+	if u.SSOID != "sso-helena" {
+		t.Errorf("the account itself changed: %q", u.SSOID)
+	}
+	if n := f.count(t, `SELECT COUNT(*) FROM sessions WHERE user_id = ?`, f.a.ID); n != 1 {
+		t.Errorf("sessions left: %d, want only the one used to reset", n)
+	}
+	if _, err := f.d.SessionVerifiedAt(f.keepA); err != nil {
+		t.Errorf("the session used to reset was ended: %v", err)
+	}
+
+	// the other account is exactly as before
+	if n := f.count(t, `SELECT COUNT(*) FROM notes WHERE owner_id = ?`, f.b.ID); n != 1 {
+		t.Errorf("other account's notes: %d", n)
+	}
+	if n := f.count(t, `SELECT COUNT(*) FROM files WHERE id IN ('fileB-note','fileB-draft')`); n != 2 {
+		t.Errorf("other account's files: %d", n)
+	}
+	if n := f.count(t, `SELECT COUNT(*) FROM margins WHERE user_id = ?`, f.b.ID); n != 1 {
+		t.Errorf("other account's margins: %d", n)
+	}
+	if n := f.count(t, `SELECT COUNT(*) FROM recovery_codes WHERE user_id = ?`, f.b.ID); n != 2 {
+		t.Errorf("other account's recovery codes: %d", n)
+	}
+	if n := f.count(t, `SELECT COUNT(*) FROM sessions WHERE user_id = ?`, f.b.ID); n != 1 {
+		t.Errorf("other account's sessions: %d", n)
+	}
+	if n := f.count(t, `SELECT COUNT(*) FROM reminders WHERE user_id = ?`, f.b.ID); n != 1 {
+		t.Errorf("other account's reminders: %d", n)
+	}
+	ub, _ := f.d.UserByID(f.b.ID)
+	if ub.VaultCheck != "check-budi" || ub.VaultWrap != "wrap-budi" {
+		t.Errorf("other account's unlock secrets changed: %q %q", ub.VaultCheck, ub.VaultWrap)
+	}
+	if _, _, err := f.d.NoteByLink("budi-one"); err != nil {
+		t.Errorf("other account's note no longer opens: %v", err)
+	}
+}
+
+// One transaction: a failure in the middle (here a delete that is refused after the notes are already gone)
+// leaves the account exactly as it was.
+func TestResetVaultIsOneTransaction(t *testing.T) {
+	f := seedVault(t)
+	if _, err := f.d.Exec(`CREATE TRIGGER refuse_codes BEFORE DELETE ON recovery_codes BEGIN SELECT RAISE(ABORT, 'refused'); END`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.d.ResetVault(f.a.ID, f.keepA, nil); err == nil {
+		t.Fatal("the reset reported success although a step failed")
+	}
+	after, err := f.d.VaultResetCounts(f.a.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if after.Notes != 2 || after.Kept != 1 || after.Files != 2 || after.Links != 3 || after.Margins != 1 || after.Codes != 2 {
+		t.Fatalf("a failed reset changed the account: %+v", after)
+	}
+	u, _ := f.d.UserByID(f.a.ID)
+	if u.VaultCheck != "check-helena" || u.VaultWrap != "wrap-helena" {
+		t.Fatalf("a failed reset changed the unlock secrets: %q %q", u.VaultCheck, u.VaultWrap)
+	}
+	if n := f.count(t, `SELECT COUNT(*) FROM sessions WHERE user_id = ?`, f.a.ID); n != 2 {
+		t.Fatalf("a failed reset ended sessions: %d", n)
+	}
+	if _, _, held := f.d.SlugHold("helena-one"); held {
+		t.Fatal("a failed reset held the link names")
+	}
+}
+
+// An account whose vault key comes from its password cannot use it, and nothing is deleted.
+func TestResetVaultRefusesPasswordAccounts(t *testing.T) {
+	d, err := Open(filepath.Join(t.TempDir(), "t.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer d.Close()
+	u, err := d.CreateUser("lokal", "hash")
+	if err != nil {
+		t.Fatal(err)
+	}
+	newOwnedNote(t, d, u.ID, "lokal-note")
+	if _, err := d.ResetVault(u.ID, "", nil); err == nil {
+		t.Fatal("a password account was reset")
+	}
+	if _, _, err := d.NoteByLink("lokal-note"); err != nil {
+		t.Fatalf("a refused reset deleted the note: %v", err)
+	}
+	if _, err := d.ResetVault(987654, "", nil); err != ErrNotFound {
+		t.Fatalf("unknown account: %v", err)
+	}
+}
+
+// A reset raises the vault generation (so a browser holding an older key drops it), writes its audit line in the
+// same transaction, and the control center's reset raises the generation too.
+func TestResetVaultRaisesTheGenerationAndWritesItsAuditInTheTransaction(t *testing.T) {
+	f := seedVault(t)
+	u, _ := f.d.UserByID(f.a.ID)
+	if u.VaultEpoch != 0 {
+		t.Fatalf("a new vault starts at generation 0, got %d", u.VaultEpoch)
+	}
+	// the audit line cannot be written: nothing is deleted, the generation stays
+	if _, err := f.d.Exec(`CREATE TRIGGER refuse_audit BEFORE INSERT ON hop_audit BEGIN SELECT RAISE(ABORT, 'refused'); END`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.d.ResetVault(f.a.ID, f.keepA, &Audit{Actor: "user:x", App: "notehop", Action: "user.vault_reset_self", Target: "sso-helena"}); err == nil {
+		t.Fatal("a reset without its record went through")
+	}
+	if c, _ := f.d.VaultResetCounts(f.a.ID); c.Notes != 2 {
+		t.Fatalf("the failed reset deleted notes: %+v", c)
+	}
+	if u, _ := f.d.UserByID(f.a.ID); u.VaultEpoch != 0 {
+		t.Fatalf("the failed reset raised the generation: %d", u.VaultEpoch)
+	}
+	if _, err := f.d.Exec(`DROP TRIGGER refuse_audit`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.d.ResetVault(f.a.ID, f.keepA, &Audit{Actor: "user:x", App: "notehop", Action: "user.vault_reset_self", Target: "sso-helena"}); err != nil {
+		t.Fatal(err)
+	}
+	if u, _ := f.d.UserByID(f.a.ID); u.VaultEpoch != 1 {
+		t.Fatalf("generation after a reset: %d", u.VaultEpoch)
+	}
+	if ub, _ := f.d.UserByID(f.b.ID); ub.VaultEpoch != 0 {
+		t.Fatalf("another account's generation moved: %d", ub.VaultEpoch)
+	}
+	if n := f.count(t, `SELECT COUNT(*) FROM hop_audit WHERE action = 'user.vault_reset_self' AND detail LIKE '%"notes":2%'`); n != 1 {
+		t.Fatalf("audit lines: %d", n)
+	}
+	// the control center's reset (clear the check) also makes old keys out of date
+	if err := f.d.ClearVaultCheck(f.b.ID); err != nil {
+		t.Fatal(err)
+	}
+	if ub, _ := f.d.UserByID(f.b.ID); ub.VaultEpoch != 1 || ub.VaultCheck != "" {
+		t.Fatalf("control center reset: %+v", ub)
+	}
+}
+
+// Across accounts: a file another account attached to a note of this account goes with the note; a file this
+// account attached to someone else's note stays; someone else's note that was copied from this account's stays.
+func TestResetVaultAcrossAccounts(t *testing.T) {
+	f := seedVault(t)
+	addFile(t, f.d, "fileB-in-A", "note:"+itoa(f.aNotes[0].ID))
+	if _, err := f.d.Exec(`UPDATE files SET owner_id = ? WHERE id = 'fileB-in-A'`, f.b.ID); err != nil {
+		t.Fatal(err)
+	}
+	addFile(t, f.d, "fileA-in-B", "note:"+itoa(f.bNote.ID))
+	if _, err := f.d.Exec(`UPDATE files SET owner_id = ? WHERE id = 'fileA-in-B'`, f.a.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.d.Exec(`UPDATE notes SET parent_id = ? WHERE id = ?`, f.aNotes[0].ID, f.bNote.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.d.ResetVault(f.a.ID, f.keepA, nil); err != nil {
+		t.Fatal(err)
+	}
+	if n := f.count(t, `SELECT COUNT(*) FROM files WHERE id = 'fileB-in-A'`); n != 0 {
+		t.Error("a file attached to the account's own note stayed")
+	}
+	if n := f.count(t, `SELECT COUNT(*) FROM files WHERE id = 'fileA-in-B'`); n != 1 {
+		t.Error("a file on someone else's note was deleted")
+	}
+	var parent *int64
+	if err := f.d.QueryRow(`SELECT parent_id FROM notes WHERE id = ?`, f.bNote.ID).Scan(&parent); err != nil {
+		t.Fatalf("someone else's note is gone: %v", err)
+	}
+	if parent != nil {
+		t.Errorf("the copy still points at a deleted note: %d", *parent)
+	}
+}
+
+// New editing keys: only for a basic, live note of the account itself; an encrypted note, a snapshot, someone
+// else's note and an unknown note are all refused and nothing changes.
+func TestSetNoteKeysIsNarrow(t *testing.T) {
+	f := seedVault(t)
+	basic, enc := f.aNotes[1], f.aNotes[0] // seedVault: the second is basic, the first encrypted
+	if _, err := f.d.Exec(`UPDATE notes SET admin_hash = 'old-admin', write_hash = 'old-write' WHERE id IN (?, ?, ?)`, basic.ID, enc.ID, f.bNote.ID); err != nil {
+		t.Fatal(err)
+	}
+	hashes := func(id int64) (string, string, string) {
+		var a, w, blob string
+		if err := f.d.QueryRow(`SELECT admin_hash, write_hash, owner_blob FROM notes WHERE id = ?`, id).Scan(&a, &w, &blob); err != nil {
+			t.Fatal(err)
+		}
+		return a, w, blob
+	}
+	for name, c := range map[string]struct{ note, owner int64 }{
+		"an encrypted note":       {enc.ID, f.a.ID},
+		"someone else's note":     {f.bNote.ID, f.a.ID},
+		"a note of another owner": {basic.ID, f.b.ID},
+		"no such note":            {987654, f.a.ID},
+	} {
+		if err := f.d.SetNoteKeys(c.note, c.owner, "new-admin", "new-write"); err != ErrNotFound {
+			t.Errorf("%s: %v", name, err)
+		}
+	}
+	if _, err := f.d.Exec(`UPDATE notes SET frozen = 1 WHERE id = ?`, basic.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.d.SetNoteKeys(basic.ID, f.a.ID, "new-admin", "new-write"); err != ErrNotFound {
+		t.Errorf("a snapshot: %v", err)
+	}
+	for _, id := range []int64{basic.ID, enc.ID, f.bNote.ID} {
+		if a, w, _ := hashes(id); a != "old-admin" || w != "old-write" {
+			t.Errorf("a refused call changed note %d: %s %s", id, a, w)
+		}
+	}
+	if _, err := f.d.Exec(`UPDATE notes SET frozen = 0 WHERE id = ?`, basic.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.d.SetNoteKeys(basic.ID, f.a.ID, "new-admin", "new-write"); err != nil {
+		t.Fatal(err)
+	}
+	if a, w, blob := hashes(basic.ID); a != "new-admin" || w != "new-write" || blob != "" {
+		t.Errorf("after taking over: %s %s %q", a, w, blob)
+	}
+}

@@ -23,7 +23,7 @@ async function create(p, title, body, mode) {
 }
 
 (async () => {
-  const b = await chromium.launch();
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {});
   try {
     const p = await page(b);
     // --- embed ---

@@ -369,6 +369,9 @@ func (a *App) apiClaim(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusBadRequest, "err.owner_blob")
 		return
 	}
+	if a.vaultStale(w, r, u) {
+		return
+	}
 	if err := a.db.Claim(x.note.ID, u.ID, q.OwnerBlob); err != nil {
 		apiErr(w, http.StatusConflict, "err.already_owned")
 		return
@@ -467,6 +470,9 @@ func (a *App) apiMargin(w http.ResponseWriter, r *http.Request) {
 	}
 	if q.Content != "" && (len(q.Content) > maxMargin || !b64Re.MatchString(q.Content)) {
 		apiErr(w, http.StatusBadRequest, "err.bad_data")
+		return
+	}
+	if a.vaultStale(w, r, u) {
 		return
 	}
 	if err := a.db.SetMargin(u.ID, ref, q.Content); err != nil {

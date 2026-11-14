@@ -9,7 +9,7 @@ const USER = 'r_' + Date.now().toString(36);
 const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n + ' | ' + (i || ''));
 
 (async () => {
-  const b = await chromium.launch(); const errs = [];
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {}); const errs = [];
   const newCtx = async () => {
     const c = await b.newContext({ acceptDownloads: true, permissions: ['clipboard-read', 'clipboard-write'] });
     await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} });
@@ -64,7 +64,7 @@ const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n +
   await q.waitForSelector('#rec-done:not(.hide)', { timeout: 30000 });
   ok('done says 7 left', (await q.textContent('#rec-done-p')).includes('7'));
   ok('same vault key after reset', (await q.evaluate(() => JSON.parse(localStorage.getItem('nh_vault')).k)) === vaultBefore);
-  await q.click('#rec-done a[href="/dashboard"]'); await q.waitForSelector('#mine .note-row', { timeout: 15000 });
+  await q.click('#rec-done a[href="/dashboard"]'); await q.waitForURL(/\/dashboard$/); await q.goto(BASE + '/dashboard?view=vault'); await q.waitForSelector('#mine .note-row', { timeout: 15000 });
   ok('old note still opens from the dashboard', (await q.textContent('#mine')).includes('Rahasia lama'));
 
   // the first browser was signed out; old password no longer works, new one does
@@ -73,7 +73,7 @@ const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n +
   await s.goto(BASE + '/login'); await s.fill('#username', USER); await s.fill('#password', 'password-pertama'); await s.click('#auth-form button[type=submit]');
   await s.waitForSelector('#auth-err:not(.hide)', { timeout: 30000 }); ok('old password refused', true);
   await s.fill('#password', 'password-kedua!'); await s.click('#auth-form button[type=submit]'); await s.waitForURL(/dashboard/, { timeout: 30000 });
-  await s.waitForSelector('#mine .note-row', { timeout: 15000 });
+  await s.waitForURL(u => !/login/.test(u.pathname)); await s.goto(BASE + '/dashboard?view=vault'); await s.waitForSelector('#mine .note-row', { timeout: 15000 });
   ok('new password unlocks the old note', (await s.textContent('#mine')).includes('Rahasia lama') && (await s.evaluate(() => JSON.parse(localStorage.getItem('nh_vault')).k)) === vaultBefore);
   // a used code is spent
   const ctx4 = await newCtx(); const u = watch(await ctx4.newPage());
@@ -89,7 +89,7 @@ const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n +
   ok('password changed, form cleared', await s.isHidden('#secret-err'));
   await q.goto(BASE + '/dashboard'); ok('changing signs other browsers out', /\/login/.test(q.url()));
   await q.fill('#username', USER); await q.fill('#password', 'password-ketiga'); await q.click('#auth-form button[type=submit]');
-  await q.waitForSelector('#mine .note-row', { timeout: 30000 });
+  await q.waitForURL(u => !/login/.test(u.pathname)); await q.goto(BASE + '/dashboard?view=vault'); await q.waitForSelector('#mine .note-row', { timeout: 30000 });
   ok('third password, same notes', (await q.textContent('#mine')).includes('Rahasia lama'));
   // a remaining code still works after the password change
   await u.fill('#code', codes[5]); await u.click('#rec-form button[type=submit]'); await u.waitForSelector('#rec-step2:not(.hide)');

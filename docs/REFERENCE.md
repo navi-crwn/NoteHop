@@ -16,7 +16,7 @@ Every setting is an environment variable. On a VPS they live in `/etc/notehop/no
 | `NOTEHOP_REGISTRATION` | `true` | Open or close sign-ups |
 | `NOTEHOP_SITE` | `NoteHop` | Site name |
 | `NOTEHOP_SHARE_URL` | empty | A short domain for shared links (for example `https://nhop.link`). Reader links become `https://nhop.link/TOKEN`, which redirects to `NOTEHOP_BASE_URL/TOKEN`; nothing is served on it. Owner links stay on `NOTEHOP_BASE_URL` |
-| `NOTEHOP_FILE_MB` | `5` | Largest attachment (MB), capped at 5. `0` turns attachments off. All attachments uploaded for one note share a 5 MB ciphertext budget, including encryption overhead |
+| `NOTEHOP_FILE_MB` | `20` | Largest attachment (MB), capped at 20. `0` turns attachments off. All attachments uploaded for one note share a 20 MB ciphertext budget, including encryption overhead; one file may use all of it. A signed-in account holds at most `NOTEHOP_FILES_ACCOUNT_MB` (100 MB by default) over all its notes. Put `client_max_body_size 21m;` (or more) on the reverse proxy in front of NoteHop, or uploads over its default 1 MB fail there |
 | `NOTEHOP_GUEST_NOTES_IP` | `200` | Notes one IP address may create per 24 hours without signing in (signed-in people are not counted). `0` = no limit |
 | `NOTEHOP_FILE_TTL_HOURS` | `24` | How long an attachment is kept, in whole hours, 1 to 720. Anything else is ignored (logged) and the default used. Applies to files uploaded after the change |
 | `NOTEHOP_FILES_ACCOUNT_MB` | `100` | Live (not yet expired) attachments one signed-in account may hold at once (MB), counted by size and uploader id only. `0` = no limit; a negative or non-numeric value is ignored (logged) and the default used. The per-IP limit below still applies |

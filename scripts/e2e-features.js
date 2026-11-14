@@ -16,7 +16,7 @@ const USER = 'f_' + Date.now().toString(36);
 const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n + ' | ' + (i || ''));
 async function pickMode(p, m) { await p.evaluate(() => { ['opt-who', 'more-modes'].forEach(id => { const d = document.getElementById(id); if (d) d.open = true; }); }); await p.check(`input[name=mode][value=${m}]`, { force: true }); }
 (async () => {
-  const b = await chromium.launch(); const errs = [];
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {}); const errs = [];
   const ctx = (await b.newContext({ permissions: ['clipboard-read', 'clipboard-write'], acceptDownloads: true }).then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }));
   const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message)); require('./e2e-dialogs')(p);
   p.on('console', m => { if (m.type() === 'error' && !/40[134]/.test(m.text())) errs.push('console: ' + m.text()); });
@@ -88,7 +88,7 @@ async function pickMode(p, m) { await p.evaluate(() => { ['opt-who', 'more-modes
   await p.waitForSelector('#report-dlg', { state: 'detached', timeout: 3000 });
   ok('report dialog closed', !(await p.$('#report-dlg[open]')));
   // dashboard groups + graph
-  await p.goto(BASE + '/dashboard'); await p.waitForSelector('#mine .note-row');
+  await p.goto(BASE + '/dashboard?view=vault'); await p.waitForSelector('#mine .note-row'); // the Vault view
   await p.click('[data-group=todo]'); await p.waitForTimeout(2500);
   const todoTitles = await p.$$eval('#mine .note-row b', xs => xs.map(x => x.textContent)); ok('group to-do', todoTitles.length === 1 && todoTitles[0] === 'Resep', JSON.stringify(todoTitles));
   await p.click('#graph-btn'); await p.waitForSelector('#graph-box svg.graph', { timeout: 15000 }); ok('graph drawn', (await p.$$('svg.graph line')).length >= 1);

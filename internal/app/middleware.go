@@ -150,7 +150,7 @@ func (a *App) secure(next http.Handler) http.Handler {
 				bucket, rate = "i", 60
 			case r.URL.Path == "/api/login" || r.URL.Path == "/api/register" || r.URL.Path == "/api/vault":
 				bucket, rate = "a", 15
-			case strings.HasPrefix(r.URL.Path, "/api/recover") || r.URL.Path == "/api/me/secret" || r.URL.Path == "/api/me/recovery":
+			case strings.HasPrefix(r.URL.Path, "/api/recover") || r.URL.Path == "/api/me/secret" || r.URL.Path == "/api/me/recovery" || r.URL.Path == "/api/me/vault/reset":
 				bucket, rate = "k", 20 // recovery.go adds a limit per account
 			case strings.HasSuffix(r.URL.Path, "/report"):
 				bucket, rate = "r", 10 // report.go adds 5 per hour per address

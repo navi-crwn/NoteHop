@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -236,6 +237,35 @@ func (a *App) verifiedUser(r *http.Request) *db.User {
 		return nil
 	}
 	return u
+}
+
+// freshlyVouched is the strict proof for actions that cannot be undone or that hand over control (a vault reset,
+// taking a note over): for a HOP ID account, the account server must have vouched for THIS session within
+// recheckAfter, with no shortcut. verifiedUser would also pass a stale session while the hub is unreachable, while
+// the (unsigned, so forgeable) cooldown cookie is set, or when single sign-on is switched off; that leniency keeps
+// pages open and is wrong here. A password account has no hub: its session is all there is.
+func (a *App) freshlyVouched(r *http.Request, u *db.User) bool {
+	if u.SSOID == "" {
+		return true
+	}
+	c, err := r.Cookie(sessionCookie)
+	if err != nil || !a.cfg.SSOEnabled() {
+		return false
+	}
+	at, err := a.db.SessionVerifiedAt(hashHex(c.Value))
+	return err == nil && time.Since(at) <= recheckAfter
+}
+
+// vaultStale answers 409 when a write that seals something with the vault key comes from a page that was loaded
+// before the vault was reset: its key is out of date, and what it sealed could never be opened. Callers that send no
+// generation (the command line, other apps) are not affected.
+func (a *App) vaultStale(w http.ResponseWriter, r *http.Request, u *db.User) bool {
+	h := r.Header.Get("X-Vault-Epoch")
+	if h == "" || u == nil || h == strconv.FormatInt(u.VaultEpoch, 10) {
+		return false
+	}
+	apiErr(w, http.StatusConflict, "err.vault_stale")
+	return true
 }
 
 // recheckCooldown marks a browser the account server answered "not now" (temporarily_unavailable):

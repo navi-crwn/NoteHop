@@ -21,7 +21,7 @@ const isOpen = (p, id) => p.$eval('#' + id, d => d.open);
 const val = (p, id) => p.$eval('#' + id + ' .pick-val', e => e.textContent.trim());
 
 (async () => {
-  const b = await chromium.launch();
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {});
 
   // ---------- desktop ----------
   const p = await open(b);
@@ -83,7 +83,10 @@ const val = (p, id) => p.$eval('#' + id + ' .pick-val', e => e.textContent.trim(
   ok('sign-off starter lights the counter, drawer stays shut', !(await isOpen(p, 'adv')) && await p.textContent('#adv-count') === '1');
 
   // web note: the result sits beside the code
-  await p.click('[data-starter=web]'); await p.waitForTimeout(400);
+  // (the format belongs to the editor menu; picking one lets go of the starter that was lit)
+  ok('no Code or Web starter: one format picker', (await p.$$('[data-starter=code], [data-starter=web]')).length === 0);
+  await p.click('.ed-type-btn'); await p.click('.ed-type-list [data-type="web"]'); await p.waitForTimeout(400);
+  ok('choosing a format lets go of the lit starter', await p.$$eval('[data-starter][aria-pressed=true]', e => e.length) === 0 && !(await p.$eval('#start-more', e => e.classList.contains('is-set'))));
   ok('web note: result beside the code', await p.evaluate(() => {
     const src = document.querySelector('.ed-src').getBoundingClientRect(), run = document.querySelector('.wr-run').getBoundingClientRect();
     return run.left >= src.right - 2 && Math.abs(run.top - src.top) < 80;

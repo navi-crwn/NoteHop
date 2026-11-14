@@ -17,6 +17,10 @@ import (
 // (nh-file:ID#KEY), so whoever can read the note can open the file, and the
 // server can't. Files are temporary: they disappear after Config.FileTTL
 // (a day unless the operator sets NOTEHOP_FILE_TTL_HOURS).
+// uploadSlots is how many attachment bodies are read at the same time: 4 x 20 MB = 80 MB of memory at most, and enough
+// that a few slow uploaders do not stop everyone (the rest is the per-address limits).
+const uploadSlots = 4
+
 const (
 	DefaultFileTTL = 24 * time.Hour
 	MinFileTTL     = time.Hour
@@ -24,6 +28,9 @@ const (
 
 	// DefaultFilesAccountMB is what one signed-in account may hold at once; 0 turns the limit off.
 	DefaultFilesAccountMB = 100
+
+	// MaxFileMB is the largest attachment, and equals what one note may hold in all (db.NoteFilesBytes).
+	MaxFileMB = 20
 )
 
 var fileIDRe = regexp.MustCompile(`^[A-Za-z0-9]{20}$`)
@@ -48,13 +55,27 @@ func (a *App) apiUpload(w http.ResponseWriter, r *http.Request) {
 		}
 		scope = "draft:" + hashHex(draft)
 	}
-	a.uploadMu.Lock()
-	defer a.uploadMu.Unlock()
+	// The body is read WITHOUT the global lock: a slow uploader must not hold everybody else up. What is bounded
+	// instead is how many bodies are read at once (uploadSlots x 20 MB of memory at most); a full house answers
+	// "try again" at once rather than queueing. The lock below covers only check-then-write.
+	select {
+	case a.uploadSem <- struct{}{}:
+		defer func() { <-a.uploadSem }()
+	default:
+		w.Header().Set("Retry-After", "5")
+		apiErr(w, http.StatusServiceUnavailable, "err.files_busy")
+		return
+	}
 	if !a.storageAvailable(int64(a.cfg.FileMB) << 20) {
 		w.Header().Set("Retry-After", "60")
 		apiErr(w, http.StatusInsufficientStorage, "err.files_storage")
 		return
 	}
+	// A 20 MB upload over a slow phone connection takes longer than the server's usual 30 seconds:
+	// this one request gets minutes to send its body and to be answered.
+	rc := http.NewResponseController(w)
+	_ = rc.SetReadDeadline(time.Now().Add(5 * time.Minute))
+	_ = rc.SetWriteDeadline(time.Now().Add(6 * time.Minute))
 	// AES-GCM adds 28 bytes; the encrypted header with name and type a few hundred.
 	max := int64(a.cfg.FileMB)<<20 + 4096
 	data, err := io.ReadAll(http.MaxBytesReader(w, r.Body, max))
@@ -69,6 +90,13 @@ func (a *App) apiUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(data) < 29 {
 		apiErr(w, http.StatusBadRequest, "err.bad_request")
+		return
+	}
+	a.uploadMu.Lock()
+	defer a.uploadMu.Unlock()
+	if !a.storageAvailable(int64(a.cfg.FileMB) << 20) { // again, now that the body is here
+		w.Header().Set("Retry-After", "60")
+		apiErr(w, http.StatusInsufficientStorage, "err.files_storage")
 		return
 	}
 	// One address can't fill the disk for everyone: a daily budget per address.
@@ -91,7 +119,7 @@ func (a *App) apiUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if errors.Is(err, db.ErrNoteFilesFull) {
-		apiErr(w, http.StatusRequestEntityTooLarge, "err.files_note_full")
+		apiErr(w, http.StatusRequestEntityTooLarge, "err.files_note_full", "n", db.NoteFilesBytes>>20)
 		return
 	}
 	if errors.Is(err, db.ErrTaken) {

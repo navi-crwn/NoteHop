@@ -21,6 +21,10 @@
   --amber: #fbbf24;
   --green: #34d399;
   --grad: linear-gradient(120deg, var(--lime), var(--cyan) 45%, var(--violet));
+  /* The main button: the classic green, cyan and violet. In the light theme the three stops are a little lighter than
+     the page colours (so the dark text keeps 4.5:1 on every part of the button); in the dark theme they are as before. */
+  --btn-bg: linear-gradient(100deg, light-dark(#84cc16, var(--lime)), light-dark(#22b8cf, var(--cyan)) 52%, light-dark(#9a7af7, var(--violet)));
+  --btn-fg: #061016;
   --accent: var(--cyan);
   --on-accent: #041014;
   /* HOP control standard (2026-11-09): one shape and one height scale for every input, select and button. */
@@ -79,6 +83,28 @@
     color-scheme: light;
   }
 }
+
+/* ---------- colour palettes ----------
+   Light or dark follows the family cookie (hop_theme); the palette is NoteHop's own choice (localStorage nh_palette,
+   set on <html data-palette> before the page paints). No attribute = the classic palette above. A palette only
+   changes tokens: the buttons, links, focus rings and highlights all read them. light-dark() picks by colour-scheme. */
+:root[data-palette="mist"] {
+  --btn-bg: linear-gradient(135deg, light-dark(#4f5bd5, #9aaeff), light-dark(#2f74b8, #86c8f3));
+  --btn-fg: light-dark(#ffffff, #0a1022);
+  --grad: var(--btn-bg);
+  --accent: light-dark(#3f4fc4, #9aaeff); --on-accent: var(--btn-fg);
+  --lime: light-dark(#3f7d6a, #9ed4c0); --cyan: light-dark(#2f74b8, #86c8f3); --violet: light-dark(#4f5bd5, #9aaeff); --violet-text: light-dark(#4f5bd5, #b4c2ff);
+}
+:root[data-palette="sand"] {
+  --btn-bg: linear-gradient(135deg, light-dark(#b4532a, #f3b48c), light-dark(#a2406f, #ea9fb0));
+  --btn-fg: light-dark(#ffffff, #1b0f0a);
+  --grad: var(--btn-bg);
+  --accent: light-dark(#a8481f, #f3b48c); --on-accent: var(--btn-fg);
+  --lime: light-dark(#8a6a1f, #e6cf8f); --cyan: light-dark(#a2406f, #ea9fb0); --violet: light-dark(#b4532a, #f3b48c); --violet-text: light-dark(#a2406f, #f3b8c4);
+}
+
+/* The italic accent phrases and the highlights of the home page follow the palette too (the 3D scenes keep their own colours). */
+html:root[data-palette] body[data-page=home], html:root[data-palette] .hop-home { --h-ink: var(--btn-bg); }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -161,7 +187,17 @@ main { flex: 1; padding: 28px 0 64px; }
 .menu-list a:hover, .menu-list button:hover { background: var(--panel-2); text-decoration: none; }
 .menu-list .who { padding: 8px 10px 10px; border-bottom: 1px solid var(--line); margin-bottom: 4px; font-size: .85rem; color: var(--muted); }
 .menu-list .who b { color: var(--text); }
+.menu-list .pal { margin-top: 4px; padding: 8px 10px 4px; border-top: 1px solid var(--line); }
+.menu-list .pal > span { display: block; margin-bottom: 6px; font-size: .75rem; color: var(--muted); }
+.menu-list .pal div { display: flex; gap: 6px; }
+.menu-list .pal button { flex: 1; width: auto; min-height: 36px; padding: 4px 6px; justify-content: center; gap: 6px; border: 1px solid var(--line-2); font-size: .8rem; }
+.menu-list .pal button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
+.menu-list .pal i { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+.sw-classic { background: linear-gradient(135deg, #a3e635, #22d3ee, #8b5cf6); }
+.sw-mist { background: linear-gradient(135deg, #4f5bd5, #86c8f3); }
+.sw-sand { background: linear-gradient(135deg, #b4532a, #ea9fb0); }
 .burger { display: none; }
+.nav-links .nav-help { display: none; }
 @media (max-width: 760px) {
   .nav-links { display: none; position: absolute; top: 60px; left: 0; right: 0; flex-direction: column; background: var(--panel);
     border-bottom: 1px solid var(--line); padding: 10px 16px 14px; margin: 0; }
@@ -185,8 +221,11 @@ footer a:hover { color: var(--text); }
 .btn:hover { text-decoration: none; border-color: color-mix(in srgb, var(--text) 30%, transparent); }
 .btn:active { transform: scale(.97); }
 .btn:focus-visible, .icon-btn:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 var(--hop-ring) color-mix(in srgb, var(--accent) 35%, transparent); }
-.btn.primary { background: var(--grad) border-box; color: #061016; border-color: transparent; }
-.btn.primary:hover { filter: brightness(1.08); }
+/* The gradient is laid out on the whole button, once: laid out on the padding box and repeated, its start showed
+   again in the 1px border on the right, a pale line at the right end. */
+.btn.primary { background: var(--btn-bg); background-origin: border-box; background-clip: border-box; background-repeat: no-repeat; background-size: 100% 100%;
+  color: var(--btn-fg); border-color: transparent; }
+.btn.primary:hover { filter: brightness(1.06); }
 .btn.ghost { background: transparent; }
 .btn.danger { color: var(--red); }
 .btn.sm { height: var(--hop-ctl-h-sm); padding: 0 12px; font-size: 13px; }
@@ -249,7 +288,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); width: 16
 .kbd { display: inline-block; padding: 0 6px; border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 6px; font: .8rem var(--mono); }
 .eyebrow { display: inline-flex; gap: 8px; align-items: center; padding: 5px 12px 5px 6px; border-radius: 999px; border: 1px solid var(--line-2);
   background: var(--panel); font-size: .82rem; color: var(--muted); margin-bottom: 18px; }
-.eyebrow b { background: var(--grad); color: #061016; padding: 1px 8px; border-radius: 999px; font-size: .74rem; }
+.eyebrow b { background: var(--grad); color: var(--btn-fg); padding: 1px 8px; border-radius: 999px; font-size: .74rem; }
 
 /* ---------- compose ---------- */
 /* One column: a row of starters, the editor at full width (web notes get
@@ -654,7 +693,12 @@ svg.graph a:hover circle { fill: var(--violet); }
 .note-link b.locked-title { color: var(--muted); font-weight: 600; }
 .note-list .device-hint { padding: 0 2px 4px; }
 /* a reminder card: what is still to do and the way there; hop-ui.js puts its "Hide" button in the top corner */
-.remind { display: flex; gap: 10px; align-items: flex-start; }
+.remind, .announce { display: flex; gap: 10px; align-items: flex-start; }
+.announce[hidden] { display: none; }
+.announce > svg { width: 18px; height: 18px; flex: none; margin-top: 2px; }
+.announce-body { flex: 1; min-width: 0; }
+.announce-body p { margin: 2px 0 0; color: var(--muted); overflow-wrap: anywhere; }
+.announce .icon-btn { margin: -4px -6px 0 0; }
 .remind > svg { width: 18px; height: 18px; flex: none; margin-top: 2px; }
 .remind-body { display: grid; gap: 6px; min-width: 0; justify-items: start; }
 .remind-body p { margin: 0; color: var(--muted); }
@@ -918,7 +962,7 @@ body.sheet-open { overflow: hidden; }
 .adv-group h3 svg, .adv-sub > summary svg { width: 14px; height: 14px; flex: none; }
 .faq details { scroll-margin-top: 80px; }
 .contact-card { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.nearby-pair { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; } .nearby-pair > div { flex: 1 1 220px; } .nearby-pair p { margin: 2px 0 0; } #nb-code { width: 9ch; font: 700 1.2rem ui-monospace, monospace; letter-spacing: .15em; text-align: center; }
+.nearby-pair { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; } .nearby-pair > div { flex: 1 1 220px; } .nearby-pair p { margin: 2px 0 0; } #nb-code { width: 13ch; font: 700 1.2rem ui-monospace, monospace; letter-spacing: .15em; text-align: center; }
 
 /* ---------- note page: one control bar, grouped menu, phone dock ----------
    Everything you can do sits on one line above the note. The chips explain
@@ -984,7 +1028,7 @@ body.sheet-open { overflow: hidden; }
     padding: 6px 8px calc(8px + env(safe-area-inset-bottom)); background: var(--panel); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px rgba(30, 30, 80, .08); }
   .note-dock button { position: relative; display: grid; justify-items: center; gap: 2px; padding: 4px 2px; border: 0; background: none; color: var(--muted); font: inherit; font-size: .72rem; font-weight: 650; cursor: pointer; }
   .note-dock button svg { width: 22px; height: 22px; }
-  .note-dock button.primary svg { width: 34px; height: 30px; padding: 6px 8px; border-radius: 10px; background: var(--grad); color: #061016; }
+  .note-dock button.primary svg { width: 34px; height: 30px; padding: 6px 8px; border-radius: 10px; background: var(--grad); color: var(--btn-fg); }
   .note-dock button[hidden] { display: none; }
   .note-dock .dot { position: absolute; top: 2px; inset-inline-end: calc(50% - 16px); width: 9px; height: 9px; border-radius: 50%; background: var(--accent); border: 2px solid var(--panel); }
   body.has-dock main { padding-bottom: 76px; }
@@ -1093,6 +1137,9 @@ body.sheet-open { overflow: hidden; }
 /* ---------- security page and account recovery ---------- */
 .sec-card { margin-bottom: 16px; }
 .sec-card h2 { margin: 0 0 4px; font-size: 1.2rem; }
+.sec-danger { border-color: color-mix(in srgb, var(--red) 40%, var(--line)); }
+.reset-list { margin: 0 0 12px; padding-inline-start: 1.2rem; }
+.reset-list li { margin: 2px 0; }
 .sec-card > p.muted { margin: 0 0 14px; }
 .sec-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .rec-state { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font-size: .78rem; font-weight: 700; }
@@ -1220,8 +1267,25 @@ body.sheet-open { overflow: hidden; }
 .editor[data-type="web"] .ed-foot-web { display: inline-flex; }
 .wr-auto { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; color: var(--muted); cursor: pointer; }
 .editor:not([data-type="web"]) .wr-files, .editor:not([data-type="web"]) .wr-run, .editor:not([data-type="web"]) .wr-tabs { display: none; }
-.editor[data-type="web"] .ed-body { grid-template-columns: 180px auto minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto minmax(440px, 1fr);
-  grid-template-areas: "tabs tabs tabs tabs" "files gut src run"; }
+.editor[data-type="web"] .ed-body { grid-template-columns: 180px auto minmax(0, var(--wr-src, 1fr)) 10px minmax(0, var(--wr-run, 1fr)); grid-template-rows: auto minmax(440px, 1fr);
+  grid-template-areas: "tabs tabs tabs tabs tabs" "files gut src split run"; }
+/* the divider between the code and the result */
+.wr-split { grid-area: split; cursor: col-resize; touch-action: none; position: relative; background: var(--line); }
+.wr-split::after { content: ""; position: absolute; inset: 50% 2px auto; height: 40px; margin-top: -20px; border-radius: 3px; background: var(--faint); opacity: .6; }
+.wr-split:hover::after, .wr-split:focus-visible::after, .wr-split.drag::after { opacity: 1; background: var(--accent); }
+.wr-split:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.editor:not([data-type="web"]) .wr-split { display: none; }
+/* the files as a row of tabs above the code (the choice in the tool row) */
+.editor[data-type="web"][data-files="top"] .ed-body { grid-template-columns: auto minmax(0, var(--wr-src, 1fr)) 10px minmax(0, var(--wr-run, 1fr)); grid-template-rows: auto auto minmax(440px, 1fr);
+  grid-template-areas: "tabs tabs tabs tabs" "files files files files" "gut src split run"; }
+.editor[data-type="web"][data-files="top"] .wr-files { flex-direction: row; flex-wrap: wrap; align-items: center; align-content: flex-start; border-inline-end: 0; border-bottom: 1px solid var(--line); }
+.editor[data-type="web"][data-files="top"] .wr-files .wr-h, .editor[data-type="web"][data-files="top"] .wr-tpl, .editor[data-type="web"][data-files="top"] .wr-lines { display: none; }
+.editor[data-type="web"][data-files="top"] .wr-new { margin: 0; }
+.wr-files-btn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+/* the button that makes any editor fill the window: only inside the dashboard frame (web notes have their own, with a label) */
+.ed-full { display: none; }
+.shell .ed-full { display: inline-grid; }
+.editor[data-type="web"] .ed-full { display: none; }
 .editor[data-type="web"] .wr-tabs, .wr-view .wr-tabs { grid-area: tabs; }
 .editor[data-type="web"] .wr-files { grid-area: files; }
 .editor[data-type="web"] .ed-gutter { grid-area: gut; }
@@ -1305,7 +1369,8 @@ body.sheet-open { overflow: hidden; }
 
 /* narrow editors and views: files on top, the result under the code */
 @container (max-width: 900px) {
-  .editor[data-type="web"] .ed-body { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto minmax(300px, 1fr) minmax(420px, auto);
+  .wr-split { display: none; }
+  .editor[data-type="web"][data-files] .ed-body { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto minmax(300px, 1fr) minmax(420px, auto);
     grid-template-areas: "tabs tabs" "files files" "gut src" "run run"; }
   .editor[data-type="web"] .ed-src { min-height: 300px; }
   .wr-files { flex-direction: row; flex-wrap: wrap; align-items: center; align-content: flex-start; border-inline-end: 0; border-bottom: 1px solid var(--line); }
@@ -1316,6 +1381,7 @@ body.sheet-open { overflow: hidden; }
 }
 /* phones: one pane at a time */
 @media (max-width: 640px) {
+  .wr-split { display: none; }
   .editor[data-type="web"] .wr-tabs, .wr-view .wr-tabs { display: flex; gap: 4px; padding: 6px; background: var(--panel); border-bottom: 1px solid var(--line); }
   .wr-tabs button { flex: 1; height: 34px; border: 0; border-radius: 9px; background: var(--panel-2); color: var(--muted); font: 650 .84rem var(--sans); }
   .wr-tabs button[aria-selected="true"] { background: var(--text); color: var(--bg); }
@@ -1341,6 +1407,7 @@ body.sheet-open { overflow: hidden; }
 .editor.wr-full .ed-src { min-height: 0; resize: none; }
 .wr-view.wr-full { grid-template-rows: auto auto minmax(0, 1fr); }
 .wr-view.wr-full .wr-panes { min-height: 0; }
+.editor.wr-full[data-files="top"] .ed-body { grid-template-rows: auto auto minmax(0, 1fr); }
 body.wr-full-on { overflow: hidden; }
 
 @media (max-width: 640px) { .wr-full-btn span { display: none; } }
@@ -1376,7 +1443,6 @@ body.wr-full-on { overflow: hidden; }
 .part-of img { width: 20px; height: 20px; display: block; }
 .part-of b { font-weight: 400; color: var(--text); }
 .part-of:hover b { text-decoration: underline; }
-.shell-foot .part-of { margin: 0 auto 10px; padding: 0; }
 footer .footer-grid { display: grid; grid-template-columns: minmax(180px, 1.35fr) repeat(4, minmax(0, 1fr)); align-items: start; gap: 28px 24px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
 .foot-col { display: flex; flex-direction: column; gap: 8px; }
 .foot-heading { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text); margin: 0 0 4px; font-weight: 700; }
@@ -1451,9 +1517,12 @@ h1, h2, .note-title h1 { overflow-wrap: anywhere; }
 @media (max-width: 420px) {
   /* the logo alone; the name stays for screen readers */
   .brand { min-width: 44px; justify-content: center; }
-  .brand-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .brand .hop-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .nav .wrap { gap: 6px; }
   .nav-r { gap: 4px; }
+  /* the help menu moves into the burger list: six controls do not fit the bar */
+  #help-menu { display: none; }
+  .nav-links .nav-help { display: block; }
 }
 /* The bars fixed to the bottom must not cover the last lines of the page (the language links). */
 @media (max-width: 640px) {

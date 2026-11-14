@@ -26,7 +26,7 @@ async function readLink(p) {
 }
 
 (async () => {
-  const b = await chromium.launch(); const errs = [];
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {}); const errs = [];
   const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, acceptDownloads: true });
   await ctx.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} });
   const p = await ctx.newPage();

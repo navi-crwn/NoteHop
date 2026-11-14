@@ -42,7 +42,7 @@ const visitor = (adminURL) => { const u = new URL(adminURL); return BASE + u.pat
 // The More drawer covers the bar's right end; people close it before Create link.
 const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }); const a = document.getElementById('adv'); if (a && a.open) a.close(); });
 (async () => {
-  const b = await chromium.launch();
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {});
   try {
     // --- history ---
     const p = await page(b);
@@ -124,7 +124,7 @@ const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open
     await create(c, { title: 'Tamu', body: 'dibuat sebelum login' });
     await c.goto(BASE + '/register'); const user = 's' + Date.now().toString(36);
     await c.fill('#username', user); await c.fill('#password', 'katasandi-panjang'); await c.fill('#password2', 'katasandi-panjang');
-    await c.click('#auth-form button[type=submit]'); await c.waitForURL(/dashboard/, { timeout: 30000 });
+    await c.click('#auth-form button[type=submit]'); await c.waitForURL(/dashboard/, { timeout: 30000 }); await c.goto(BASE + '/dashboard?view=vault');
     await c.waitForSelector('#claim:not(.hide)'); await c.click('#claim button'); await c.waitForTimeout(1500); await c.waitForSelector('#mine .note-row', { timeout: 15000 });
     ok('claim: guest note now in account', (await c.textContent('#mine')).includes('Tamu'));
     await c.click('#mine .note-row a.note-link'); await c.waitForSelector('#note:not(.hide)');

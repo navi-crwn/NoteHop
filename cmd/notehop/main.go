@@ -220,7 +220,7 @@ func main() {
 		SSOProviders:    envProviders("NOTEHOP_SSO_PROVIDERS"),
 		Links:           envLinks("NOTEHOP_LINKS"),
 		ShareURL:        strings.TrimRight(env("NOTEHOP_SHARE_URL", ""), "/"),
-		FileMB:          envInt("NOTEHOP_FILE_MB", 5),
+		FileMB:          envInt("NOTEHOP_FILE_MB", 20),
 		FileTTL:         fileTTL(),
 		FilesAccountMB:  filesAccountMB(),
 		FilesTotalMB:    envInt("NOTEHOP_FILES_TOTAL_MB", 10240),

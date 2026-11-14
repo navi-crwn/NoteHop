@@ -304,6 +304,9 @@ func (a *App) apiCreate(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusTooManyRequests, "err.guest_notes_quota", "n", a.cfg.GuestNotesPerIP)
 		return
 	}
+	if u != nil && q.OwnerBlob != "" && a.vaultStale(w, r, u) {
+		return
+	}
 	if u != nil {
 		n.OwnerID = sql.NullInt64{Int64: u.ID, Valid: true}
 		n.OwnerBlob = q.OwnerBlob

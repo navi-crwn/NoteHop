@@ -31,7 +31,7 @@ async function create(p, title, body, opts = {}) {
 // The More drawer covers the bar's right end; people close it before Create link.
 const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }); const a = document.getElementById('adv'); if (a && a.open) a.close(); });
 (async () => {
-  const b = await chromium.launch();
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {});
   try {
     const ctx = (await b.newContext({ acceptDownloads: true }).then(async c => { await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} }); return c; }));
     const p = await page(ctx);

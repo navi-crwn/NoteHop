@@ -236,6 +236,8 @@
       refresh();
       if (!quiet && opts.onType) opts.onType();
     }
+    var edFull = NH.$('.ed-full', root);
+    if (edFull) { var fsc = NH.fullscreen(root, edFull); edFull.addEventListener('click', fsc.toggle); }
     NH.$$('[data-type]', typeMenu).forEach(function (b) {
       b.addEventListener('click', function () { setType({ y: b.dataset.type }); ta.focus(); });
     });
@@ -299,17 +301,27 @@
     root.appendChild(storageWarning);
     // Signed in: what the account holds against its attachment limit.
     var storageUsage = NH.h('p.hint', { hidden: true });
+    function mb1(n) { return (n / 1048576).toFixed(n < 10485760 ? 1 : 0); }
     root.appendChild(storageUsage);
     function mb(n) { return (n / 1048576).toFixed(n < 10485760 ? 1 : 0); }
     var storageBlocked = false, attaching = false;
     function refreshStorage() {
       if (!root.isConnected) return;
-      NH.api('GET', '/api/files/status').then(function (s) {
+      var tgt = opts.uploadTarget ? opts.uploadTarget() : null, q = '', hdr = {};
+      if (tgt && /^\/api\/n\/([^/]+)\/files$/.test(tgt.url)) q = '?note=' + RegExp.$1; else hdr['X-Upload-Draft'] = uploadDraft;
+      if (tgt && tgt.headers) Object.assign(hdr, tgt.headers);
+      NH.api('GET', '/api/files/status' + q, undefined, hdr).then(function (s) {
         storageBlocked = !s.available;
         storageWarning.hidden = s.available;
         storageWarning.textContent = s.code ? NH.t(s.code, { n: Math.round((s.account_limit_bytes || 0) / 1048576) }) : '';
-        storageUsage.hidden = !s.account_limit_bytes;
-        if (s.account_limit_bytes) storageUsage.textContent = NH.t('file.account_usage', { used: mb(s.account_used_bytes), limit: mb(s.account_limit_bytes) });
+        // Two numbers that cannot be confused: this note's own 20 MB, and the account's 100 MB over all its notes.
+        storageUsage.hidden = !s.note_limit_bytes;
+        if (s.note_limit_bytes) {
+          var note = { used: mb1(s.note_used_bytes || 0), limit: mb1(s.note_limit_bytes) };
+          storageUsage.textContent = s.account_limit_bytes
+            ? NH.t('file.usage', { used: note.used, limit: note.limit, aused: mb1(s.account_used_bytes), alimit: mb1(s.account_limit_bytes) })
+            : NH.t('file.note_usage', note);
+        }
         picker.disabled = storageBlocked;
         NH.$$('[data-cmd="file"]', root).forEach(function (b) { b.disabled = storageBlocked; });
       }).catch(function () {});

@@ -40,6 +40,13 @@
       <button class="btn" type="submit"><span>{{.L.T "sec.change"}}</span></button>
     </form>
   </section>
+
+  {{if .User.SSOID}}<!-- danger zone: start again with a new vault key, giving up what the old one sealed (security.js, vaultreset.go) -->
+  <section class="card sec-card sec-danger" id="reset" aria-labelledby="reset-h">
+    <h2 id="reset-h">{{.L.T "reset.title"}}</h2>
+    <p class="muted">{{.L.T "reset.lead"}} {{.L.T "reset.other_device"}}</p>
+    <button type="button" class="btn danger" id="reset-open"><svg><use href="#i-trash"/></svg><span>{{.L.T "reset.btn"}}</span></button>
+  </section>{{end}}
 </section>
 
 <dialog class="dlg" id="confirm-dlg" aria-labelledby="confirm-h">
@@ -52,6 +59,19 @@
     <div class="btn-row end"><button class="btn primary" type="submit"><span>{{.L.T "sec.make_btn"}}</span></button></div>
   </form>
 </dialog>
+{{if .User.SSOID}}
+<dialog class="dlg" id="reset-dlg" aria-labelledby="reset-dlg-h">
+  <div class="dlg-head"><h2 id="reset-dlg-h">{{.L.T "reset.dlg_h"}}</h2><button type="button" class="icon-btn" data-close aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
+  <form id="reset-form" autocomplete="off">
+    <p>{{.L.T "reset.lose"}}</p>
+    <ul class="reset-list" id="reset-list" aria-live="polite"></ul>
+    <p class="hint">{{.L.T "reset.final"}}</p>
+    <div class="field"><label for="reset-word" id="reset-word-l"></label><input type="text" id="reset-word" autocomplete="off" autocapitalize="characters" spellcheck="false" dir="ltr"></div>
+    <div class="alert err hide" id="reset-err" role="alert"></div>
+    <div class="btn-row end"><button class="btn danger" type="submit" id="reset-go" disabled><svg><use href="#i-trash"/></svg><span>{{.L.T "reset.go"}}</span></button></div>
+  </form>
+</dialog>
+{{end}}
 {{end}}
 {{define "scripts"}}
 <script src="/static/js/crypto.js?v={{.Asset}}"></script>

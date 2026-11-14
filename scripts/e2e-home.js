@@ -30,7 +30,7 @@ const current = p => p.evaluate(() => [...document.querySelectorAll('.h-dot')].f
 const visiblePanel = p => p.evaluate(() => [...document.querySelectorAll('.h-panel')].findIndex(x => !x.classList.contains('hide')));
 
 (async () => {
-  const b = await chromium.launch();
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {});
 
   // ---------- desktop ----------
   const p = await open(b);

@@ -201,6 +201,9 @@ var migrations = []string{
 	// kept: the file is still ciphertext and nothing about its content or note is added.
 	`ALTER TABLE files ADD COLUMN owner_id INTEGER NOT NULL DEFAULT 0;
 	CREATE INDEX files_owner ON files(owner_id, expires);`,
+	// 16: the vault's generation. A reset (by the owner or by the control center) makes every vault key a
+	// browser still holds out of date; the page carries the number and a browser drops a key of an older one.
+	`ALTER TABLE users ADD COLUMN vault_epoch INTEGER NOT NULL DEFAULT 0;`,
 }
 
 // migrate applies pending migrations, each in its own transaction together
@@ -655,6 +658,7 @@ type User struct {
 	VaultWrap   string // see migration 8
 	Role        string // "admin" or "user" (migration 9)
 	Status      string // "active" or "suspended"
+	VaultEpoch  int64  // raised by every vault reset (migration 16)
 }
 
 // Account roles and statuses.
@@ -665,11 +669,11 @@ const (
 	StatusSuspended = "suspended"
 )
 
-const userCols = `u.id, u.username, u.auth_hash, u.created, COALESCE(u.sso_id, ''), u.email, u.display_name, u.avatar, u.vault_check, u.vault_wrap, u.role, u.status`
+const userCols = `u.id, u.username, u.auth_hash, u.created, COALESCE(u.sso_id, ''), u.email, u.display_name, u.avatar, u.vault_check, u.vault_wrap, u.role, u.status, u.vault_epoch`
 
 func scanUser(row interface{ Scan(...any) error }) (*User, error) {
 	u := &User{}
-	err := row.Scan(&u.ID, &u.Username, &u.AuthHash, &u.Created, &u.SSOID, &u.Email, &u.DisplayName, &u.Avatar, &u.VaultCheck, &u.VaultWrap, &u.Role, &u.Status)
+	err := row.Scan(&u.ID, &u.Username, &u.AuthHash, &u.Created, &u.SSOID, &u.Email, &u.DisplayName, &u.Avatar, &u.VaultCheck, &u.VaultWrap, &u.Role, &u.Status, &u.VaultEpoch)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}

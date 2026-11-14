@@ -14,4 +14,6 @@
     if (!m && (old === 'light' || old === 'dark')) { t = old; window.hopPref('hop_theme', old); }
     if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
   } catch (e) {}
+  // The colour palette (classic, mist, sand) is NoteHop's own setting, kept per browser.
+  try { var pal = localStorage.getItem('nh_palette'); if (pal === 'mist' || pal === 'sand') document.documentElement.dataset.palette = pal; } catch (e) {}
 })();

@@ -70,7 +70,7 @@ func TestConcurrentNoteAttachmentBudgetAndDraftClaim(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			ok, err := d.AddFile(db.File{ID: randToken(20), Scope: "draft:test", Size: 2 << 20, Data: []byte{1}, Expires: time.Now().Add(time.Hour).Unix()}, 10<<30)
+			ok, err := d.AddFile(db.File{ID: randToken(20), Scope: "draft:test", Size: 8 << 20, Data: []byte{1}, Expires: time.Now().Add(time.Hour).Unix()}, 10<<30)
 			if ok {
 				accepted.Add(1)
 			} else if err != db.ErrNoteFilesFull {
@@ -91,7 +91,7 @@ func TestConcurrentNoteAttachmentBudgetAndDraftClaim(t *testing.T) {
 	}
 	var total int64
 	d.QueryRow(`SELECT SUM(size) FROM files WHERE scope LIKE 'note:%'`).Scan(&total)
-	if total != 4<<20 {
+	if total != 16<<20 {
 		t.Fatalf("claim lost accounting: %d", total)
 	}
 	if err := d.CreateNote(&db.Note{Content: "{}", UploadDraft: "draft:test"}, &db.Link{Token: "secondnote", Mode: "edit"}); err != db.ErrTaken {

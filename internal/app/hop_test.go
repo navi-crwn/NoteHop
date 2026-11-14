@@ -686,7 +686,7 @@ func TestHopSettingsAndSearch(t *testing.T) {
 	for _, s := range list(env) {
 		if m := s.(map[string]any); m["key"] == "registration" {
 			reg = m
-		} else if m["readonly"] != true {
+		} else if m["readonly"] != true && m["key"] != "announcement" {
 			t.Fatalf("%v should be read-only", m["key"])
 		}
 	}

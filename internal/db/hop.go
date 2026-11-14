@@ -45,7 +45,7 @@ func (d *DB) SetUsername(userID int64, username string) error {
 // ClearVaultCheck forgets the vault phrase check so the account sets a new
 // phrase next time. The vault key itself was never here.
 func (d *DB) ClearVaultCheck(userID int64) error {
-	return deleted(d.Exec(`UPDATE users SET vault_check = '', vault_wrap = '' WHERE id = ?`, userID))
+	return deleted(d.Exec(`UPDATE users SET vault_check = '', vault_wrap = '', vault_epoch = vault_epoch + 1 WHERE id = ?`, userID))
 }
 
 // DeleteNotesByOwner removes every note of an account (their link names are
