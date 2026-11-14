@@ -146,19 +146,47 @@ func (a *App) apiLogin(w http.ResponseWriter, r *http.Request) {
 // startSession signs u in at this browser. Whatever session the browser held before
 // belongs to whoever was signed in then, so that row ends here: a new sign-in never
 // leaves the old account's session behind.
-func (a *App) startSession(w http.ResponseWriter, r *http.Request, u *db.User) {
+func (a *App) startSession(w http.ResponseWriter, r *http.Request, u *db.User) string {
 	if c, err := r.Cookie(sessionCookie); err == nil && c.Value != "" {
 		_ = a.db.DeleteSession(hashHex(c.Value))
 	}
 	tok := randToken(40)
 	if err := a.db.CreateSession(hashHex(tok), u.ID, sessionTTL); err != nil {
 		log.Printf("session: %v", err)
-		return
+		return ""
 	}
 	http.SetCookie(w, &http.Cookie{
 		Name: sessionCookie, Value: tok, Path: "/", HttpOnly: true, Secure: a.cfg.SecureCookies,
 		SameSite: http.SameSiteLaxMode, MaxAge: int(sessionTTL.Seconds()),
 	})
+	return hashHex(tok)
+}
+
+// reLoginWindow is how old the account server's own stamp of a sign-in may be for a vault reset: the five minutes
+// asked for (max_age) and the minute of slack the contract allows for clocks and the trip through the hub.
+const (
+	reLoginAge    = 300
+	reLoginWindow = (reLoginAge + 60) * time.Second
+)
+
+// freshlyLoggedIn is the proof a vault reset needs on top of freshlyVouched: for a HOP ID account, this very session
+// was made from a ticket whose auth_time (the account server's stamp of an interactive sign-in) is recent. A cookie
+// kept alive by quiet re-checks never has one. A password account has no account server and passes (its own,
+// existing confirmation applies).
+func (a *App) freshlyLoggedIn(r *http.Request, u *db.User) bool {
+	if u.SSOID == "" {
+		return true
+	}
+	c, err := r.Cookie(sessionCookie)
+	if err != nil {
+		return false
+	}
+	at, err := a.db.SessionLoginAt(hashHex(c.Value))
+	if err != nil || at <= 0 {
+		return false
+	}
+	age := time.Since(time.Unix(at, 0))
+	return age <= reLoginWindow && age >= -time.Minute
 }
 
 // endSession drops this browser's session row and cookie, nothing else.

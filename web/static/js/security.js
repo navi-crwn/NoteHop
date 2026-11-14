@@ -137,6 +137,9 @@
     var rform = $('#reset-form'), rword = $('#reset-word'), rgo = $('#reset-go'), rerr = $('#reset-err'), word = 'RESET';
     var shows = [['notes', 'reset.c_notes'], ['files', 'reset.c_files'], ['links', 'reset.c_links'], ['margins', 'reset.c_margins'], ['codes', 'reset.c_codes']];
     var rfail = function (x) { rerr.textContent = x.message; rerr.classList.remove('hide'); };
+    // The reset needs a sign-in at HOP ID made just now: the account server is asked for one (prompt=login) and sends the
+    // person back here with the dialog open. The page never sees a password.
+    var relogin = function () { location.href = '/auth/sso?prompt=login&next=' + encodeURIComponent('/security?reset=1'); };
     $('#reset-open').addEventListener('click', function () {
       rform.reset();
       rerr.classList.add('hide');
@@ -148,8 +151,12 @@
         $('#reset-list').replaceChildren.apply($('#reset-list'), shows.map(function (s) { return h('li', NH.t(s[1], { n: r.counts[s[0]] })); }).concat(r.counts.kept ? [h('li', NH.t('reset.kept', { n: r.counts.kept }))] : []));
         rdlg.showModal();
         rword.focus();
-      }, function (x) { NH.toast(x.message, 'err'); });
+      }, function (x) {
+        if (x.status === 401 && x.code === 'err.reset_login') { NH.toast(NH.t('reset.relogin'), 'ok'); return setTimeout(relogin, 900); }
+        NH.toast(x.message, 'err');
+      });
     });
+    if (/[?&]reset=1\b/.test(location.search)) { history.replaceState(null, '', location.pathname); $('#reset-open').click(); }
     // The button can only be pressed once the word is typed exactly.
     rword.addEventListener('input', function () { rgo.disabled = rword.value.trim() !== word; });
     rform.addEventListener('submit', function (e) {
@@ -169,6 +176,7 @@
         setTimeout(function () { location.href = r.next || '/vault'; }, 900);
       }, function (x) {
         rgo.disabled = rword.value.trim() !== word;
+        if (x.status === 401 && x.code === 'err.reset_login') { rdlg.close(); NH.toast(NH.t('reset.relogin'), 'ok'); return setTimeout(relogin, 900); }
         if (x.status === 401 && x.code === 'err.reset_recheck') { rfail(x); return; } // needs a fresh HOP ID sign-in: sign out and in again
         if (x.status === 401) { // not signed in any more
           rfail(new Error(NH.t('reset.stale')));

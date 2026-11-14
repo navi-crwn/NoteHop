@@ -16,7 +16,7 @@ import (
 
 func (e *recheckEnv) fresh() {
 	e.t.Helper()
-	if _, err := e.db.Exec(`UPDATE sessions SET verified_at = ?`, time.Now().Unix()); err != nil {
+	if _, err := e.db.Exec(`UPDATE sessions SET verified_at = ?, login_at = ?`, time.Now().Unix(), time.Now().Unix()); err != nil {
 		e.t.Fatal(err)
 	}
 }

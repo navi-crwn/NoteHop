@@ -204,6 +204,9 @@ var migrations = []string{
 	// 16: the vault's generation. A reset (by the owner or by the control center) makes every vault key a
 	// browser still holds out of date; the page carries the number and a browser drops a key of an older one.
 	`ALTER TABLE users ADD COLUMN vault_epoch INTEGER NOT NULL DEFAULT 0;`,
+	// 17: when the person last signed in for real at the account server, as that server stamped it (auth_time of a
+	// ticket asked for with max_age). 0 for every session that was not made that way, so a vault reset asks for it.
+	`ALTER TABLE sessions ADD COLUMN login_at INTEGER NOT NULL DEFAULT 0;`,
 }
 
 // migrate applies pending migrations, each in its own transaction together
@@ -750,6 +753,19 @@ func (d *DB) UserBySSO(ssoID string) (*User, error) {
 func (d *DB) CreateSession(tokenHash string, userID int64, ttl time.Duration) error {
 	_, err := d.Exec(`INSERT INTO sessions (token_hash, user_id, expires, verified_at) VALUES (?, ?, ?, ?)`, tokenHash, userID, time.Now().Add(ttl).Unix(), now())
 	return err
+}
+
+// SetSessionLoginAt records the account server's own stamp of the sign-in behind a session.
+func (d *DB) SetSessionLoginAt(tokenHash string, at int64) error {
+	_, err := d.Exec(`UPDATE sessions SET login_at = ? WHERE token_hash = ?`, at, tokenHash)
+	return err
+}
+
+// SessionLoginAt is that stamp, 0 when the session was not made by a ticket asked for with max_age.
+func (d *DB) SessionLoginAt(tokenHash string) (int64, error) {
+	var at int64
+	err := d.QueryRow(`SELECT login_at FROM sessions WHERE token_hash = ? AND expires > ?`, tokenHash, now()).Scan(&at)
+	return at, err
 }
 
 // SessionVerifiedAt is when the account server last vouched for this session: the moment

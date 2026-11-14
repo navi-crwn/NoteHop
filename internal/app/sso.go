@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -36,6 +37,7 @@ type ssoTicket struct {
 	Admin    bool     `json:"admin"`
 	Roles    []string `json:"roles"` // v2: nil when absent; present means promote or demote the local role
 	Status   string   `json:"status"`
+	AuthTime int64    `json:"auth_time"` // v2: when the person last signed in for real at the account server; 0 = unknown
 	State    string   `json:"state"`
 	Iat      int64    `json:"iat"`
 	Exp      int64    `json:"exp"`
@@ -129,14 +131,20 @@ func (a *App) ssoStart(w http.ResponseWriter, r *http.Request) {
 	}
 	state := randToken(32)
 	silent := r.FormValue("prompt") == "none"
+	relogin := !silent && r.FormValue("prompt") == "login" // a sign-in the account server must have seen just now
 	mark := state + "|" + url.QueryEscape(safeNext(r.FormValue("next")))
 	if silent {
 		mark += "|none"
+	} else if relogin {
+		mark += "|login"
 	}
 	http.SetCookie(w, &http.Cookie{Name: ssoCookie, Value: mark,
 		Path: "/auth/", HttpOnly: true, Secure: a.cfg.SecureCookies, SameSite: http.SameSiteLaxMode, MaxAge: 900})
 	q := url.Values{"state": {state}, "return_to": {a.cfg.BaseURL + "/auth/sso/callback"}}
 	path := "/sso/" + url.PathEscape(a.cfg.SSOClient)
+	if relogin {
+		q.Set("max_age", strconv.Itoa(reLoginAge))
+	}
 	if silent {
 		q.Set("prompt", "none")
 	} else {
@@ -174,6 +182,7 @@ func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
 	next, flag, _ := strings.Cut(rest, "|")
 	next, _ = url.QueryUnescape(next)
 	silent := flag == "none"
+	relogin := flag == "login"
 	if e := r.FormValue("error"); e != "" {
 		// Only the answer to a silent check, carrying our own state, counts.
 		if !silent || !hmac.Equal([]byte(r.FormValue("state")), []byte(state)) {
@@ -206,6 +215,19 @@ func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
 		a.authFail(w, r, http.StatusForbidden, "err.account_suspended")
 		return
 	}
+	// A sign-in asked for with max_age is only believed from the signed ticket: a browser can drop the parameter on
+	// the way to the account server, but it cannot forge auth_time. An old account server sends none (0): refused,
+	// with nothing changed, rather than let the action through unchecked.
+	if relogin {
+		switch age := time.Since(time.Unix(t.AuthTime, 0)); {
+		case t.AuthTime <= 0:
+			a.authFail(w, r, http.StatusForbidden, "err.sso_hub_old")
+			return
+		case age > reLoginWindow || age < -time.Minute:
+			a.authFail(w, r, http.StatusForbidden, "err.sso_not_fresh")
+			return
+		}
+	}
 	u, err := a.linkSSOUser(t)
 	if errors.Is(err, errRegClosed) {
 		a.authFail(w, r, http.StatusForbidden, "err.sso_closed")
@@ -225,7 +247,11 @@ func (a *App) ssoCallback(w http.ResponseWriter, r *http.Request) {
 	// was switched at the account server, and the old session ends inside startSession.
 	old := a.currentUser(r)
 	same := old != nil && old.ID == u.ID
-	a.startSession(w, r, u)
+	if tok := a.startSession(w, r, u); tok != "" && relogin {
+		if err := a.db.SetSessionLoginAt(tok, t.AuthTime); err != nil {
+			log.Printf("sso: login stamp: %v", err)
+		}
+	}
 	http.SetCookie(w, &http.Cookie{Name: ssoCookie, Path: "/auth/", MaxAge: -1})
 	dest := safeNext(next)
 	if silent {
