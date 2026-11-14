@@ -18,7 +18,32 @@
         {
           "type": "added",
           "where": "Security page",
-          "text": "A HOP ID account that forgot its vault key and has no recovery codes can now start again with \"Reset vault\". It deletes everything the old key protected (all notes with their attachments and share links, margin notes and recovery codes), signs the other devices out and lets you set a new vault key straight away. It asks in two steps, first showing how much will be lost and then asking you to type RESET, because there is no way back. NoteHop never held the key, so giving up the old notes is the only way to a new one, and people who lost the key were stuck before."
+          "text": "A HOP ID account that forgot its vault key and has no recovery codes can now start again with \"Reset vault\". It deletes everything the old key protected (encrypted notes with their attachments and share links, margin notes and recovery codes), keeps your basic notes, signs the other devices out and lets you set a new vault key straight away. It asks in two steps, first showing how much will be lost and then asking you to type RESET, because there is no way back, and it only runs for a sign-in that HOP ID confirmed in the last few minutes. NoteHop never held the key, so giving up the old encrypted notes is the only way to a new one, and people who lost the key were stuck before."
+        },
+        {
+          "type": "added",
+          "where": "My notes",
+          "text": "The home of the dashboard now shows your basic notes straight away, without asking for the vault key, and a Vault button (also in the sidebar) leads to the encrypted ones. The ten filters became the five that mean something for a list of basic notes. Most people care about their basic notes first, and they had to unlock the vault just to see them. A new note started from here begins as a basic note."
+        },
+        {
+          "type": "added",
+          "where": "My notes, Edit",
+          "text": "A basic note whose owner link is not on this device now has an Edit button. After you confirm, it gives the note new editing keys, so you can edit it without the vault. Older owner links and edit links you gave to other people stop working, because they depend on the old keys; reading links keep working. Before, losing the vault meant losing the ability to edit your own basic notes."
+        },
+        {
+          "type": "added",
+          "where": "Colours",
+          "text": "Two softer colour palettes, Mist and Sand, can be chosen from the language menu next to the classic one, which stays the default for now. Many people found the bright green to purple buttons too loud."
+        },
+        {
+          "type": "added",
+          "where": "Editor",
+          "text": "Inside the dashboard every note editor has a full screen button that hides the sidebar and the top bar, and Escape leaves it. Writing needs more room than the dashboard frame leaves."
+        },
+        {
+          "type": "added",
+          "where": "Web notes",
+          "text": "The divider between the code and the result can be dragged (or moved with the arrow keys) to make the result bigger or smaller, and the list of files can be shown as a row above the code instead of beside it. Both choices are remembered in your browser and do not apply on phones, where the panes are stacked."
         },
         {
           "type": "added",
@@ -44,6 +69,16 @@
           "type": "changed",
           "where": "Sidebar",
           "text": "\"Part of Hop Easy Link\" now sits at the bottom left of the sidebar, as in the other HOP apps, and is no longer repeated in the page footer."
+        },
+        {
+          "type": "fixed",
+          "where": "Main buttons",
+          "text": "The gradient of the main buttons is laid out once over the whole button, and its violet end is a little deeper in the dark theme, so the right end no longer reads as a bright block. The cause was a gradient that was laid out on the inside of the button and repeated under its border."
+        },
+        {
+          "type": "fixed",
+          "where": "Reset vault on other devices",
+          "text": "A device that still held the old vault key after a reset used to sign back in and quietly mix notes sealed with the old key and the new one. The vault now has a generation number, and a key from an older generation is dropped at once, so you are asked for the new key. Also, a reset no longer works from a sign-in that HOP ID has not confirmed recently, even when HOP ID cannot be reached."
         },
         {
           "type": "fixed",

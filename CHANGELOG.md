@@ -10,7 +10,12 @@ A way out for people who lost their vault key, and a calmer signed-in area.
 
 ### Added
 
-- **Security page.** A HOP ID account that forgot its vault key and has no recovery codes can now start again with "Reset vault". It deletes everything the old key protected (all notes with their attachments and share links, margin notes and recovery codes), signs the other devices out and lets you set a new vault key straight away. It asks in two steps, first showing how much will be lost and then asking you to type RESET, because there is no way back. NoteHop never held the key, so giving up the old notes is the only way to a new one, and people who lost the key were stuck before.
+- **Security page.** A HOP ID account that forgot its vault key and has no recovery codes can now start again with "Reset vault". It deletes everything the old key protected (encrypted notes with their attachments and share links, margin notes and recovery codes), keeps your basic notes, signs the other devices out and lets you set a new vault key straight away. It asks in two steps, first showing how much will be lost and then asking you to type RESET, because there is no way back, and it only runs for a sign-in that HOP ID confirmed in the last few minutes. NoteHop never held the key, so giving up the old encrypted notes is the only way to a new one, and people who lost the key were stuck before.
+- **My notes.** The home of the dashboard now shows your basic notes straight away, without asking for the vault key, and a Vault button (also in the sidebar) leads to the encrypted ones. The ten filters became the five that mean something for a list of basic notes. Most people care about their basic notes first, and they had to unlock the vault just to see them. A new note started from here begins as a basic note.
+- **My notes, Edit.** A basic note whose owner link is not on this device now has an Edit button. After you confirm, it gives the note new editing keys, so you can edit it without the vault. Older owner links and edit links you gave to other people stop working, because they depend on the old keys; reading links keep working. Before, losing the vault meant losing the ability to edit your own basic notes.
+- **Colours.** Two softer colour palettes, Mist and Sand, can be chosen from the language menu next to the classic one, which stays the default for now. Many people found the bright green to purple buttons too loud.
+- **Editor.** Inside the dashboard every note editor has a full screen button that hides the sidebar and the top bar, and Escape leaves it. Writing needs more room than the dashboard frame leaves.
+- **Web notes.** The divider between the code and the result can be dragged (or moved with the arrow keys) to make the result bigger or smaller, and the list of files can be shown as a row above the code instead of beside it. Both choices are remembered in your browser and do not apply on phones, where the panes are stacked.
 - **Dashboard home.** A card at the top can show a notice from the people who run the site, such as planned maintenance. Close it and it stays away for a week; when there is no notice there is no card. Every dashboard in the family now has a place for announcements.
 
 ### Changed
@@ -22,6 +27,8 @@ A way out for people who lost their vault key, and a calmer signed-in area.
 
 ### Fixed
 
+- **Main buttons.** The gradient of the main buttons is laid out once over the whole button, and its violet end is a little deeper in the dark theme, so the right end no longer reads as a bright block. The cause was a gradient that was laid out on the inside of the button and repeated under its border.
+- **Reset vault on other devices.** A device that still held the old vault key after a reset used to sign back in and quietly mix notes sealed with the old key and the new one. The vault now has a generation number, and a key from an older generation is dropped at once, so you are asked for the new key. Also, a reset no longer works from a sign-in that HOP ID has not confirmed recently, even when HOP ID cannot be reached.
 - **Top bar on small screens.** On phones the buttons of the public top bar wrapped onto a second line and covered the page below. They now stay in one row; the help menu moves into the menu behind the burger button on the narrowest phones, and nothing overlaps in any of the nine languages.
 - **Nearby devices.** The pairing code box showed only five of the six digits. It is now wide enough for all six on every screen.
 
