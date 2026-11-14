@@ -108,10 +108,15 @@ func (a *App) userAction(u *db.User, q actionReq) (map[string]any, error) {
 		if u.SSOID == "" {
 			return nil, errors.New("bad_account") // password accounts derive the vault key from the password
 		}
-		if err := a.db.ClearVaultCheck(u.ID); err != nil {
+		// The same wipe as the account's own reset: the encrypted notes sealed with the lost phrase go too (they could
+		// never be opened again and would only sit in the database), and the live rooms of those notes are closed.
+		// Every session ends. The audit line is written by hopUserAction, so none is passed here.
+		counts, err := a.db.ResetVault(u.ID, "", nil)
+		a.dropGoneRooms()
+		if err != nil {
 			return nil, err
 		}
-		return map[string]any{"vault_reset": true}, a.db.DeleteOtherSessions(u.ID, "")
+		return map[string]any{"vault_reset": true, "counts": counts}, nil
 	}
 	return nil, errHopUnknownAction
 }
