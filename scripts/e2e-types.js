@@ -38,7 +38,7 @@ async function readLink(p) {
 // The More drawer covers the bar's right end; people close it before Create link.
 const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }); const a = document.getElementById('adv'); if (a && a.open) a.close(); });
 (async () => {
-  const b = await chromium.launch(); const errs = [];
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {}); const errs = [];
   const ctx = await b.newContext({ acceptDownloads: true, viewport: { width: 1280, height: 900 } });
   await ctx.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} });
   const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message)); require('./e2e-dialogs')(p);

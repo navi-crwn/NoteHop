@@ -13,7 +13,7 @@ async function page(b) {
 }
 
 (async () => {
-  const b = await chromium.launch();
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {});
   try {
     const x = await page(b), y = await page(b);
     let viaServer = '';

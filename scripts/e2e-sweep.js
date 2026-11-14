@@ -35,7 +35,7 @@ async function create(p, { title, body, basic, slug }) {
 }
 
 (async () => {
-  const b = await chromium.launch();
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {});
 
   // ---------- "More settings": one dialog, all the groups in it, it scrolls inside ----------
   for (const [name, vp, touch] of [['desktop 1280x640', { width: 1280, height: 640 }, false], ['phone 360x640', { width: 360, height: 640 }, true]]) {
