@@ -51,6 +51,11 @@
           "text": "The reset vault action there now deletes the account's encrypted notes, like the reset on the Security page does. Before, it only cleared the key check and left notes behind that nobody could open."
         },
         {
+          "type": "changed",
+          "where": "Sidebar",
+          "text": "The signed-in sidebar now ends with Help, Terms, Privacy, Changelog, GitHub and Announcement, one per line, and the colour choice (Classic, Mist, Sand) moved there from the language menu. The choice is now kept in a cookie shared with the other HOP apps instead of only in this browser, so the same look can follow you across the family. The old list was shorter than in the other apps."
+        },
+        {
           "type": "fixed",
           "where": "Notes saved from an old page",
           "text": "A page opened before a vault reset no longer overwrites the sealed owner data of a note when it saves; the text is still saved. The old page used a key that no longer exists."

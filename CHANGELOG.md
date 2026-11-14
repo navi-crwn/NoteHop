@@ -20,6 +20,7 @@ A basic note can now be locked with a password, and the sign-in page leads with 
 - **Sign in and sign up.** With a HOP ID hub, the page now shows one big HOP ID button. The older NoteHop sign-in form and its sign-up link are folded behind one small line, so accounts made here before still get in. The page had three ways in at once, which confused people.
 - **Reset vault.** It now asks you to sign in at HOP ID again first, and only goes ahead when HOP ID confirms that sign-in happened in the last few minutes. If the hub cannot confirm it, nothing is deleted and the page says so. The reset cannot be undone, so a session that was only kept alive quietly should not be enough.
 - **Control center.** The reset vault action there now deletes the account's encrypted notes, like the reset on the Security page does. Before, it only cleared the key check and left notes behind that nobody could open.
+- **Sidebar.** The signed-in sidebar now ends with Help, Terms, Privacy, Changelog, GitHub and Announcement, one per line, and the colour choice (Classic, Mist, Sand) moved there from the language menu. The choice is now kept in a cookie shared with the other HOP apps instead of only in this browser, so the same look can follow you across the family. The old list was shorter than in the other apps.
 
 ### Fixed
 
