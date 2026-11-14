@@ -204,6 +204,9 @@ var migrations = []string{
 	// 16: the vault's generation. A reset (by the owner or by the control center) makes every vault key a
 	// browser still holds out of date; the page carries the number and a browser drops a key of an older one.
 	`ALTER TABLE users ADD COLUMN vault_epoch INTEGER NOT NULL DEFAULT 0;`,
+	// 17: when the person last signed in for real at the account server, as that server stamped it (auth_time of a
+	// ticket asked for with max_age). 0 for every session that was not made that way, so a vault reset asks for it.
+	`ALTER TABLE sessions ADD COLUMN login_at INTEGER NOT NULL DEFAULT 0;`,
 }
 
 // migrate applies pending migrations, each in its own transaction together
@@ -752,6 +755,19 @@ func (d *DB) CreateSession(tokenHash string, userID int64, ttl time.Duration) er
 	return err
 }
 
+// SetSessionLoginAt records the account server's own stamp of the sign-in behind a session.
+func (d *DB) SetSessionLoginAt(tokenHash string, at int64) error {
+	_, err := d.Exec(`UPDATE sessions SET login_at = ? WHERE token_hash = ?`, at, tokenHash)
+	return err
+}
+
+// SessionLoginAt is that stamp, 0 when the session was not made by a ticket asked for with max_age.
+func (d *DB) SessionLoginAt(tokenHash string) (int64, error) {
+	var at int64
+	err := d.QueryRow(`SELECT login_at FROM sessions WHERE token_hash = ? AND expires > ?`, tokenHash, now()).Scan(&at)
+	return at, err
+}
+
 // SessionVerifiedAt is when the account server last vouched for this session: the moment
 // it was made, since a session is only ever made right after a ticket or a password check.
 func (d *DB) SessionVerifiedAt(tokenHash string) (time.Time, error) {
@@ -873,6 +889,7 @@ type OwnedNote struct {
 	Mode      string `json:"mode"`
 	Blob      string `json:"blob"`
 	Encrypted bool   `json:"encrypted"`
+	Password  bool   `json:"password"`
 	Title     string `json:"title"`
 	Content   string `json:"-"` // basic notes only, for the title; never sent
 	Frozen    bool   `json:"frozen"`
@@ -888,7 +905,7 @@ func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
 	// The row's link is the note's first read-only link when it has one: a
 	// basic note is shown through it without a key, so it must not be a link
 	// that could write. Only when every link can write is the first one used.
-	rows, err := d.Query(`SELECT l.token, l.mode, n.owner_blob, n.encrypted, CASE WHEN n.encrypted THEN '' ELSE n.content END,
+	rows, err := d.Query(`SELECT l.token, l.mode, n.owner_blob, n.encrypted, n.password, CASE WHEN n.encrypted THEN '' ELSE n.content END,
 			n.frozen, n.views, n.max_views, n.expires, n.created, n.updated, n.last_open
 		FROM notes n JOIN links l ON l.token = (SELECT token FROM links WHERE note_id = n.id ORDER BY (mode <> 'read'), rowid LIMIT 1)
 		WHERE n.owner_id = ? AND (n.expires = 0 OR n.expires > ?) ORDER BY n.updated DESC LIMIT 500`, userID, now())
@@ -899,7 +916,7 @@ func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
 	out := []OwnedNote{}
 	for rows.Next() {
 		var o OwnedNote
-		if err := rows.Scan(&o.Token, &o.Mode, &o.Blob, &o.Encrypted, &o.Content, &o.Frozen, &o.Views, &o.MaxViews, &o.Expires, &o.Created, &o.Updated, &o.LastOpen); err != nil {
+		if err := rows.Scan(&o.Token, &o.Mode, &o.Blob, &o.Encrypted, &o.Password, &o.Content, &o.Frozen, &o.Views, &o.MaxViews, &o.Expires, &o.Created, &o.Updated, &o.LastOpen); err != nil {
 			return nil, err
 		}
 		out = append(out, o)

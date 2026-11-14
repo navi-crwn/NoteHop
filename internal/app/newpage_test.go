@@ -24,14 +24,14 @@ func TestNewNotePage(t *testing.T) {
 	for _, want := range []string{
 		`id="opt-kind"`, `id="opt-password"`, `id="opt-until"`, `id="opt-opens"`, `id="opt-who"`, `id="extra-chips"`, `id="adv-btn"`,
 		`data-starter="note" aria-pressed="true"`, `id="start-more"`, `class="btn sm ed-type-btn"`,
-		`id="summary"`, `id="create"`, `id="why-password"`, `id="why-burn"`,
+		`id="summary"`, `id="create"`, `id="pw-basic"`, `id="why-burn"`,
 		`class="footer-mini"`, `id="help-menu"`, `id="recent"`,
 	} {
 		if !strings.Contains(anon, want) {
 			t.Errorf("/new (signed out) lacks %s", want)
 		}
 	}
-	for _, gone := range []string{`data-starter="code"`, `data-starter="web"`, `name="privacy"`, `class="footer-columns"`, `class="shell-side"`, `id="vault-note"`, `class="compose-head"`} {
+	for _, gone := range []string{`data-starter="code"`, `data-starter="web"`, `name="privacy"`, `class="footer-columns"`, `class="shell-side"`, `id="vault-note"`, `class="compose-head"`, `id="why-password"`, `id="to-encrypted"`} {
 		if strings.Contains(anon, gone) {
 			t.Errorf("/new (signed out) still has %s", gone)
 		}

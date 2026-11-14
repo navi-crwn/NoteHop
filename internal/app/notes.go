@@ -126,13 +126,14 @@ func (a *App) access(w http.ResponseWriter, r *http.Request) (access, bool) {
 		apiErr(w, http.StatusNotFound, "err.note_missing")
 		return access{}, false
 	}
-	return access{
-		note:  n,
-		link:  l,
-		admin: hashMatch(r.Header.Get("X-Admin"), n.AdminHash),
-		write: hashMatch(r.Header.Get("X-Write"), n.WriteHash),
-		ip:    a.clientIP(r),
-	}, true
+	x := access{note: n, link: l, admin: hashMatch(r.Header.Get("X-Admin"), n.AdminHash), ip: a.clientIP(r)}
+	var wait time.Duration
+	x.write, wait = a.writeProof(n, r.Header.Get("X-Write"), x.ip, func() bool { return a.ownerSession(r, n) })
+	if wait > 0 {
+		tooManyPasswordTries(w, wait)
+		return access{}, false
+	}
+	return x, true
 }
 
 // writable gates every change: right link mode, proof of the key, not frozen.
@@ -208,8 +209,8 @@ func (q createReq) invalid() string {
 		return "err.bad_mode"
 	case !validContent(q.Encrypted, q.Content, maxContent, "t", "b"):
 		return "err.bad_content"
-	case q.Password && (!q.Encrypted || len(q.Salt) < 16 || len(q.Salt) > 64 || !b64Re.MatchString(q.Salt)):
-		return "err.password_needs_e2e"
+	case q.Password && (len(q.Salt) < 16 || len(q.Salt) > 64 || !b64Re.MatchString(q.Salt)):
+		return "err.bad_password_data"
 	case !keyRe.MatchString(q.Admin) || !keyRe.MatchString(q.Write):
 		return "err.bad_keys"
 	case q.Slug != "" && !slugRe.MatchString(q.Slug):
@@ -226,7 +227,7 @@ func (q createReq) invalid() string {
 		return "err.lock_needs_write"
 	case len(q.OwnerBlob) > maxOwnerBlob:
 		return "err.owner_blob"
-	case q.Decoy != nil && (!q.Password || !keyRe.MatchString(q.Decoy.Write) || !validContent(true, q.Decoy.Content, maxContent, "t", "b")):
+	case q.Decoy != nil && (!q.Encrypted || !q.Password || !keyRe.MatchString(q.Decoy.Write) || !validContent(true, q.Decoy.Content, maxContent, "t", "b")):
 		return "err.decoy_needs_password"
 	case len(q.Burns) > 0 && !q.Encrypted:
 		return "err.burn_block_needs_e2e"
@@ -542,6 +543,12 @@ func (a *App) raw(w http.ResponseWriter, r *http.Request) {
 			"Open it in a browser with the full link (including the #key part).\n"))
 		return
 	}
+	if n.Password {
+		w.WriteHeader(http.StatusForbidden)
+		w.Write([]byte("This note is locked with a password; the server cannot ask for it here.\n" +
+			"Open it in a browser, or read it with \"notehop get\" and the password.\n"))
+		return
+	}
 	if n.HasWarning() && !a.hasGatePassed(r, r.PathValue("token")) {
 		w.WriteHeader(http.StatusForbidden)
 		w.Write([]byte("Content warning: open this note's page and confirm before reading.\n"))
@@ -640,7 +647,8 @@ func (a *App) apiSave(w http.ResponseWriter, r *http.Request) {
 	}
 	if q.OwnerBlob != nil {
 		u := a.currentUser(r)
-		if !x.admin || u == nil || !x.note.OwnerID.Valid || x.note.OwnerID.Int64 != u.ID || len(*q.OwnerBlob) > maxOwnerBlob {
+		if !x.admin || u == nil || !x.note.OwnerID.Valid || x.note.OwnerID.Int64 != u.ID || len(*q.OwnerBlob) > maxOwnerBlob || !epochCurrent(r, u) {
+			// A page loaded before a vault reset seals with a key that no longer exists: keep the text, skip the blob.
 			q.OwnerBlob = nil
 		}
 	}

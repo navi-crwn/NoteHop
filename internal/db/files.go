@@ -170,7 +170,7 @@ func (d *DB) NoteByID(id int64) (*Note, error) {
 
 // ProfileNotes are a user's public notes marked "on my profile".
 func (d *DB) ProfileNotes(userID int64) ([]*Note, error) {
-	rows, err := d.Query(`SELECT `+noteCols+` FROM notes n WHERE n.owner_id = ? AND n.encrypted = 0
+	rows, err := d.Query(`SELECT `+noteCols+` FROM notes n WHERE n.owner_id = ? AND n.encrypted = 0 AND n.password = 0
 		AND n.config LIKE '%"profile":true%' AND (n.expires = 0 OR n.expires > ?) ORDER BY n.updated DESC LIMIT 200`, userID, now())
 	if err != nil {
 		return nil, err

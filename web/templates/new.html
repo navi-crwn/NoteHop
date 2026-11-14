@@ -41,12 +41,12 @@
           <summary class="btn chip-btn"><svg class="pick-ico"><use href="#i-key"/></svg><span class="pick-val"></span><svg class="dd"><use href="#i-down"/></svg></summary>
           <fieldset class="pick-pop">
             <legend>{{.L.T "chip.password"}}</legend>
-            <div class="rule-note hide" id="why-password"><span>{{.L.T "rule.password_e2e"}}</span><button type="button" class="btn sm" id="to-encrypted"><svg><use href="#i-lock"/></svg>{{.L.T "chip.to_encrypted"}}</button></div>
             <label class="toggle" data-tech="PBKDF2"><input type="checkbox" data-feature="password"><span><b>{{.L.T "feat.password"}}</b><small>{{.L.T "priv.password_d"}}</small></span></label>
             <div class="feat hide" data-panel="password">
               <label for="password">{{.L.T "new.password_ph"}}</label>
               <input type="password" id="password" placeholder="{{.L.T "new.password_ph"}}" autocomplete="new-password">
               <span class="hint">{{.L.H "new.password_hint"}}</span>
+              <span class="hint warn hide" id="pw-basic">{{.L.T "new.password_basic"}}</span>
               <!-- the second password sits right under the first one it depends on -->
               <label class="toggle" data-tech="decoy password"><input type="checkbox" data-feature="decoy"><span><b>{{.L.T "feat.decoy"}}</b><small>{{.L.T "ex.decoy"}}</small></span></label>
               <div class="hide" data-panel="decoy">

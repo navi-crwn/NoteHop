@@ -63,8 +63,9 @@ Chaque nouvelle note commence par un choix.
 | Qui peut lire le texte | Quiconque a le lien complet, qui contient la clé | Quiconque a le lien, et le serveur |
 | Comment elle est stockée | Sous forme de texte chiffré (AES-256-GCM) | En texte clair dans la base de données et dans ses sauvegardes |
 | Lien | Aléatoire, avec la clé après `#k=` | Un nom de votre choix, comme `/monday-meeting`, ou un nom aléatoire |
-| Mot de passe, mot de passe leurre, blocs qui s'autodétruisent | Oui | Non |
-| `/raw`, l'API factice (mock), SSH, votre page publique `/@name` | Non | Oui |
+| Mot de passe | Oui | Oui, comme simple verrou : le texte n'est pas chiffré et le serveur peut toujours le lire |
+| Mot de passe leurre, blocs qui s'autodétruisent | Oui | Non |
+| `/raw`, l'API factice (mock), SSH, votre page publique `/@name` | Non | Oui, sauf si la note a un mot de passe |
 | Moteurs de recherche | Jamais indexée | Jamais indexée |
 
 Le propriétaire peut faire passer une note d'un type à l'autre dans la boîte de dialogue Partager. Le navigateur chiffre ou déchiffre le texte et le serveur ne fait que l'échanger. Les liens et les réglages restent. L'historique des versions est effacé, et une note qui contient des lignes ajoutées, des suggestions, un leurre, des blocs qui s'autodétruisent, une boîte de réception ou des signatures ne peut pas encore changer de type.

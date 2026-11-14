@@ -37,6 +37,9 @@ server {
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
         client_max_body_size 21m;
+        # Take the whole body before the app sees the request, so a slow client holds nginx, not an app upload slot.
+        proxy_request_buffering on;
+        client_body_timeout 60s;
         proxy_read_timeout 300s;
         proxy_send_timeout 300s;
     }

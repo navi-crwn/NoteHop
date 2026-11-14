@@ -16,7 +16,7 @@ import (
 
 func (e *recheckEnv) fresh() {
 	e.t.Helper()
-	if _, err := e.db.Exec(`UPDATE sessions SET verified_at = ?`, time.Now().Unix()); err != nil {
+	if _, err := e.db.Exec(`UPDATE sessions SET verified_at = ?, login_at = ?`, time.Now().Unix(), time.Now().Unix()); err != nil {
 		e.t.Fatal(err)
 	}
 }
@@ -98,7 +98,7 @@ func TestResetGateRefusesAFreshSessionWhenSignOnIsOff(t *testing.T) {
 // The old owner link stops opening the frozen snapshots of the note as admin too.
 func TestTakeoverMovesTheSnapshotsToo(t *testing.T) {
 	f := seedVaultForRound2(t)
-	if err := f.d.SetNoteKeys(f.aNotes[1].ID, f.a.ID, "new-admin", "new-write"); err != nil {
+	if err := f.d.SetNoteKeys(f.aNotes[1].ID, f.a.ID, "new-admin", "new-write", ""); err != nil {
 		t.Fatal(err)
 	}
 	var snap, other string

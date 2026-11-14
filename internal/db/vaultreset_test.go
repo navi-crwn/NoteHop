@@ -352,14 +352,14 @@ func TestSetNoteKeysIsNarrow(t *testing.T) {
 		"a note of another owner": {basic.ID, f.b.ID},
 		"no such note":            {987654, f.a.ID},
 	} {
-		if err := f.d.SetNoteKeys(c.note, c.owner, "new-admin", "new-write"); err != ErrNotFound {
+		if err := f.d.SetNoteKeys(c.note, c.owner, "new-admin", "new-write", ""); err != ErrNotFound {
 			t.Errorf("%s: %v", name, err)
 		}
 	}
 	if _, err := f.d.Exec(`UPDATE notes SET frozen = 1 WHERE id = ?`, basic.ID); err != nil {
 		t.Fatal(err)
 	}
-	if err := f.d.SetNoteKeys(basic.ID, f.a.ID, "new-admin", "new-write"); err != ErrNotFound {
+	if err := f.d.SetNoteKeys(basic.ID, f.a.ID, "new-admin", "new-write", ""); err != ErrNotFound {
 		t.Errorf("a snapshot: %v", err)
 	}
 	for _, id := range []int64{basic.ID, enc.ID, f.bNote.ID} {
@@ -370,7 +370,7 @@ func TestSetNoteKeysIsNarrow(t *testing.T) {
 	if _, err := f.d.Exec(`UPDATE notes SET frozen = 0 WHERE id = ?`, basic.ID); err != nil {
 		t.Fatal(err)
 	}
-	if err := f.d.SetNoteKeys(basic.ID, f.a.ID, "new-admin", "new-write"); err != nil {
+	if err := f.d.SetNoteKeys(basic.ID, f.a.ID, "new-admin", "new-write", ""); err != nil {
 		t.Fatal(err)
 	}
 	if a, w, blob := hashes(basic.ID); a != "new-admin" || w != "new-write" || blob != "" {

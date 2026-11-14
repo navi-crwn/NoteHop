@@ -5,12 +5,15 @@
     <h1>{{.L.T "auth.sign_in"}}</h1>
     <p class="muted">{{.L.T "auth.login_lead"}}</p>
     {{template "sso" .}}
+    {{/* With a HOP ID hub the one big button is HOP ID; the old local sign-in is folded away, not removed: accounts made here before still need it. */}}
+    {{if .SSO}}<details class="old-login" id="old-login"><summary>{{.L.T "auth.old_account"}}</summary>{{else}}<!-- stand-alone: the form is the sign-in -->{{end}}
     <div class="field"><label for="username">{{.L.T "auth.username"}}</label><input type="text" id="username" autocomplete="username" autocapitalize="off" spellcheck="false" required aria-describedby="username-hint"><span class="hint" id="username-hint">{{.L.T "auth.username_login_hint"}}</span></div>
     <div class="field"><label for="password">{{.L.T "auth.password"}}</label><input type="password" id="password" autocomplete="current-password" required></div>
     <div class="alert err hide" id="auth-err" role="alert"></div>
     <button class="btn primary lg block" type="submit"><span>{{.L.T "auth.sign_in"}}</span></button>
     <p class="small center"><a href="/recover">{{.L.T "rec.forgot"}}</a></p>
     {{if .Reg}}<p class="small muted center">{{.L.T "auth.no_account"}} <a href="/register">{{.L.T "auth.sign_up"}}</a></p>{{end}}
+    {{if .SSO}}</details>{{end}}
   </form>
 </section>
 {{end}}

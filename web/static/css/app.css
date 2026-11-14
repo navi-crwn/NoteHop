@@ -103,6 +103,14 @@
   --lime: light-dark(#8a6a1f, #e6cf8f); --cyan: light-dark(#a2406f, #ea9fb0); --violet: light-dark(#b4532a, #f3b48c); --violet-text: light-dark(#a2406f, #f3b8c4);
 }
 
+/* The palettes also colour the surfaces (the family look the owner chose: accent and surfaces). Text and status colours do not change. */
+:root[data-palette="mist"] {
+  --bg: light-dark(#f4f6fc, #0d1120); --panel: light-dark(#ffffff, #141a2e); --panel-2: light-dark(#eef1fa, #1a2138); --line: light-dark(#dde2f1, #262e4a);
+}
+:root[data-palette="sand"] {
+  --bg: light-dark(#faf6f1, #17110d); --panel: light-dark(#ffffff, #1f1814); --panel-2: light-dark(#f5eee6, #271f19); --line: light-dark(#ece2d6, #3a2e25);
+}
+
 /* The italic accent phrases and the highlights of the home page follow the palette too (the 3D scenes keep their own colours). */
 html:root[data-palette] body[data-page=home], html:root[data-palette] .hop-home { --h-ink: var(--btn-bg); }
 
@@ -187,12 +195,6 @@ main { flex: 1; padding: 28px 0 64px; }
 .menu-list a:hover, .menu-list button:hover { background: var(--panel-2); text-decoration: none; }
 .menu-list .who { padding: 8px 10px 10px; border-bottom: 1px solid var(--line); margin-bottom: 4px; font-size: .85rem; color: var(--muted); }
 .menu-list .who b { color: var(--text); }
-.menu-list .pal { margin-top: 4px; padding: 8px 10px 4px; border-top: 1px solid var(--line); }
-.menu-list .pal > span { display: block; margin-bottom: 6px; font-size: .75rem; color: var(--muted); }
-.menu-list .pal div { display: flex; gap: 6px; }
-.menu-list .pal button { flex: 1; width: auto; min-height: 36px; padding: 4px 6px; justify-content: center; gap: 6px; border: 1px solid var(--line-2); font-size: .8rem; }
-.menu-list .pal button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
-.menu-list .pal i { width: 14px; height: 14px; border-radius: 50%; flex: none; }
 .sw-classic { background: linear-gradient(135deg, #a3e635, #22d3ee, #8b5cf6); }
 .sw-mist { background: linear-gradient(135deg, #4f5bd5, #86c8f3); }
 .sw-sand { background: linear-gradient(135deg, #b4532a, #ea9fb0); }
@@ -1580,3 +1582,22 @@ h1, h2, .note-title h1 { overflow-wrap: anywhere; }
 .foot-brand b img { width: 20px; height: 20px; display: block; }
 .wr-blocked { margin: 0; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--panel-2); color: var(--muted); font: 500 .76rem/1.45 var(--sans); }
 .wr-blocked[hidden] { display: none; }
+
+/* With a HOP ID hub the local sign-in is folded under one small line: accounts made on NoteHop before still use it. */
+.old-login > summary { list-style: none; cursor: pointer; text-align: center; margin: 14px 0 0; color: var(--muted); font-size: .85rem; text-decoration: underline; text-underline-offset: 3px; }
+.old-login > summary::-webkit-details-marker { display: none; }
+.old-login > summary:focus-visible { outline: 2px solid var(--accent, currentColor); outline-offset: 3px; border-radius: 4px; }
+.old-login[open] > summary { margin-bottom: 14px; }
+
+/* ---------- dashboard sidebar: palette picker and the family foot list ---------- */
+.shell-pal { padding: 10px 12px 2px; }
+.shell-pal .shell-label { margin: 0 0 6px; }
+.pal-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.pal-row button { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 52px; padding: 6px 4px; border: 1px solid var(--line-2); border-radius: 10px; background: transparent; color: var(--muted); font: inherit; font-size: .72rem; cursor: pointer; }
+.pal-row button:hover { color: var(--text); background: var(--panel-2); }
+.pal-row button[aria-pressed="true"] { color: var(--text); border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
+.pal-row button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pal-row i { width: 18px; height: 18px; border-radius: 50%; flex: none; }
+.pal-row span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.foot-list { list-style: none; margin: 0; padding: 0; }
+.foot-list a { display: block; line-height: 28px; font-size: .78rem; }

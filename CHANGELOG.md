@@ -4,6 +4,30 @@ What changed in NoteHop, newest first, written for the people who use it.
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-14 - Passwords on basic notes and a calmer sign-in
+
+A basic note can now be locked with a password, and the sign-in page leads with HOP ID.
+
+### Added
+
+- **New note.** A basic note can now have a password. Readers need the link and the password, and the short link with a name works too. The page says plainly that this locks the note but does not encrypt it, so the server can still read the text. Before, a password was only possible on encrypted notes, which left named links with no lock at all.
+- **Locked notes elsewhere.** A basic note with a password is also closed on the plain-text address, the mock API, over SSH, in the version history, in the list of suggestions and in the offline copy, and it can no longer be put on your public page. Wrong guesses are counted, and after ten wrong ones in a minute from one address (or two hundred in an hour for the note) every attempt is refused for a while. This is so that a password on a note the server can read is a real lock.
+- **My notes.** A locked basic note shows a Password label, and its Edit button lets you choose a new password. After a vault reset the old password is gone with the vault, so this is the way back into your own note. Without it the note would stay locked for everyone, you included.
+- **Dashboard home.** One announcement from the HOP ID hub can show at the top, under the notice from the site itself. You can close it for a week; an important one cannot be closed. NoteHop asks the hub from the server, about every five minutes, and sends nothing about you or your visitors.
+
+### Changed
+
+- **Sign in and sign up.** With a HOP ID hub, the page now shows one big HOP ID button. The older NoteHop sign-in form and its sign-up link are folded behind one small line, so accounts made here before still get in. The page had three ways in at once, which confused people.
+- **Reset vault.** It now asks you to sign in at HOP ID again first, and only goes ahead when HOP ID confirms that sign-in happened in the last few minutes. If the hub cannot confirm it, nothing is deleted and the page says so. The reset cannot be undone, so a session that was only kept alive quietly should not be enough.
+- **Control center.** The reset vault action there now deletes the account's encrypted notes, like the reset on the Security page does. Before, it only cleared the key check and left notes behind that nobody could open.
+- **Sidebar and colours.** The signed-in sidebar now ends with Help, Terms, Privacy, Changelog, GitHub and Announcement, one per line. NoteHop has a new default look, Mist, with soft blue-grey backgrounds as well as accents; you can switch to Sand or the old Classic look under the sidebar, and the choice is kept in a cookie shared with the other HOP apps instead of only in this browser. The sidebar also scrolls on short screens instead of cutting its foot off.
+
+### Fixed
+
+- **Notes saved from an old page.** A page opened before a vault reset no longer overwrites the sealed owner data of a note when it saves; the text is still saved. The old page used a key that no longer exists.
+- **Taking a note over.** Snapshots made before a note had an owner now get the new keys too, so the old owner link stops working on them.
+- **Attachments.** One address can no longer take every upload slot with slow uploads, and the nginx example now buffers uploads explicitly.
+
 ## [1.4.0] - 2026-11-14 - Reset vault and a tidier dashboard
 
 A way out for people who lost their vault key, and a calmer signed-in area.

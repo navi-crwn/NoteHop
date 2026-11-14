@@ -19,6 +19,16 @@ func TestInstallDryRunCreatesNothing(t *testing.T) {
 	}
 	for _, run := range []string{"systemd", "docker"} {
 		t.Run(run, func(t *testing.T) {
+			// install.sh refuses --run docker when `docker info` fails, so without a running Docker this case cannot
+			// say anything about a dry run. CI has Docker, and there it runs.
+			if run == "docker" {
+				if _, err := exec.LookPath("docker"); err != nil {
+					t.Skip("docker is not installed here; the dry run of --run docker is checked where Docker exists (CI)")
+				}
+				if err := exec.Command("docker", "info").Run(); err != nil {
+					t.Skip("docker is installed but its daemon is not reachable here; the dry run of --run docker is checked where Docker runs (CI)")
+				}
+			}
 			dir, home := t.TempDir(), t.TempDir()
 			for _, name := range []string{"install.sh", "go.mod"} {
 				b, err := os.ReadFile(filepath.Join("..", "..", name))

@@ -138,7 +138,7 @@ func TestCreateValidation(t *testing.T) {
 		{"mode": "owner", "encrypted": true, "content": fakeCipher("x"), "admin": key(), "write": key()},
 		{"mode": "read", "encrypted": true, "content": "not base64!", "admin": key(), "write": key()},
 		{"mode": "read", "encrypted": false, "content": "{}", "admin": key(), "write": key()},
-		{"mode": "read", "encrypted": false, "password": true, "salt": key(), "content": `{"t":"","b":"x"}`, "admin": key(), "write": key()},
+		{"mode": "read", "encrypted": false, "password": true, "salt": "x", "content": `{"t":"","b":"x"}`, "admin": key(), "write": key()},
 		{"mode": "read", "encrypted": true, "content": fakeCipher("x"), "admin": "short", "write": key()},
 		{"mode": "read", "encrypted": true, "content": fakeCipher("x"), "admin": key(), "write": key(), "slug": "A!"},
 		{"mode": "read", "encrypted": true, "content": fakeCipher("x"), "admin": key(), "write": key(), "max_views": 5000},

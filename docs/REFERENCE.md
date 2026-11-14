@@ -97,13 +97,14 @@ Link names and usernames (at least 7 characters, reserved names, a word filter i
 ```
 K      = 32 random bytes                       → in the link: /<token>#k=<K>
 secret = K, or PBKDF2(password, K‖salt, 310000) with a password
+(basic note with a password, no K: write = HMAC(PBKDF2(password, salt‖"notehop/basic-pw", 310000), "notehop/write"))
 enc    = HMAC-SHA256(secret, "notehop/enc")    → AES-256-GCM key for the note and its replies
 write  = HMAC-SHA256(secret, "notehop/write")  → sent as X-Write; the server keeps its SHA-256
 admin  = 32 random bytes                       → owner link: #k=<K>&a=<admin>; the server keeps its SHA-256
 ```
 
 - Every change needs `X-Write` (proof of the key) **and** a link mode that allows it, so an easy-to-guess link name still can't be written to without the key.
-- Notes with a password: `POST /open` also needs `X-Write`, so a wrong password is refused **without** using up a view.
+- Notes with a password: `POST /open` also needs `X-Write`, so a wrong password is refused **without** using up a view. Wrong proofs are counted per address (10 a minute) and per note (200 an hour); past that every attempt gets 429 for a while, the owner's session and the admin key excepted. Right proofs are never counted, so an open editor keeps working.
 - Accounts: `PBKDF2(password, "notehop/account/"+username, 600000)` → 64 bytes: the first 32 are the vault key (stays in the browser), the last 32 the login secret (argon2id-hashed on the server).
 - Single sign-on accounts: NoteHop never sees their password, so the vault key comes from a separate phrase: `vault = PBKDF2(phrase, "notehop/vault/"+sso_id, 600000)`. The server only gets `HMAC(vault, "notehop/vault-check")` (argon2id-hashed) to tell a right phrase from a typo.
 - Password change and recovery: the vault key itself never changes. After a change, the first 32 bytes of the password's PBKDF2 become a wrapping key, and `users.vault_wrap = AES-GCM(that key, vault key)`. Recovery codes are 16 characters (80 bits); `HKDF-SHA256(code, salt "notehop/recovery/"+username)` → 32 bytes that seal the vault key (`recovery_codes.wrap`) + 32 bytes of proof, of which the server keeps only the SHA-256.
@@ -111,7 +112,7 @@ admin  = 32 random bytes                       → owner link: #k=<K>&a=<admin>;
 
 What the server can see in an encrypted note: the ciphertext's size, times, view counts, link modes, the settings for expiry, open and lock times and allowed networks, which checkboxes are ticked (index + true/false), the votes of each poll (option index and a random browser ID), the number of replies, and any content warning label and reason, which are stored readable so the gate can show them before decryption.
 
-A basic note is not encrypted. Its content is the JSON `{"t": title, "b": body}` in plain text, so the server can read it, and so can anyone who reads the database or a backup. Because the server has the text, `/raw`, the mock API, SSH, the public `/@name` page and a link name are possible for basic notes only; a password, a decoy and self-destructing blocks need encryption and are refused for them. An attachment's key is stored inside the note text, so in a basic note the server can read attachments as well, and live editing in a basic note is relayed without encryption. The owner can change a note between the two types with `POST /api/n/{token}/convert`.
+A basic note is not encrypted. Its content is the JSON `{"t": title, "b": body}` in plain text, so the server can read it, and so can anyone who reads the database or a backup. Because the server has the text, `/raw`, the mock API, SSH, the public `/@name` page and a link name are possible for basic notes only; a decoy and self-destructing blocks need encryption and are refused for them. A basic note can have a password, but only as a lock: it is the proof described above, the text stays readable on the server, and the note is then refused by `/raw`, the mock API, SSH, the profile page, the version history and suggestion list without the password, kept out of the offline cache, and shown to moderators without title or preview. A note with a password cannot be converted. An attachment's key is stored inside the note text, so in a basic note the server can read attachments as well, and live editing in a basic note is relayed without encryption. The owner can change a note between the two types with `POST /api/n/{token}/convert`.
 
 For an encrypted note, "the server cannot read it" assumes the browser runs the JavaScript the server sent. A server operator who changed that JavaScript could capture keys, which is why the `notehop` CLI, which encrypts on your own machine, and self-hosting exist.
 
@@ -121,9 +122,9 @@ Everything is JSON. Headers: `X-Admin` (owner token), `X-Write` (proof of the ke
 
 | Method & path | Who | What it does |
 | --- | --- | --- |
-| `POST /api/notes` | anyone | Create a note `{encrypted, password, salt, content, mode, slug, expires_in, max_views, admin, write, owner_blob, content_warning, warning_reason}`. `slug` is accepted only when `encrypted` is false; `password` and burn blocks only when it is true |
+| `POST /api/notes` | anyone | Create a note `{encrypted, password, salt, content, mode, slug, expires_in, max_views, admin, write, owner_blob, content_warning, warning_reason}`. `slug` is accepted only when `encrypted` is false; burn blocks and a decoy only when it is true; `password` needs a `salt`, and its `write` is derived from the password (see above) |
 | `GET /api/n/{token}` | anyone | Metadata without content (owner: + links, snapshots) |
-| `POST /api/n/{token}/open` | anyone (+X-Write with a password) | Content + replies + checks; counts a view. `{"poll":true}` doesn't count (refused for delete-after-reading notes) |
+| `POST /api/n/{token}/open` | anyone (+X-Write with a password; 429 after too many wrong ones) | Content + replies + checks; counts a view. `{"poll":true}` doesn't count (refused for delete-after-reading notes) |
 | `PUT /api/n/{token}` | edit mode / owner + X-Write | Save `{content, version}`; 409 when the version is stale |
 | `POST /api/n/{token}/entries` | edit/append/owner + X-Write | Add a reply |
 | `DELETE /api/n/{token}/entries/{id}` | owner | Delete a reply |
@@ -135,7 +136,7 @@ Everything is JSON. Headers: `X-Admin` (owner token), `X-Write` (proof of the ke
 | `POST /api/n/{token}/signatures` | X-Write, notes with `sign_off` | Sign `{name}`; the first signature makes a frozen copy |
 | `POST /api/n/{token}/votes` | X-Write | `{poll, option, voter}` for `:::poll` blocks; `voter` is a random browser ID, one vote per voter (can be changed), at most 20 new voters per network |
 | `POST /api/n/{token}/burns` · `…/burns/{id}/reveal` | owner / X-Write | `:::burn` blocks: the block's key is stored apart, opened once, then deleted |
-| `PUT` · `DELETE /api/n/{token}/decoy` | owner | Decoy password: a second ciphertext; its openings are logged for the owner |
+| `PUT` · `DELETE /api/n/{token}/decoy` | owner | Decoy password: a second ciphertext (encrypted notes only); its openings are logged for the owner |
 | `POST /api/n/{token}/claim` | account owner + X-Admin | Move a guest note into the account, or seal the key of a note already in this account whose `owner_blob` is empty (made while the vault was closed); 409 for a note in another account |
 | `POST /api/n/{token}/links` · `DELETE …/links/{t}` | owner | Add / turn off a link |
 | `PUT /api/n/{token}/links/{link}` | owner, basic notes | Rename a link `{slug}`; the old name is held for the owner for 90 days |

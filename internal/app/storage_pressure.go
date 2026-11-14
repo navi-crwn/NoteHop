@@ -44,7 +44,11 @@ func (a *App) apiFileStatus(w http.ResponseWriter, r *http.Request) {
 		if n, _, e := a.db.NoteByLink(tok); e == nil {
 			u := a.currentUser(r)
 			owner := u != nil && n.OwnerID.Valid && n.OwnerID.Int64 == u.ID
-			if owner || hashMatch(r.Header.Get("X-Write"), n.WriteHash) || hashMatch(r.Header.Get("X-Admin"), n.AdminHash) {
+			match := owner || hashMatch(r.Header.Get("X-Admin"), n.AdminHash)
+			if !match { // a password guess counts like any other (pwguess.go)
+				match, _ = a.writeProof(n, r.Header.Get("X-Write"), a.clientIP(r), func() bool { return false })
+			}
+			if match {
 				scope = "note:" + strconv.FormatInt(n.ID, 10)
 			}
 		}

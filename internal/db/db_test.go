@@ -129,6 +129,8 @@ func TestSessionVerifiedAt(t *testing.T) {
 	d.Exec(`ALTER TABLE files DROP COLUMN owner_id`)
 	// and migration 16 (users.vault_epoch)
 	d.Exec(`ALTER TABLE users DROP COLUMN vault_epoch`)
+	// and migration 17 (sessions.login_at)
+	d.Exec(`ALTER TABLE sessions DROP COLUMN login_at`)
 	d.Exec(`PRAGMA user_version = 13`)
 	d.Close()
 
@@ -140,6 +142,9 @@ func TestSessionVerifiedAt(t *testing.T) {
 		at, err := d.SessionVerifiedAt("old")
 		if err != nil || at.Unix() != 0 {
 			t.Fatalf("old session: %v %v", at, err)
+		}
+		if l, err := d.SessionLoginAt("old"); err != nil || l != 0 {
+			t.Fatalf("old session login stamp: %v %v", l, err)
 		}
 		d.Close()
 	}

@@ -228,6 +228,10 @@ func (a *App) apiConfig(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if q.Profile != nil {
+		if *q.Profile && x.note.Password { // a locked note is not for a public page
+			apiErr(w, http.StatusBadRequest, "err.profile_locked")
+			return
+		}
 		if *q.Profile && (x.note.Encrypted || !x.note.OwnerID.Valid) {
 			apiErr(w, http.StatusBadRequest, "err.profile_public")
 			return

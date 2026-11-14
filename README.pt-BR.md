@@ -63,8 +63,9 @@ Toda nota nova começa com uma escolha.
 | Quem pode ler o texto | Quem tem o link completo, que contém a chave | Quem tem o link, e o servidor |
 | Como é guardada | Como texto cifrado (AES-256-GCM) | Como texto simples no banco de dados e nos backups dele |
 | Link | Aleatório, com a chave depois de `#k=` | Um nome que você escolhe, como `/monday-meeting`, ou um aleatório |
-| Senha, senha-isca, blocos que se autodestroem | Sim | Não |
-| `/raw`, a API de simulação (mock), SSH, sua página pública `/@name` | Não | Sim |
+| Senha | Sim | Sim, só como tranca: o texto não é cifrado e o servidor ainda pode lê-lo |
+| Senha-isca, blocos que se autodestroem | Sim | Não |
+| `/raw`, a API de simulação (mock), SSH, sua página pública `/@name` | Não | Sim, a menos que a nota tenha senha |
 | Mecanismos de busca | Nunca indexada | Nunca indexada |
 
 O proprietário pode mudar uma nota de um tipo para o outro na caixa Compartilhar. O navegador criptografa ou descriptografa o texto, e o servidor só o troca. Links e configurações permanecem. O histórico de versões é apagado, e uma nota com linhas adicionadas, sugestões, isca, blocos que se autodestroem, caixa de entrada ou assinaturas ainda não pode mudar de tipo.

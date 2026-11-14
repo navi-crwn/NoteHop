@@ -25,6 +25,10 @@ func (e *recheckEnv) member(sub string, notes int) *resetMember {
 	e.t.Helper()
 	c := noRedirect(e.t, e.srv)
 	e.signIn(c, sub)
+	// the account server stamped this sign-in just now (a reset needs that; see sso_login_test.go)
+	if _, err := e.db.Exec(`UPDATE sessions SET login_at = ?`, time.Now().Unix()); err != nil {
+		e.t.Fatal(err)
+	}
 	u, err := e.db.UserBySSO(sub)
 	if err != nil {
 		e.t.Fatal(err)

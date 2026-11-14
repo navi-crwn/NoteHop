@@ -160,12 +160,17 @@
         input.select();
       });
     });
-    showState('lock', NH.t('note.pw_title'), NH.t('note.pw_text'), form, err);
+    // Be honest about what the lock is: on a basic note it keeps people out, but the server can still read the text.
+    var plain = !S.meta.encrypted ? h('p.muted.small', NH.t('note.pw_basic')) : null;
+    showState('lock', NH.t('note.pw_title'), NH.t('note.pw_text'), form, err, plain);
     input.focus();
   }
 
+  // A basic note with a password: the password alone makes the proof (no note key, so the short link works too).
+  function lockedBasic() { return !!S.meta.password && !S.meta.encrypted; }
+
   function unlock(pw) {
-    return (K ? NHC.noteKeys(K, pw, S.meta.salt) : Promise.resolve(null)).then(function (keys) {
+    return (lockedBasic() ? NHC.passwordKeys(pw, S.meta.salt) : K ? NHC.noteKeys(K, pw, S.meta.salt) : Promise.resolve(null)).then(function (keys) {
       S.keys = keys;
       S.password = pw;
       S.codec = NHC.codec(S.meta.encrypted, keys && keys.aes);
@@ -714,8 +719,9 @@
     // The key is in the link: only an encrypted note has the warning about where it gets pasted.
     $('#key-hint').classList.toggle('hide', !enc);
     sw.textContent = NH.t(enc ? 'convert.to_basic' : 'convert.to_enc');
-    sw.disabled = !!S.meta.frozen;
-    sw.title = S.meta.frozen ? NH.t('err.snapshot_read_only') : '';
+    // A note with a password cannot change type: its proof is made differently in the two forms.
+    sw.disabled = !!S.meta.frozen || !!S.meta.password;
+    sw.title = S.meta.frozen ? NH.t('err.snapshot_read_only') : S.meta.password ? NH.t('convert.pw_blocked') : '';
   }
   function convertNote() {
     var toEnc = !S.meta.encrypted;

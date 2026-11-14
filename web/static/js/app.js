@@ -271,16 +271,16 @@
       if (open && list) { var r = list.getBoundingClientRect(); if (r.left < 8 || r.right > innerWidth - 8) menu.classList.add('flip'); }
     });
   });
-  // Colour palette: one choice for the whole site, kept in this browser.
+  // Colour palette: one choice for the whole family, kept in the hop_palette cookie (theme.js reads it before paint).
   (function () {
     var root = document.documentElement, cur = root.dataset.palette || '';
-    NH.$$('[data-palette]').forEach(function (b) {
+    NH.$$('button[data-palette]').forEach(function (b) {
       b.setAttribute('aria-pressed', String(b.dataset.palette === cur));
       b.addEventListener('click', function () {
         var v = b.dataset.palette;
         if (v) root.dataset.palette = v; else root.removeAttribute('data-palette');
-        try { if (v) localStorage.setItem('nh_palette', v); else localStorage.removeItem('nh_palette'); } catch (e) {}
-        NH.$$('[data-palette]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.palette === v)); });
+        window.hopPref('hop_palette', v || 'classic'); // the family cookie, written like hop_theme; classic = no attribute
+        NH.$$('button[data-palette]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.palette === v)); });
       });
     });
   })();

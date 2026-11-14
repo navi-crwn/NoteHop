@@ -105,7 +105,7 @@ func (a *App) apiSetDecoy(w http.ResponseWriter, r *http.Request) {
 	if !ok || !a.requireAdmin(w, x) {
 		return
 	}
-	if !x.note.Password {
+	if !x.note.Password || !x.note.Encrypted { // a decoy is sealed text; a basic note's server-readable text cannot hide one
 		apiErr(w, http.StatusBadRequest, "err.decoy_needs_password")
 		return
 	}
@@ -142,8 +142,9 @@ func (a *App) apiDeleteDecoy(w http.ResponseWriter, r *http.Request) {
 // ---------- version history ----------
 
 // History is for those who can change the note: the admin, or edit links.
+// With a password the old texts are as private as the current one, so even the admin needs the password.
 func (a *App) canHistory(w http.ResponseWriter, x access) bool {
-	if x.admin || (x.link.Mode == modeEdit && x.write) {
+	if (x.admin && (!x.note.Password || x.write)) || (x.link.Mode == modeEdit && x.write) {
 		return true
 	}
 	apiErr(w, http.StatusForbidden, "err.not_allowed")
@@ -215,6 +216,10 @@ func (a *App) apiSuggest(w http.ResponseWriter, r *http.Request) {
 func (a *App) apiSuggestions(w http.ResponseWriter, r *http.Request) {
 	x, ok := a.access(w, r)
 	if !ok || !a.requireAdmin(w, x) {
+		return
+	}
+	if x.note.Password && !x.write { // the suggested texts are plain text on a basic note
+		apiErr(w, http.StatusForbidden, "err.bad_password")
 		return
 	}
 	list, err := a.db.Suggestions(x.note.ID)

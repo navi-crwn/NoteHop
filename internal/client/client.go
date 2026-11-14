@@ -52,6 +52,22 @@ func Derive(k, password, salt string) (Keys, error) {
 	return Keys{AES: mac(secret, "notehop/enc"), Write: b64.EncodeToString(mac(secret, "notehop/write"))}, nil
 }
 
+// PasswordKeys is the proof of a BASIC note's password (mirrors NHC.passwordKeys). The server can read a basic note,
+// so the password only guards it: the proof is PBKDF2(password, salt ‖ "notehop/basic-pw") run through the same
+// HMAC label as a note key's write proof. There is no note key in it, so a reader who has only the short link and
+// the password can open the note. The server keeps just the SHA-256 of the proof.
+func PasswordKeys(password, salt string) (string, error) {
+	s, err := b64.DecodeString(strings.TrimRight(salt, "="))
+	if err != nil || len(s) < 12 {
+		return "", errors.New("bad salt")
+	}
+	secret, err := pbkdf2.Key(sha256.New, password, append(append([]byte{}, s...), "notehop/basic-pw"...), noteIter, 32)
+	if err != nil {
+		return "", err
+	}
+	return b64.EncodeToString(mac(secret, "notehop/write")), nil
+}
+
 func mac(key []byte, label string) []byte {
 	h := hmac.New(sha256.New, key)
 	h.Write([]byte(label))
@@ -170,9 +186,6 @@ func Create(base string, n Note, o Options) (Created, error) {
 	if o.Mode == "" {
 		o.Mode = "read"
 	}
-	if o.Public && o.Password != "" {
-		return Created{}, errors.New("a public note can't have a password")
-	}
 	k, admin, salt := NewKey(), NewKey(), ""
 	if o.Password != "" {
 		salt = newSalt()
@@ -180,6 +193,12 @@ func Create(base string, n Note, o Options) (Created, error) {
 	keys, err := Derive(k, o.Password, salt)
 	if err != nil {
 		return Created{}, err
+	}
+	// A basic note with a password is only locked, not encrypted: its proof comes from the password alone.
+	if o.Public && o.Password != "" {
+		if keys.Write, err = PasswordKeys(o.Password, salt); err != nil {
+			return Created{}, err
+		}
 	}
 	plain, _ := json.Marshal(n)
 	content := string(plain)
@@ -203,6 +222,9 @@ func Create(base string, n Note, o Options) (Created, error) {
 	share := res.Link
 	if share == "" {
 		share = link
+	}
+	if o.Public && o.Password != "" { // no note key is involved: the link and the password are all a reader needs
+		return Created{Token: res.Token, Share: share, Admin: link + "#a=" + admin}, nil
 	}
 	return Created{Token: res.Token, Share: share + "#k=" + k, Admin: link + "#k=" + k + "&a=" + admin}, nil
 }
@@ -234,7 +256,11 @@ func Get(link, password string) (Note, error) {
 	}
 	hdr := map[string]string{}
 	var keys Keys
-	if k := frag.Get("k"); k != "" {
+	if meta.Password && !meta.Encrypted { // a basic note's password is a gate: no note key needed
+		if hdr["X-Write"], err = PasswordKeys(password, meta.Salt); err != nil {
+			return Note{}, err
+		}
+	} else if k := frag.Get("k"); k != "" {
 		if keys, err = Derive(k, password, meta.Salt); err != nil {
 			return Note{}, err
 		}
