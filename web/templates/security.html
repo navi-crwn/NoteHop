@@ -44,7 +44,7 @@
   {{if .User.SSOID}}<!-- danger zone: start again with a new vault key, giving up what the old one sealed (security.js, vaultreset.go) -->
   <section class="card sec-card sec-danger" id="reset" aria-labelledby="reset-h">
     <h2 id="reset-h">{{.L.T "reset.title"}}</h2>
-    <p class="muted">{{.L.T "reset.lead"}}</p>
+    <p class="muted">{{.L.T "reset.lead"}} {{.L.T "reset.other_device"}}</p>
     <button type="button" class="btn danger" id="reset-open"><svg><use href="#i-trash"/></svg><span>{{.L.T "reset.btn"}}</span></button>
   </section>{{end}}
 </section>

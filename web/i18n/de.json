@@ -1634,5 +1634,7 @@
   "changelog.t_fixed": "Behoben",
   "changelog.t_security": "Sicherheit",
   "changelog.t_removed": "Entfernt",
-  "changelog.t_deprecated": "Veraltet"
+  "changelog.t_deprecated": "Veraltet",
+  "err.reset_recheck": "Zum Schutz deiner Notizen braucht das Zurücksetzen eine Anmeldung, die HOP ID in den letzten Minuten bestätigt hat. Melde dich ab, melde dich erneut mit HOP ID an und versuche es noch einmal.",
+  "reset.other_device": "Wenn auf einem anderen Gerät der Tresor noch geöffnet ist, nutze lieber dieses: Dort kannst du einen neuen Schlüssel festlegen, ohne etwas zu verlieren."
 }

@@ -107,7 +107,7 @@ func TestResetVaultDeletesEverythingOfTheAccountAndNothingElse(t *testing.T) {
 	if before.Notes != 3 || before.Links != 4 || before.Files != 2 || before.Margins != 1 || before.Codes != 2 {
 		t.Fatalf("what the screen will say it takes: %+v (want 3 notes incl. the frozen copy, 4 links, 2 files, 1 margin, 2 codes)", before)
 	}
-	got, err := f.d.ResetVault(f.a.ID, f.keepA)
+	got, err := f.d.ResetVault(f.a.ID, f.keepA, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -194,7 +194,7 @@ func TestResetVaultIsOneTransaction(t *testing.T) {
 	if _, err := f.d.Exec(`CREATE TRIGGER refuse_codes BEFORE DELETE ON recovery_codes BEGIN SELECT RAISE(ABORT, 'refused'); END`); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := f.d.ResetVault(f.a.ID, f.keepA); err == nil {
+	if _, err := f.d.ResetVault(f.a.ID, f.keepA, nil); err == nil {
 		t.Fatal("the reset reported success although a step failed")
 	}
 	after, err := f.d.VaultResetCounts(f.a.ID)
@@ -228,13 +228,91 @@ func TestResetVaultRefusesPasswordAccounts(t *testing.T) {
 		t.Fatal(err)
 	}
 	newOwnedNote(t, d, u.ID, "lokal-note")
-	if _, err := d.ResetVault(u.ID, ""); err == nil {
+	if _, err := d.ResetVault(u.ID, "", nil); err == nil {
 		t.Fatal("a password account was reset")
 	}
 	if _, _, err := d.NoteByLink("lokal-note"); err != nil {
 		t.Fatalf("a refused reset deleted the note: %v", err)
 	}
-	if _, err := d.ResetVault(987654, ""); err != ErrNotFound {
+	if _, err := d.ResetVault(987654, "", nil); err != ErrNotFound {
 		t.Fatalf("unknown account: %v", err)
+	}
+}
+
+// A reset raises the vault generation (so a browser holding an older key drops it), writes its audit line in the
+// same transaction, and the control center's reset raises the generation too.
+func TestResetVaultRaisesTheGenerationAndWritesItsAuditInTheTransaction(t *testing.T) {
+	f := seedVault(t)
+	u, _ := f.d.UserByID(f.a.ID)
+	if u.VaultEpoch != 0 {
+		t.Fatalf("a new vault starts at generation 0, got %d", u.VaultEpoch)
+	}
+	// the audit line cannot be written: nothing is deleted, the generation stays
+	if _, err := f.d.Exec(`CREATE TRIGGER refuse_audit BEFORE INSERT ON hop_audit BEGIN SELECT RAISE(ABORT, 'refused'); END`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.d.ResetVault(f.a.ID, f.keepA, &Audit{Actor: "user:x", App: "notehop", Action: "user.vault_reset_self", Target: "sso-helena"}); err == nil {
+		t.Fatal("a reset without its record went through")
+	}
+	if c, _ := f.d.VaultResetCounts(f.a.ID); c.Notes != 3 {
+		t.Fatalf("the failed reset deleted notes: %+v", c)
+	}
+	if u, _ := f.d.UserByID(f.a.ID); u.VaultEpoch != 0 {
+		t.Fatalf("the failed reset raised the generation: %d", u.VaultEpoch)
+	}
+	if _, err := f.d.Exec(`DROP TRIGGER refuse_audit`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.d.ResetVault(f.a.ID, f.keepA, &Audit{Actor: "user:x", App: "notehop", Action: "user.vault_reset_self", Target: "sso-helena"}); err != nil {
+		t.Fatal(err)
+	}
+	if u, _ := f.d.UserByID(f.a.ID); u.VaultEpoch != 1 {
+		t.Fatalf("generation after a reset: %d", u.VaultEpoch)
+	}
+	if ub, _ := f.d.UserByID(f.b.ID); ub.VaultEpoch != 0 {
+		t.Fatalf("another account's generation moved: %d", ub.VaultEpoch)
+	}
+	if n := f.count(t, `SELECT COUNT(*) FROM hop_audit WHERE action = 'user.vault_reset_self' AND detail LIKE '%"notes":3%'`); n != 1 {
+		t.Fatalf("audit lines: %d", n)
+	}
+	// the control center's reset (clear the check) also makes old keys out of date
+	if err := f.d.ClearVaultCheck(f.b.ID); err != nil {
+		t.Fatal(err)
+	}
+	if ub, _ := f.d.UserByID(f.b.ID); ub.VaultEpoch != 1 || ub.VaultCheck != "" {
+		t.Fatalf("control center reset: %+v", ub)
+	}
+}
+
+// Across accounts: a file another account attached to a note of this account goes with the note; a file this
+// account attached to someone else's note stays; someone else's note that was copied from this account's stays.
+func TestResetVaultAcrossAccounts(t *testing.T) {
+	f := seedVault(t)
+	addFile(t, f.d, "fileB-in-A", "note:"+itoa(f.aNotes[1].ID))
+	if _, err := f.d.Exec(`UPDATE files SET owner_id = ? WHERE id = 'fileB-in-A'`, f.b.ID); err != nil {
+		t.Fatal(err)
+	}
+	addFile(t, f.d, "fileA-in-B", "note:"+itoa(f.bNote.ID))
+	if _, err := f.d.Exec(`UPDATE files SET owner_id = ? WHERE id = 'fileA-in-B'`, f.a.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.d.Exec(`UPDATE notes SET parent_id = ? WHERE id = ?`, f.aNotes[0].ID, f.bNote.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.d.ResetVault(f.a.ID, f.keepA, nil); err != nil {
+		t.Fatal(err)
+	}
+	if n := f.count(t, `SELECT COUNT(*) FROM files WHERE id = 'fileB-in-A'`); n != 0 {
+		t.Error("a file attached to the account's own note stayed")
+	}
+	if n := f.count(t, `SELECT COUNT(*) FROM files WHERE id = 'fileA-in-B'`); n != 1 {
+		t.Error("a file on someone else's note was deleted")
+	}
+	var parent *int64
+	if err := f.d.QueryRow(`SELECT parent_id FROM notes WHERE id = ?`, f.bNote.ID).Scan(&parent); err != nil {
+		t.Fatalf("someone else's note is gone: %v", err)
+	}
+	if parent != nil {
+		t.Errorf("the copy still points at a deleted note: %d", *parent)
 	}
 }

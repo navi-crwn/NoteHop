@@ -185,7 +185,8 @@
       return aesKey(unb64u(kek)).then(function (k) { return unseal(k, wrap); });
     },
     sealVault: function (kek, vault) { return aesKey(unb64u(kek)).then(function (k) { return seal(k, vault); }); },
-    remember: function (username, vault) { NH.store.set('nh_vault', { u: username, k: vault }); },
+    // The key is kept with the vault's generation (the page's data-epoch): after a reset, a key of an older generation is dropped.
+    remember: function (username, vault) { NH.store.set('nh_vault', { u: username, k: vault, e: +document.body.dataset.epoch || 0 }); },
 
     // Recovery codes: 16 characters from an alphabet without look-alikes
     // (80 bits). HKDF turns a code into a key that seals the vault key and a
@@ -212,6 +213,7 @@
       var v = window.NH && NH.store.get('nh_vault', null);
       var me = document.body.dataset.user;
       if (!v || !v.k || !me || v.u !== me) return null;
+      if ((v.e || 0) !== (+document.body.dataset.epoch || 0)) { NH.store.del('nh_vault'); return null; }
       var keyP = aesKey(unb64u(v.k));
       return {
         seal: function (obj) { return keyP.then(function (k) { return seal(k, JSON.stringify(obj)); }); },

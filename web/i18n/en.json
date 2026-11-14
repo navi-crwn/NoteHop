@@ -1634,5 +1634,7 @@
   "changelog.t_fixed": "Fixed",
   "changelog.t_security": "Security",
   "changelog.t_removed": "Removed",
-  "changelog.t_deprecated": "Deprecated"
+  "changelog.t_deprecated": "Deprecated",
+  "err.reset_recheck": "To protect your notes, the reset needs a sign-in that HOP ID confirmed in the last few minutes. Sign out, sign in with HOP ID again, then try once more.",
+  "reset.other_device": "If another of your devices still has the vault open, use that one instead: it can set a new key without losing anything."
 }

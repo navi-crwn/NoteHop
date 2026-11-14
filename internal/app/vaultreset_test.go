@@ -283,3 +283,70 @@ func TestResetVaultIsOfferedWhereAPersonGetsStuck(t *testing.T) {
 		}
 	}
 }
+
+// The proof is strict. A stale session is refused even when the cooldown cookie (which anybody can set) is
+// present, when the account server cannot be reached, and when single sign-on is switched off; nothing is deleted.
+func TestResetVaultGateIgnoresTheLenientShortcuts(t *testing.T) {
+	e := newRecheckEnv(t)
+	a := e.member("5001", 2)
+	e.age()
+	post := func(hdr map[string]string) int {
+		code, _, _ := a.c.do("POST", resetPath, map[string]string{"confirm": "RESET"}, hdr)
+		return code
+	}
+	// the page itself still opens for this stale session while the cooldown cookie is set: that leniency is for pages
+	if code, _, _ := e.status(a.c, "/about"); code != http.StatusOK {
+		t.Fatalf("setup: %d", code)
+	}
+	if code := post(map[string]string{"Cookie": recheckCooldown + "=1"}); code != http.StatusUnauthorized {
+		t.Fatalf("stale session with the cooldown cookie: %d", code)
+	}
+	e.hubUp = false
+	if code := post(nil); code != http.StatusUnauthorized {
+		t.Fatalf("stale session with the hub down: %d", code)
+	}
+	if code, m, _ := a.c.do("GET", resetPath, nil, nil); code != http.StatusUnauthorized || m["code"] != "err.reset_recheck" {
+		t.Fatalf("preview with the hub down: %d %v", code, m)
+	}
+	e.hubUp = true
+	e.app.cfg.SSOSecret = "" // single sign-on switched off
+	if code := post(nil); code != http.StatusUnauthorized {
+		t.Fatalf("stale session with sign-on off: %d", code)
+	}
+	e.app.cfg.SSOSecret = testSecret
+	e.intact(a, "every lenient shortcut")
+	// a session the account server vouched for a moment ago goes through (strict, not broken)
+	if _, err := e.db.Exec(`UPDATE sessions SET verified_at = ?`, time.Now().Unix()); err != nil {
+		t.Fatal(err)
+	}
+	if code := post(nil); code != http.StatusOK {
+		t.Fatalf("a freshly vouched session: %d", code)
+	}
+}
+
+// The page carries the vault generation, and it goes up with a reset, so a browser that kept an older key drops it.
+func TestResetVaultRaisesTheGenerationOnThePage(t *testing.T) {
+	e := newRecheckEnv(t)
+	a := e.member("6001", 1)
+	_, _, before := e.status(a.c, "/dashboard")
+	if !strings.Contains(before, `data-epoch="0"`) {
+		t.Fatal("the page does not carry the vault generation")
+	}
+	if code, _, raw := a.c.do("POST", resetPath, map[string]string{"confirm": "RESET"}, nil); code != http.StatusOK {
+		t.Fatalf("reset: %d %s", code, raw)
+	}
+	_, _, after := e.status(a.c, "/vault")
+	if !strings.Contains(after, `data-epoch="1"`) {
+		t.Fatal("the generation did not go up after a reset")
+	}
+	// the browser half: crypto.js keeps the generation with the key and drops a key of an older one
+	js, err := os.ReadFile("../../web/static/js/crypto.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"e: +document.body.dataset.epoch", "(v.e || 0) !== (+document.body.dataset.epoch || 0)"} {
+		if !strings.Contains(string(js), want) {
+			t.Errorf("crypto.js lacks %q", want)
+		}
+	}
+}

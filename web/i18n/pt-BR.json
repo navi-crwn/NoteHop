@@ -1634,5 +1634,7 @@
   "changelog.t_fixed": "Corrigido",
   "changelog.t_security": "Segurança",
   "changelog.t_removed": "Removido",
-  "changelog.t_deprecated": "Obsoleto"
+  "changelog.t_deprecated": "Obsoleto",
+  "err.reset_recheck": "Para proteger suas notas, a redefinição exige uma entrada que o HOP ID confirmou nos últimos minutos. Saia, entre de novo com o HOP ID e tente mais uma vez.",
+  "reset.other_device": "Se outro dos seus dispositivos ainda estiver com o cofre aberto, use esse: lá você pode definir uma chave nova sem perder nada."
 }

@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 )
 
@@ -44,12 +45,13 @@ func countVaultReset(q interface {
 //   - the account's uploads that no note claimed,
 //   - its private margin notes,
 //   - its recovery codes (each one sealed the old vault key),
-//   - the phrase check and the sealed vault key, so /vault asks for a new phrase,
+//   - the phrase check and the sealed vault key, so /vault asks for a new phrase, and the vault generation goes up,
 //   - the reminder state, so "make recovery codes" comes back,
 //   - every session except keep.
 //
 // It returns what went. The vault key itself was never on the server, so there is nothing else to wipe.
-func (d *DB) ResetVault(userID int64, keep string) (VaultResetCounts, error) {
+// The record of it (audit, when not nil) is written in the same transaction: no record, no reset.
+func (d *DB) ResetVault(userID int64, keep string, audit *Audit) (VaultResetCounts, error) {
 	tx, err := d.Begin()
 	if err != nil {
 		return VaultResetCounts{}, err
@@ -78,13 +80,21 @@ func (d *DB) ResetVault(userID int64, keep string) (VaultResetCounts, error) {
 		func() error { _, err := tx.Exec(`DELETE FROM recovery_codes WHERE user_id = ?`, userID); return err },
 		func() error { _, err := tx.Exec(`DELETE FROM reminders WHERE user_id = ?`, userID); return err },
 		func() error {
-			_, err := tx.Exec(`UPDATE users SET vault_check = '', vault_wrap = '' WHERE id = ?`, userID)
+			_, err := tx.Exec(`UPDATE users SET vault_check = '', vault_wrap = '', vault_epoch = vault_epoch + 1 WHERE id = ?`, userID)
 			return err
 		},
 		func() error {
 			_, err := tx.Exec(`DELETE FROM sessions WHERE user_id = ? AND token_hash != ?`, userID, keep)
 			return err
 		},
+	}
+	if audit != nil {
+		steps = append(steps, func() error {
+			detail, _ := json.Marshal(c)
+			_, err := tx.Exec(`INSERT INTO hop_audit (at, actor, app, action, target, detail) VALUES (?, ?, ?, ?, ?, ?)`,
+				now(), audit.Actor, audit.App, audit.Action, audit.Target, string(detail))
+			return err
+		})
 	}
 	for _, step := range steps {
 		if err := step(); err != nil {

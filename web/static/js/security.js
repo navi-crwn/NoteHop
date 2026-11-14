@@ -162,12 +162,15 @@
         NH.store.del('nh_vault');
         NH.store.del('nh_ai');
         NH.recent.clear();
+        // and the copies of note data the offline worker kept on this device
+        try { if (window.caches) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); }); } catch (e) {}
         rdlg.close();
         NH.toast(NH.t('reset.done'), 'ok');
         setTimeout(function () { location.href = r.next || '/vault'; }, 900);
       }, function (x) {
         rgo.disabled = rword.value.trim() !== word;
-        if (x.status === 401) { // the account server's word is too old: one quiet check, then try again
+        if (x.status === 401 && x.code === 'err.reset_recheck') { rfail(x); return; } // needs a fresh HOP ID sign-in: sign out and in again
+        if (x.status === 401) { // not signed in any more
           rfail(new Error(NH.t('reset.stale')));
           setTimeout(function () { location.reload(); }, 1800);
           return;

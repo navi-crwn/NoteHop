@@ -1634,5 +1634,7 @@
   "changelog.t_fixed": "修复",
   "changelog.t_security": "安全",
   "changelog.t_removed": "移除",
-  "changelog.t_deprecated": "已弃用"
+  "changelog.t_deprecated": "已弃用",
+  "err.reset_recheck": "为保护你的笔记，重置需要 HOP ID 在最近几分钟内确认过的登录。请退出，用 HOP ID 重新登录，然后再试一次。",
+  "reset.other_device": "如果你的另一台设备上保险库仍处于打开状态，请改用那台设备：在那里可以设置新密钥而不会丢失任何内容。"
 }

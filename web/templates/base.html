@@ -37,7 +37,7 @@
 <link rel="stylesheet" href="/static/css/coss.css?v={{.Asset}}">
 <script src="/static/js/family-switcher.js?v={{.Asset}}" defer></script>
 </head>
-<body data-page="{{block "page" .}}{{end}}"{{with .Token}} data-token="{{.}}"{{end}}{{with .Mode}} data-mode="{{.}}"{{end}}{{if .User}} data-user="{{.User.Username}}"{{end}}{{if and .User .User.SSOID}} data-sso="1"{{end}}{{if .Stale}} data-stale="1"{{end}}{{with .Main}} data-main="{{.}}"{{end}}{{with .Share}} data-share="{{.}}"{{end}}>
+<body data-page="{{block "page" .}}{{end}}"{{with .Token}} data-token="{{.}}"{{end}}{{with .Mode}} data-mode="{{.}}"{{end}}{{if .User}} data-user="{{.User.Username}}" data-epoch="{{.User.VaultEpoch}}"{{end}}{{if and .User .User.SSOID}} data-sso="1"{{end}}{{if .Stale}} data-stale="1"{{end}}{{with .Main}} data-main="{{.}}"{{end}}{{with .Share}} data-share="{{.}}"{{end}}>
 <a class="skip" href="#main">{{.L.T "nav.skip"}}</a>
 {{template "icons"}}
 {{if .Dash}}
@@ -56,11 +56,11 @@
     </nav>
     <p class="shell-label">{{.L.T "dash.family"}}</p>
     <nav class="shell-nav shell-family" aria-label="{{.L.T "dash.family"}}">
-      {{range .HopFamily}}<a href="{{if $.Hub}}{{$.Hub}}/{{if eq .Slug "hub"}}dashboard{{else}}apps/{{.Slug}}{{end}}{{else}}{{.URL}}{{end}}"><img src="{{(index .Icons "mark").URL}}" alt="" width="18" height="18" loading="lazy">{{if eq .Slug "hub"}}HOP ID{{else}}{{.Name}}{{end}}<svg class="out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M8 7h9v9"/></svg></a>{{end}}
+      {{range .HopFamily}}<a href="{{if $.Hub}}{{$.Hub}}/{{if eq .Slug "hub"}}dashboard{{else}}apps/{{.Slug}}{{end}}{{else}}{{.URL}}{{end}}"><img src="{{(index .Icons "mark").URL}}" alt="" width="18" height="18">{{if eq .Slug "hub"}}HOP ID{{else}}{{.Name}}{{end}}<svg class="out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M8 7h9v9"/></svg></a>{{end}}
     </nav>
     <div class="shell-side-foot">
       <p><a href="/changelog">{{.L.T "changelog.title"}}</a> · <a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a></p>
-      <a class="part-of" href="https://hel.ink" rel="noopener">{{with hubMark}}<img src="{{.}}" alt="" width="20" height="20" loading="lazy">{{end}}<span>{{partOf (.L.T "footer.part_of")}}</span></a>
+      <a class="part-of" href="https://hel.ink" rel="noopener">{{with hubMark}}<img src="{{.}}" alt="" width="20" height="20">{{end}}<span>{{partOf (.L.T "footer.part_of")}}</span></a>
     </div>
   </aside>
   <div class="shell-body">
@@ -151,7 +151,7 @@
 {{if .MiniFoot}}
 <footer class="footer-mini">
   <div class="wrap">
-    <a class="part-of" href="https://hel.ink" rel="noopener">{{with hubMark}}<img src="{{.}}" alt="" width="20" height="20" loading="lazy">{{end}}<span>{{partOf (.L.T "footer.part_of")}}</span></a>
+    <a class="part-of" href="https://hel.ink" rel="noopener">{{with hubMark}}<img src="{{.}}" alt="" width="20" height="20">{{end}}<span>{{partOf (.L.T "footer.part_of")}}</span></a>
     <p>© 2026 navi-crwn · MIT License</p>
     <nav aria-label="{{.Site}}">
       <a href="/about">{{.L.T "footer.about"}}</a><a href="/faq">{{.L.T "nav.faq"}}</a><a href="/privacy">{{.L.T "privacy.title"}}</a><a href="/terms">{{.L.T "terms.title"}}</a><a href="/status">{{.L.T "status.title"}}</a><a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a>
@@ -160,7 +160,7 @@
 </footer>
 {{else}}
 <footer class="footer-columns">
-  <div class="wrap"><a class="part-of" href="https://hel.ink" rel="noopener">{{with hubMark}}<img src="{{.}}" alt="" width="20" height="20" loading="lazy">{{end}}<span>{{partOf (.L.T "footer.part_of")}}</span></a></div>
+  <div class="wrap"><a class="part-of" href="https://hel.ink" rel="noopener">{{with hubMark}}<img src="{{.}}" alt="" width="20" height="20">{{end}}<span>{{partOf (.L.T "footer.part_of")}}</span></a></div>
   <div class="wrap footer-grid">
     <div class="foot-col foot-brand">
       <b><img src="/static/img/logo.svg" alt="" width="20" height="20"><span class="hop-name hop-name-notehop">{{.Site}}</span></b>

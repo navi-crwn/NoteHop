@@ -1,9 +1,9 @@
 package app
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/navi-crwn/NoteHop/internal/db"
 )
@@ -15,19 +15,33 @@ import (
 // written down. The deleting itself is one transaction in db.ResetVault.
 //
 // Who may: a signed-in HOP ID account whose session the account server vouched for in the last
-// few minutes (verifiedUser). The vault phrase cannot be asked for (that is what was forgotten), so this is
+// few minutes, strictly (resetGate). The vault phrase cannot be asked for (that is what was forgotten), so this is
 // the proof of ownership available today. Asking the account server for a fresh sign-in first (prompt=login or
 // max_age) is not supported by the hub yet; see the report.
 
 // resetWord is typed to confirm. One fixed word on every screen and in every language, checked here.
 const resetWord = "RESET"
 
-// resetGate answers who is asking, or has already answered.
+// resetGate answers who is asking, or has already answered. The proof is strict: the account server must have
+// vouched for THIS session within recheckAfter. verifiedUser would also pass a stale session while the hub is
+// unreachable, while a (forgeable) cooldown cookie is set, or when single sign-on is switched off; that leniency
+// keeps pages open, but it must not unlock something that cannot be undone.
 func (a *App) resetGate(w http.ResponseWriter, r *http.Request) *db.User {
-	u := a.verifiedUser(r)
+	u := a.currentUser(r)
 	if u == nil {
 		apiErr(w, http.StatusUnauthorized, "err.not_signed_in")
 		return nil
+	}
+	if u.SSOID != "" {
+		c, err := r.Cookie(sessionCookie)
+		var at time.Time
+		if err == nil {
+			at, err = a.db.SessionVerifiedAt(hashHex(c.Value))
+		}
+		if err != nil || !a.cfg.SSOEnabled() || time.Since(at) > recheckAfter {
+			apiErr(w, http.StatusUnauthorized, "err.reset_recheck")
+			return nil
+		}
 	}
 	if u.SSOID == "" {
 		// A password account's vault key comes from the password: there is no separate phrase to forget.
@@ -78,19 +92,15 @@ func (a *App) apiResetVault(w http.ResponseWriter, r *http.Request) {
 	if c, err := r.Cookie(sessionCookie); err == nil {
 		keep = hashHex(c.Value)
 	}
-	c, err := a.db.ResetVault(u.ID, keep)
+	c, err := a.db.ResetVault(u.ID, keep, &db.Audit{Actor: "user:" + hopUserID(u), App: "notehop", Action: "user.vault_reset_self", Target: hopUserID(u)})
 	if err != nil {
 		log.Printf("vault reset: account %d: %v", u.ID, err)
 		apiErr(w, http.StatusInternalServerError, "err.reset_failed")
 		return
 	}
 	a.dropGoneRooms()
-	// The account's own record of it, next to what the control center writes. No key or phrase is ever
-	// received here, so there is none to leave out of the log.
-	detail, _ := json.Marshal(c)
-	if err := a.db.AddAudit(db.Audit{Actor: "user:" + hopUserID(u), App: "notehop", Action: "user.vault_reset_self", Target: hopUserID(u), Detail: string(detail)}); err != nil {
-		log.Printf("vault reset audit: %v", err)
-	}
+	// The account's own record of it was written inside the reset's transaction, next to what the control center
+	// writes. No key or phrase is ever received here, so there is none to leave out of the log.
 	log.Printf("vault reset: account %d, %d notes, %d files", u.ID, c.Notes, c.Files)
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true, "counts": c, "next": "/vault"})
 }
