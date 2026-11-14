@@ -87,6 +87,7 @@ func (a *App) apiTakeover(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInternalServerError, "err.takeover_failed")
 		return
 	}
+	a.pwTries.forget(n.ID) // a new password: the old guesses no longer mean anything
 	// Whoever was editing live with the old keys is cut off; the owner's page reconnects with the new ones.
 	a.live.closePeers(n.ID, nil)
 	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})

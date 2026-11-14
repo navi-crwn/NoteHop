@@ -239,12 +239,16 @@ func TestPasswordGuessesAreLimited(t *testing.T) {
 	if code := from("192.0.2.77", n.write); code != http.StatusTooManyRequests {
 		t.Fatalf("the right proof once the note is over its hourly allowance: %d", code)
 	}
-	// the owner's session and the admin key are never locked out
+	// an address that already opened the note is not shut out by strangers' guesses (198.51.100.1 above)
+	if code := from("198.51.100.1", n.write); code != 200 {
+		t.Fatalf("an address that opened the note, once the note is over its hourly allowance: %d", code)
+	}
+	// the owner's session is never locked out; the admin key is no exemption
 	if code, m, _ := owner.do("POST", "/api/n/"+n.token+"/open", nil, map[string]string{"X-Write": n.write, "X-Forwarded-For": "192.0.2.78"}); code != 200 {
 		t.Fatalf("owner session: %d %v", code, m)
 	}
-	if code, m, _ := newClient(t, e.srv).do("POST", "/api/n/"+n.token+"/open", nil, map[string]string{"X-Write": n.write, "X-Admin": n.admin, "X-Forwarded-For": "192.0.2.79"}); code != 200 {
-		t.Fatalf("admin key: %d %v", code, m)
+	if code, _, _ := newClient(t, e.srv).do("POST", "/api/n/"+n.token+"/open", nil, map[string]string{"X-Write": n.write, "X-Admin": n.admin, "X-Forwarded-For": "192.0.2.79"}); code != http.StatusTooManyRequests {
+		t.Fatalf("the admin key must not lift the limit: %d", code)
 	}
 }
 

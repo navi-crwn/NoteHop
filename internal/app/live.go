@@ -250,7 +250,7 @@ func (a *App) apiLive(w http.ResponseWriter, r *http.Request) {
 	}
 	x.admin = hashMatch(auth.Admin, n.AdminHash)
 	var wait time.Duration
-	x.write, wait = a.writeProof(n, auth.Write, x.ip, func() bool { return x.admin || a.ownerSession(r, n) })
+	x.write, wait = a.writeProof(n, auth.Write, x.ip, func() bool { return a.ownerSession(r, n) })
 	if wait > 0 {
 		c.Close(websocket.StatusPolicyViolation, "denied")
 		return

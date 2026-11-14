@@ -128,7 +128,7 @@ func (a *App) access(w http.ResponseWriter, r *http.Request) (access, bool) {
 	}
 	x := access{note: n, link: l, admin: hashMatch(r.Header.Get("X-Admin"), n.AdminHash), ip: a.clientIP(r)}
 	var wait time.Duration
-	x.write, wait = a.writeProof(n, r.Header.Get("X-Write"), x.ip, func() bool { return x.admin || a.ownerSession(r, n) })
+	x.write, wait = a.writeProof(n, r.Header.Get("X-Write"), x.ip, func() bool { return a.ownerSession(r, n) })
 	if wait > 0 {
 		tooManyPasswordTries(w, wait)
 		return access{}, false

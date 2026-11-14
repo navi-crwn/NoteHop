@@ -11,88 +11,142 @@ import (
 
 // A basic note with a password is guarded by that password alone: the server can read the text, and the only thing
 // between a stranger and it is the proof derived from the password. So wrong guesses are counted, and past a limit
-// every attempt is refused for a while, the right one too. Only WRONG proofs count: an open editor sends its (right)
-// proof every few seconds and must never use up the allowance. The note's owner (signed in) and its admin key are
-// not counted or blocked: neither has another way in, and a stranger could otherwise lock them out.
+// attempts are refused for a while. Rules (each one is tested):
+//   - only BASIC notes: an encrypted note's proof also needs its 256-bit note key, so there is nothing to guess, and
+//     answering "too many tries" there would give a decoy away and lock out the holder of the real password;
+//   - only WRONG proofs count: an open editor sends its (right) proof every few seconds and never uses up anything;
+//   - 10 wrong proofs a minute from one address for one note, and 200 an hour for the note from everybody. The hourly
+//     limit does not shut out an address that already opened the note (it proved the password within the last six
+//     hours), so a crowd of strangers cannot lock the people who have it; their own address limit still holds;
+//   - a right proof from an address clears that address's wrong count, so someone who mistyped can still get in;
+//   - the signed-in owner is never counted or refused (no other way in); the ADMIN KEY is not an exemption: whoever
+//     holds only an admin link must know the password like anybody else;
+//   - checking and counting happen under one lock, so concurrent guesses cannot slip past the limit;
+//   - taking the note over (a new password) starts the counts again.
 const (
 	pwTriesPerMinute = 10  // wrong proofs from one address for one note
 	pwTriesPerHour   = 200 // wrong proofs from everybody for one note
+	pwTrustFor       = 6 * time.Hour
+	pwSweepPerCall   = 20 // how many notes' old entries one call may tidy: the cost of a call stays small
 )
 
-type pwWindow struct {
-	start time.Time
-	n     int
+type pwIP struct {
+	minStart time.Time
+	minN     int
+	okAt     time.Time // last right proof from this address
 }
 
-// pwGuards is a fixed-window counter per key.
+type pwNote struct {
+	hourStart time.Time
+	hourN     int
+	ips       map[string]*pwIP
+}
+
+// pwGuards keeps the counts per note.
 type pwGuards struct {
 	mu sync.Mutex
-	m  map[string]*pwWindow
+	m  map[int64]*pwNote
 }
 
-// left is how long a key stays over its limit; 0 when it is not over.
-func (g *pwGuards) left(key string, limit int, span time.Duration, now time.Time) time.Duration {
-	g.mu.Lock()
-	defer g.mu.Unlock()
-	w := g.m[key]
-	if w == nil || now.Sub(w.start) >= span || w.n < limit {
-		return 0
-	}
-	return span - now.Sub(w.start)
-}
-
-func (g *pwGuards) fail(key string, span time.Duration, now time.Time) {
+// attempt counts one proof and says whether the caller is refused (wait > 0, nothing counted then). match is whether the
+// proof was right. A right proof refused only because of a limit is still refused.
+func (g *pwGuards) attempt(root int64, ip string, match bool, now time.Time) (wait time.Duration) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	if g.m == nil {
-		g.m = map[string]*pwWindow{}
+		g.m = map[int64]*pwNote{}
 	}
-	if len(g.m) > 20000 { // forget what has expired so the map cannot grow without end
-		for k, w := range g.m {
-			if now.Sub(w.start) >= time.Hour {
-				delete(g.m, k)
-			}
-		}
+	n := g.m[root]
+	if n == nil {
+		n = &pwNote{ips: map[string]*pwIP{}}
+		g.m[root] = n
 	}
-	w := g.m[key]
-	if w == nil || now.Sub(w.start) >= span {
-		g.m[key] = &pwWindow{start: now, n: 1}
-		return
+	if now.Sub(n.hourStart) >= time.Hour {
+		n.hourStart, n.hourN = now, 0
 	}
-	w.n++
+	e := n.ips[ip]
+	if e == nil {
+		e = &pwIP{}
+		n.ips[ip] = e
+	}
+	if now.Sub(e.minStart) >= time.Minute {
+		e.minStart, e.minN = now, 0
+	}
+	trusted := !e.okAt.IsZero() && now.Sub(e.okAt) < pwTrustFor
+	switch {
+	case e.minN >= pwTriesPerMinute:
+		wait = time.Minute - now.Sub(e.minStart)
+	case n.hourN >= pwTriesPerHour && !trusted:
+		wait = time.Hour - now.Sub(n.hourStart)
+	}
+	if wait > 0 {
+		g.sweep(now)
+		return wait
+	}
+	if match {
+		e.okAt, e.minN = now, 0
+	} else {
+		e.minN++
+		n.hourN++
+	}
+	g.sweep(now)
+	return 0
 }
 
-// writeProof compares the supplied write proof with the note's. For a note with a password it also counts wrong
-// proofs and reports how long the caller is blocked (0 = not) once an address or the note as a whole is over its
-// limit. exempt is asked only when it matters (a wrong proof, or a limit already reached), never on the normal path.
+// sweep forgets what has expired, a few notes per call (the map's own iteration order is the cursor), so no call
+// ever walks everything. Caller holds the lock.
+func (g *pwGuards) sweep(now time.Time) {
+	seen := 0
+	for id, n := range g.m {
+		if seen++; seen > pwSweepPerCall {
+			return
+		}
+		idle := now.Sub(n.hourStart) >= time.Hour
+		left := 0
+		for ip, e := range n.ips {
+			if left++; left > 50 {
+				idle = false
+				break
+			}
+			if now.Sub(e.minStart) >= time.Minute && (e.okAt.IsZero() || now.Sub(e.okAt) >= pwTrustFor) {
+				delete(n.ips, ip)
+			}
+		}
+		if idle && len(n.ips) == 0 {
+			delete(g.m, id)
+		}
+	}
+}
+
+// forget starts a note's counts again (its password was just replaced).
+func (g *pwGuards) forget(root int64) {
+	g.mu.Lock()
+	delete(g.m, root)
+	g.mu.Unlock()
+}
+
+// writeProof compares the supplied write proof with the note's. For a basic note with a password it also counts wrong
+// proofs and reports how long the caller is refused (0 = not). exempt is asked only when it matters.
 func (a *App) writeProof(n *db.Note, supplied, ip string, exempt func() bool) (match bool, blocked time.Duration) {
 	match = hashMatch(supplied, n.WriteHash)
-	if !n.Password || supplied == "" {
+	if !n.Password || n.Encrypted || supplied == "" {
 		return match, 0
 	}
 	root := n.ID // a snapshot shares its note's password and its allowance
 	if n.ParentID.Valid {
 		root = n.ParentID.Int64
 	}
-	kNote := "n" + strconv.FormatInt(root, 10)
-	kIP := kNote + "|" + ip
-	now := time.Now()
-	left := a.pwTries.left(kIP, pwTriesPerMinute, time.Minute, now)
-	if l := a.pwTries.left(kNote, pwTriesPerHour, time.Hour, now); l > left {
-		left = l
+	if !match && exempt() {
+		return false, 0
 	}
-	if match && left == 0 {
+	wait := a.pwTries.attempt(root, ip, match, time.Now())
+	if wait > 0 && match && exempt() {
 		return true, 0
 	}
-	if exempt() {
-		return match, 0
+	if wait > 0 {
+		return false, wait
 	}
-	if left > 0 {
-		return false, left
-	}
-	a.pwTries.fail(kIP, time.Minute, now)
-	a.pwTries.fail(kNote, time.Hour, now)
-	return false, 0
+	return match, 0
 }
 
 // ownerSession is true when the request carries the signed-in session of the note's owner.
