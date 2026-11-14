@@ -297,6 +297,7 @@ func (a *App) routes() {
 	m.HandleFunc("POST /api/me/secret", a.apiChangeSecret)
 	m.HandleFunc("GET /api/me/vault/reset", a.apiResetPreview) // reset vault (vaultreset.go)
 	m.HandleFunc("POST /api/me/vault/reset", a.apiResetVault)
+	m.HandleFunc("POST /api/me/notes/{token}/takeover", a.apiTakeover) // new editing keys for a basic note (takeover.go)
 	m.HandleFunc("POST /api/recover", a.apiRecover)
 	m.HandleFunc("POST /api/recover/finish", a.apiRecoverFinish)
 	m.HandleFunc("POST /api/n/{token}/report", a.apiReport)

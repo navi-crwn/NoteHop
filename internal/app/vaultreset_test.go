@@ -17,7 +17,8 @@ import (
 type resetMember struct {
 	c     *client
 	user  *db.User
-	notes []note
+	notes []note // encrypted
+	basic note   // a basic note: it stays through a reset
 }
 
 func (e *recheckEnv) member(sub string, notes int) *resetMember {
@@ -37,6 +38,10 @@ func (e *recheckEnv) member(sub string, notes int) *resetMember {
 	m := &resetMember{c: c, user: u}
 	for i := 0; i < notes; i++ {
 		m.notes = append(m.notes, c.create(nil))
+	}
+	m.basic = c.create(map[string]any{"slug": "keep" + sub})
+	if _, err := e.db.Exec(`UPDATE notes SET owner_blob = 'sealed-old' WHERE owner_id = ?`, u.ID); err != nil {
+		e.t.Fatal(err)
 	}
 	if err := e.db.SetRecoveryCodes(u.ID, []db.RecoveryCode{{Slot: 0, ProofHash: "p" + sub, Wrap: "w"}}); err != nil {
 		e.t.Fatal(err)
@@ -63,8 +68,11 @@ func (e *recheckEnv) count(q string, args ...any) int {
 // everything of the account is still there
 func (e *recheckEnv) intact(m *resetMember, why string) {
 	e.t.Helper()
-	if n := e.count(`SELECT COUNT(*) FROM notes WHERE owner_id = ?`, m.user.ID); n != len(m.notes) {
-		e.t.Fatalf("%s: %d notes left of %d", why, n, len(m.notes))
+	if n := e.count(`SELECT COUNT(*) FROM notes WHERE owner_id = ?`, m.user.ID); n != len(m.notes)+1 {
+		e.t.Fatalf("%s: %d notes left of %d", why, n, len(m.notes)+1)
+	}
+	if n := e.count(`SELECT COUNT(*) FROM notes WHERE owner_id = ? AND owner_blob = 'sealed-old'`, m.user.ID); n != len(m.notes)+1 {
+		e.t.Fatalf("%s: owner blobs changed", why)
 	}
 	if n := e.count(`SELECT COUNT(*) FROM margins WHERE user_id = ?`, m.user.ID); n != 1 {
 		e.t.Fatalf("%s: margins %d", why, n)
@@ -170,10 +178,10 @@ func TestResetVaultFlow(t *testing.T) {
 
 	code, m, raw := a.c.do("GET", resetPath, nil, nil)
 	counts, _ := m["counts"].(map[string]any)
-	if code != http.StatusOK || m["word"] != "RESET" || counts["notes"] != float64(2) || counts["files"] != float64(1) || counts["margins"] != float64(1) || counts["codes"] != float64(1) || counts["links"] != float64(2) {
+	if code != http.StatusOK || m["word"] != "RESET" || counts["notes"] != float64(2) || counts["kept"] != float64(1) || counts["files"] != float64(1) || counts["margins"] != float64(1) || counts["codes"] != float64(1) || counts["links"] != float64(2) {
 		t.Fatalf("preview: %d %s", code, raw)
 	}
-	if e.count(`SELECT COUNT(*) FROM notes WHERE owner_id = ?`, a.user.ID) != 2 {
+	if e.count(`SELECT COUNT(*) FROM notes WHERE owner_id = ?`, a.user.ID) != 3 {
 		t.Fatal("the preview deleted something")
 	}
 
@@ -188,10 +196,10 @@ func TestResetVaultFlow(t *testing.T) {
 
 	// gone from every table, and the old links answer as deleted notes do
 	for table, q := range map[string]string{
-		"notes":   `SELECT COUNT(*) FROM notes WHERE owner_id = ?`,
-		"margins": `SELECT COUNT(*) FROM margins WHERE user_id = ?`,
-		"codes":   `SELECT COUNT(*) FROM recovery_codes WHERE user_id = ?`,
-		"files":   `SELECT COUNT(*) FROM files WHERE owner_id = ?`,
+		"encrypted notes": `SELECT COUNT(*) FROM notes WHERE owner_id = ? AND encrypted = 1`,
+		"margins":         `SELECT COUNT(*) FROM margins WHERE user_id = ?`,
+		"codes":           `SELECT COUNT(*) FROM recovery_codes WHERE user_id = ?`,
+		"files":           `SELECT COUNT(*) FROM files WHERE owner_id = ?`,
 	} {
 		if n := e.count(q, a.user.ID); n != 0 {
 			t.Errorf("%s: %d rows left", table, n)
@@ -204,6 +212,13 @@ func TestResetVaultFlow(t *testing.T) {
 		if code, _, _ := noRedirect(t, e.srv).do("GET", "/api/n/"+n.token, nil, nil); code != http.StatusNotFound && code != http.StatusGone {
 			t.Errorf("old link %s for a visitor answers %d", n.token, code)
 		}
+	}
+	// the basic note stays: readable by anyone with its link, still the account's, no blob sealed with the old key
+	if code, _, _ := noRedirect(t, e.srv).do("GET", "/api/n/"+a.basic.token, nil, nil); code != http.StatusOK {
+		t.Errorf("the basic note after the reset: %d", code)
+	}
+	if e.count(`SELECT COUNT(*) FROM notes WHERE owner_id = ? AND encrypted = 0 AND owner_blob = ''`, a.user.ID) != 1 {
+		t.Error("the basic note lost its owner or kept its old blob")
 	}
 	u, _ := e.db.UserByID(a.user.ID)
 	if u.VaultCheck != "" || u.VaultWrap != "" {
@@ -229,7 +244,7 @@ func TestResetVaultFlow(t *testing.T) {
 		t.Fatalf("new vault key: %d %s", code, raw)
 	}
 	a.c.create(nil)
-	if e.count(`SELECT COUNT(*) FROM notes WHERE owner_id = ?`, a.user.ID) != 1 {
+	if e.count(`SELECT COUNT(*) FROM notes WHERE owner_id = ?`, a.user.ID) != 2 {
 		t.Error("a new note after the reset")
 	}
 
@@ -238,7 +253,7 @@ func TestResetVaultFlow(t *testing.T) {
 	if err := e.db.QueryRow(`SELECT action, detail FROM hop_audit WHERE action = 'user.vault_reset_self'`).Scan(&action, &detail); err != nil {
 		t.Fatalf("no audit entry: %v", err)
 	}
-	if !strings.Contains(detail, `"notes":2`) {
+	if !strings.Contains(detail, `"notes":2`) || !strings.Contains(detail, `"kept":1`) {
 		t.Errorf("audit detail: %s", detail)
 	}
 	for _, secret := range []string{"WRAPSECRET3001", "check-3001", "RESET", e.sessionCookie(a.c)} {
