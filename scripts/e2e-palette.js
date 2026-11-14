@@ -34,9 +34,13 @@ const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) +
       probe.remove(); return out;
     }, png);
     ok(`${name}: the palette is applied`, m.pal === pal, m.pal);
+    // the italic phrase of the home page headline follows the palette (the classic one is blue to violet)
+    await p.goto(BASE + '/?lang=en'); await p.waitForTimeout(500);
+    const ink = await p.$eval('.home em', e => getComputedStyle(e).backgroundImage);
+    global.__ink = global.__ink || {};
+    if (!pal) global.__ink[scheme] = ink; else ok(`${name}: the home headline accent is not the classic gradient`, ink !== global.__ink[scheme] && !/244, 114, 182|167, 139, 250|99, 102, 241|192, 38, 211/.test(ink), ink.slice(0, 90));
     const worst = Math.min(...m.row.map(c => ratio(m.fg, c)));
-    // The classic palette in light keeps its old colours (dark text on green and violet): its known lowest is about 3.3.
-    const need = name === 'light/classic' ? 3.0 : 4.5;
+    const need = 4.5;
     ok(`${name}: button text has at least ${need}:1 on every part of the button`, worst >= need, 'lowest ' + worst.toFixed(2));
     const edge = Math.abs(lum(m.edge[1]) - lum(m.edge[2]));
     ok(`${name}: no pale line at the right end (the last columns match the ones before)`, edge < .08 && Math.abs(lum(m.edge[0]) - lum(m.edge[2])) < .12, `edge lum diff ${edge.toFixed(3)} / outer ${Math.abs(lum(m.edge[0]) - lum(m.edge[2])).toFixed(3)}`);

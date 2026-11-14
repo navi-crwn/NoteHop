@@ -21,8 +21,9 @@
   --amber: #fbbf24;
   --green: #34d399;
   --grad: linear-gradient(120deg, var(--lime), var(--cyan) 45%, var(--violet));
-  /* The main button: the classic green, cyan and violet (dark text on all of it passes 4.5:1 in the dark theme). */
-  --btn-bg: linear-gradient(100deg, var(--lime), var(--cyan) 52%, var(--violet));
+  /* The main button: the classic green, cyan and violet. In the light theme the three stops are a little lighter than
+     the page colours (so the dark text keeps 4.5:1 on every part of the button); in the dark theme they are as before. */
+  --btn-bg: linear-gradient(100deg, light-dark(#84cc16, var(--lime)), light-dark(#22b8cf, var(--cyan)) 52%, light-dark(#9a7af7, var(--violet)));
   --btn-fg: #061016;
   --accent: var(--cyan);
   --on-accent: #041014;
@@ -101,6 +102,9 @@
   --accent: light-dark(#a8481f, #f3b48c); --on-accent: var(--btn-fg);
   --lime: light-dark(#8a6a1f, #e6cf8f); --cyan: light-dark(#a2406f, #ea9fb0); --violet: light-dark(#b4532a, #f3b48c); --violet-text: light-dark(#a2406f, #f3b8c4);
 }
+
+/* The italic accent phrases and the highlights of the home page follow the palette too (the 3D scenes keep their own colours). */
+html:root[data-palette] body[data-page=home], html:root[data-palette] .hop-home { --h-ink: var(--btn-bg); }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
