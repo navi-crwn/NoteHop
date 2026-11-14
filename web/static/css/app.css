@@ -21,9 +21,8 @@
   --amber: #fbbf24;
   --green: #34d399;
   --grad: linear-gradient(120deg, var(--lime), var(--cyan) 45%, var(--violet));
-  /* The main button: the classic green, cyan and violet, with the violet end a little deeper in the dark theme, where
-     its full strength read as a bright block at the right end. */
-  --btn-bg: linear-gradient(100deg, var(--lime), var(--cyan) 52%, light-dark(var(--violet), color-mix(in srgb, var(--violet) 78%, #2a1a60)));
+  /* The main button: the classic green, cyan and violet (dark text on all of it passes 4.5:1 in the dark theme). */
+  --btn-bg: linear-gradient(100deg, var(--lime), var(--cyan) 52%, var(--violet));
   --btn-fg: #061016;
   --accent: var(--cyan);
   --on-accent: #041014;

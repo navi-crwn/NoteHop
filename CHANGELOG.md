@@ -27,7 +27,7 @@ A way out for people who lost their vault key, and a calmer signed-in area.
 
 ### Fixed
 
-- **Main buttons.** The gradient of the main buttons is laid out once over the whole button, and its violet end is a little deeper in the dark theme, so the right end no longer reads as a bright block. The cause was a gradient that was laid out on the inside of the button and repeated under its border.
+- **Main buttons.** The gradient of the main buttons is now laid out once over the whole button instead of on its inside, which could repeat its start under the 1 px border at the right end. The classic colours are unchanged; the new Mist and Sand palettes are the softer alternative.
 - **Reset vault on other devices.** A device that still held the old vault key after a reset used to sign back in and quietly mix notes sealed with the old key and the new one. The vault now has a generation number, and a key from an older generation is dropped at once, so you are asked for the new key. Also, a reset no longer works from a sign-in that HOP ID has not confirmed recently, even when HOP ID cannot be reached.
 - **Top bar on small screens.** On phones the buttons of the public top bar wrapped onto a second line and covered the page below. They now stay in one row; the help menu moves into the menu behind the burger button on the narrowest phones, and nothing overlaps in any of the nine languages.
 - **Nearby devices.** The pairing code box showed only five of the six digits. It is now wide enough for all six on every screen.

@@ -73,7 +73,7 @@
         {
           "type": "fixed",
           "where": "Main buttons",
-          "text": "The gradient of the main buttons is laid out once over the whole button, and its violet end is a little deeper in the dark theme, so the right end no longer reads as a bright block. The cause was a gradient that was laid out on the inside of the button and repeated under its border."
+          "text": "The gradient of the main buttons is now laid out once over the whole button instead of on its inside, which could repeat its start under the 1 px border at the right end. The classic colours are unchanged; the new Mist and Sand palettes are the softer alternative."
         },
         {
           "type": "fixed",
