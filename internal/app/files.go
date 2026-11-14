@@ -21,6 +21,39 @@ import (
 // that a few slow uploaders do not stop everyone (the rest is the per-address limits).
 const uploadSlots = 4
 
+// uploadSlotsPerIP keeps one address from holding every slot with slow uploads for the five minutes a body may take.
+const uploadSlotsPerIP = 2
+
+// takeUploadSlot reserves one of the slots for this address; the returned function gives it back.
+func (a *App) takeUploadSlot(ip string) (release func(), ok bool) {
+	a.uploadIPM.Lock()
+	if a.uploadIP == nil {
+		a.uploadIP = map[string]int{}
+	}
+	if a.uploadIP[ip] >= uploadSlotsPerIP {
+		a.uploadIPM.Unlock()
+		return nil, false
+	}
+	a.uploadIP[ip]++
+	a.uploadIPM.Unlock()
+	select {
+	case a.uploadSem <- struct{}{}:
+	default:
+		a.uploadIPM.Lock()
+		a.uploadIP[ip]--
+		a.uploadIPM.Unlock()
+		return nil, false
+	}
+	return func() {
+		<-a.uploadSem
+		a.uploadIPM.Lock()
+		if a.uploadIP[ip]--; a.uploadIP[ip] <= 0 {
+			delete(a.uploadIP, ip)
+		}
+		a.uploadIPM.Unlock()
+	}, true
+}
+
 const (
 	DefaultFileTTL = 24 * time.Hour
 	MinFileTTL     = time.Hour
@@ -58,14 +91,13 @@ func (a *App) apiUpload(w http.ResponseWriter, r *http.Request) {
 	// The body is read WITHOUT the global lock: a slow uploader must not hold everybody else up. What is bounded
 	// instead is how many bodies are read at once (uploadSlots x 20 MB of memory at most); a full house answers
 	// "try again" at once rather than queueing. The lock below covers only check-then-write.
-	select {
-	case a.uploadSem <- struct{}{}:
-		defer func() { <-a.uploadSem }()
-	default:
+	release, got := a.takeUploadSlot(a.clientIP(r))
+	if !got {
 		w.Header().Set("Retry-After", "5")
 		apiErr(w, http.StatusServiceUnavailable, "err.files_busy")
 		return
 	}
+	defer release()
 	if !a.storageAvailable(int64(a.cfg.FileMB) << 20) {
 		w.Header().Set("Retry-After", "60")
 		apiErr(w, http.StatusInsufficientStorage, "err.files_storage")

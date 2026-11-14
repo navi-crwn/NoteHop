@@ -640,7 +640,8 @@ func (a *App) apiSave(w http.ResponseWriter, r *http.Request) {
 	}
 	if q.OwnerBlob != nil {
 		u := a.currentUser(r)
-		if !x.admin || u == nil || !x.note.OwnerID.Valid || x.note.OwnerID.Int64 != u.ID || len(*q.OwnerBlob) > maxOwnerBlob {
+		if !x.admin || u == nil || !x.note.OwnerID.Valid || x.note.OwnerID.Int64 != u.ID || len(*q.OwnerBlob) > maxOwnerBlob || !epochCurrent(r, u) {
+			// A page loaded before a vault reset seals with a key that no longer exists: keep the text, skip the blob.
 			q.OwnerBlob = nil
 		}
 	}

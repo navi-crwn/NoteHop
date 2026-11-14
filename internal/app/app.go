@@ -103,7 +103,9 @@ type App struct {
 	started   time.Time  // for /hop/health uptime
 	settings  sync.Map   // run-time settings from the control center (key → value), mirrors the settings table
 	uploadMu  sync.Mutex
-	uploadSem chan struct{} // at most uploadSlots bodies are read at once (memory: one body is up to 20 MB)
+	uploadSem chan struct{}  // at most uploadSlots bodies are read at once (memory: one body is up to 20 MB)
+	uploadIP  map[string]int // slots held per client address, at most uploadSlotsPerIP each
+	uploadIPM sync.Mutex
 
 	reportKeyOnce sync.Once // reportKey is made on first use
 	reportKey     []byte

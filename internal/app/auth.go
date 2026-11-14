@@ -260,12 +260,17 @@ func (a *App) freshlyVouched(r *http.Request, u *db.User) bool {
 // before the vault was reset: its key is out of date, and what it sealed could never be opened. Callers that send no
 // generation (the command line, other apps) are not affected.
 func (a *App) vaultStale(w http.ResponseWriter, r *http.Request, u *db.User) bool {
-	h := r.Header.Get("X-Vault-Epoch")
-	if h == "" || u == nil || h == strconv.FormatInt(u.VaultEpoch, 10) {
+	if epochCurrent(r, u) {
 		return false
 	}
 	apiErr(w, http.StatusConflict, "err.vault_stale")
 	return true
+}
+
+// epochCurrent is false only when the request names a vault generation that is not the account's current one.
+func epochCurrent(r *http.Request, u *db.User) bool {
+	h := r.Header.Get("X-Vault-Epoch")
+	return h == "" || u == nil || h == strconv.FormatInt(u.VaultEpoch, 10)
 }
 
 // recheckCooldown marks a browser the account server answered "not now" (temporarily_unavailable):

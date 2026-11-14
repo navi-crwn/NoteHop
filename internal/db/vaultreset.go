@@ -120,7 +120,8 @@ func (d *DB) ResetVault(userID int64, keep string, audit *Audit) (VaultResetCoun
 // the sealed owner blob, which held the keys being replaced. ErrNotFound when no such note matches.
 //
 // The frozen snapshots of the note (they copied the old admin hash) get the new one in the same transaction, so the
-// old owner link no longer opens them as admin either.
+// old owner link no longer opens them as admin either. The first UPDATE proved the account owns the parent, and
+// parent_id is only ever set by Freeze, so snapshots frozen before the note had an owner are covered too.
 func (d *DB) SetNoteKeys(noteID, ownerID int64, adminHash, writeHash string) error {
 	tx, err := d.Begin()
 	if err != nil {
@@ -131,7 +132,7 @@ func (d *DB) SetNoteKeys(noteID, ownerID int64, adminHash, writeHash string) err
 		WHERE id = ? AND owner_id = ? AND encrypted = 0 AND frozen = 0`, adminHash, writeHash, noteID, ownerID)); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(`UPDATE notes SET admin_hash = ? WHERE parent_id = ? AND frozen = 1 AND owner_id = ?`, adminHash, noteID, ownerID); err != nil {
+	if _, err := tx.Exec(`UPDATE notes SET admin_hash = ? WHERE parent_id = ? AND frozen = 1`, adminHash, noteID); err != nil {
 		return err
 	}
 	return tx.Commit()
