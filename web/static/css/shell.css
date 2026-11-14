@@ -44,3 +44,6 @@
 @media (prefers-reduced-motion: reduce) { .shell-side { transition: none; } }
 @media (max-width: 760px), (pointer: coarse) { .shell-tools .btn.primary { min-width: 44px; } }
 @media (max-width: 760px) and (max-width: 1023px), (pointer: coarse) and (max-width: 1023px) { .shell-tools .btn.primary { width: 44px; } }
+
+/* On a short screen the sidebar's parts keep their size and the sidebar itself scrolls (they used to shrink and get cut off). */
+.shell-side > * { flex-shrink: 0; }
