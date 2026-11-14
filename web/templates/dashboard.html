@@ -1,6 +1,6 @@
 {{define "page"}}dashboard{{end}}
 {{define "content"}}
-<section class="wrap">
+<section class="wrap" id="dash" data-view="{{if eq .DashView "vault"}}vault{{else}}basic{{end}}">
   {{if .Announce}}<!-- a notice from the people who run this site: one card above everything, hidden for a week once closed (dashboard.js) -->
   <section class="alert info announce" id="announce" data-id="{{.AnnounceID}}" aria-labelledby="announce-h" hidden>
     <svg><use href="#i-spark"/></svg>
@@ -8,13 +8,13 @@
     <button type="button" class="icon-btn sm" id="announce-close" aria-label="{{.L.T "common.close"}}" title="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button>
   </section>{{end}}
   <div class="page-head">
-    <div><h1>{{.L.T "title.dashboard"}}</h1><p class="muted" id="dash-lead">{{.L.T "dash.lead"}}</p></div>
-    <div class="btn-row"><a class="btn" href="/security"><svg><use href="#i-key"/></svg>{{.L.T "sec.title"}}</a><a class="btn primary" href="/new"><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a></div>
+    <div><h1>{{if eq .DashView "vault"}}{{.L.T "dash.vault_btn"}}{{else}}{{.L.T "title.dashboard"}}{{end}}</h1><p class="muted" id="dash-lead">{{if eq .DashView "vault"}}{{.L.T "dash.lead"}}{{else}}{{.L.T "dash.lead_basic"}}{{end}}</p></div>
+    <div class="btn-row">{{if eq .DashView "vault"}}<a class="btn" href="/dashboard"><svg><use href="#i-grid"/></svg>{{.L.T "nav.mine"}}</a>{{else}}<a class="btn" href="/dashboard?view=vault" id="vault-btn"><svg><use href="#i-lock"/></svg><span>{{.L.T "dash.vault_btn"}}</span></a>{{end}}<a class="btn" href="/security"><svg><use href="#i-key"/></svg>{{.L.T "sec.title"}}</a><a class="btn primary" href="{{if eq .DashView "vault"}}/new{{else}}/new?kind=basic{{end}}"><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a></div>
   </div>
   <!-- the vault: open or locked in this browser, and the way to change that (dashboard.js fills these) -->
-  <div class="vault-state" id="vault-state" aria-live="polite"></div>
+  {{if eq .DashView "vault"}}<div class="vault-state" id="vault-state" aria-live="polite"></div>
   <div class="alert info hide" id="vault-locked">{{if .User.SSOID}}{{.L.H "dash.locked_sso"}} <a href="/security#reset">{{.L.T "reset.link"}}</a>{{else}}{{.L.H "dash.locked_password"}}{{end}}</div>
-  <div class="alert warn hide claim" id="vault-mismatch"></div>
+  <div class="alert warn hide claim" id="vault-mismatch"></div>{{end}}
   <!-- a reminder, not a status: it can be hidden for a week (hop-ui.js adds the button) and is gone once the codes exist -->
   {{if index .Reminders "recovery-codes"}}<section class="alert info remind" data-hop-remind="recovery-codes" data-hop-remind-url="/api/me/reminders/dismiss" aria-labelledby="remind-rec-h">
     <svg><use href="#i-key"/></svg>
@@ -31,15 +31,13 @@
   </div>
   <div class="pills groups" id="groups" role="toolbar" aria-label="{{.L.T "dash.groups"}}">
     <button type="button" class="chip" data-group="all" aria-pressed="true">{{.L.T "dash.g_all"}}</button>
-    <button type="button" class="chip" data-group="encrypted" aria-pressed="false">{{.L.T "dash.g_encrypted"}}</button>
-    <button type="button" class="chip" data-group="basic" aria-pressed="false">{{.L.T "dash.g_basic"}}</button>
     <button type="button" class="chip" data-group="todo" aria-pressed="false">{{.L.T "dash.g_todo"}}</button>
     <button type="button" class="chip" data-group="links" aria-pressed="false">{{.L.T "dash.g_links"}}</button>
-    <button type="button" class="chip" data-group="code" aria-pressed="false">{{.L.T "dash.g_code"}}</button>
+    {{if eq .DashView "vault"}}<button type="button" class="chip" data-group="code" aria-pressed="false">{{.L.T "dash.g_code"}}</button>{{end}}
     <button type="button" class="chip" data-group="timed" aria-pressed="false">{{.L.T "dash.g_timed"}}</button>
-    <button type="button" class="chip" data-group="snapshots" aria-pressed="false">{{.L.T "dash.g_snapshots"}}</button>
+    {{if eq .DashView "vault"}}<button type="button" class="chip" data-group="snapshots" aria-pressed="false">{{.L.T "dash.g_snapshots"}}</button>{{end}}
     <button type="button" class="chip" data-group="archived" aria-pressed="false">{{.L.T "dash.g_archived"}}</button>
-    <button type="button" class="chip" data-group="device" aria-pressed="false">{{.L.T "dash.g_device"}}</button>
+    {{if eq .DashView "vault"}}<button type="button" class="chip" data-group="device" aria-pressed="false">{{.L.T "dash.g_device"}}</button>{{end}}
   </div>
   <ul class="note-list" id="mine"><li class="muted">{{.L.T "common.loading"}}</li></ul>
 </section>

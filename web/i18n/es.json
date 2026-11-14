@@ -1616,7 +1616,7 @@
   "reset.btn": "Restablecer la bóveda…",
   "reset.dlg_h": "¿Restablecer la bóveda?",
   "reset.lose": "Esto borra de forma permanente:",
-  "reset.c_notes": "Notas: {n}",
+  "reset.c_notes": "Notas cifradas: {n}",
   "reset.c_files": "Adjuntos: {n}",
   "reset.c_links": "Enlaces para compartir: {n}. Dejan de funcionar al instante.",
   "reset.c_margins": "Notas al margen: {n}",
@@ -1640,5 +1640,16 @@
   "palette.label": "Colores",
   "palette.classic": "Clásico",
   "palette.mist": "Niebla",
-  "palette.sand": "Arena"
+  "palette.sand": "Arena",
+  "dash.vault_btn": "Bóveda",
+  "dash.lead_basic": "Tus notas básicas. Ábrelas, copia su enlace, edítalas o bórralas aquí. Las notas cifradas están en la Bóveda.",
+  "dash.takeover_h": "¿Editar esta nota aquí?",
+  "dash.takeover_p": "La nota recibe claves de edición nuevas. Los enlaces de propietario anteriores dejan de funcionar, y también los enlaces de edición que diste a otras personas. Los enlaces de lectura siguen funcionando.",
+  "dash.edit": "Editar",
+  "dash.basic_empty": "Aún no hay notas básicas.",
+  "dash.basic_vault_hint": "Tus notas cifradas están en la Bóveda.",
+  "err.takeover_failed": "No se pudieron cambiar las claves de edición. No se cambió nada; inténtalo de nuevo.",
+  "err.takeover_basic_only": "Solo las notas básicas se pueden tomar así.",
+  "reset.kept": "Tus notas básicas se quedan ({n}). Siguen siendo legibles y puedes borrarlas; usa Editar en Mis notas para obtener claves de edición nuevas.",
+  "dash.takeover_password": "Esta nota tiene contraseña. Ábrela con su enlace de propietario para editarla."
 }

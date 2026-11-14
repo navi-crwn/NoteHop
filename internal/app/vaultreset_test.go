@@ -269,9 +269,9 @@ func TestResetVaultIsOfferedWhereAPersonGetsStuck(t *testing.T) {
 	e := newRecheckEnv(t)
 	a := e.member("4001", 0)
 	for path, want := range map[string][]string{
-		"/security":  {`id="reset"`, `id="reset-open"`, `id="reset-dlg"`, `id="reset-go"`, `disabled`, `sec-danger`},
-		"/dashboard": {`id="vault-locked"`, `href="/security#reset"`},
-		"/vault":     {`href="/recover"`, `href="/security#reset"`},
+		"/security":             {`id="reset"`, `id="reset-open"`, `id="reset-dlg"`, `id="reset-go"`, `disabled`, `sec-danger`},
+		"/dashboard?view=vault": {`id="vault-locked"`, `href="/security#reset"`},
+		"/vault":                {`href="/recover"`, `href="/security#reset"`},
 	} {
 		code, _, body := e.status(a.c, path)
 		if code != http.StatusOK {
@@ -286,7 +286,7 @@ func TestResetVaultIsOfferedWhereAPersonGetsStuck(t *testing.T) {
 	e2 := newRecheckEnv(t)
 	local := noRedirect(t, e2.srv)
 	local.do("POST", "/api/register", map[string]any{"username": "lokal", "auth": key()}, nil)
-	for _, path := range []string{"/security", "/dashboard"} {
+	for _, path := range []string{"/security", "/dashboard?view=vault"} {
 		code, _, body := e2.status(local, path)
 		if code != http.StatusOK {
 			t.Fatalf("%s: %d", path, code)

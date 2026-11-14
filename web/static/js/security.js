@@ -145,7 +145,7 @@
       NH.api('GET', '/api/me/vault/reset').then(function (r) {
         word = r.word;
         $('#reset-word-l').textContent = NH.t('reset.type', { word: word });
-        $('#reset-list').replaceChildren.apply($('#reset-list'), shows.map(function (s) { return h('li', NH.t(s[1], { n: r.counts[s[0]] })); }));
+        $('#reset-list').replaceChildren.apply($('#reset-list'), shows.map(function (s) { return h('li', NH.t(s[1], { n: r.counts[s[0]] })); }).concat(r.counts.kept ? [h('li', NH.t('reset.kept', { n: r.counts.kept }))] : []));
         rdlg.showModal();
         rword.focus();
       }, function (x) { NH.toast(x.message, 'err'); });

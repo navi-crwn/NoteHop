@@ -260,6 +260,8 @@
   $('#open-at').value = localInput(soon + 86400);
   $('#lock-at').value = localInput(soon + 7 * 86400);
   applyOptions();
+  // From My notes the new note starts as a basic one (the encrypted choice stays one click away).
+  if (new URLSearchParams(location.search).get('kind') === 'basic') { pick('kind', 'basic'); applyOptions(); }
 
   // Web clipper: the bookmarklet passes the page in the #fragment.
   if (location.hash.indexOf('#clip=') === 0) {

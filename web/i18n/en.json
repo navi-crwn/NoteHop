@@ -1616,7 +1616,7 @@
   "reset.btn": "Reset vault…",
   "reset.dlg_h": "Reset the vault?",
   "reset.lose": "This permanently deletes:",
-  "reset.c_notes": "Notes: {n}",
+  "reset.c_notes": "Encrypted notes: {n}",
   "reset.c_files": "Attachments: {n}",
   "reset.c_links": "Share links: {n}. They stop working at once.",
   "reset.c_margins": "Margin notes: {n}",
@@ -1640,5 +1640,16 @@
   "palette.label": "Colours",
   "palette.classic": "Classic",
   "palette.mist": "Mist",
-  "palette.sand": "Sand"
+  "palette.sand": "Sand",
+  "dash.vault_btn": "Vault",
+  "dash.lead_basic": "Your basic notes. Open one, copy its link, edit or delete it here. Encrypted notes are in the Vault.",
+  "dash.takeover_h": "Edit this note here?",
+  "dash.takeover_p": "This gives the note new editing keys. Older owner links stop working, and so do edit links you gave to other people. Reading links keep working.",
+  "dash.edit": "Edit",
+  "dash.basic_empty": "No basic notes yet.",
+  "dash.basic_vault_hint": "Your encrypted notes are in the Vault.",
+  "err.takeover_failed": "Couldn't switch the editing keys. Nothing was changed; please try again.",
+  "err.takeover_basic_only": "Only basic notes can be taken over this way.",
+  "reset.kept": "Your basic notes stay ({n}). They remain readable and you can still delete them; use Edit in My notes to get new editing keys.",
+  "dash.takeover_password": "This note has a password. Open it with its owner link to edit it."
 }

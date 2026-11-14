@@ -1616,7 +1616,7 @@
   "reset.btn": "Redefinir o cofre…",
   "reset.dlg_h": "Redefinir o cofre?",
   "reset.lose": "Isto apaga para sempre:",
-  "reset.c_notes": "Notas: {n}",
+  "reset.c_notes": "Notas criptografadas: {n}",
   "reset.c_files": "Anexos: {n}",
   "reset.c_links": "Links de compartilhamento: {n}. Param de funcionar na hora.",
   "reset.c_margins": "Notas de margem: {n}",
@@ -1640,5 +1640,16 @@
   "palette.label": "Cores",
   "palette.classic": "Clássico",
   "palette.mist": "Névoa",
-  "palette.sand": "Areia"
+  "palette.sand": "Areia",
+  "dash.vault_btn": "Cofre",
+  "dash.lead_basic": "Suas notas básicas. Abra, copie o link, edite ou apague aqui. As notas criptografadas estão no Cofre.",
+  "dash.takeover_h": "Editar esta nota aqui?",
+  "dash.takeover_p": "A nota recebe novas chaves de edição. Os links de dono antigos deixam de funcionar, e também os links de edição que você deu a outras pessoas. Os links de leitura continuam funcionando.",
+  "dash.edit": "Editar",
+  "dash.basic_empty": "Ainda não há notas básicas.",
+  "dash.basic_vault_hint": "Suas notas criptografadas estão no Cofre.",
+  "err.takeover_failed": "Não foi possível trocar as chaves de edição. Nada foi alterado; tente de novo.",
+  "err.takeover_basic_only": "Só notas básicas podem ser assumidas assim.",
+  "reset.kept": "Suas notas básicas ficam ({n}). Continuam legíveis e você ainda pode apagá-las; use Editar em Minhas notas para obter novas chaves de edição.",
+  "dash.takeover_password": "Esta nota tem senha. Abra-a com o link de dono para editar."
 }

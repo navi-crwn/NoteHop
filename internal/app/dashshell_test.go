@@ -39,10 +39,32 @@ func TestDashboardShell(t *testing.T) {
 	}
 	// The vault: its state line, the banners that explain a locked row and offer the way out, the
 	// "On this device" group, and the lock/unlock entry in the account menu.
-	for _, want := range []string{`id="vault-state"`, `id="vault-locked"`, `id="vault-mismatch"`, `id="reseal"`, `id="nokey"`, `data-group="device"`, `id="menu-vault"`, `id="dash-lead"`} {
+	for _, want := range []string{`id="reseal"`, `id="nokey"`, `id="menu-vault"`, `id="dash-lead"`, `data-view="basic"`, `id="vault-btn"`, `href="/new?kind=basic"`} {
 		if !strings.Contains(body, want) {
 			t.Errorf("dashboard lacks %s", want)
 		}
+	}
+	// The home of the dashboard is the basic notes and needs no vault: no vault banners, and only the filters that
+	// mean something for a basic list. The Vault view has the banners and the rest of the filters.
+	for _, gone := range []string{`id="vault-state"`, `id="vault-locked"`, `id="vault-mismatch"`, `data-group="encrypted"`, `data-group="basic"`, `data-group="code"`, `data-group="snapshots"`, `data-group="device"`} {
+		if strings.Contains(body, gone) {
+			t.Errorf("the basic notes view still has %s", gone)
+		}
+	}
+	if n := strings.Count(body, `data-group=`); n != 5 {
+		t.Errorf("%d filters on the basic view, want 5 (all, to-dos, links, timed, archived)", n)
+	}
+	vbody := get("/dashboard?view=vault")
+	for _, want := range []string{`id="vault-state"`, `id="vault-locked"`, `id="vault-mismatch"`, `data-group="device"`, `data-group="code"`, `data-view="vault"`} {
+		if !strings.Contains(vbody, want) {
+			t.Errorf("the Vault view lacks %s", want)
+		}
+	}
+	if !strings.Contains(vbody, `<a href="/dashboard?view=vault" aria-current="page">`) || strings.Contains(vbody, `<a href="/dashboard" aria-current="page">`) {
+		t.Error("the sidebar does not mark the Vault as the current page")
+	}
+	if !strings.Contains(body, `<a href="/dashboard" aria-current="page">`) || !strings.Contains(body, `<a href="/dashboard?view=vault" >`) {
+		t.Error("the sidebar does not mark My notes as the current page, with the Vault beside it")
 	}
 	// Pages about the product that are not tools stay public for everyone.
 	if pub := get("/terms"); strings.Contains(pub, `class="shell-side"`) || !strings.Contains(pub, `class="footer-columns"`) {

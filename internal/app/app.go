@@ -364,6 +364,7 @@ type pageData struct {
 	Reminders     map[string]bool // reminder cards due on the dashboard, by key (reminders.go)
 	Announce      string          // the notice at the top of the dashboard home (hop.go), "" when there is none
 	AnnounceID    string          // a short fingerprint of it: hiding one notice does not hide the next
+	DashView      string          // "vault" on the encrypted-notes view of the dashboard, "" (basic notes) otherwise
 	Status        *liveStatus     // /status only
 	Changelog     *changePage
 }
@@ -493,6 +494,9 @@ func (a *App) dashboardPage(w http.ResponseWriter, r *http.Request) {
 	due := map[string]bool{remindRecovery: a.reminderDue(u, remindRecovery, a.recoveryStatus(u).Left == 0, time.Now())}
 	d := pageData{Title: a.locale(w, r).T("title.dashboard"), User: u, NoIndex: true, Reminders: due}
 	d.Announce, d.AnnounceID = a.announcement(), a.announcementID()
+	if r.URL.Query().Get("view") == "vault" {
+		d.DashView = "vault"
+	}
 	a.render(w, r, http.StatusOK, "dashboard", d)
 }
 

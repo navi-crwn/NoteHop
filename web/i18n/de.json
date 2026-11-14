@@ -1616,7 +1616,7 @@
   "reset.btn": "Tresor zurücksetzen…",
   "reset.dlg_h": "Tresor zurücksetzen?",
   "reset.lose": "Das wird endgültig gelöscht:",
-  "reset.c_notes": "Notizen: {n}",
+  "reset.c_notes": "Verschlüsselte Notizen: {n}",
   "reset.c_files": "Anhänge: {n}",
   "reset.c_links": "Freigabelinks: {n}. Sie funktionieren sofort nicht mehr.",
   "reset.c_margins": "Randnotizen: {n}",
@@ -1640,5 +1640,16 @@
   "palette.label": "Farben",
   "palette.classic": "Klassisch",
   "palette.mist": "Dunst",
-  "palette.sand": "Sand"
+  "palette.sand": "Sand",
+  "dash.vault_btn": "Tresor",
+  "dash.lead_basic": "Deine einfachen Notizen. Öffne sie, kopiere den Link, bearbeite oder lösche sie hier. Verschlüsselte Notizen sind im Tresor.",
+  "dash.takeover_h": "Diese Notiz hier bearbeiten?",
+  "dash.takeover_p": "Die Notiz bekommt neue Bearbeitungsschlüssel. Ältere Besitzer-Links funktionieren danach nicht mehr, ebenso Bearbeitungs-Links, die du anderen gegeben hast. Lese-Links funktionieren weiter.",
+  "dash.edit": "Bearbeiten",
+  "dash.basic_empty": "Noch keine einfachen Notizen.",
+  "dash.basic_vault_hint": "Deine verschlüsselten Notizen sind im Tresor.",
+  "err.takeover_failed": "Die Bearbeitungsschlüssel konnten nicht getauscht werden. Nichts wurde geändert; bitte versuche es erneut.",
+  "err.takeover_basic_only": "Nur einfache Notizen können so übernommen werden.",
+  "reset.kept": "Deine einfachen Notizen bleiben ({n}). Sie bleiben lesbar und du kannst sie weiter löschen; mit „Bearbeiten“ in Meine Notizen bekommst du neue Bearbeitungsschlüssel.",
+  "dash.takeover_password": "Diese Notiz hat ein Passwort. Öffne sie mit ihrem Besitzer-Link, um sie zu bearbeiten."
 }

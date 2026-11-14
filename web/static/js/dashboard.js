@@ -21,8 +21,11 @@
     });
   })();
   var $ = NH.$, h = NH.h;
-  var ul = $('#mine'), filter = $('#filter'), rows = [];
+  var ul = $('#mine'), filter = $('#filter'), rows = [], allRows = [], encCount = 0;
   var vault = NHC.vault();
+  // Two views of the same account: the basic notes (the home of the dashboard, no vault needed) and the Vault
+  // (encrypted notes, which need the vault key).
+  var dashEl = $('#dash'), basicView = !dashEl || dashEl.dataset.view !== 'vault';
   var sso = document.body.dataset.sso === '1';
   var unlockHref = (sso ? '/vault' : '/login') + '?next=/dashboard';
   function now() { return Date.now() / 1000; }
@@ -31,9 +34,10 @@
   function enterAgain() { NH.store.del('nh_vault'); location.href = unlockHref; }
 
   // ---------- what the page says about the vault ----------
-  $('#dash-lead').textContent = NH.t(vault ? 'dash.lead' : 'dash.lead_locked');
+  if (!basicView) $('#dash-lead').textContent = NH.t(vault ? 'dash.lead' : 'dash.lead_locked');
   (function vaultState() {
     var box = $('#vault-state');
+    if (!box) return;
     if (vault) {
       var lock = h('button.btn.sm.ghost', { type: 'button' }, NH.icon('lock'), NH.t('dash.vault_lock'));
       lock.addEventListener('click', lockAgain);
@@ -185,7 +189,9 @@
     if (group === 'device') return drawDevice();
     var q = filter.value.trim().toLowerCase();
     if (!rows.length) {
-      ul.replaceChildren(h('li.empty', h('p.muted', NH.t('dash.empty')), h('a.btn.primary', { href: '/new' }, NH.icon('plus'), NH.t('dash.write_first'))));
+      ul.replaceChildren(h('li.empty', h('p.muted', NH.t(basicView ? 'dash.basic_empty' : 'dash.empty')),
+        basicView && encCount ? h('p.muted.small', NH.t('dash.basic_vault_hint')) : null,
+        h('a.btn.primary', { href: basicView ? '/new?kind=basic' : '/new' }, NH.icon('plus'), NH.t('dash.write_first'))));
       return;
     }
     var shown = rows.filter(function (r) {
@@ -225,6 +231,12 @@
         });
         acts.appendChild(copy);
       }
+      if (!n.encrypted && !n.frozen) {
+        var ownerHref = r.k && r.a ? NH.noteURL(n.token, { k: r.k, a: r.a }) : null;
+        var edit = ownerHref ? h('a.btn.sm', { href: ownerHref }, NH.icon('edit'), NH.t('dash.edit')) : h('button.btn.sm', { type: 'button' }, NH.icon('edit'), NH.t('dash.edit'));
+        if (!ownerHref) edit.addEventListener('click', function () { takeover(r, edit); });
+        acts.appendChild(edit);
+      }
       var del = h('button.icon-btn.sm', { type: 'button', title: NH.t('common.delete'), 'aria-label': NH.t('dash.delete_note') }, NH.icon('trash'));
       del.addEventListener('click', function () {
         // The question and the red button both name the note: by title, or by its address when it has none here.
@@ -243,12 +255,33 @@
     }));
   }
 
+  // Edit a basic note whose owner link nobody here has (vault closed, or after a reset): after asking, the account's
+  // session gives the note new editing keys (takeover.go). Older owner links and edit links given to others stop working.
+  function takeover(r, btn) {
+    var n = r.n;
+    NH.confirm(NH.t('dash.takeover_h') + ' ' + NH.t('dash.takeover_p'), { anchor: btn }).then(function (ok) {
+      if (!ok) return;
+      btn.disabled = true;
+      var admin = NHC.newKey(), k = NHC.newKey();
+      NH.api('GET', '/api/n/' + encodeURIComponent(n.token)).then(function (meta) {
+        // With a password the write key also depends on the password, which is not known here.
+        if (meta.password) { NH.toast(NH.t('dash.takeover_password'), 'err'); throw null; }
+        return NHC.noteKeys(k, '', meta.salt || '');
+      }).then(function (keys) {
+        return NH.api('POST', '/api/me/notes/' + encodeURIComponent(n.token) + '/takeover', { admin: admin, write: keys.write });
+      }).then(function () {
+        NH.recent.add({ token: n.token, k: k, a: admin, t: name(r) || '', created: n.created, expires: n.expires, p: false });
+        location.href = NH.noteURL(n.token, { k: k, a: admin });
+      }).catch(function (x) { btn.disabled = false; if (x) NH.toast(x.message, 'err'); });
+    });
+  }
+
   // "On this device": the owner links this browser remembers, which is where a
   // note made without signing in (or before the vault was open) lives until it
   // is added to the account.
   function drawDevice() {
     var mine = {};
-    rows.forEach(function (r) { mine[r.n.token] = true; });
+    allRows.forEach(function (r) { mine[r.n.token] = true; });
     var list = NH.recent.all(), kids = [h('li.muted.small.device-hint', NH.t('dash.device_hint'))];
     if (!list.length) kids.push(h('li.empty', h('p.muted', NH.t('dash.device_empty'))));
     list.forEach(function (n) {
@@ -275,17 +308,30 @@
 
   NH.api('GET', '/api/me/notes').then(function (res) {
     return Promise.all(res.notes.map(function (n) {
+      if (!n.encrypted) {
+        // A basic note never needs the vault: named from its own text, linked by its address. The owner link is
+        // known when the vault opens it or this device remembers it; otherwise Edit takes the note over (takeover()).
+        var rec = NH.recent.all().filter(function (x) { return x.token === n.token; })[0] || {};
+        var plain = { n: n, k: rec.k, a: rec.a };
+        if (!n.blob || !vault) return plain;
+        return vault.open(n.blob).then(function (v) { return { n: n, title: v.t, k: v.k, a: v.a, p: v.p }; }, function () { return plain; });
+      }
       if (!n.blob) return { n: n, locked: true, why: 'nokey' };
       if (!vault) return { n: n, locked: true, why: 'closed' };
       return vault.open(n.blob).then(function (v) { return { n: n, title: v.t, k: v.k, a: v.a, p: v.p }; },
         function () { return { n: n, locked: true, why: 'mismatch' }; });
     }));
   }).then(function (r) {
-    rows = r;
+    allRows = r;
+    var enc = r.filter(function (x) { return x.n.encrypted; });
+    encCount = enc.length;
+    rows = basicView ? r.filter(function (x) { return !x.n.encrypted; }) : enc;
+    var vb = $('#vault-btn span');
+    if (vb && encCount) vb.textContent += ' · ' + encCount;
     // A vault that opens none of the blobs it should: the key in this browser
     // is not the one these notes were sealed with. Say so instead of staying quiet.
     var sealed = rows.filter(function (x) { return x.n.blob; });
-    if (vault && sealed.length && sealed.every(function (x) { return x.why === 'mismatch'; })) {
+    if (!basicView && vault && sealed.length && sealed.every(function (x) { return x.why === 'mismatch'; })) {
       var again = h('button.btn.sm', { type: 'button' }, NH.icon('key'), NH.t('dash.vault_enter_again'));
       again.addEventListener('click', enterAgain);
       var kids = [NH.icon('lock'), h('span', NH.t('dash.vault_mismatch')), again];
@@ -295,8 +341,7 @@
       $('#vault-mismatch').classList.remove('hide');
     }
     draw();
-    offerClaim();
-    offerReseal();
+    if (!basicView) { offerClaim(); offerReseal(); }
   }, function (x) {
     ul.replaceChildren(h('li.muted', x.message));
   });
@@ -384,7 +429,7 @@
     var box = $('#claim');
     if (!vault) return box.classList.add('hide');
     var mine = {};
-    rows.forEach(function (r) { mine[r.n.token] = true; });
+    allRows.forEach(function (r) { mine[r.n.token] = true; });
     var loose = NH.recent.all().filter(function (n) { return n.a && !mine[n.token] && !(n.expires && n.expires < now()); });
     box.classList.toggle('hide', !loose.length);
     if (!loose.length) return;

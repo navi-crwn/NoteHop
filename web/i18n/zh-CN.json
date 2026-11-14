@@ -1616,7 +1616,7 @@
   "reset.btn": "重置保险库…",
   "reset.dlg_h": "重置保险库？",
   "reset.lose": "以下内容将被永久删除：",
-  "reset.c_notes": "笔记：{n}",
+  "reset.c_notes": "加密笔记：{n}",
   "reset.c_files": "附件：{n}",
   "reset.c_links": "分享链接：{n}。它们会立即失效。",
   "reset.c_margins": "旁注：{n}",
@@ -1640,5 +1640,16 @@
   "palette.label": "配色",
   "palette.classic": "经典",
   "palette.mist": "薄雾",
-  "palette.sand": "沙色"
+  "palette.sand": "沙色",
+  "dash.vault_btn": "保险库",
+  "dash.lead_basic": "你的基础笔记。可在此打开、复制链接、编辑或删除。加密笔记在保险库中。",
+  "dash.takeover_h": "在这里编辑这篇笔记？",
+  "dash.takeover_p": "笔记会获得新的编辑密钥。旧的所有者链接会失效，你给他人的编辑链接也会失效，阅读链接不受影响。",
+  "dash.edit": "编辑",
+  "dash.basic_empty": "还没有基础笔记。",
+  "dash.basic_vault_hint": "你的加密笔记在保险库中。",
+  "err.takeover_failed": "无法更换编辑密钥。没有任何改动，请重试。",
+  "err.takeover_basic_only": "只有基础笔记可以这样接管。",
+  "reset.kept": "基础笔记会保留（{n}）。仍可阅读和删除；在“我的笔记”中点击编辑即可获得新的编辑密钥。",
+  "dash.takeover_password": "这篇笔记设有密码。请用所有者链接打开后再编辑。"
 }

@@ -46,7 +46,8 @@
   <aside class="shell-side" id="shell-side" aria-label="{{.Site}}">
     <a class="shell-brand" href="/dashboard"><img src="/static/img/logo.svg?v={{.Asset}}" alt="" width="32" height="32"><span class="hop-name hop-name-notehop">{{.Site}}</span></a>
     <nav class="shell-nav" aria-label="{{.L.T "nav.main"}}">
-      <a href="/dashboard" {{if eq .Path "/dashboard"}}aria-current="page"{{end}}><svg><use href="#i-grid"/></svg>{{.L.T "nav.mine"}}</a>
+      <a href="/dashboard" {{if and (eq .Path "/dashboard") (ne .DashView "vault")}}aria-current="page"{{end}}><svg><use href="#i-grid"/></svg>{{.L.T "nav.mine"}}</a>
+      <a href="/dashboard?view=vault" {{if and (eq .Path "/dashboard") (eq .DashView "vault")}}aria-current="page"{{end}}><svg><use href="#i-lock"/></svg>{{.L.T "dash.vault_btn"}}</a>
       <a href="/new" {{if eq .Path "/new"}}aria-current="page"{{end}}><svg><use href="#i-plus"/></svg>{{.L.T "nav.new"}}</a>
       <a href="/security" {{if eq .Path "/security"}}aria-current="page"{{end}}><svg><use href="#i-key"/></svg>{{.L.T "sec.title"}}</a>
       <a href="/nearby" {{if eq .Path "/nearby"}}aria-current="page"{{end}}><svg><use href="#i-phone"/></svg>{{.L.T "nearby.title"}}</a>

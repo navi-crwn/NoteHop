@@ -1616,7 +1616,7 @@
   "reset.btn": "Reset brankas…",
   "reset.dlg_h": "Reset brankas?",
   "reset.lose": "Ini menghapus secara permanen:",
-  "reset.c_notes": "Catatan: {n}",
+  "reset.c_notes": "Catatan terenkripsi: {n}",
   "reset.c_files": "Lampiran: {n}",
   "reset.c_links": "Tautan bagikan: {n}. Langsung berhenti berfungsi.",
   "reset.c_margins": "Catatan tepi: {n}",
@@ -1640,5 +1640,16 @@
   "palette.label": "Warna",
   "palette.classic": "Klasik",
   "palette.mist": "Kabut",
-  "palette.sand": "Pasir"
+  "palette.sand": "Pasir",
+  "dash.vault_btn": "Brankas",
+  "dash.lead_basic": "Catatan basic-mu. Buka, salin tautannya, ubah atau hapus di sini. Catatan terenkripsi ada di Brankas.",
+  "dash.takeover_h": "Ubah catatan ini di sini?",
+  "dash.takeover_p": "Catatan akan mendapat kunci sunting baru. Tautan pemilik yang lama tidak berfungsi lagi, begitu pula tautan sunting yang kamu berikan ke orang lain. Tautan baca tetap berfungsi.",
+  "dash.edit": "Ubah",
+  "dash.basic_empty": "Belum ada catatan basic.",
+  "dash.basic_vault_hint": "Catatan terenkripsimu ada di Brankas.",
+  "err.takeover_failed": "Kunci sunting tidak bisa diganti. Tidak ada yang diubah; silakan coba lagi.",
+  "err.takeover_basic_only": "Hanya catatan basic yang bisa diambil alih dengan cara ini.",
+  "reset.kept": "Catatan basic-mu tetap ada ({n}). Tetap bisa dibaca dan dihapus; pakai Ubah di Catatanku untuk mendapat kunci sunting baru.",
+  "dash.takeover_password": "Catatan ini punya sandi. Buka dengan tautan pemiliknya untuk mengubahnya."
 }
