@@ -43,9 +43,15 @@ func TestPaletteIsAFamilyCookie(t *testing.T) {
 		t.Fatal(err)
 	}
 	js := string(b)
-	for _, want := range []string{"hop_palette=", "hopPref('hop_palette', oldPal)", "removeItem('nh_palette')", "pal === 'mist' || pal === 'sand'", "hop_palette_depth=surface"} {
+	for _, want := range []string{"hop_palette=", "hopPref('hop_palette', oldPal)", "removeItem('nh_palette')", "pal === 'mist' || pal === 'sand'", "pm ? decodeURIComponent(pm[1]) : 'mist'"} {
 		if !strings.Contains(js, want) {
 			t.Errorf("theme.js lacks %q", want)
+		}
+	}
+	for _, f := range []string{"theme.js", "app.js", "app.css"} {
+		d, _ := os.ReadFile("../../web/static/" + map[string]string{"theme.js": "js/", "app.js": "js/", "app.css": "css/"}[f] + f)
+		if strings.Contains(string(d), "palette-depth") || strings.Contains(string(d), "paletteDepth") || strings.Contains(string(d), "hop_palette_depth") {
+			t.Errorf("%s still has the trial depth", f)
 		}
 	}
 }

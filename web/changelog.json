@@ -52,8 +52,8 @@
         },
         {
           "type": "changed",
-          "where": "Sidebar",
-          "text": "The signed-in sidebar now ends with Help, Terms, Privacy, Changelog, GitHub and Announcement, one per line, and the colour choice (Classic, Mist, Sand) moved there from the language menu. The choice is now kept in a cookie shared with the other HOP apps instead of only in this browser, so the same look can follow you across the family. The old list was shorter than in the other apps."
+          "where": "Sidebar and colours",
+          "text": "The signed-in sidebar now ends with Help, Terms, Privacy, Changelog, GitHub and Announcement, one per line. NoteHop has a new default look, Mist, with soft blue-grey backgrounds as well as accents; you can switch to Sand or the old Classic look under the sidebar, and the choice is kept in a cookie shared with the other HOP apps instead of only in this browser. The sidebar also scrolls on short screens instead of cutting its foot off."
         },
         {
           "type": "fixed",

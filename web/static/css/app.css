@@ -103,12 +103,11 @@
   --lime: light-dark(#8a6a1f, #e6cf8f); --cyan: light-dark(#a2406f, #ea9fb0); --violet: light-dark(#b4532a, #f3b48c); --violet-text: light-dark(#a2406f, #f3b8c4);
 }
 
-/* Trial depth (b): the palette also colours the surfaces. Only set by a trial cookie (theme.js), no switch for people;
-   one of the two blocks goes when the depth is chosen. Text and status colours do not change. */
-:root[data-palette="mist"][data-palette-depth="surface"] {
+/* The palettes also colour the surfaces (the family look the owner chose: accent and surfaces). Text and status colours do not change. */
+:root[data-palette="mist"] {
   --bg: light-dark(#f4f6fc, #0d1120); --panel: light-dark(#ffffff, #141a2e); --panel-2: light-dark(#eef1fa, #1a2138); --line: light-dark(#dde2f1, #262e4a);
 }
-:root[data-palette="sand"][data-palette-depth="surface"] {
+:root[data-palette="sand"] {
   --bg: light-dark(#faf6f1, #17110d); --panel: light-dark(#ffffff, #1f1814); --panel-2: light-dark(#f5eee6, #271f19); --line: light-dark(#ece2d6, #3a2e25);
 }
 

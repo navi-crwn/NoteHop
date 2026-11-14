@@ -278,9 +278,8 @@
       b.setAttribute('aria-pressed', String(b.dataset.palette === cur));
       b.addEventListener('click', function () {
         var v = b.dataset.palette;
-        if (v) root.dataset.palette = v; else { root.removeAttribute('data-palette'); root.removeAttribute('data-palette-depth'); }
+        if (v) root.dataset.palette = v; else root.removeAttribute('data-palette');
         window.hopPref('hop_palette', v || 'classic'); // the family cookie, written like hop_theme; classic = no attribute
-        if (v && /(?:^|;\s*)hop_palette_depth=surface/.test(document.cookie)) root.dataset.paletteDepth = 'surface';
         NH.$$('button[data-palette]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.palette === v)); });
       });
     });
