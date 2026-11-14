@@ -147,7 +147,7 @@ const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open
     await p.fill('#username', USER); await p.fill('#password', 'katasandi-panjang'); await p.fill('#password2', 'katasandi-panjang');
     await p.click('#auth-form button[type=submit]'); await p.waitForURL(/dashboard/, { timeout: 30000 });
     await create(p, { title: 'Catatan akun', body: 'milik penguji' });
-    await p.goto(BASE + '/dashboard'); await p.waitForSelector('#mine .note-row', { timeout: 15000 });
+    await p.goto(BASE + '/dashboard?view=vault'); await p.waitForSelector('#mine .note-row', { timeout: 15000 }); // encrypted notes live in the Vault view
     ok('Dashboard: shows decrypted title', (await p.textContent('#mine')).includes('Catatan akun'));
     // logout, login again
     await p.click('#menu > button'); await p.click('#logout'); await p.waitForURL(BASE + '/');
@@ -156,11 +156,11 @@ const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open
     await p.waitForSelector('#auth-err:not(.hide)', { timeout: 30000 });
     ok('Login: wrong password message', (await p.textContent('#auth-err')).includes('Wrong'));
     await p.fill('#password', 'katasandi-panjang'); await p.click('#auth-form button[type=submit]');
-    await p.waitForURL(/dashboard/, { timeout: 30000 }); await p.waitForSelector('#mine .note-row');
+    await p.waitForURL(u => !/login/.test(u.pathname), { timeout: 30000 }); await p.goto(BASE + '/dashboard?view=vault'); await p.waitForSelector('#mine .note-row');
     ok('Dashboard: decrypts again after re-login', (await p.textContent('#mine')).includes('Catatan akun'));
     await p.click('#mine .note-row a.note-link'); await p.waitForSelector('#note:not(.hide)');
     ok('Dashboard: row opens note as admin', await p.isVisible('#act-share'));
-    await p.goto(BASE + '/dashboard'); await p.waitForSelector('#mine .note-row');
+    await p.goto(BASE + '/dashboard?view=vault'); await p.waitForSelector('#mine .note-row');
     await p.click('#mine .note-row button[title=Delete]'); await p.waitForTimeout(800);
     await p.reload(); await p.waitForSelector('#mine li');
     ok('Dashboard: delete removes note', !(await p.textContent('#mine')).includes('Catatan akun'));

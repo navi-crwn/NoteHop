@@ -88,7 +88,7 @@ async function pickMode(p, m) { await p.evaluate(() => { ['opt-who', 'more-modes
   await p.waitForSelector('#report-dlg', { state: 'detached', timeout: 3000 });
   ok('report dialog closed', !(await p.$('#report-dlg[open]')));
   // dashboard groups + graph
-  await p.goto(BASE + '/dashboard'); await p.waitForSelector('#mine .note-row');
+  await p.goto(BASE + '/dashboard?view=vault'); await p.waitForSelector('#mine .note-row'); // the Vault view
   await p.click('[data-group=todo]'); await p.waitForTimeout(2500);
   const todoTitles = await p.$$eval('#mine .note-row b', xs => xs.map(x => x.textContent)); ok('group to-do', todoTitles.length === 1 && todoTitles[0] === 'Resep', JSON.stringify(todoTitles));
   await p.click('#graph-btn'); await p.waitForSelector('#graph-box svg.graph', { timeout: 15000 }); ok('graph drawn', (await p.$$('svg.graph line')).length >= 1);
