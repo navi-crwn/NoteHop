@@ -254,13 +254,41 @@
   // Full screen: the files on the left, code in the middle, the result on the
   // right. Esc or the button again leaves it.
   function fullToggle(root) {
-    function set(on) {
-      root.classList.toggle('wr-full', on);
-      document.body.classList.toggle('wr-full-on', on);
-      NH.$$('.wr-full-btn span', root).forEach(function (s) { s.textContent = NH.t(on ? 'web.exit_full' : 'web.full'); });
+    var fs = null;
+    return function () { fs = fs || NH.fullscreen(root, NH.$('.wr-full-btn', root)); fs.toggle(); };
+  }
+  // The divider between the code and the result: drag it, or use the arrow keys (Home and End for the limits), to make
+  // the result bigger or smaller. The share the result takes (20 to 80 percent) is remembered in this browser. Where
+  // the panes stack (a narrow editor or a phone) there is no divider.
+  var SPLIT_MIN = 0.2, SPLIT_MAX = 0.8;
+  function Splitter(root, body) {
+    var f = +NH.store.get('nh_web_split', 0.5) || 0.5;
+    var el = h('div.wr-split', { role: 'separator', 'aria-orientation': 'vertical', tabindex: '0', 'aria-label': NH.t('web.resize'), 'aria-valuemin': '20', 'aria-valuemax': '80' });
+    function apply(v, save) {
+      f = Math.max(SPLIT_MIN, Math.min(SPLIT_MAX, v));
+      root.style.setProperty('--wr-src', (1 - f).toFixed(3) + 'fr');
+      root.style.setProperty('--wr-run', f.toFixed(3) + 'fr');
+      el.setAttribute('aria-valuenow', String(Math.round(f * 100)));
+      if (save) NH.store.set('nh_web_split', f);
     }
-    root.addEventListener('keydown', function (e) { if (e.key === 'Escape' && root.classList.contains('wr-full')) set(false); });
-    return function () { set(!root.classList.contains('wr-full')); };
+    apply(f, false);
+    el.addEventListener('pointerdown', function (e) {
+      var src = NH.$('.ed-src', root).getBoundingClientRect(), run = NH.$('.wr-run', root).getBoundingClientRect();
+      var left = src.left, right = run.right;
+      el.setPointerCapture(e.pointerId);
+      el.classList.add('drag');
+      function move(ev) { apply((right - ev.clientX) / (right - left), false); }
+      function up() { el.classList.remove('drag'); el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); apply(f, true); }
+      el.addEventListener('pointermove', move); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+      e.preventDefault();
+    });
+    el.addEventListener('keydown', function (e) {
+      var step = e.shiftKey ? 0.1 : 0.02, v = f;
+      if (e.key === 'ArrowLeft') v = f + step; else if (e.key === 'ArrowRight') v = f - step; else if (e.key === 'Home') v = SPLIT_MAX; else if (e.key === 'End') v = SPLIT_MIN; else return;
+      e.preventDefault(); apply(v, true);
+    });
+    el.addEventListener('dblclick', function () { apply(0.5, true); });
+    return el;
   }
 
   // ---------- in the editor ----------
@@ -283,10 +311,18 @@
     autoIn.addEventListener('change', function () { auto = autoIn.checked; NH.store.set('nh_run_auto', auto); if (auto) run(); });
     var fullBtn = h('button.btn.sm.wr-full-btn', { type: 'button' }, NH.icon('expand'), h('span', NH.t('web.full')));
     fullBtn.addEventListener('click', function () { toggleFull(); });
-    var tools = h('div.wr-tools', h('label.wr-auto', { title: NH.t('web.auto_hint') }, autoIn, h('span', NH.t('web.auto'))), fullBtn, runBtn);
+    fullBtn.setAttribute('data-full-toggle', '');
+    // The files beside the code (the default) or as a row of tabs above it; the choice is kept in this browser.
+    var top = NH.store.get('nh_web_files', 'side') === 'top';
+    var filesBtn = h('button.icon-btn.sm.wr-files-btn', { type: 'button', 'aria-pressed': String(top) }, NH.icon('sliders'));
+    function drawFilesBtn() { var t = NH.t(top ? 'web.files_side' : 'web.files_top'); filesBtn.setAttribute('aria-label', t); filesBtn.title = t; root.dataset.files = top ? 'top' : 'side'; filesBtn.setAttribute('aria-pressed', String(top)); }
+    filesBtn.addEventListener('click', function () { top = !top; NH.store.set('nh_web_files', top ? 'top' : 'side'); drawFilesBtn(); });
+    drawFilesBtn();
+    var tools = h('div.wr-tools', h('label.wr-auto', { title: NH.t('web.auto_hint') }, autoIn, h('span', NH.t('web.auto'))), filesBtn, fullBtn, runBtn);
     bar.appendChild(tools);
     body.insertBefore(ex.el, body.firstChild);
     body.insertBefore(tabs.el, body.firstChild);
+    body.appendChild(Splitter(root, body));
     body.appendChild(runner.el);
 
     function sync() { if (files[active]) files[active].c = ta.value; }

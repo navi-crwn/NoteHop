@@ -1651,5 +1651,8 @@
   "err.takeover_failed": "Impossible de changer les clés de modification. Rien n’a été modifié ; réessayez.",
   "err.takeover_basic_only": "Seules les notes de base peuvent être reprises ainsi.",
   "reset.kept": "Vos notes de base restent ({n}). Elles restent lisibles et vous pouvez toujours les supprimer ; utilisez Modifier dans Mes notes pour obtenir de nouvelles clés de modification.",
-  "dash.takeover_password": "Cette note a un mot de passe. Ouvrez-la avec son lien de propriétaire pour la modifier."
+  "dash.takeover_password": "Cette note a un mot de passe. Ouvrez-la avec son lien de propriétaire pour la modifier.",
+  "web.files_top": "Fichiers en haut",
+  "web.files_side": "Fichiers sur le côté",
+  "web.resize": "Redimensionner l’aperçu"
 }

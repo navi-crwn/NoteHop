@@ -1264,8 +1264,25 @@ body.sheet-open { overflow: hidden; }
 .editor[data-type="web"] .ed-foot-web { display: inline-flex; }
 .wr-auto { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; color: var(--muted); cursor: pointer; }
 .editor:not([data-type="web"]) .wr-files, .editor:not([data-type="web"]) .wr-run, .editor:not([data-type="web"]) .wr-tabs { display: none; }
-.editor[data-type="web"] .ed-body { grid-template-columns: 180px auto minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto minmax(440px, 1fr);
-  grid-template-areas: "tabs tabs tabs tabs" "files gut src run"; }
+.editor[data-type="web"] .ed-body { grid-template-columns: 180px auto minmax(0, var(--wr-src, 1fr)) 10px minmax(0, var(--wr-run, 1fr)); grid-template-rows: auto minmax(440px, 1fr);
+  grid-template-areas: "tabs tabs tabs tabs tabs" "files gut src split run"; }
+/* the divider between the code and the result */
+.wr-split { grid-area: split; cursor: col-resize; touch-action: none; position: relative; background: var(--line); }
+.wr-split::after { content: ""; position: absolute; inset: 50% 2px auto; height: 40px; margin-top: -20px; border-radius: 3px; background: var(--faint); opacity: .6; }
+.wr-split:hover::after, .wr-split:focus-visible::after, .wr-split.drag::after { opacity: 1; background: var(--accent); }
+.wr-split:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.editor:not([data-type="web"]) .wr-split { display: none; }
+/* the files as a row of tabs above the code (the choice in the tool row) */
+.editor[data-type="web"][data-files="top"] .ed-body { grid-template-columns: auto minmax(0, var(--wr-src, 1fr)) 10px minmax(0, var(--wr-run, 1fr)); grid-template-rows: auto auto minmax(440px, 1fr);
+  grid-template-areas: "tabs tabs tabs tabs" "files files files files" "gut src split run"; }
+.editor[data-type="web"][data-files="top"] .wr-files { flex-direction: row; flex-wrap: wrap; align-items: center; align-content: flex-start; border-inline-end: 0; border-bottom: 1px solid var(--line); }
+.editor[data-type="web"][data-files="top"] .wr-files .wr-h, .editor[data-type="web"][data-files="top"] .wr-tpl, .editor[data-type="web"][data-files="top"] .wr-lines { display: none; }
+.editor[data-type="web"][data-files="top"] .wr-new { margin: 0; }
+.wr-files-btn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+/* the button that makes any editor fill the window: only inside the dashboard frame (web notes have their own, with a label) */
+.ed-full { display: none; }
+.shell .ed-full { display: inline-grid; }
+.editor[data-type="web"] .ed-full { display: none; }
 .editor[data-type="web"] .wr-tabs, .wr-view .wr-tabs { grid-area: tabs; }
 .editor[data-type="web"] .wr-files { grid-area: files; }
 .editor[data-type="web"] .ed-gutter { grid-area: gut; }
@@ -1349,7 +1366,8 @@ body.sheet-open { overflow: hidden; }
 
 /* narrow editors and views: files on top, the result under the code */
 @container (max-width: 900px) {
-  .editor[data-type="web"] .ed-body { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto minmax(300px, 1fr) minmax(420px, auto);
+  .wr-split { display: none; }
+  .editor[data-type="web"][data-files] .ed-body { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto minmax(300px, 1fr) minmax(420px, auto);
     grid-template-areas: "tabs tabs" "files files" "gut src" "run run"; }
   .editor[data-type="web"] .ed-src { min-height: 300px; }
   .wr-files { flex-direction: row; flex-wrap: wrap; align-items: center; align-content: flex-start; border-inline-end: 0; border-bottom: 1px solid var(--line); }
@@ -1360,6 +1378,7 @@ body.sheet-open { overflow: hidden; }
 }
 /* phones: one pane at a time */
 @media (max-width: 640px) {
+  .wr-split { display: none; }
   .editor[data-type="web"] .wr-tabs, .wr-view .wr-tabs { display: flex; gap: 4px; padding: 6px; background: var(--panel); border-bottom: 1px solid var(--line); }
   .wr-tabs button { flex: 1; height: 34px; border: 0; border-radius: 9px; background: var(--panel-2); color: var(--muted); font: 650 .84rem var(--sans); }
   .wr-tabs button[aria-selected="true"] { background: var(--text); color: var(--bg); }
@@ -1385,6 +1404,7 @@ body.sheet-open { overflow: hidden; }
 .editor.wr-full .ed-src { min-height: 0; resize: none; }
 .wr-view.wr-full { grid-template-rows: auto auto minmax(0, 1fr); }
 .wr-view.wr-full .wr-panes { min-height: 0; }
+.editor.wr-full[data-files="top"] .ed-body { grid-template-rows: auto auto minmax(0, 1fr); }
 body.wr-full-on { overflow: hidden; }
 
 @media (max-width: 640px) { .wr-full-btn span { display: none; } }

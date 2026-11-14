@@ -136,6 +136,26 @@
     if (window.HopUI && HopUI.confirm) return HopUI.confirm(o);
     return Promise.resolve(window.confirm([o.title, o.message].filter(Boolean).join('\n\n')));
   };
+  // Full screen for an editor: it covers the whole window, the dashboard's sidebar, top bar and footer are put out of
+  // reach (inert, so neither the keyboard nor a screen reader walks into them), Escape or the button leaves it, and
+  // the focus goes back to the button. Nothing is remembered: the next page starts normal.
+  NH.fullscreen = function (root, btn) {
+    var hidden = '#shell-side, .shell-top, .shell-foot, .skip', on = false;
+    function set(v) {
+      on = v;
+      root.classList.toggle('wr-full', on);
+      document.body.classList.toggle('wr-full-on', on);
+      NH.$$(hidden).forEach(function (e) { if (on) e.setAttribute('inert', ''); else e.removeAttribute('inert'); });
+      NH.$$('[data-full-toggle]', root).forEach(function (b) {
+        b.setAttribute('aria-pressed', String(on));
+        var s = b.querySelector('span'), t = NH.t(on ? 'web.exit_full' : 'web.full');
+        if (s) s.textContent = t; else { b.setAttribute('aria-label', t); b.title = t; }
+      });
+      if (!on && btn) btn.focus();
+    }
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && on && !document.querySelector('dialog[open]')) { e.preventDefault(); set(false); } });
+    return { toggle: function () { set(!on); }, set: set };
+  };
   NH.prompt = function (opts) {
     if (window.HopUI && HopUI.prompt) return HopUI.prompt(opts);
     return Promise.resolve(window.prompt(opts.title || opts.label || '', opts.value || ''));

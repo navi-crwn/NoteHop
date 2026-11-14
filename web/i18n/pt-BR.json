@@ -1651,5 +1651,8 @@
   "err.takeover_failed": "Não foi possível trocar as chaves de edição. Nada foi alterado; tente de novo.",
   "err.takeover_basic_only": "Só notas básicas podem ser assumidas assim.",
   "reset.kept": "Suas notas básicas ficam ({n}). Continuam legíveis e você ainda pode apagá-las; use Editar em Minhas notas para obter novas chaves de edição.",
-  "dash.takeover_password": "Esta nota tem senha. Abra-a com o link de dono para editar."
+  "dash.takeover_password": "Esta nota tem senha. Abra-a com o link de dono para editar.",
+  "web.files_top": "Arquivos no alto",
+  "web.files_side": "Arquivos ao lado",
+  "web.resize": "Redimensionar a visualização"
 }

@@ -1651,5 +1651,8 @@
   "err.takeover_failed": "Kunci sunting tidak bisa diganti. Tidak ada yang diubah; silakan coba lagi.",
   "err.takeover_basic_only": "Hanya catatan basic yang bisa diambil alih dengan cara ini.",
   "reset.kept": "Catatan basic-mu tetap ada ({n}). Tetap bisa dibaca dan dihapus; pakai Ubah di Catatanku untuk mendapat kunci sunting baru.",
-  "dash.takeover_password": "Catatan ini punya sandi. Buka dengan tautan pemiliknya untuk mengubahnya."
+  "dash.takeover_password": "Catatan ini punya sandi. Buka dengan tautan pemiliknya untuk mengubahnya.",
+  "web.files_top": "Berkas di atas",
+  "web.files_side": "Berkas di samping",
+  "web.resize": "Ubah ukuran pratinjau"
 }

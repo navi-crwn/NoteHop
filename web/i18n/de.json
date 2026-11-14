@@ -1651,5 +1651,8 @@
   "err.takeover_failed": "Die Bearbeitungsschlüssel konnten nicht getauscht werden. Nichts wurde geändert; bitte versuche es erneut.",
   "err.takeover_basic_only": "Nur einfache Notizen können so übernommen werden.",
   "reset.kept": "Deine einfachen Notizen bleiben ({n}). Sie bleiben lesbar und du kannst sie weiter löschen; mit „Bearbeiten“ in Meine Notizen bekommst du neue Bearbeitungsschlüssel.",
-  "dash.takeover_password": "Diese Notiz hat ein Passwort. Öffne sie mit ihrem Besitzer-Link, um sie zu bearbeiten."
+  "dash.takeover_password": "Diese Notiz hat ein Passwort. Öffne sie mit ihrem Besitzer-Link, um sie zu bearbeiten.",
+  "web.files_top": "Dateien oben",
+  "web.files_side": "Dateien an der Seite",
+  "web.resize": "Vorschau in der Größe ändern"
 }

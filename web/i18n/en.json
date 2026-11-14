@@ -1651,5 +1651,8 @@
   "err.takeover_failed": "Couldn't switch the editing keys. Nothing was changed; please try again.",
   "err.takeover_basic_only": "Only basic notes can be taken over this way.",
   "reset.kept": "Your basic notes stay ({n}). They remain readable and you can still delete them; use Edit in My notes to get new editing keys.",
-  "dash.takeover_password": "This note has a password. Open it with its owner link to edit it."
+  "dash.takeover_password": "This note has a password. Open it with its owner link to edit it.",
+  "web.files_top": "Files on top",
+  "web.files_side": "Files at the side",
+  "web.resize": "Resize the preview"
 }

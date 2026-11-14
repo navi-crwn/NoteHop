@@ -236,6 +236,8 @@
       refresh();
       if (!quiet && opts.onType) opts.onType();
     }
+    var edFull = NH.$('.ed-full', root);
+    if (edFull) { var fsc = NH.fullscreen(root, edFull); edFull.addEventListener('click', fsc.toggle); }
     NH.$$('[data-type]', typeMenu).forEach(function (b) {
       b.addEventListener('click', function () { setType({ y: b.dataset.type }); ta.focus(); });
     });

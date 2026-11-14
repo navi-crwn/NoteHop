@@ -1651,5 +1651,8 @@
   "err.takeover_failed": "无法更换编辑密钥。没有任何改动，请重试。",
   "err.takeover_basic_only": "只有基础笔记可以这样接管。",
   "reset.kept": "基础笔记会保留（{n}）。仍可阅读和删除；在“我的笔记”中点击编辑即可获得新的编辑密钥。",
-  "dash.takeover_password": "这篇笔记设有密码。请用所有者链接打开后再编辑。"
+  "dash.takeover_password": "这篇笔记设有密码。请用所有者链接打开后再编辑。",
+  "web.files_top": "文件放在上方",
+  "web.files_side": "文件放在侧边",
+  "web.resize": "调整预览大小"
 }
