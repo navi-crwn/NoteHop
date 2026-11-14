@@ -127,6 +127,8 @@ func TestSessionVerifiedAt(t *testing.T) {
 	// Migration 15 (files.owner_id) runs again too, so take it out as well.
 	d.Exec(`DROP INDEX files_owner`)
 	d.Exec(`ALTER TABLE files DROP COLUMN owner_id`)
+	// and migration 16 (users.vault_epoch)
+	d.Exec(`ALTER TABLE users DROP COLUMN vault_epoch`)
 	d.Exec(`PRAGMA user_version = 13`)
 	d.Close()
 
