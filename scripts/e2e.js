@@ -42,7 +42,7 @@ async function create(p, { title = '', body = '', mode = 'read', pw = '', burn =
 // The More drawer covers the bar's right end; people close it before Create link.
 const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }); const a = document.getElementById('adv'); if (a && a.open) a.close(); });
 (async () => {
-  const b = await chromium.launch();
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {});
 
   // 1. PIN block
   try {

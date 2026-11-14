@@ -120,8 +120,8 @@ func New(cfg Config, d *db.DB) (*App, error) {
 	if cfg.FilesAccountMB < 0 { // nonsense is not "no limit": that is 0
 		cfg.FilesAccountMB = DefaultFilesAccountMB
 	}
-	if cfg.FileMB > 5 {
-		cfg.FileMB = 5
+	if cfg.FileMB > MaxFileMB {
+		cfg.FileMB = MaxFileMB
 	}
 	if cfg.StoragePath == "" {
 		cfg.StoragePath = "."

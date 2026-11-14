@@ -16,6 +16,7 @@ A way out for people who lost their vault key, and a calmer signed-in area.
 - **Colours.** Two softer colour palettes, Mist and Sand, can be chosen from the language menu next to the classic one, which stays the default for now. Many people found the bright green to purple buttons too loud.
 - **Editor.** Inside the dashboard every note editor has a full screen button that hides the sidebar and the top bar, and Escape leaves it. Writing needs more room than the dashboard frame leaves.
 - **Web notes.** The divider between the code and the result can be dragged (or moved with the arrow keys) to make the result bigger or smaller, and the list of files can be shown as a row above the code instead of beside it. Both choices are remembered in your browser and do not apply on phones, where the panes are stacked.
+- **Attachments.** One note can now hold up to 20 MB of attachments in all (before, 5 MB), and one file may use all of it, while one account holds at most 100 MB over all its notes. The editor shows both numbers apart, for example "This note: 3 of 20 MB, Your account: 40 of 100 MB", because the old single line read as if 100 MB belonged to each note. Reported by a user.
 - **Dashboard home.** A card at the top can show a notice from the people who run the site, such as planned maintenance. Close it and it stays away for a week; when there is no notice there is no card. Every dashboard in the family now has a place for announcements.
 
 ### Changed

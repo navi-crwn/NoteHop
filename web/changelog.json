@@ -47,6 +47,11 @@
         },
         {
           "type": "added",
+          "where": "Attachments",
+          "text": "One note can now hold up to 20 MB of attachments in all (before, 5 MB), and one file may use all of it, while one account holds at most 100 MB over all its notes. The editor shows both numbers apart, for example \"This note: 3 of 20 MB, Your account: 40 of 100 MB\", because the old single line read as if 100 MB belonged to each note. Reported by a user."
+        },
+        {
+          "type": "added",
           "where": "Dashboard home",
           "text": "A card at the top can show a notice from the people who run the site, such as planned maintenance. Close it and it stays away for a week; when there is no notice there is no card. Every dashboard in the family now has a place for announcements."
         },

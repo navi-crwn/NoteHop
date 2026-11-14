@@ -42,7 +42,7 @@ const visitor = (adminURL) => { const u = new URL(adminURL); return BASE + u.pat
 // The More drawer covers the bar's right end; people close it before Create link.
 const closeMenus = p => p.evaluate(() => { document.querySelectorAll('.pick[open]').forEach(d => { d.open = false; }); const a = document.getElementById('adv'); if (a && a.open) a.close(); });
 (async () => {
-  const b = await chromium.launch();
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {});
   try {
     // --- history ---
     const p = await page(b);

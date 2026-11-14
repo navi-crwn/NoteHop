@@ -353,7 +353,7 @@ func (a *App) settingsList() []hopSetting {
 	return []hopSetting{
 		{Key: settingRegistration, Type: "bool", Value: a.registration(), Default: a.cfg.Registration, Description: "Whether new accounts may be made (sign-up and first sign-on)."},
 		{Key: settingAnnouncement, Type: "string", Value: a.announcement(), Default: "", Description: "A notice at the top of every member's dashboard home, plain text up to 300 characters (empty = none)."},
-		ro("file_mb", "int", a.cfg.FileMB, "Largest attachment in MB; 0 turns attachments off (NOTEHOP_FILE_MB)."),
+		ro("file_mb", "int", a.cfg.FileMB, "Largest attachment in MB, at most 20, which is also the most one note may hold in all; 0 turns attachments off (NOTEHOP_FILE_MB)."),
 		ro("files_total_mb", "int", a.cfg.FilesTotalMB, "Disk budget for all live attachments in MB (NOTEHOP_FILES_TOTAL_MB)."),
 		ro("file_ttl_hours", "int", int(a.cfg.FileTTL.Hours()), "How long an attachment is kept, in hours (NOTEHOP_FILE_TTL_HOURS)."),
 		ro("files_account_mb", "int", a.cfg.FilesAccountMB, "Live attachments one signed-in account may hold in MB; 0 = no limit (NOTEHOP_FILES_ACCOUNT_MB)."),

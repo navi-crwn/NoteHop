@@ -9,7 +9,7 @@ const USER = 'r_' + Date.now().toString(36);
 const R = []; const ok = (n, c, i) => R.push((c ? 'PASS' : 'FAIL') + ' | ' + n + ' | ' + (i || ''));
 
 (async () => {
-  const b = await chromium.launch(); const errs = [];
+  const b = await chromium.launch(process.env.NOTEHOP_BROWSER ? { channel: process.env.NOTEHOP_BROWSER } : {}); const errs = [];
   const newCtx = async () => {
     const c = await b.newContext({ acceptDownloads: true, permissions: ['clipboard-read', 'clipboard-write'] });
     await c.addInitScript(() => { try { localStorage.setItem('nh_tour', '1'); } catch (e) {} });

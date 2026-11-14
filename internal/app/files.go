@@ -24,6 +24,9 @@ const (
 
 	// DefaultFilesAccountMB is what one signed-in account may hold at once; 0 turns the limit off.
 	DefaultFilesAccountMB = 100
+
+	// MaxFileMB is the largest attachment, and equals what one note may hold in all (db.NoteFilesBytes).
+	MaxFileMB = 20
 )
 
 var fileIDRe = regexp.MustCompile(`^[A-Za-z0-9]{20}$`)
@@ -55,6 +58,11 @@ func (a *App) apiUpload(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusInsufficientStorage, "err.files_storage")
 		return
 	}
+	// A 20 MB upload over a slow phone connection takes longer than the server's usual 30 seconds:
+	// this one request gets minutes to send its body and to be answered.
+	rc := http.NewResponseController(w)
+	_ = rc.SetReadDeadline(time.Now().Add(5 * time.Minute))
+	_ = rc.SetWriteDeadline(time.Now().Add(6 * time.Minute))
 	// AES-GCM adds 28 bytes; the encrypted header with name and type a few hundred.
 	max := int64(a.cfg.FileMB)<<20 + 4096
 	data, err := io.ReadAll(http.MaxBytesReader(w, r.Body, max))
@@ -91,7 +99,7 @@ func (a *App) apiUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if errors.Is(err, db.ErrNoteFilesFull) {
-		apiErr(w, http.StatusRequestEntityTooLarge, "err.files_note_full")
+		apiErr(w, http.StatusRequestEntityTooLarge, "err.files_note_full", "n", db.NoteFilesBytes>>20)
 		return
 	}
 	if errors.Is(err, db.ErrTaken) {

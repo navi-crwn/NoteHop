@@ -1,6 +1,12 @@
 package app
 
-import "net/http"
+import (
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/navi-crwn/NoteHop/internal/db"
+)
 
 func (a *App) storageAvailable(incoming int64) bool {
 	free, total := a.space(a.cfg.StoragePath)
@@ -29,7 +35,21 @@ func (a *App) apiFileStatus(w http.ResponseWriter, r *http.Request) {
 	case used >= int64(a.cfg.FilesTotalMB)<<20:
 		code = "err.files_full"
 	}
-	out := map[string]any{"note_limit_bytes": 5 << 20, "total_limit_bytes": int64(a.cfg.FilesTotalMB) << 20, "ttl_hours": int(a.cfg.FileTTL.Hours())}
+	out := map[string]any{"note_limit_bytes": db.NoteFilesBytes, "total_limit_bytes": int64(a.cfg.FilesTotalMB) << 20, "ttl_hours": int(a.cfg.FileTTL.Hours())}
+	// What this note (or the draft being written) holds already, against its own limit.
+	scope := ""
+	if tok := r.URL.Query().Get("note"); tok != "" {
+		if n, _, e := a.db.NoteByLink(tok); e == nil {
+			scope = "note:" + strconv.FormatInt(n.ID, 10)
+		}
+	} else if d := r.Header.Get("X-Upload-Draft"); keyRe.MatchString(d) {
+		scope = "draft:" + hashHex(d)
+	}
+	if scope != "" {
+		var held int64
+		_ = a.db.QueryRow(`SELECT COALESCE(SUM(size), 0) FROM files WHERE scope = ? AND expires > ?`, scope, time.Now().Unix()).Scan(&held)
+		out["note_used_bytes"] = held
+	}
 	// A signed-in person also sees what their account holds against its limit.
 	if u := a.currentUser(r); u != nil && a.cfg.FilesAccountMB > 0 {
 		held, _ := a.db.AccountFileBytes(u.ID)

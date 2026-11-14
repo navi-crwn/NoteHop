@@ -10,6 +10,10 @@ var ErrNoteFilesFull = errors.New("note attachment budget exceeded")
 // ErrAccountFilesFull: the account already holds its limit of live attachments.
 var ErrAccountFilesFull = errors.New("account attachment quota exceeded")
 
+// NoteFilesBytes is the most all attachments of one note may total (ciphertext, encryption overhead included).
+// One file may use all of it. The account's own limit (NOTEHOP_FILES_ACCOUNT_MB) is a separate, larger one.
+const NoteFilesBytes = 20 << 20
+
 // File is an attachment: AES-GCM ciphertext the browser made with a key the
 // server never sees.
 type File struct {
@@ -69,7 +73,7 @@ func (d *DB) AddFileFor(f File, limit, ownerLimit int64) (bool, error) {
 		if err := tx.QueryRow(`SELECT COALESCE(SUM(size), 0) FROM files WHERE scope = ? AND expires > ?`, f.Scope, now()).Scan(&used); err != nil {
 			return false, err
 		}
-		if used+f.Size > 5<<20 {
+		if used+f.Size > NoteFilesBytes {
 			return false, ErrNoteFilesFull
 		}
 		var claimed int
