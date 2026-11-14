@@ -150,7 +150,7 @@ func (d *DB) ListNotes(f NoteFilter) ([]Note, error) {
 		where, args = append(where, `EXISTS (SELECT 1 FROM links l WHERE l.note_id = n.id AND l.token LIKE ?)`), append(args, like(f.Token)+"%")
 	}
 	if f.Title != "" {
-		where, args = append(where, `n.encrypted = 0 AND n.content LIKE ?`), append(args, "%"+like(f.Title)+"%")
+		where, args = append(where, `n.encrypted = 0 AND n.password = 0 AND n.content LIKE ?`), append(args, "%"+like(f.Title)+"%")
 	}
 	if f.OwnerID > 0 {
 		where, args = append(where, `n.owner_id = ?`), append(args, f.OwnerID)

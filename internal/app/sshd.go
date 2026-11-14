@@ -215,6 +215,9 @@ func (a *App) sshGet(ref string) string {
 	if n.Encrypted {
 		return "error: this note is end-to-end encrypted; open it in a browser or with \"notehop get\"\n"
 	}
+	if n.Password {
+		return "error: this note is locked with a password; open it in a browser or with \"notehop get\"\n"
+	}
 	if n.HasWarning() {
 		return "error: content warning; open this note in a browser and confirm before reading\n"
 	}

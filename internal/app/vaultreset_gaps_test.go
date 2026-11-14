@@ -106,7 +106,7 @@ func TestSetNoteKeysAlsoReachesASnapshotFrozenBeforeTheClaim(t *testing.T) {
 	if _, err := d.Exec(`UPDATE notes SET owner_id = ? WHERE id = ?`, u.ID, n.ID); err != nil { // the later claim touches the parent only
 		t.Fatal(err)
 	}
-	if err := d.SetNoteKeys(n.ID, u.ID, "new-admin", "new-write"); err != nil {
+	if err := d.SetNoteKeys(n.ID, u.ID, "new-admin", "new-write", ""); err != nil {
 		t.Fatal(err)
 	}
 	var snap string

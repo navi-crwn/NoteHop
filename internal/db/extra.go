@@ -447,6 +447,7 @@ func (d *DB) ConvertBlockers(noteID int64) ([]string, error) {
 		{"burn", `SELECT COUNT(*) FROM burn_keys WHERE note_id = ?`},
 		{"inbox", `SELECT COUNT(*) FROM inboxes WHERE note_id = ?`},
 		{"signatures", `SELECT COUNT(*) FROM signatures WHERE note_id = ?`},
+		{"password", `SELECT COUNT(*) FROM notes WHERE id = ? AND password = 1`}, // its proof is made differently in each form
 	} {
 		var n int
 		if err := d.QueryRow(c.q, noteID).Scan(&n); err != nil {

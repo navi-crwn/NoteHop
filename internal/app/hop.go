@@ -507,7 +507,7 @@ func (a *App) noteURL(token string) string {
 // publicTitle is a public note's title; "" for an encrypted note, whose
 // content is opaque here.
 func publicTitle(n *db.Note) string {
-	if n.Encrypted {
+	if n.Encrypted || n.Password { // locked notes are not for the moderators to skim; deleting them stays possible
 		return ""
 	}
 	var c struct{ T string }
@@ -517,7 +517,7 @@ func publicTitle(n *db.Note) string {
 
 // publicPreview is the first 200 characters of a public note's text.
 func publicPreview(n *db.Note) string {
-	if n.Encrypted {
+	if n.Encrypted || n.Password {
 		return ""
 	}
 	var c struct{ B string }

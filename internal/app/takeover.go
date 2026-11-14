@@ -23,6 +23,10 @@ import (
 //     (freshlyVouched: no cooldown cookie, no "hub is down", no "sign-on is off" shortcut); the request must be
 //     same-origin like every change, and there is a per-account limit.
 //
+// A basic note with a password keeps it as a gate: the owner chooses a new password, since a vault reset takes the
+// old one away. This lets the signed-in owner read and change the note without the old password; that is the
+// owner's own note, and the server can read it anyway. Everyone else is still locked out.
+//
 // It adds no way to act on a note without being its owner, and it does not turn the session cookie into an
 // admin key: later edits still send the keys the browser holds.
 func (a *App) apiTakeover(w http.ResponseWriter, r *http.Request) {
@@ -62,6 +66,7 @@ func (a *App) apiTakeover(w http.ResponseWriter, r *http.Request) {
 	var q struct {
 		Admin string `json:"admin"`
 		Write string `json:"write"`
+		Salt  string `json:"salt"` // only for a note with a password: the salt of the NEW password the write key came from
 	}
 	if !readJSON(w, r, &q, 512) {
 		return
@@ -70,7 +75,14 @@ func (a *App) apiTakeover(w http.ResponseWriter, r *http.Request) {
 		apiErr(w, http.StatusBadRequest, "err.bad_data")
 		return
 	}
-	if err := a.db.SetNoteKeys(n.ID, u.ID, hashHex(q.Admin), hashHex(q.Write)); err != nil {
+	// A note with a password stays locked: the owner sets a NEW password here (the old one is not needed, and after a
+	// vault reset it is gone). The write key is then derived from it, so a salt is required; a note without a
+	// password cannot be given one this way (adding a password to an existing note is not offered).
+	if n.Password != (q.Salt != "") || (n.Password && (len(q.Salt) < 16 || len(q.Salt) > 64 || !b64Re.MatchString(q.Salt))) {
+		apiErr(w, http.StatusBadRequest, "err.bad_data")
+		return
+	}
+	if err := a.db.SetNoteKeys(n.ID, u.ID, hashHex(q.Admin), hashHex(q.Write), q.Salt); err != nil {
 		log.Printf("takeover: note %d: %v", n.ID, err)
 		apiErr(w, http.StatusInternalServerError, "err.takeover_failed")
 		return

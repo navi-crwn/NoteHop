@@ -248,8 +248,13 @@ func (a *App) apiLive(w http.ResponseWriter, r *http.Request) {
 		c.Close(websocket.StatusPolicyViolation, "auth")
 		return
 	}
-	x.write = hashMatch(auth.Write, n.WriteHash)
 	x.admin = hashMatch(auth.Admin, n.AdminHash)
+	var wait time.Duration
+	x.write, wait = a.writeProof(n, auth.Write, x.ip, func() bool { return x.admin || a.ownerSession(r, n) })
+	if wait > 0 {
+		c.Close(websocket.StatusPolicyViolation, "denied")
+		return
+	}
 	if !a.meta(r, x).GatePassed {
 		c.Close(websocket.StatusPolicyViolation, "content warning")
 		return

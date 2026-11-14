@@ -122,17 +122,24 @@ func (d *DB) ResetVault(userID int64, keep string, audit *Audit) (VaultResetCoun
 // The frozen snapshots of the note (they copied the old admin hash) get the new one in the same transaction, so the
 // old owner link no longer opens them as admin either. The first UPDATE proved the account owns the parent, and
 // parent_id is only ever set by Freeze, so snapshots frozen before the note had an owner are covered too.
-func (d *DB) SetNoteKeys(noteID, ownerID int64, adminHash, writeHash string) error {
+//
+// A note with a password also gets the salt of its new password (the write hash is derived from that password), so
+// the owner's session can set a new one after the vault reset took the old one away. salt is ignored for a note
+// without a password.
+func (d *DB) SetNoteKeys(noteID, ownerID int64, adminHash, writeHash, salt string) error {
 	tx, err := d.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	if err := deleted(tx.Exec(`UPDATE notes SET admin_hash = ?, write_hash = ?, owner_blob = ''
-		WHERE id = ? AND owner_id = ? AND encrypted = 0 AND frozen = 0`, adminHash, writeHash, noteID, ownerID)); err != nil {
+	if err := deleted(tx.Exec(`UPDATE notes SET admin_hash = ?, write_hash = ?, owner_blob = '',
+		salt = CASE WHEN password = 1 THEN ? ELSE salt END
+		WHERE id = ? AND owner_id = ? AND encrypted = 0 AND frozen = 0`, adminHash, writeHash, salt, noteID, ownerID)); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(`UPDATE notes SET admin_hash = ? WHERE parent_id = ? AND frozen = 1`, adminHash, noteID); err != nil {
+	// The snapshots copied the old admin key, and (with a password) the old proof and salt: they follow the note.
+	if _, err := tx.Exec(`UPDATE notes SET admin_hash = ?, write_hash = CASE WHEN password = 1 THEN ? ELSE write_hash END,
+		salt = CASE WHEN password = 1 THEN ? ELSE salt END WHERE parent_id = ? AND frozen = 1`, adminHash, writeHash, salt, noteID); err != nil {
 		return err
 	}
 	return tx.Commit()

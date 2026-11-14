@@ -34,7 +34,7 @@ func (a *App) profile(w http.ResponseWriter, r *http.Request) {
 	notes, _ := a.db.ProfileNotes(u.ID)
 	var list []profileNote
 	for _, n := range notes {
-		if n.HasWarning() || n.MaxViews > 0 || runBeforeRead(n, time.Now(), "") != nil {
+		if n.Password || n.HasWarning() || n.MaxViews > 0 || runBeforeRead(n, time.Now(), "") != nil {
 			continue
 		}
 		links, _ := a.db.Links(n.ID)
@@ -79,8 +79,8 @@ func (a *App) mock(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusNotFound, "not found")
 		return
 	}
-	if n.Encrypted || n.MaxViews > 0 {
-		fail(http.StatusForbidden, "only public notes without a view limit can be used as a mock API")
+	if n.Encrypted || n.Password || n.MaxViews > 0 {
+		fail(http.StatusForbidden, "only public notes without a password or a view limit can be used as a mock API")
 		return
 	}
 	if n.HasWarning() && !a.hasGatePassed(r, r.PathValue("token")) {

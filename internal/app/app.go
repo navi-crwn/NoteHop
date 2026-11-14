@@ -106,6 +106,7 @@ type App struct {
 	uploadSem chan struct{}  // at most uploadSlots bodies are read at once (memory: one body is up to 20 MB)
 	uploadIP  map[string]int // slots held per client address, at most uploadSlotsPerIP each
 	uploadIPM sync.Mutex
+	pwTries   pwGuards // wrong password proofs on basic notes (pwguess.go)
 
 	reportKeyOnce sync.Once // reportKey is made on first use
 	reportKey     []byte

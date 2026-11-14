@@ -68,6 +68,8 @@ function openNote(req, key) {
       res.clone().json().then(function (d) {
         return caches.open(DATA).then(function (c) {
           if (d.max_views > 0 || d.burned) return c.delete(key); // never keep self-destructing notes
+          // A basic note with a password is plain text here: offline it would open without the password. Keep none.
+          if (d.password && !d.encrypted) return c.delete(key);
           d.offline_saved = Math.floor(Date.now() / 1000);
           return c.put(key, json(d));
         });
