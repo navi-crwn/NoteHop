@@ -125,7 +125,7 @@ func TestLockedBasicNoteIsClosedOnEveryReadPath(t *testing.T) {
 	}
 
 	// profile: refused when asked for, and left out even if the flag is forced in the database
-	if code, m, _ := owner.do("POST", "/api/n/"+n.token+"/config", map[string]any{"profile": true}, map[string]string{"X-Admin": n.admin, "X-Write": n.write}); code != 400 || m["code"] != "err.profile_public" {
+	if code, m, _ := owner.do("POST", "/api/n/"+n.token+"/config", map[string]any{"profile": true}, map[string]string{"X-Admin": n.admin, "X-Write": n.write}); code != 400 || m["code"] != "err.profile_locked" {
 		t.Errorf("profile flag: %d %v", code, m)
 	}
 	e.db.Exec(`UPDATE notes SET config = '{"profile":true}' WHERE id = (SELECT note_id FROM links WHERE token = ?)`, n.token)

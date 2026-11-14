@@ -59,7 +59,7 @@
       clear: { watermark: false }, saved: 'watermark.saved', cleared: 'watermark.cleared' },
     { id: 'decoy', group: 'privacy', ex: 'ex.decoy', tech: 'decoy password', icon: 'key', label: 'feat.decoy', kind: 'decoy',
       active: function (m) { return !!m.decoy; },
-      blocked: function (m) { return m.password ? '' : NH.t('rule.decoy_password'); },
+      blocked: function (m) { return m.password && m.encrypted ? '' : NH.t(m.password ? 'rule.decoy_encrypted' : 'rule.decoy_password'); },
       state: function (m) {
         return !m.decoy ? NH.t('decoy.off') : m.decoy.opened ? NH.t('decoy.used', { n: m.decoy.opened, time: m.decoy.last_opened }) : NH.t('decoy.on');
       },
@@ -74,7 +74,7 @@
       saved: 'inbox.saved', cleared: 'inbox.cleared' },
     { id: 'profile', group: 'expert', ex: 'ex.profile', tech: '/@user', icon: 'globe', label: 'feat.profile', kind: 'bool', field: 'profile',
       active: function (m) { return !!m.profile; },
-      blocked: function (m) { return m.encrypted || !m.owned ? NH.t('rule.profile_public') : ''; },
+      blocked: function (m) { return m.password ? NH.t('rule.profile_locked') : m.encrypted || !m.owned ? NH.t('rule.profile_public') : ''; },
       state: function (m) { return NH.t(m.profile ? 'profile.on' : 'profile.off', { name: document.body.dataset.user || '' }); },
       clear: { profile: false }, saved: 'profile.saved', cleared: 'profile.cleared' }
   ];

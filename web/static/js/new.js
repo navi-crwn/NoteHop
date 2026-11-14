@@ -25,9 +25,9 @@
   // that setting, so nothing is in two places. The switches (data-feature) are
   // what gets sent; the menus set them.
   var RULES = [
-    { feature: 'password', when: function () { return !on('encrypt'); }, why: NH.t('rule.password_e2e') },
     { feature: 'burn', when: function () { return mode() !== 'read'; }, why: NH.t('rule.burn_read') },
     { feature: 'lock', when: function () { return mode() === 'read'; }, why: NH.t('rule.lock_write') },
+    { feature: 'decoy', when: function () { return !on('encrypt'); }, why: NH.t('rule.decoy_encrypted'), quiet: true },
     { feature: 'decoy', when: function () { return !on('password'); }, why: NH.t('rule.decoy_password'), quiet: true }
   ];
   function toggle(name) { return form.querySelector('[data-feature="' + name + '"]'); }
@@ -44,7 +44,7 @@
 
   function summary() {
     var parts = [NH.t('sum.' + mode()), NH.t(on('encrypt') ? 'sum.private' : 'sum.public')];
-    if (on('password')) parts.push(NH.t('sum.password'));
+    if (on('password')) parts.push(NH.t(on('encrypt') ? 'sum.password' : 'sum.password_basic'));
     if (on('burn')) parts.push(NH.t('sum.burn', { n: views() }));
     if (on('expires')) parts.push(NH.t('sum.expires', { dur: $('#expires').selectedOptions[0].textContent }));
     if (!on('burn') && !on('expires')) parts.push(NH.t('sum.forever'));
@@ -101,7 +101,8 @@
       if (lbl) { lbl.classList.toggle('blocked', blocked); lbl.title = blocked ? r.why : ''; }
     });
     // A setting that can't be used here stays visible, with the reason and the way to change it.
-    $('#why-password').classList.toggle('hide', on('encrypt'));
+    // A password on a basic note only locks it: say so right where the password is typed.
+    $('#pw-basic').classList.toggle('hide', on('encrypt'));
     $('#why-burn').classList.toggle('hide', mode() === 'read');
     NH.$$('[name=opens]', form).forEach(function (r) {
       var off = mode() !== 'read' && r.value !== '0';
@@ -141,7 +142,6 @@
     var menu = e.target.type === 'radio' && e.target.closest('.pick');
     if (menu && !menu.querySelector('.feat:not(.hide)')) menu.open = false;
   });
-  $('#to-encrypted').addEventListener('click', function () { pick('kind', 'encrypted'); applyOptions(); });
   $('#to-read').addEventListener('click', function () { pick('mode', 'read'); applyOptions(); });
 
   // ---------- the chips' menus: one open at a time ----------
@@ -345,7 +345,7 @@
     if (ed.uploading) return fail(NH.t('file.uploading', { n: 1 }));
     var title = $('#title').value.trim(), body = ed.value;
     if (!title && !body.trim()) return fail(NH.t('new.empty'));
-    var encrypted = on('encrypt'), password = encrypted && on('password') ? $('#password').value : '';
+    var encrypted = on('encrypt'), password = on('password') ? $('#password').value : '';
     if (on('password') && !password) return fail(NH.t('new.need_password'), $('#password'));
     var expiresIn = on('expires') ? +$('#expires').value : 0;
     var openAt = on('capsule') ? unixOf('#open-at') : 0, lockAt = on('lock') ? unixOf('#lock-at') : 0;
@@ -367,7 +367,8 @@
       var decoy = null;
       btn.disabled = true;
 
-      NHC.noteKeys(k, password, salt).then(function (keys) {
+      // A basic note with a password gets its proof from the password alone (the short link has no key).
+      (!encrypted && password ? NHC.passwordKeys(password, salt) : NHC.noteKeys(k, password, salt)).then(function (keys) {
         var codec = NHC.codec(encrypted, keys.aes), vault = NHC.vault();
         return Promise.all([
           codec.encode(Object.assign({ t: title, b: body }, ed.fields())),

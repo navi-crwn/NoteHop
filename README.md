@@ -63,8 +63,9 @@ Every new note starts with one choice.
 | Who can read the text | Whoever has the full link, which contains the key | Whoever has the link, and the server |
 | How it is stored | As ciphertext (AES-256-GCM) | As plain text in the database and in its backups |
 | Link | Random, with the key after `#k=` | A name you choose, such as `/monday-meeting`, or a random one |
-| Password, decoy password, self-destructing blocks | Yes | No |
-| `/raw`, the mock API, SSH, your public `/@name` page | No | Yes |
+| Password | Yes | Yes, as a lock only: the text is not encrypted and the server can still read it |
+| Decoy password, self-destructing blocks | Yes | No |
+| `/raw`, the mock API, SSH, your public `/@name` page | No | Yes, unless the note has a password |
 | Search engines | Never indexed | Never indexed |
 
 The owner can change a note from one type to the other in the Share dialog. The browser encrypts or decrypts the text and the server swaps it in. Links and settings stay. Version history is cleared, and a note that has added lines, suggestions, a decoy, self-destructing blocks, an inbox or sign-offs cannot change type yet.

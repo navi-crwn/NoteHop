@@ -63,8 +63,9 @@ Setiap catatan baru dimulai dengan satu pilihan.
 | Siapa yang bisa membaca teksnya | Siapa pun yang punya tautan lengkap, yang berisi kuncinya | Siapa pun yang punya tautan, dan server |
 | Cara penyimpanan | Sebagai teks sandi (AES-256-GCM) | Sebagai teks biasa di database dan di cadangannya |
 | Tautan | Acak, dengan kunci setelah `#k=` | Nama pilihan Anda, seperti `/monday-meeting`, atau yang acak |
-| Kata sandi, kata sandi umpan, blok yang menghancurkan diri | Ya | Tidak |
-| `/raw`, API tiruan (mock), SSH, halaman publik `/@name` Anda | Tidak | Ya |
+| Kata sandi | Ya | Ya, hanya sebagai kunci: teksnya tidak dienkripsi dan server tetap bisa membacanya |
+| Kata sandi umpan, blok yang menghancurkan diri | Ya | Tidak |
+| `/raw`, API tiruan (mock), SSH, halaman publik `/@name` Anda | Tidak | Ya, kecuali catatan itu memakai kata sandi |
 | Mesin pencari | Tidak pernah diindeks | Tidak pernah diindeks |
 
 Pemilik bisa mengubah catatan dari satu jenis ke jenis lain di dialog Bagikan. Browser mengenkripsi atau mendekripsi teksnya dan server hanya menukarnya. Tautan dan pengaturan tetap. Riwayat versi dihapus, dan catatan yang punya baris tambahan, saran, umpan, blok yang menghancurkan diri, kotak masuk, atau tanda tangan belum bisa diubah jenisnya.

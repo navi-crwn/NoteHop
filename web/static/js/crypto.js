@@ -71,6 +71,16 @@
       }).then(function (r) { return { aes: r[0], write: b64u(r[1]) }; });
     },
 
+    // The proof of a BASIC note's password. The server can read a basic note, so this password is only a gate: it is
+    // never sent, and the server keeps the SHA-256 of what comes out here. No note key goes in (a basic note's short
+    // link has none), so the link and the password are all a reader needs. Twin: client.PasswordKeys in Go, with a
+    // shared test vector. Returns {aes: null, write} like noteKeys, so callers treat both the same.
+    passwordKeys: function (password, salt) {
+      return pbkdf2(password, concat(unb64u(salt), enc.encode('notehop/basic-pw')), NOTE_ITER, 256).then(function (s) {
+        return hmac(s, 'notehop/write');
+      }).then(function (w) { return { aes: null, write: b64u(w) }; });
+    },
+
     // A codec turns {t, b} objects into what the server stores and back.
     // Public notes are plain JSON so /raw and curl can read them.
     codec: function (encrypted, aes) {

@@ -41,6 +41,15 @@
   </div>
   <ul class="note-list" id="mine"><li class="muted">{{.L.T "common.loading"}}</li></ul>
 </section>
+<dialog class="dlg" id="takeover-dlg" aria-labelledby="takeover-dlg-h">
+  <div class="dlg-head"><h2 id="takeover-dlg-h">{{.L.T "dash.takeover_pw_h"}}</h2><button type="button" class="icon-btn" data-close aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
+  <form id="takeover-form" autocomplete="off">
+    <p class="muted small">{{.L.T "dash.takeover_pw_p"}}</p>
+    <div class="field"><label for="takeover-pw">{{.L.T "dash.takeover_pw_new"}}</label><input type="password" id="takeover-pw" autocomplete="new-password" required></div>
+    <div class="alert err hide" id="takeover-err" role="alert"></div>
+    <div class="btn-row end"><button class="btn primary" type="submit"><span>{{.L.T "dash.takeover_pw_go"}}</span></button></div>
+  </form>
+</dialog>
 <dialog class="dlg wide" id="graph-dlg" aria-labelledby="graph-h">
   <div class="dlg-head"><h2 id="graph-h">{{.L.T "dash.graph"}}</h2><button type="button" class="icon-btn" data-close aria-label="{{.L.T "common.close"}}"><svg><use href="#i-x"/></svg></button></div>
   <p class="muted small">{{.L.T "dash.graph_lead"}}</p>

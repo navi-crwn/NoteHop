@@ -63,8 +63,9 @@ Jede neue Notiz beginnt mit einer Wahl.
 | Wer den Text lesen kann | Wer den vollständigen Link hat, der den Schlüssel enthält | Wer den Link hat, und der Server |
 | Wie sie gespeichert wird | Als Geheimtext (AES-256-GCM) | Als Klartext in der Datenbank und in deren Backups |
 | Link | Zufällig, mit dem Schlüssel nach `#k=` | Ein Name deiner Wahl, etwa `/monday-meeting`, oder ein zufälliger |
-| Passwort, Köder-Passwort, sich selbst zerstörende Blöcke | Ja | Nein |
-| `/raw`, die Mock-API, SSH, deine öffentliche Seite `/@name` | Nein | Ja |
+| Passwort | Ja | Ja, nur als Sperre: Der Text ist nicht verschlüsselt, der Server kann ihn weiterhin lesen |
+| Köder-Passwort, sich selbst zerstörende Blöcke | Ja | Nein |
+| `/raw`, die Mock-API, SSH, deine öffentliche Seite `/@name` | Nein | Ja, außer die Notiz hat ein Passwort |
 | Suchmaschinen | Nie indexiert | Nie indexiert |
 
 Der Besitzer kann eine Notiz im Dialog „Teilen“ von einem Typ in den anderen umwandeln. Der Browser verschlüsselt oder entschlüsselt den Text, und der Server tauscht ihn nur aus. Links und Einstellungen bleiben erhalten. Der Versionsverlauf wird gelöscht, und eine Notiz mit angefügten Zeilen, Vorschlägen, einem Köder, sich selbst zerstörenden Blöcken, einem Posteingang oder Unterschriften lässt sich noch nicht umwandeln.

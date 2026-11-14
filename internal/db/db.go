@@ -873,6 +873,7 @@ type OwnedNote struct {
 	Mode      string `json:"mode"`
 	Blob      string `json:"blob"`
 	Encrypted bool   `json:"encrypted"`
+	Password  bool   `json:"password"`
 	Title     string `json:"title"`
 	Content   string `json:"-"` // basic notes only, for the title; never sent
 	Frozen    bool   `json:"frozen"`
@@ -888,7 +889,7 @@ func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
 	// The row's link is the note's first read-only link when it has one: a
 	// basic note is shown through it without a key, so it must not be a link
 	// that could write. Only when every link can write is the first one used.
-	rows, err := d.Query(`SELECT l.token, l.mode, n.owner_blob, n.encrypted, CASE WHEN n.encrypted THEN '' ELSE n.content END,
+	rows, err := d.Query(`SELECT l.token, l.mode, n.owner_blob, n.encrypted, n.password, CASE WHEN n.encrypted THEN '' ELSE n.content END,
 			n.frozen, n.views, n.max_views, n.expires, n.created, n.updated, n.last_open
 		FROM notes n JOIN links l ON l.token = (SELECT token FROM links WHERE note_id = n.id ORDER BY (mode <> 'read'), rowid LIMIT 1)
 		WHERE n.owner_id = ? AND (n.expires = 0 OR n.expires > ?) ORDER BY n.updated DESC LIMIT 500`, userID, now())
@@ -899,7 +900,7 @@ func (d *DB) NotesByOwner(userID int64) ([]OwnedNote, error) {
 	out := []OwnedNote{}
 	for rows.Next() {
 		var o OwnedNote
-		if err := rows.Scan(&o.Token, &o.Mode, &o.Blob, &o.Encrypted, &o.Content, &o.Frozen, &o.Views, &o.MaxViews, &o.Expires, &o.Created, &o.Updated, &o.LastOpen); err != nil {
+		if err := rows.Scan(&o.Token, &o.Mode, &o.Blob, &o.Encrypted, &o.Password, &o.Content, &o.Frozen, &o.Views, &o.MaxViews, &o.Expires, &o.Created, &o.Updated, &o.LastOpen); err != nil {
 			return nil, err
 		}
 		out = append(out, o)

@@ -210,6 +210,7 @@
     ul.replaceChildren.apply(ul, shown.map(function (r) {
       var n = r.n, info = NH.modeInfo[n.mode];
       var meta = [NH.t(n.encrypted ? 'pill.encrypted' : 'pill.public'), info.label, NH.t('meta.changed', { ago: NH.ago(n.updated) })];
+      if (n.password) meta.splice(1, 0, NH.t('pill.password')); // a lock on a basic note, a second password on an encrypted one
       if (n.frozen) meta.unshift(NH.t('meta.snapshot'));
       if (n.expires) meta.push(NH.t('meta.disappears', { ago: NH.ago(n.expires) }));
       if (n.max_views) meta.push(NH.t('meta.opened', { n: n.views, max: n.max_views }));
@@ -257,28 +258,56 @@
 
   // Edit a basic note whose owner link nobody here has (vault closed, or after a reset): after asking, the account's
   // session gives the note new editing keys (takeover.go). Older owner links and edit links given to others stop working.
+  //
+  // A basic note with a password stays locked: the owner chooses a NEW password here (a vault reset takes the old one
+  // away, and the owner's own session is enough to prove who owns the note). Everybody else still needs it.
   function takeover(r, btn) {
     var n = r.n;
+    if (n.password) return takeoverLocked(r, btn);
     NH.confirm(NH.t('dash.takeover_h') + ' ' + NH.t('dash.takeover_p'), { anchor: btn }).then(function (ok) {
       if (!ok) return;
       btn.disabled = true;
       var admin = NHC.newKey(), k = NHC.newKey();
       NH.api('GET', '/api/n/' + encodeURIComponent(n.token)).then(function (meta) {
-        // With a password the write key also depends on the password, which is not known here.
-        if (meta.password) { NH.toast(NH.t('dash.takeover_password'), 'err'); throw null; }
         return NHC.noteKeys(k, '', meta.salt || '');
       }).then(function (keys) {
         return NH.api('POST', '/api/me/notes/' + encodeURIComponent(n.token) + '/takeover', { admin: admin, write: keys.write });
-      }).then(function () {
-        NH.recent.add({ token: n.token, k: k, a: admin, t: name(r) || '', created: n.created, expires: n.expires, p: false });
-        // With the vault open the new keys go into it, so the account's other devices get them too (and do not
-        // take the note over again, which would cut this one off).
-        var sealed = vault ? vault.seal({ t: name(r) || '', k: k, a: admin, p: '' }).then(function (blob) {
-          return NH.api('POST', '/api/n/' + encodeURIComponent(n.token) + '/claim', { owner_blob: blob }, { 'X-Admin': admin });
-        }).catch(function () {}) : Promise.resolve();
-        return sealed.then(function () { location.href = NH.noteURL(n.token, { k: k, a: admin }); });
-      }).catch(function (x) { btn.disabled = false; if (x) NH.toast(x.message, 'err'); });
+      }).then(function () { return finishTakeover(r, k, admin, ''); })
+        .catch(function (x) { btn.disabled = false; if (x) NH.toast(x.message, 'err'); });
     });
+  }
+  function finishTakeover(r, k, admin, pw) {
+    var n = r.n;
+    NH.recent.add({ token: n.token, k: k, a: admin, t: name(r) || '', created: n.created, expires: n.expires, p: !!pw });
+    // With the vault open the new keys go into it, so the account's other devices get them too (and do not
+    // take the note over again, which would cut this one off).
+    var sealed = vault ? vault.seal({ t: name(r) || '', k: k, a: admin, p: pw }).then(function (blob) {
+      return NH.api('POST', '/api/n/' + encodeURIComponent(n.token) + '/claim', { owner_blob: blob }, { 'X-Admin': admin });
+    }).catch(function () {}) : Promise.resolve();
+    return sealed.then(function () {
+      // The note page asks for the password; hand it over without putting it in the address.
+      if (pw) try { sessionStorage.setItem('nh_pw_' + n.token, pw); } catch (x) {}
+      location.href = NH.noteURL(n.token, { k: k, a: admin });
+    });
+  }
+  function takeoverLocked(r, btn) {
+    var n = r.n, dlg = $('#takeover-dlg'), form = $('#takeover-form'), pw = $('#takeover-pw'), err = $('#takeover-err');
+    err.classList.add('hide');
+    form.reset();
+    dlg.showModal();
+    pw.focus();
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      var go = form.querySelector('[type=submit]'), pass = pw.value;
+      if (!pass) return;
+      go.disabled = true;
+      err.classList.add('hide');
+      var admin = NHC.newKey(), k = NHC.newKey(), salt = NHC.newSalt();
+      NHC.passwordKeys(pass, salt).then(function (keys) {
+        return NH.api('POST', '/api/me/notes/' + encodeURIComponent(n.token) + '/takeover', { admin: admin, write: keys.write, salt: salt });
+      }).then(function () { dlg.close(); return finishTakeover(r, k, admin, pass); })
+        .catch(function (x) { go.disabled = false; err.textContent = x && x.message || NH.t('err.takeover_failed'); err.classList.remove('hide'); });
+    };
   }
 
   // "On this device": the owner links this browser remembers, which is where a
