@@ -70,6 +70,7 @@
     <div class="shell-side-foot">
       <ul class="foot-list">
         <li><a href="/faq">{{.L.T "nav.help"}}</a></li>
+        {{with .Feedback}}<li><a href="{{.}}" target="_blank" rel="noopener">{{$.L.T "nav.feedback"}}</a></li>{{end}}
         <li><a href="/terms">{{.L.T "terms.title"}}</a></li>
         <li><a href="/privacy">{{.L.T "privacy.title"}}</a></li>
         <li><a href="/changelog">{{.L.T "changelog.title"}}</a></li>
@@ -170,7 +171,7 @@
     <a class="part-of" href="https://hel.ink" rel="noopener">{{with hubMark}}<img src="{{.}}" alt="" width="20" height="20">{{end}}<span>{{partOf (.L.T "footer.part_of")}}</span></a>
     <p>© 2026 navi-crwn · MIT License</p>
     <nav aria-label="{{.Site}}">
-      <a href="/about">{{.L.T "footer.about"}}</a><a href="/faq">{{.L.T "nav.faq"}}</a><a href="/privacy">{{.L.T "privacy.title"}}</a><a href="/terms">{{.L.T "terms.title"}}</a><a href="/status">{{.L.T "status.title"}}</a><a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a>
+      <a href="/about">{{.L.T "footer.about"}}</a><a href="/faq">{{.L.T "nav.faq"}}</a>{{with .Feedback}}<a href="{{.}}" target="_blank" rel="noopener">{{$.L.T "nav.feedback"}}</a>{{end}}<a href="/privacy">{{.L.T "privacy.title"}}</a><a href="/terms">{{.L.T "terms.title"}}</a><a href="/status">{{.L.T "status.title"}}</a><a href="https://github.com/navi-crwn/NoteHop" rel="noopener">GitHub</a>
     </nav>
   </div>
 </footer>
@@ -200,6 +201,7 @@
         <a href="/faq">{{.L.T "footer.faq"}}</a>
         <a href="/faq#dev">{{.L.T "footer.raw"}}</a>
         <a href="/contact">{{.L.T "contact.title"}}</a>
+        {{with .Feedback}}<a href="{{.}}" target="_blank" rel="noopener">{{$.L.T "nav.feedback"}}</a>{{end}}
       </nav>
     </div>
     <div class="foot-col">

@@ -15,6 +15,7 @@
   <h2>{{.L.T "contact.report_h"}}</h2>
   <p>{{.L.H "contact.report"}}</p>
   <p>{{.L.H "contact.faq"}}</p>
+  {{with .Feedback}}<p><a href="{{.}}" target="_blank" rel="noopener">{{$.L.T "feedback.send"}}</a></p>{{end}}
 </section>
 {{end}}
 {{define "scripts"}}{{end}}

@@ -320,6 +320,8 @@ type pageData struct {
 	GatePassed    bool
 	Encrypted     bool
 	Site          string
+	Feedback      string // the Feedback link for this screen; empty without a hub address
+	FeedbackHub   string // the hub address behind it, for the Privacy sentence
 	Preset        string // /secret or /embargo: the new-note form opens with this preset chosen
 	Title         string
 	Desc          string
@@ -414,6 +416,8 @@ func (a *App) render(w http.ResponseWriter, r *http.Request, status int, name st
 		d.SSOVia = a.cfg.SSOProviders
 		d.Hub = strings.TrimRight(a.cfg.SSOURL, "/")
 	}
+	d.FeedbackHub = a.cfg.SSOURL
+	d.Feedback = feedbackURL(a.cfg.SSOURL, name, a.cfg.Version)
 	d.Origin = a.origin(r)
 	// Only an indexable page that rendered as itself may be listed; anything else says so twice (header and tag).
 	d.NoIndex = d.NoIndex || status != http.StatusOK || !indexablePage[r.URL.Path]

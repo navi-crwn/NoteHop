@@ -4,6 +4,15 @@ What changed in NoteHop, newest first, written for the people who use it.
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-11-16 - A Feedback link
+
+You can now send feedback or report a problem from NoteHop, without writing an e-mail.
+
+### Added
+
+- **Feedback link.** The dashboard menu now has a Feedback item right under Help, and everyone else finds one in the footer of every page, on the FAQ and on the Contact page. It opens the HOP ID feedback form in a new tab, so nothing you were writing here is lost. NoteHop itself gets nothing from that form. The link only tells the form that you came from NoteHop, which screen it was and which version is running; it never includes the address of a note, because that address is the way in to the note. If this NoteHop is not connected to a HOP ID site, the link is not shown.
+- **Privacy page.** One new sentence explains that the Feedback link opens a form on the HOP ID site this NoteHop is connected to, that NoteHop receives nothing from it, and where that form's own privacy rules are written. The page appears in all nine languages. NoteHop still has no account tracking, no ads and no trackers: the browser only contacts the HOP ID site when you click the link.
+
 ## [1.5.1] - 2026-11-16 - Clearer search results
 
 Every public page now has its own short description for search engines.
