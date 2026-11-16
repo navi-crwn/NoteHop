@@ -4,6 +4,10 @@ What changed in NoteHop, newest first, written for the people who use it.
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-11-16 - Clearer search results
+
+Every public page now has its own short description for search engines.
+
 ### Fixed
 
 - **Search results.** Every public page now has its own short description for search engines, in all nine languages. The Changelog page had none, About, Features and Contact had descriptions too short to be useful, and a few descriptions in German, Indonesian, French and other languages were so long that Google cuts them off. The home page and the New note page also shared one identical description, so they now have their own. Visitors see this text under the page name in search results, so a clear one helps people pick the right page. Nothing changes on the pages themselves, and notes are still never listed in search results.
