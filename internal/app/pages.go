@@ -124,7 +124,7 @@ func (a *App) webApp(r *http.Request, l i18n.Locale) map[string]any {
 		"url":                 strings.TrimRight(a.origin(r), "/") + "/",
 		"image":               strings.TrimRight(a.origin(r), "/") + "/static/img/og.png",
 		"inLanguage":          []string{"en", "zh-CN", "de", "id", "ja", "pt-BR", "es", "fr", "ru"},
-		"description":         l.T("meta.desc_new"),
+		"description":         l.T("meta.desc_home"),
 		"applicationCategory": "UtilitiesApplication",
 		"operatingSystem":     "Any",
 		"offers":              map[string]any{"@type": "Offer", "price": "0", "priceCurrency": "USD"},
