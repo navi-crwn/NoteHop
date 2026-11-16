@@ -48,6 +48,7 @@
   <details id="inbox"><summary>{{.L.T "faq.inbox_q"}}</summary><p>{{.L.H "faq.inbox_a"}}</p></details>
   <details id="mock"><summary>{{.L.T "faq.mock_q"}}</summary><p>{{.L.H "faq.mock_a"}}</p></details>
   <details id="page"><summary>{{.L.T "faq.page_q"}}</summary><p>{{.L.H "faq.page_a"}}</p></details>
+  {{with .Feedback}}<p class="muted"><a href="{{.}}" target="_blank" rel="noopener">{{$.L.T "feedback.send"}}</a></p>{{end}}
 </section>
 {{end}}
 {{define "scripts"}}<script src="/static/js/faq.js?v={{.Asset}}"></script>{{end}}

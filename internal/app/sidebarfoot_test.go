@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// The dashboard sidebar ends with the family foot: Help, Terms, Privacy, Changelog, GitHub, Announcement (one per
+// The dashboard sidebar ends with the family foot (here without a hub address, so no Feedback): Help, Terms, Privacy, Changelog, GitHub, Announcement (one per
 // line, in that order), then "Part of Hop Easy Link"; the palette picker sits above it, no longer in the language menu.
 func TestSidebarFootAndPalettePicker(t *testing.T) {
 	c := signedIn(t, newTestApp(t), "helena")
